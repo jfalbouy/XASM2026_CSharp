@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Xasm2026.Native.csproj" />
+  </Folder>
+</Solution>

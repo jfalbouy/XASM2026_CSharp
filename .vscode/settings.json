@@ -1,0 +1,14 @@
+{
+  "files.associations": {
+    "*.ASM": "asm",
+    "*.asm": "asm",
+    "*.S": "asm",
+    "*.s": "asm",
+    "*.lst": "plaintext",
+    "*.map": "plaintext",
+    "*.uu": "basic",
+    "*.s19": "plaintext",
+    "*.hex": "plaintext"
+  },
+  "dotnet.defaultSolution": "xasm2026-3.sln"
+}

@@ -1,0 +1,14 @@
+; XASM MAP file - SAMPLE5.ASM
+; Code: 00E000h - 00E01Dh [30 bytes]
+
+; Sections:
+;   INIT             00E000h  00E006h  7
+;   MAIN             00E007h  00E01Dh  23
+
+; Symbols:
+00E007h  MAIN
+00E007h  POINT
+000002h  POINT_SIZE
+000000h  POINT_X
+000001h  POINT_Y
+000002h  VERSION

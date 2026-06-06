@@ -1,0 +1,1 @@
+SAMPLE5.obj: SAMPLE5.ASM

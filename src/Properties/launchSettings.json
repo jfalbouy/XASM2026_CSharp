@@ -1,0 +1,25 @@
+{
+  "profiles": {
+    "xasm2026-3 - coverage_all toutes options": {
+      "commandName": "Project",
+      "commandLineArgs": "coverage_all.asm -O coverage_all.vs.obj -L coverage_all.vs.lst -E -S -TZ -C -W -H -I coverage_all.vs.hex -M coverage_all.vs.s19 -P coverage_all.vs.map -D coverage_all.vs.d -B coverage_all.vs.uu -X coverage_all.vs.txt -V -R",
+      "workingDirectory": "C:\\Codex\\xasm2026-3\\tests"
+    },
+    "xasm2026-3 - REGISTER": {
+      "commandName": "Project",
+      "commandLineArgs": "REGISTER.ASM -O REGISTER.vs.obj -L REGISTER.vs.lst -E -B REGISTER.vs.uu -V",
+      "workingDirectory": "C:\\Codex\\xasm2026-3\\Exemples\\REGISTER"
+    },
+    "xasm2026-3 - VOGUE": {
+      "commandName": "Project",
+      "commandLineArgs": "VOGUE.S -O vogue.vs.obj -L vogue.vs.lst -E -B vogue.vs.uu -V",
+      "workingDirectory": "C:\\Codex\\xasm2026-3\\Exemples\\VOGUE"
+    },
+    "xasm2026-3 - source personnel": {
+      "commandName": "Project",
+      "commandLineArgs": "coverage_all.asm -O a.obj -L a.lst -E -V",
+      "workingDirectory": "C:\\Codex\\xasm2026-3\\tests"
+    }
+  }
+}
+

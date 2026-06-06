@@ -1,0 +1,3778 @@
+
+
+===== PAGE 1 / 89 : ESR-L_CPU_tech_manual.pdf =====
+....... 
+~ :· r: ;- .... :. ::: ; ~·, _) 
+c = - " t l ._ .. ·_1 ~ ~ - t' .~ (;, 
+:G- 7 r1.;:.J ..::cv · t'S 
+SHARP CORPORATION 
+ESR-L INSTRUCTION MANUAL 
+
+
+
+===== PAGE 2 / 89 : ESR-L_CPU_tech_manual.pdf =====
+Me~ory control pin MRQ RD WZ\: 
+DIOO to DI07: Data buses 
+Accress buses 
+Chip select output 
+pins 
+AO to AlB: 
+CEO to CEi: 
+• I/0 
+• t.;ART 
+• Sub-clock 
+µsec. execute cycle) 
+Changeable by ?LA to:' 
+l. 536 .MEz (1.95 u s e c , execute 
+cycle), or 
+3.072 MHz (0.98 µsec. execute 
+cycle) 
+CR-oscillated typ. 40 kHz (As a 
+display clock and as a timer for a 
+half), or 
+Crystal-oscillated 32.768 kHz (Used 
+~hen providing a clock function). 
+7 factors: 2 timers, 2 keys, 2 
+UARTs, and external factor. 
+Baud rate: 300 to 9600 
+Parity: Even/oed/no 
+Character ler.gth: 7/8 
+Stop bit~· l/2 
+Breakout function 
+Interrupt 
+• Main clock 
+P=ogr~~= 64 K~ytes x 16 seqments 
+• Built-in 236-byte RAM This inte=n~l memo=y wakes U? a 
+separate memc=y space f=om the 
+external r::e~cry, and its accress 
+allocation is as follows: 
+OOH to :EBH: RAM 
+ECH to FFH: ?ointe=s, control 
+·command registers, 
+data buffers, l/O 
+ports, etc. 
+Ceramic-oscillated 2.304 MHz (l.30 
+1 Mbyte continuous Data: 
+• Mer::o=y space 
+( 1 Mbyte) 
+• 8-bit C-MOS C?U 
+Gene=al Specifications 
+l 
+
+
+
+===== PAGE 3 / 89 : ESR-L_CPU_tech_manual.pdf =====
+1/16 duty. However, the nurr~er o= 
+pins is only 14, from Hl to Hl5 
+excluding HS. Changed with A, CE, 
+KO, and other pins by PLA . ..... 
+HALT: Stops the main clock. 
+OFF: Stops both the main clock and 
+the sub-clock. 
+Key strobe output 
+ports 
+Key input ports 
+General I/0 ports 
+LCD driver control 
+pin 
+UART data output pin 
+UART data input pin 
+CMT data output pin 
+CMT data input pin 
+Exte=nal interrupt 
+input pin 
+ON key input pin 
+( 
+ON: 
+TXD: 
+RXD: 
+CO: 
+CI: 
+IRQ: 
+KIO to KI7: 
+EO to ElS: 
+oA HA DIS: 
+KOC to K015: 
+• HALT /O". • function 
+• LCD cornrr.on signal 
+output allowed 
+
+
+
+===== PAGE 4 / 89 : ESR-L_CPU_tech_manual.pdf =====
+- "' ~ 
+OsC. 
+l l 
+.~ 
+..... 
+•<::> 
+cS 
+<::> .... es 
+E 
+- ~ 
+:s 
+D 
+Dl'J!D: .=? 
+I µ-a.~ cr:::tci.t;t I 
+I 
+., 
+3 
+BUF.Ei? 
+c 
+8 
+..... 
+I 
+.. 
+-==::' - • - •• 
+.... - - -· ~- a 
+1..1.J - - - - 
+A 
+Block Diag:-am 
+
+
+
+===== PAGE 5 / 89 : ESR-L_CPU_tech_manual.pdf =====
+( 
+4 
+user to save data or for data 
+trar.sfer between routines. This 
+stack pointer is also usable as a 
+pointer register like the registeis 
+X and Y, and is allowed to directly 
+access the 1-megabyte space. 
+Pointer register: y 
+Pointer register: x 
+data it has beccrr.es zero. 
+Allowed to ~irectly access 
+addresses throughout the 1-rr.egabyte 
+external memory. 
+Allowed to directly access 
+adcresses throughout the 1-megabyte 
+external memory. 
+U User stack pointer: A stack pointer that is used by the 
+Counter register: I 
+memory. 
+B Auxiliary register: An auxiliary register for the 
+acc~mulator. Used as a 16-bit 
+register in corr.biria,ion ~ith the 
+register A. 
+An loop instruction automatically 
+cecrements this register till the 
+An arithmetic register. The ESR-L 
+per~or~s arithmetic mainly on the 
+accwnulatcr and the internal 
+I B a ::its I A a bits 
+I IH S bits I IL a bits 
+x 20 bits 
+y 20 l:ii ts 
+u 20 bits 
+s 20 l:iits 
+bS 4 bl ts/ PC 16 l:il ts 
+BA 
+I 
+x 
+y 
+u 
+s 
+PC 
+Ac c umu La tor: A 
+Registers 
+
+
+
+===== PAGE 6 / 89 : ESR-L_CPU_tech_manual.pdf =====
+Specifies a page from which an 
+object code is to be fetched. This 
+register consists of 4 bits, and 
+seqments are from OH·to FH. 
+sec;ment. 
+A stack pointer that is ~air.ly used 
+by the system for subroutine call, 
+etc. It is also usable as a 
+pointer register like the registers 
+X and Y, and is allowed to directly 
+access to 1-rr.egabyte space. 
+Automatically increments every time 
+an object code is fetched, i.e. 
+every 16 bits. Therefore, 64 K 
+bytes of object codes makes l 
+5 
+Page segment 
+register: 
+Program coun<;er: 
+System stack 
+pointer: 
+s 
+PS 
+PC 
+
+
+
+===== PAGE 7 / 89 : ESR-L_CPU_tech_manual.pdf =====
+\. 
+RESET VECTOR 
+INTERRUPT VECTOR 
+SH-26 &rea 
+.. 
+l t!byt~ 
+Lo• 
+High 
+Ext. 
+Lo• 
+High 
+Ext. FFFFFH 
+FFFFDH 
+FHHH 
+FFHCH 
+FFFFBR 
+FFFFAR 
+Oi'FFFH 
+08000H 
+03FFFH 
+040 0 01{ 
+OOOOOR 
+External memory space 
+( 1 M.byte) 
+' 
+6 
+RAM BASE POINTER 
+RAM PX POINTER 
+RAM PY POINTER 
+ADR.YODIFY CONTROL. 
+XEY OUTPUT BUFFER 
+XEY OUTPUT BUFFER 
+XEY INPUT BUFFER 
+E PORT OUTPUT BUFFER 
+E PORT OUTPUT BUFFER 
+E PORT INPUT BUFFER 
+E PORT INPUT BUFFER 
+UART CONTROL REGISTER 
+UART STATUS REGISTER 
+UART RECtIV! BUFFER 
+UART TRANSMIT BUFFER 
+lNTERRUPi MASK REGISTER 
+INTERRUPT STATUS REGISTER 
+SYSTE~ CONTROL REGISTER 
+LCD CONTRAST CONTROL 
+SYSTEM STATUS REGISTER 
+BP 
+PX 
+PY 
+AMC 
+l\OL 
+F:OH 
+-,: I 
+EOL 
+EOH 
+EIL 
+EIL 
+UCR 
+USR 
+RXD 
+TXD 
+lMR 
+!SR 
+SCR 
+LCC 
+SSR 
+ECH 
+EDH 
+EEH 
+EfH 
+FOH 
+FlH 
+F2H 
+F3H 
+f4H 
+FSH 
+F6H 
+F7H 
+F8H 
+F9H 
+FAR 
+FBH 
+FCH 
+FDR 
+FEH 
+FFH 
+EBH 
+Inte!':lal 
+inecory 
+236 !:>ytes 
+OOH 
+Internal memory space 
+(256 bytes) 
+Memory Space 
+
+
+
+===== PAGE 8 / 89 : ESR-L_CPU_tech_manual.pdf =====
+RAM PX pcinter: A pointer that specifies an address on 
+the internal memory and is used when data on the 
+internal memory is subjected to loop processing. There 
+are the fellowing two addressing modes that use the RAM 
+PX pointer: 
+{px_::n) An effective address is obtained by adding 
+the offset value "+n" to the cata the PX 
+has. 
+Address: EDH PX 
+{bp+py) 
+(bp_::n) In this mode, an effective address is 
+obtained by adding the offset value "+n" to 
+the information the BP has. 
+In this mode, an effective address is 
+obtained by adding the data the PX has to 
+the data the BP has. 
+Iri this rnoda, an.effective_address is 
+obtained by adding the data the PY has to 
+the data the BP has. 
+(bp+px) 
+RAM base pointer: A pointer to specify the reference 
+address for accessing a~ accress in the internal memory 
+space by relative addr essing. The following are the 
+....... 
+addressing modes that use this pointer: 
+Read/Write Address: ECH BP 
+Read/Write Addresses: OOH to EBH 
+These 236 bytes make ordina=y RAM. 
+RAM 
+The inte=nal memory space has ~56 by~es a~d is accessed by 
+the 8-bit pointer BP, PX, or PY or an ir.~ediate value. It 
+makes up a difference S?ace from the exte=nal memc=y space. 
+Among the 256 bytes, 236 bytes from OOE to E3H make ordinary 
+RAM, and the rest, i.e. 20 cytes fro~ ECH to F?H, is 
+dedicated to pointers, control ccr.~ar.d registers, cata 
+buffers, anc I/0 ports. 
+Internal Memo=y Space 
+7 
+
+
+
+===== PAGE 9 / 89 : ESR-L_CPU_tech_manual.pdf =====
+.. - ~ ·- . 
+( 
+8 
+I AME I AMS I AlU I Al"3 I AM2 i AMl I AMO 
+7 6 5 ~ 3 2 1 0 
+CEO RAM CARD l 
+A8000H 
+Virtual address 
+(Address on softvarel 
+• 
+9 
+OOOOH I RAM CARD I I 
+9FF'FFH 
+AOOOOH 
+t!feetive ad~ress 
+(Ad~ess on bardwarel CEl 
+80000H 
+B7FHR 
+----- B8000H RAM CARD 0 
+BHFFH .__ __, 
+B!OOOH I RAW CARD 0 I 
+BHHH . .__ _ 
+Example: 
+..... 
+Address Modify Control: A system provided with two RAM 
+card slots may have two discon tinuous RAM card address 
+areas depending on the capacities of tr.e RA!-! cards 
+inserted. This register controls the function that 
+vi::-tually makes the RAM card· address areas continuous. 
+When the function is enabled, it works between the CEl 
+and the CE2 and allows the system to use the address 
+areas with the end of the CEl address ~rea virtually 
+linked to the start address of the CEO address area. 
+Read/Write Address: E.FH AMC 
+This addressing mode obtains an effective 
+address by adding the data the PY has.to 
+the data the BP has. 
+(bp~py) 
+This addressing mode obtains an effective 
+address by adding the offset value "+n" to 
+the data the PY has. 
+RAM PY pointer: A poir.ter that specif.:..es an address on 
+the internal me~ory as the PX does. The PY is used 
+when ~he second operand specifies a pointer in an 
+i~struction both of ~hose first and second operands use 
+internal memory addressing. 
+Read/v:r.:..te ':"':"U 
+--·· PY 
+An effective address is obtained by adding 
+the data the PX has to the data BP has. 
+(bp+px) 
+
+
+
+===== PAGE 10 / 89 : ESR-L_CPU_tech_manual.pdf =====
+I xo1s I xou I xo13 I Ko12 I xo11 i K010 I xos I xos 
+7 6 5 4 s 2 I 0 
+Key Output Buffer:· The data stored in this buffer is 
+outputted as it is through tle KO port (This port is 
+mainly for key strobe). 
+Read/Write Address: FlH KOH 
+These correspond respectively to ?ins 
+KOO to K07. A "high" signal is 
+outputted when the bit is "l", and a 
+"low" signal when "O". 
+KOO to K07 
+I K07 I ~06 I KOS I K04 I 1:03 I KD2 I XO 1 I KOO 
+7 6 s " 3 2 1 0 
+Key Output Buffer: The data stored in this buffer is 
+outputted as it is through KO port (This pert is mainly 
+for key strobe). 
+Read/Write AC!C.ress: FOH KOL 
+The system that uses the address modify function is 
+allcwed to set the access area of the CEO ar.d CEl to 
+32, 64, 128, or 256 K bytes by the PLA. The largest 
+numbered address of the CEO must be XFFFFH. 
+AMO to 
+~5 ....... These specify the RA.M card capacity at the 
+CEO side: 
+AMS AM4 AM3 AM2 AMl AMO 
+0 0 0 0 0 0 2 Y.::::ytes 
+0 0 0 0 0 1 4 Y.::::ytes 
+0 0 0 0 1 8 IC:>ytes 
+0 0 0 1 l l 16 t~yt.es 
+0 0 l I l l 32 IC:>ytes 
+0 1 l 1 1 l 6' r->ytes 
+1 l l 1 l 128 Kbyt.es 
+W..E ••••••• Accress Modify Enable: Enables the add=ess 
+modify function when this bit is "1". 
+9 
+
+
+
+===== PAGE 11 / 89 : ESR-L_CPU_tech_manual.pdf =====
+( 
+10 
+when "O". 
+EDS to ElS ... These correspond respectively to Pins ES 
+to ElS. A "high" signal is outputted 
+when the bit is "l", anc a "low" sigr.al 
+I ro1s j Eou I ro13 j to12 j ro11 I to10 j E09 I tos 
+7 6 s 4 3 2 1 0 
+E Port Output Buffer: The data stored in this buffer 
+is outputted as it is through the E port (general I/O 
+port). 
+Read/Write Address: F4E EOE 
+EO to E7 ••..• These correspond respectively to Pins 
+EO to E7. A "high" signal is outputted 
+when the bit is "l", and a "low" signal 
+when "O". 
+I E07 .I £06 I EDS I £04 I £03 I £02 I EOl I EOO 
+1. 6 5 4 3 2 1 0 
+E Po.rt Output Buffer: The dz t a stored in this buff~r 
+is outputted as it is through the E p~rt (general I/0 
+port). 
+Read/Write Address: F3H. .EOL 
+KIO to KI7 ... These correspond respectively to Pins 
+KIO to KI7. Bit "l" is inputted when 
+the level is "high", and bit "O" when 
+"low". 
+jKI7 j111& jKIS jK!4 j1113 jKI2 jt:ll jKIO 
+1 s s ·' 3 2 1 o 
+Key Input Buffer: This buffer stores the information 
+that shows the status of the KI port (mainly for kev 
+input) . 
+Read only Accress: F2H KI 
+KOS to K015 .. These correspond respectively to Pins 
+KOS to KOlS. A "high" signal is 
+outputed when the bit is "l", and a 
+"low" si;nal when "O". 
+
+
+
+===== PAGE 12 / 89 : ESR-L_CPU_tech_manual.pdf =====
+BR2 BR! BRO BPS 
+0 0 0 0 (This resets the UART.) 
+0 0 1 300 
+0 1 0 600 
+0 l 1200 
+I 0 0 2400 
+1 0 1 4800 
+1 l 0 9600 
+1 19200 
+BOE ....•...•. Break Output Enable: While this bit is 
+kept to "l", "O" is outputted through 
+Pin TXD. 
+BRO to BR2 •.• Baud Rate Factor: By these bits, the. 
+·baud rate is set. 
+ST DL I BOE I BR2 I BRl I BRO I PAI I PAO 
+I 0 7 6 s 4 3 2 
+UART Control Register: This register is used to set 
+the status of the UART. 
+Read/Write Address: F7H 
+EIS to EI15 .. These correspond respectively to Pins ES 
+to ElS. Bit "l" is inputted when the 
+level is "high", and bit "O" when "low" •. 
+I EIIS I Ell4 i EII3 j EI12 I EI11 j EllO I El9.._ I EIS 
+7 6 s 4 3 2 l 0 
+E Port Input Buffer: This buffer stores the, 
+information that shows the status of the E port 
+(general I/0 port). 
+Read .only AC.dress: F6H 
+EIO to EI/ ... These co=respond respectively to Pins EO 
+to E7. Bit "l" is inputted when the 
+level is "high", and bit "O" when "low". 
+IEI7 IEIS IEIS jEI4 IEI3 IEI2 !Ell IEIO 
+7 6 S 4 3 2 I 0 
+(general I/0 port). 
+E Port Input Buf:er: This bu!fer stores the 
+i~formation that shews the status of the E port 
+Read only Acdress: FSH 
+ll 
+UCR 
+EIH 
+EIL 
+
+
+
+===== PAGE 13 / 89 : ESR-L_CPU_tech_manual.pdf =====
+( 
+12 
+when l character receiving is completed, 
+and it becomes "O" when the data stored 
+in the UART receive buffer (F9H) is 
+transferred to a register (BA or other). 
+T~E Transmitter Empty: This bit is "O" 
+~hile the transmitter of the UART is 
+sending data. Otherwise, it is "l". 
+TXR .........• Transmitter Ready: This bit becomes "O" 
+when data is written in the UART 
+transmit buffer (FAR), and it changes to 
+"l" when that data is delivered to the 
+UART transmitter. 
+"l" This bit assumes Receiver Ready: RXR 
+OE PE I RXR I TXE I TXR 
+0 z 6 s 4 ·3 7 
+USR Address: FSH ' Read only 
+UART Status Register: A reg ister for checking the UART 
+status. 
+ST Iii t 
+0 
+l ... z 
+ST Stop Bit: This deter~ines the stc? bit 
+length. 
+DL •.......... Character Length: This bit determines 
+the data length. 
+DL bit 
+0 8 
+1 7 
+PAO & PAl .... Parity: This bits dete:inine the parity. 
+PAI PAO PARITY 
+0 0 EVEN 
+O 1 ODD 
+1 X NO 
+
+
+
+===== PAGE 14 / 89 : ESR-L_CPU_tech_manual.pdf =====
+f 
+Start of lst data 
+transmission 
+tnf! of 2nf! datil 
+transmission 
+t 
+Start of 2r.c data 
+transr:iiSsion 
+T, T. Ts 
+2nd f!ata write 
+1 
+lst data vr!te 
+1 
+TXR· L_j 
+T, T, 
+Supplement: Relation between data write in the UART 
+transmit buffer (FAH) and TXE and TXR value 
+transition 
+FE .....•.•... Framing Error: ':his bit becmes "O" if 
+"l" is received just when the step bit 
+ought to arrive. Other~ise, it is set 
+to "l". The value is updated by every 
+completion of l character receiving. 
+OE ..........• Overrun .Error: This bit becomes "l" 
+when the RXR is "l" at the time of 
+completion of l character receiving 
+(i.e. at the time of completing cata 
+receiving before the previously received 
+cata is reac from the UART receive 
+buffer). P.owever, since the OE bit 
+actually becomes "l" a little (i.e. 
+about a half of the time required for 
+1-bit transfer) before co~pleting l 
+character receiving, reac the wART 
+status register (FSH) first and the UART 
+<, 
+receive buffer (F9H) in succession. The 
+OE bit value is updated every time 1 
+character receivin~ is completed. 
+PE ...••.••.•. Parity Error: This bit is set to "l" 
+upo~ completion cf l character receiving 
+if the parity requirement is not met. 
+The value is· updated every time 1 
+character receiving is completed. 
+13 
+
+
+
+===== PAGE 15 / 89 : ESR-L_CPU_tech_manual.pdf =====
+( 
+14 
+Address: FAH Write only 
+UART Transmit Buffer:· The data written in this buffer 
+is transferred tc the UART transmitter when it becomes 
+empty, and is automatically transmittec there!rom after 
+TXD 
+UART Receive Buffer: Upon completion of.l character 
+receiving, the data appears in this buffer. When the 
+character length is 7 bits, the MSB is always zero. 
+Read only Address: F9H 
+transmission. At that mome~t, TXR beccrr.es 
+"l" and TX! "O". However, TXR might 
+become "l" l state earlie= · er latsr than 
+TXE becomes "O". For that reason, avoid 
+checking TXR and TXE simultanecusly. 
+· T 3: When the next data is .writ.ten in the U.?..RT 
+transmit buffer while the transmitter is 
+sending the previous data, "O" is set to 
+TXR and the system waits for the e~d of 
+that data transmission. 
+T4: The moment the transrnitt~r,fir.ishes 
+transmitting the previcus data, the next 
+data written in the UART transmit buffer 
+is transferred to the transmitter, which 
+ther. starts to transmit the data without 
+any delay. TXR becomes "l" again at that 
+stage. 
+T5: If there is no more transmit data in the 
+UART transmit buffer when the transmitter 
+finishes the data transmission, TXE 
+becomes "l". 
+to the trans~itter which in turn starts 
+T1: T~R becomes "O" upon the fi=st data write 
+in the UART t=ansrnit buffer (FAli). TXE 
+still remains "O" at this moment. 
+T2: After a lapse of time for a trar.sfer of l 
+or 2 bits, the data written is t.rar.sferred 
+
+
+
+===== PAGE 16 / 89 : ESR-L_CPU_tech_manual.pdf =====
+Receiver Ready Interrupt Mask 
+Tran~~itter Reacy Inte=rupt Mask 
+RXRM 
+T:XPJ·l 
+EXM .•••..•• External Interrupt Mask 
+IRM .•..••.... Interrupt Mask: If "O" is set to this 
+bit, the interrupt by any oi the 
+interrupt factors is inhibited. 
+If "O" is set to the bit (i.e. any of the bits shown 
+below), the inte!:'rupt by the interrupt factcr which 
+corresponds to that bit is inhibited. For the meanings 
+of the indivicual bits, see the descriptions given 
+under "Interrupt Status Register (whose address is 
+FCH) ". 
+IMR co mmand is executed, the data in this bu!fe= is 
+storeC. ir. the user stack and the MSB becomes .. 0 '", 
+7 . 6 5 4 3 2 1 0 
+IR~ I .EXM I RXRM I TXRM I ONKM i ~EYM I STM MTM 
+!MR Address: FBE ·Read/Write 
+Interrupt Mask Register: By writing "O" in a bit of 
+this register, the interrupt by the interrupt factor 
+corresponding to that bit is inhibited. By setting "O" 
+to the ~53~ the interrupt by any of the interrupt 
+factors is i~hibited. If an interrupt is executed, the 
+<, 
+data in the interrupt mask register is stcrec in the 
+system stack ar.d the MSB becomes. "O". When the PUSHU 
+without celay. 
+to the transmitter which in turn trans~its the data 
+trans~it buffer ~hen the transtt.ission of the previous 
+ca ta is c orr.p l e t e d , that data is im.medi ate ly t r ari s f erred 
+If there is data already ~ritten in the (F8H). 
+adjusted tc the setting thereof. Data can be written 
+in this buffer even during transmission of the previous 
+data. Whether the previously written data has already 
+been delivered to the transmitter er net yet can be 
+checked by the TXR bit o~ the VART status register 
+15 
+
+
+
+===== PAGE 17 / 89 : ESR-L_CPU_tech_manual.pdf =====
+16 
+I EXI I RXRl I TXRI I ONKl I KEYI I ST! I MT! J 
+6 5 ~ .3 2 1 0 1 
+Interrupt Status Register: When an interrupt is 
+requested by an interrupt factor, the bit of the 
+interrupt status register which corresponds to that 
+interrupt factcr is set to "l". Once "l" is set to the 
+bit, the bit keeps "l" even after the interrupt request 
+disappears unless the software writes "O" in that bit. 
+When a bit of ~he interrupt sta~us re;ister becomes "l"· 
+while both the corresponding bit of the interrupt mask 
+register (FBH) and. the MSB are "l", the CPU executes 
+th~ interrupt before executing the co~~and to be 
+fetched next. 
+Read/Write Address: FCH ISR 
+Note: If the AND command is executed on this register 
+when masking any one of the interrupt factcrs is 
+tried, the interrupt by the !actor whose masking 
+has been tried might be caused cirectly a!ter 
+the AND cor..rr.and execution since the CPU judges 
+whether or not to interrupt the next ccr.~and 
+before it completes the AND operation. If such 
+interrupt occurs, the CPU cannot determi~e which 
+factor has caused the interrupt, though the 
+ir.terrupt routine checks the interrupt mask 
+register. Since the factor is already masked. 
+Therefore, it is necessary to let,the interrupt 
+routine return without doing anything in case it 
+does net find any interrupt factor to be 
+processed. 
+STM 
+MTM 
+On Key Icte==upt ~ask 
+Key Interrupt Mask 
+SEC Tirn~r Interrupt Mask 
+MSEC Ti~er Interrupt Mask 
+ONKM 
+KEYM 
+
+
+
+===== PAGE 18 / 89 : ESR-L_CPU_tech_manual.pdf =====
+ISE .....•..•. IRQ Start Enable: By keeping this bit 
+to "l", the external interrupt is 
+allowed to release the CPU from the 
+HALT/OFF state. 
+1st I sz2 I az1 I azo I vooc I srs I i.rrs I o 1 sc I 
+1 6 5" 3 2 1 0 
+System Control Register: A register for controling the· 
+system status. 
+Read/Write Address: FDH 
+•1• when an interrupt is requested by 
+the SUB-CG timer. 
+MTI •.•••••••• MSEC Timer Interrupt: This bit becomes 
+•1• when an interrupt is requested by 
+the Main CG timer.· 
+This bit becomes SEC Timer Interrupt: STl 
+buffer (FAH) gets ready for recei.ving 
+new data after it transfers the data it 
+previously received to the transwitter. 
+ONKI ........• ON Key Interrupt: ~his bit becomes "l" 
+when a high" signal is inputted to the 
+ON pin. 
+KEYI •..•••••• Key Interrupt: This bit becomes "l" 
+when a "high" signal is inputted t6 any 
+one of the pins of KI (PLA programmincr ..... - 
+can determine wh~ch KI pins are 
+effective for this interrupt). 
+becomes "l" whe:i the CART transr::i.t 
+EXI .•........ External Interrupt: This bit becomes 
+"l" when an interrupt request co~es f=om 
+an external pin. 
+RXRI Receiver Reudy Interrupt: This bit 
+becomes "l" when the UART completes l 
+character receiving. 
+TXRI Transmitter Ready Interrupt: This bit 
+17 
+SCR 
+
+
+
+===== PAGE 19 / 89 : ESR-L_CPU_tech_manual.pdf =====
+( 
+lS 
+make a selection between the 2 main CG 
+timer operating durations: "O" 
+specifies the shorter one and "l" the 
+lcnger. For the same reason as the STS. 
+This bit is use~ to MSEC Timer Select: MTS 
+bit. The future har dwa r e- will be 
+prcviced with a FLA for programr.:ing 
+whether or not to involve the stop of 
+the sub-CG. When to.provide the FLA is, 
+however, to be determined. 
+STS •••••••••• SEC Time.r Select: This bit is used to 
+make a selection between the 2 sub-CG 
+timer working durations: "O" specifies 
+the longer cne and "l" the shorter. 
+Since the change of the timer working 
+curaticn means a change of divider 
+connection, the dividing gets irregular 
+at the instant of the change. For that 
+reason, the char.ge must take place just 
+after the STI ·becomes "l" or just after 
+the TCL command. 
+Note: The current hard~are (SC62015B01) stops 
+the sub-CG when "1" is set to the VDDC 
+VDDC V~D 
+0 IO• (VCC) 
+1 high(GND) 
+\TDC ••••..... VDD Control: Controls the VDD level. 
+BZO to BZ.2 . . . CO/CI Control Factors: These bits 
+control the state of Pins co and CI. 
+BZ2 BZl BZO co CI 
+0 0 0 lo• 0 (I'1sallo"'s input.) 
+0 0 l high 0 (Di.sallo"'s in;:iut.) 
+0 1 0 2KHZ 0 (Disol lows in;:iut.) 
+0 1 1 UHZ 0 (Du.;llows 1r:;>ut. J 
+1 0 0 lo• 0/ l (Allows in;:ut . l 
+1 0 1 hi,h 0/1 (Allows in;:iut. l 
+1 l x Cl 0/1 (Allows ir:;:ut.) 
+
+
+
+===== PAGE 20 / 89 : ESR-L_CPU_tech_manual.pdf =====
+Moreover, so program the DISC bit.as to 
+synchronize them when a key input is 
+made and every 10 seconds. 
+I DISC ~ 0 I 
+I Subsequent processing 
+I DISC +- l I . , 
+Time lapse longer than l cycle 
+of display clock HA 
+I 
+Power turned on/Reset· (DISC is 0.) 
+,- 
+Time lapse longer than l cycle 
+of display clock HA 
+I . 
+In addition, the LCD driver display 
+cou~ter is synchronized by raising the 
+DIS signal from the "low" level to the 
+"high". Since the cornrr.~n output si;nai 
+of the CPU is not synchronized with the 
+LCD segment out?ut signal at the time of 
+ACL, use the D!S signai to synchroni:e 
+' them in the follc~ing procedures: 
+lo• 
+high 
+LCD DRIVER 
+D!SP OFF 
+DISP OH 
+DIS DISC 
+0 
+1 
+The change bet~een them must occur just 
+after the MTI becomes "l" or just after 
+the TCL commanc. 
+DISC LCD Driver Cont=ol: This bit is used to 
+control the sis~~l level at the DIS ?~n. 
+Generally, the :cc driver is turned on 
+and off through this pin. 
+19 
+
+
+
+===== PAGE 21 / 89 : ESR-L_CPU_tech_manual.pdf =====
+( 
+20 
+level is "low" at the ON pin, and "l" 
+when "high". 
+This bit is "O" when the signal ON Key: ONK 
+I o~ I RSF I c 1 I rssr I 
+4 3 2 0 s 6 1 
+System Status Register: A register that is used to 
+check the status of t~e system. 
+Read only Address: FFH SSR 
+KSD •••••••••• Key Strobe Disable: While"this bit is 
+"1", the signal level is "low" at all 
+the KO pins·. The key output buffers 
+(i.e. KOL and KOH) can be used as in 
+ncr~al state. 
+STCL •.••.•••• SEC Timer Clear: Executing the TCL 
+cornmane with this bit set to "l" resets 
+the sub-CG timer. 
+MTCL •.•••.••• MSEC Timer Clear: When the TCL command 
+is executed with this bit set to "l", 
+the main CG timer is reset. 
+max, 1 1 
+a 1 n, 0 
+1 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+0 
+LCD CONTRAST LCC4 LCC3 LCC2 LCCI LCCO. 
+LCCO to LCC4 . LCD Con~rast Cor.trol Factors: These are 
+used to control the LCD display contrast 
+(32 stages). 
+I LCC4 I LCC3 I LCC2 I LCC1 I Lcco I r;so j STCL I i.rrcL I 
+1 6 s' 3 2 1 0 
+LCD Cont=ast Control: Used for LCD display cont=ast 
+control. It also controls the key strobe cisable 
+function and the timer reset function. 
+Read/Write Address: FEH LCC 
+
+
+
+===== PAGE 22 / 89 : ESR-L_CPU_tech_manual.pdf =====
+. . ; .... - :... ~ 
+RSF Reset Start Flage: This bit becomes "O" 
+whEn the level cf the signal inputted to 
+the RESET pin is "high", and "l" when 
+the HALT/OFF fu~ction is put in action. 
+CI ..........• CMT Input: This bit is "O" when the CI 
+pin is at the "low" signal level, and 
+"l" when at the "high" level. 
+TEST Test Input: This bit is "O" ~hen the 
+TEST pin is at the "low" signal level, 
+and "l" when at the "high" level . 
+21 
+
+
+
+===== PAGE 23 / 89 : ESR-L_CPU_tech_manual.pdf =====
+( 
+22 
+Interrupt vector Address: FFFFAH to FFFFCH 
+The interrupt vector, when an interrupt occurs, 
+~pecifies the destination to which control jumps after 
+This area is provided for new LCD driver connection. 
+Thcugh a single access to the external memory normally 
+uses 1 state, an access to the new eriver area uses 2 
+states inclueing the time for address output to the DIO 
+in. 
+Address: 04000H to 07FFFH New driver area 
+This area is provided for LCD driver SH-.26 ccr.nection. 
+A single access tc this area uses 7 states including 
+the time required for address output .to .the DIO, though 
+a single rr.emory access normally uses l state. 
+Address: OOOOOH to OJFFFH SH-.26 area 
+In the 1-megabyte ~emery space, the areas from OOOOOH to 
+03FFFH and from 04000H to 07FFn are respectiv~y used to 
+connect the SH-26 and the LH-5073Al. The 3 bytes from 
+FFFFAH to FFFFCH are assigned to the interrupt vector, and 
+the 3 bytes from FFFFDH to FFFFFH to the reset vector. 
+Proqram addresses are speci!ied by the 16-bit program 
+cour.ter. The program is therefore divided into 64-kilobyte 
+pages. The page is specified by the 4-bit page segment 
+register. 
+rhe external memory space has a capacity cf l M byte. Data 
+iddresses in the exterr.al memory space are speci:ied by 
+Jsing the 20-bit pointer X, Y, U, or S, or in the indexed 
+adcressi~g rncce by the internal memory (~hose highest-order 
+4 bits are con' t-care bits}, or by the 3-b~·te irr:.eciate 
+value (~hose highest-order 4 bits are don't-care bits). The 
+1 M byte is usable as a ccr.tinuous space. 
+~xte=nal Memory Space 
+
+
+
+===== PAGE 24 / 89 : ESR-L_CPU_tech_manual.pdf =====
+RESET VECTOR 
+INTERRUPT VECTOR 
+PC I Ott 
+PC high 
+PS 
+PC I Ott 
+PC high 
+PS 
+FFH9H 
+FFFFAH 
+FfF'fBH 
+FFFFCH 
+FFFFDH 
+HFFER 
+FFFFFH 
+The reset vectc= specifies the destination to which 
+control jumps a:ter resetting, i.e. when resetting is 
+perforrr.ec, the 3-byte data in the reset vector is read 
+into the program counter and program execution Starts 
+therefrom. 
+Address: FFFFDH to FFFFFH Reset·vector 
+the inte=ruption, i.e. when an inte=rupt occurs, the 
+3-byte data storec in the interrupt vector is read into 
+the prog=arn counter and program execution restarts 
+therefrom. 
+
+
+
+===== PAGE 25 / 89 : ESR-L_CPU_tech_manual.pdf =====
+( 
+24 
+The ALU has arithmetic and logical operation functions, such 
+as 8-bit parallel accition and subtraction, decimal 
+adjustment, ORing, ANDing, exclusive ORing, and processing 
+functions, such as bit shift, bit rotate, digit shift. The 
+carry flag (C) and the zero flag (Z) change according to the 
+results of those processings. The ccnditional branching 
+command determines ~here to go according to the fla~s C ar.d 
+z. 
+ALU 
+
+
+
+===== PAGE 26 / 89 : ESR-L_CPU_tech_manual.pdf =====
+These a=e ports for input only and are mainly used fer 
+key reading. When a "high" level signal is inputted to 
+a KI port, "l" is set to the corresponding bit of the 
+key input buffer (F2H en the internal memory). When a 
+"low" level signal is inputted, "O" is set. 
+KIO to KI7 ••.. Key input ports 
+In adcition, when "l" is set to the KSD (bit 2 cf FEH 
+en the internal memory) of the LCD contrast control, a 
+"low" level signal is outputted with the output 
+resistance of 5 kn max. in disregard of what data the 
+key output buffer contains. Whether or not the 
+individual bits· are effective for this function is 
+selectable by the PLA. · 
+The "low" level output resistance of the KO port is 
+quite high, i.e. 100 kn typ. (5 kn max. for the "high" 
+level output). The reason is to prevent the -ground and 
+the VGG from short-circuited in case the key is 
+depressed more than once. The port can be usec as a 
+normal port by lowering the "low" level output 
+<, 
+registance down to 5 kn max. by PLA setting change. 
+These are ports for out~ut only and are mainly u~ed for 
+key st=obe, when "l" is written to a bit of the key 
+output buffer (FCH and FlF. on the inte=~al rr.emory), a 
+"high" level signal is outputted throu~h the pert that 
+corresponds to that bit. When "O" is written, a "low" 
+level sigr.al is outputted. 
+KOO to KOlS ..... Key strcbe output ports 
+I/0 
+25 
+
+
+
+===== PAGE 27 / 89 : ESR-L_CPU_tech_manual.pdf =====
+This pin receives an interrupt request from the 
+outside. When "l" (active-high/active-low 
+pull-up/pull-down is selectable by the PLA) is inputted 
+to this pin. The interrupt control register's ISE bit 
+(bit 6 of FCH on the internal memory) becomes "l". 
+IRQ ..•• Interrupt request 
+When a "high" level signal.is inputted to the CN port, 
+the ONKI (bit 3 of FCH er. the internal memory) of the 
+interrupt status register becomes ·"l" so that the CPU 
+is released from the HALT/OFF state if it is in that 
+state. 
+The port is provided with a pull-do~n resistor cf 125 kn 
+typ. 
+This is a port for input only ane is mainly used for 
+key reading. While the port is at th~ "high" level, 
+the ONK (bit 3 of F2H on the internal m~ory) of the 
+system status register keeps "1". While it is at the 
+"low" level, the ONK keeps ."O". 
+ON .... ON key input port 
+In addition, by inputting a "high" level signal to a KI 
+port, "l" is set to the interrupt statcs register KEYI 
+bit (bit 2 on FCH of the internal memory) so that the 
+C?U is released !rem the HALT or OFF state if it is in 
+that state. The incividual KI ports can each be set by 
+the PLA for whether or r.ct the port is provided with 
+the function. 
+These ports car. each be set by the PLA for whether or 
+not to have a pull-down resistor of 125 kn typ. for 
+each bit. 
+( 
+26 
+
+
+
+===== PAGE 28 / 89 : ESR-L_CPU_tech_manual.pdf =====
+If the E port is used as an I/O port, so set the PLA as 
+to make the "low" level output resistance be high, 
+i.e., 125 kn typ. (1 kn max." for the "high" level 
+output) so that a "low" level signal output pulls down 
+the input port to allow an input to the port though a 
+"high" level signal output does not allow an input to 
+the port (i.e. a "high" level signal must not be 
+outputted while an output is made by the other •ide). 
+Note therefore that in that case, the "low" level 
+outF~t resistance is so high as to decrease the speed 
+of respcnse. 
+If the E port is used as an output-only port, it can be 
+used as an P-ch/N-ch open drain output.port by changing 
+the PLA setting. 
+!f the E port is used as an input-onl~ port, the 
+correspcnding bit of the E pert output buffer is a 
+con't-care bit. Whet her or not to provide a pull-down 
+resistor is selectable by the PLA. 
+When "l" is written to a bit of the E port output 
+buffer (FJE and F4H on the internal memory), a "high" 
+level signal is outputted from the port which 
+correspon~s to that bit. When "O" is written, a "low" 
+level signal is outputted. When a "high" level signal 
+is inputted to an E port, the bit of the E port input 
+buf:er (FSH and F6H on the internal memory) 
+correspor.ding to that port becomes "lu. When a "low" ....... 
+level signal is inputted, it becomes "O". 
+EO to ElS .... General-purpose I/O ports 
+These general-purpose I/0 ports rnay each be used as an 
+input-or.ly or output-cnly port by changing the PLA 
+settin<;. 
+When the system control register ISE bit (bit 7 of FDH 
+on the internal memory) is "l", the CPU is released 
+f=om the Er.LT or OFF state if it is in that state. 
+27 
+
+
+
+===== PAGE 29 / 89 : ESR-L_CPU_tech_manual.pdf =====
+( 
+28 
+For each of these pins, whether active-high or 
+active-lo~ is selectable by changing the PLA setting. 
+For the RXD pin, pull-up/pull-down is selectable by 
+changing the PLA setting. 
+The UART control register (F7H on the internal memory) 
+controls the UART status, and the UART status register 
+(FSE on the internal memory) checks the UART status. 
+Data inputted to the UART through the RXD pin appears 
+in the UART receive buffer, ar.d data written in the 
+UART transmit buffer is outputted through the TXD pin. 
+The RXD is a pin for input to the U~.RT only, and the 
+TXD is a pin for output to the UART only. 
+RXD/TXD •..• UART I/0 pin 
+. 
+The CO port is a port for CMT output only, and is 
+controlled by the BZO to BZ2 bits (bits 4 to 6 of FDH 
+on the internal rner.ory) of the system c~ntrol register. 
+The output is selectable among 2 kHz, 4 kHz, low, high, 
+and CI. The output buffer is an ordinary C-MOS output 
+buffer. 
+The CI port is a pin for CMT input only and has a 
+built-in zero-cross-detector. Writing "l" to the BZ2 
+(bit 6 of FDH on the internal memory) of the system 
+control register makes the CI pert reacy for receive an 
+input. The status of the pin is shown by the system 
+status register CI bit (bit 2 of FFH on the internal 
+memory). Since the zero-cross-detector consumes the 
+current of several-hundred UA when it is in action, set 
+the CI port so that it becomes ready for receiving an 
+input only ~hen necessary. The CI port can be used as 
+an ordinary input port by changing the PLA setting . 
+CI/CO .... CMT I/0 port 
+
+
+
+===== PAGE 30 / 89 : ESR-L_CPU_tech_manual.pdf =====
+DIS •..• Display on/off control and synchronization 
+The LCD driver is in "display ON mode" when the DIS is 
+at "high" level, and in "display OFF mode" when at 
+"low" level. The signal level of this pin is 
+controlled by the value which the system control 
+register DISC bit (bit 0 of FDH on the internal memory) 
+has. When the signal at the DIS pin goes "high" from 
+the "low" level, the ·cPU ccrr.mon output signal and the 
+CLD driver segment output signal are both synchronized. 
+For details, see "System Control Register" under 
+"Internal Memory Space". 
+HA •.... Display clock 
+This provides the LCD driver with a display clock. 
+¢A .•... Address latch clock 
+A cl6ck used for causi ng the LCD driver to latch the 
+signal on the DIO as an address. Normally active-low. 
+SH-26/LH-5073Al control signals 
+WR ..... Memory write 
+An external memory write request signal~ Normally 
+active-low. 
+RD •.... Memory read 
+An external memory read request signal. Normally 
+active-low. 
+MRQ .... Memory request 
+An external memory access request sigr.al. Normally 
+active-low. 
+~xternal rnemcry control signals 
+Control Signals 
+29 
+
+
+
+===== PAGE 31 / 89 : ESR-L_CPU_tech_manual.pdf =====
+( 
+30 
+· ...... 
+..... . . 
+Details for the ICE control signals are omitted • 
+IC 07 Indicates the state .... .-here an 
+interrupt starts. 
+OP D6 Indicates the OP-code fetch state. 
+wR DS Indicates the write state 
+A19 to 04 to Address signal 
+AlS DO 
+When the external memory is accessed, the following 
+cata is placed on the DIO by the 04 clock (See Timing 
+Chart) for the ICE: 
+ICE Control Signals 
+
+
+
+===== PAGE 32 / 89 : ESR-L_CPU_tech_manual.pdf =====
+If any of the events l to. 4 has alr~~dy_ ~ccurred prior 
+to ar. execution of the HALT corrmand, the system is not 
+halted but the CPU performs the NOP action by 2 states 
+and resu~es execution of the next written co~~ancs. 
+If the system is released by any one of the events 1 to 
+4 above, the CPU restarts execution from the command 
+written next to the HALT command. The time required 
+from the event occurrence to the execution restart is 
+several milliseconds (depending on the PLA). If the 
+system is released by the event 5, the CPU resets the 
+system. 
+memory) i.s "l". 
+5. "High" level sign al input to the RESET pin. 
+...... 
+4. Logical "l n is inputted to the IRQ terminal 
+(Selectable by the PLA) while the system control 
+re<;ister ISE bit (bit 7 of FDH on the internal 
+on the internal memory) becomes "l" when the sub-CG 
+time expires. 
+1. "Hii;h" Le ve L signal -input to the CN pin. 
+2. "High" level signal input to any of the pins KO to 
+K7 (pin selection is allowed by the PLA). 
+3. The interrupt status register STl bit (cit l of FCH 
+Executi~g the HALT corrmand causes the CPU to stop the 
+main clcck so that the system is brought to a halt 
+though the su~-clock continues operatir.g. For the data 
+retai~ec curing the halt of the system, see the ta~le 
+providec below. The system is released from the halt 
+state ~hen any one of the following events occurs: 
+System halt HALT 
+System Cont=ol 
+31 
+
+
+
+===== PAGE 33 / 89 : ESR-L_CPU_tech_manual.pdf =====
+, 
+' 
+32 
+If any of the events l to 3 has already occurred when 
+the OFF command is executed or if the interrupt status 
+register STI bit (bit 1 of FCH of the internal memory) 
+is already "l", the system does not get into the OFF 
+state but the CPU performs the NOP action by 2 stages 
+and resumes execution of the coir.Ir.ands written next to 
+the OFF command. 
+If the system is released from the OFF state by any one 
+of the events 1 to 3, the CPU restarts execution from 
+the command written next to the OFF co~Jnand. The time 
+required from the occu:rence of the ever.t to the 
+command execution restart is several milliseconds 
+{cepending on the PLA). If it is released by the event 
+4, the CPU resets the system. 
+1. "High" level signal input to the ON te:niinal. 
+2. "High" level signal input to any of the pins KO to 
+K7 (Pin selection is allowed by the FLA). 
+3. Logical "l" is inputted to the IRQ pin while the 
+system cont=ol register ISE bit (bit 7 of FDH on 
+the internal memory} is "l" (Selectable by the 
+PLA). 
+4. "High" level signal input to the lU:s._ET pin. 
+Executing the OFF command causes the CPU to stop beth 
+the main clock and the sub-clock so that the system 
+stops operating. for the data retained while the 
+system keeps stopped, see the table provided below. 
+The system is released from the OFF state when any one 
+of the following events occurs: 
+OFF .... System stop 
+
+
+
+===== PAGE 34 / 89 : ESR-L_CPU_tech_manual.pdf =====
+Detailed descriptions on the individual tes~ modes are 
+emitted. 
+The test modei above are all for hardware checking. 
+The TEST pin requires to be nor:r.ally connected to the 
+VGG. 
+'I'EST RESET ON ?-!ode Descriotion 
+0 0 x Normal :rr.ode Ncrmal . execution mode -. 
+0 1 x Reset mode ?.esets the system. 
+1 0 0 Timer check Shortens the timer set- 
+mode ting. 
+1 0 1 Timer sync. Synchronizes the clock. 
+mode 
+l l x F-ROM dump Output the currently 
+mode executed data in the 
+F-ROM to the AO to Al6 
+and CE 0 to CE4 (Partly 
+changed by the PLE). 
+When a "high" level signal is inputted to the TEST pin, 
+the CPU is put in hardware test mode. There are the 
+!ollowing modes available according to the statuses of ..... 
+the RESET pin and ON pin: 
+TEST .... Test mode 
+the external memory) and trans=ers it to the program 
+counter PC. The system is resettable even when in the 
+EALT/OFF state. 
+Inputting a "high" level signal to the RESET pin 
+initializes the system and then restarts it. For the 
+data initializec/retained by the system initializaticn, 
+see the table belcw. The system is automatically 
+restarted a!ter executing the RESET command. The RESET 
+corr~and fetches the reset vector (FFFFDH to FFFFFH on 
+RESET .... System ir.itialization and restart 
+33 
+
+
+
+===== PAGE 35 / 89 : ESR-L_CPU_tech_manual.pdf =====
+:···.· -, · 
+- - ------ -- - - -- HALT OFF RESET - - ----- 
+Re;-isters All retained. All retained. The PC read the reset 
+vector. Others t:ian 
+the PC are all retain- 
+ed. 
+- 
+Flag (C/ Z) Undefined. Undefined. Retained. 
+- 
+Internal ACM (F:SH) bit 7, 
+memory UCR (F7H) , 
+USR (FSH) bits USR (FSH) bits USR (FSH) bits 0 to 
+0 to 2/5 are 0 to 2/5 are 2/5, 
+reset (to .. 0 .. ) . reset (to "0") • IMR (FCH) I 
+SCR (FDH), and 
+SSR (FFH) bit 2 SSR (FFH) bit 2 SSR (FFH) bit 2 are 
+and and all reset (to .. 0") • 
+USR (FSH) bits USR (FBH) bits USR (FSH) bits 3 and 4 
+3 and 4 are set 3 and 4 are set are set (to "l ") . 
+(to "l ") . (to "l") . 
+Others than the Others than the Others than the above 
+above are all above are all are all retained. 
+retained. retaineC.. ' 
+....... 
+System Initialization and Data Retainment for HALT/OFF/RESET 
+( 
+34 
+
+
+
+===== PAGE 36 / 89 : ESR-L_CPU_tech_manual.pdf =====
+The receive buffer means the UART transmit buffer ~hose 
+address is F9H or. the internal memory, and the transmit 
+buffer means the UART transmit buffer whose address is FAH 
+on th~ internal memory. 
+Framing error/Overrun error/ 
+Parity error 
+(For detailed checking items, see "USR" under "Internal· 
+Memory".) 
+Receive data error 
+check 
+Receiver ready 
+Transmitter empty/Transmitter 
+ready 
+Receive buffer status 
+Transmit cuffer status 
+The UART status is check through the UART status register 
+(F8H of the internal memory. 
+(For details of the setting procedure~1,see "LCR" under 
+"Internal Memory".) 
+300/600/1ZOO/Z400/4800/9600/19ZOO bps 
+!YEN/ODD/NO 
+8/7 
+1/2 
+ON/OFF 
+BAUD RATE 
+PARITY 
+CHARACTER LEHGTR 
+STOP B!TS 
+BREAK OUT 
+The UART is controlled thrcugh the UART control register 
+(F7H of the internal memory). The function that can be set 
+are as follows: 
+The UART converts paraller data into serial data and sends 
+the converted cata through the TDX pin. It also receives 
+serial data :rom the RDX pin and converts the received data 
+into parallel data. 
+UART 
+35 
+
+
+
+===== PAGE 37 / 89 : ESR-L_CPU_tech_manual.pdf =====
+( 
+36 
+... 
+. . : 
+When "l" is set to the Receiver Ready bit and the 
+Transmitter Ready bit, the Receiver Ready Interrupt or 
+Transmitter Ready Interrupt bit of the interrupt status 
+reS'ister {whose accress is ·FCH on the internal memory) 
+becomes l so that an interrupt. is requested (depending 
+on the PLA). 
+The UART clock originates from.the rr.ain CG anc does not 
+therefore works while the system is in HALT/OFF state. 
+The UART starts tc cperate when the baud rate factors ERO to 
+2 are set to other than "000". Setting the BRO to 2 to 
+"000" puts the UART out of operation and resets the inside 
+of the UART. 
+
+
+
+===== PAGE 38 / 89 : ESR-L_CPU_tech_manual.pdf =====
+The interrupt procedures are such that (1) The 5-byte data 
+in the program counter PCL, PCH, PS, flag F (C: bit 0 Z: 
+bit 1 O: bits 2 to 7), and interrupt mask register is 
+pushed to the system stack in the order as mentioned, (2) 
+The interrupt mask register IP~ bit (bit 7) is set to "l", 
+If any one of the factors above causes an interrupt reguest, 
+the bit of the interrupt status register (FCH on the 
+internal memory} that corresponds to that interrupt factor 
+becomes "l". If, at the same time, the bit of the interrupt 
+mask register (FBH on the internal memory) that corresponds 
+to the said bit and the MSB are both "l", the interrupt 
+requeste~ occurs. 
+MSEC timer interrupt 
+Interrupt requested by the 
+sub-CG timer. 
+Interrupt. requested by the 
+main CG timer. 
+SEC timer interrupt 
+caused by inoutting ' . 
+a •high" .level signal to the 
+KI pin. 
+a •high" 
+ON pin. 
+Inter=upt Key interrupt 
+ON key interrupt 
+Interrupt caused by completion 
+of l character transmission by 
+the LlART. 
+Interrupt caused by inputting 
+level signal to the 
+Transmitter ready 
+interrupt 
+Interrupt caused by ccrr.pletior. 
+cf 1 c~aracter receivi~g by 
+the UART. 
+Receiver ready 
+interru?t 
+Interrupt requested from the 
+IRO pin 
+External interrupt 
+The ESR-L has the following interrupt factors: 
+Interrupt 
+37 
+
+
+
+===== PAGE 39 / 89 : ESR-L_CPU_tech_manual.pdf =====
+( 
+38 
+Note: If a command to change the data in the interrupt mask 
+register is executed, an interrupt occurring directly 
+after the execution of that command is judg~d 
+according to the interrupt mask information which the 
+register had till the command execution. 
+Accordingly, if a command is executed to mask a 
+certain interrupt factor, an interrupt.by that factor 
+may occur immediately after the execution of the 
+ccrr.rr.and. In such a case, which factor has caused the 
+interrupt cannot be determinec in the interrupt 
+routine. Hence, it is necessary program the 
+interrupt routine to let itself return without doing 
+anything if there are not any factors whose interrupt 
+status register bit and interrupt mask register bit 
+are both "l". 
+The CPU a Ll cws an interrupt even directly a!t.._er executing 
+the RETI command. Therefore, if there are more than one 
+interrupt re~uest in succession, main routine execution may 
+completely stops. 
+W!:ile executing ccmma:-ids, the CPU reecs the C?eratiein code 
+of the ccr.mand to be exec~tec next in one of the states 
+where cor.JTiands are executed (for most cases, in the state 
+~here the last command is executed) and judges whether to 
+execute the corr~and or to operate an interrupt. I! there is 
+an interrupt reguest already exisiting, the CPU performs 
+that interrupt after the currently executed command. 
+Control return from the interrupt routine is achieved by the 
+RETI com.~and. The RETI command PCPS the 5-cyte da~a 
+previously pushed to the system stacks and returns the data 
+to the original registers. 
+and (3) the cata of the interrupt vector (FFFFAH to FFFFFH 
+on the external memory) is read i~to the program counter. 
+
+
+
+===== PAGE 40 / 89 : ESR-L_CPU_tech_manual.pdf =====
+In addition, think of using HITACHI'S general-purpose 
+LCD driver HD-61202/3 depending on peripheral system 
+construction conditions or for a model that has a 
+large display screen. 
+For details, see "Pin List". 
+Notes: The common signals Hl to H7 and H9 to HlS makes a PL.A 
+with ether I/O ports, etc. For that reason, 
+peripheral system const::-uction is subjected to 
+. various restrictions if the common signals are used. 
+The liquid crystal display contrast is ccr.tr~lled by the LCD 
+contrast control register.· For details, see· "Lee• under 
+"Internal Memory". 
+Therefore, the liquid crystal display system is 
+constructible by simply connecting the SH-26 or LH-5073Al. 
+(The SH-26 is HITACHI make and the CH-5073Al is an LCD 
+segment driver of TENRI make). The SH-26 and the LH-5073Al 
+are controlled by the HA, DIS, and ¢A signals. For details, 
+see "Control Signals". 
+The liquid crystal display is provided with a built•in 
+bleecer resistor that generates LCD supply voltage and a 
+built-in display contrast regulating volume so that it is 
+capable of generating 1/16-duty, 1/5-bias LCD supply voltage 
+(VA, VM, VB, and VDISP) and display corr~on signals (Hl to H7 
+and H9 to HlS .... Note that not all the 16 pins are used 
+for output). 
+Liquid Crystal Display 
+39 
+
+
+
+===== PAGE 41 / 89 : ESR-L_CPU_tech_manual.pdf =====
+( 
+40 
+H R 
+H R 1 1 
+v 2 1 s ' 
+DI I I I 
+I AAAAAA.J..AA 
+s l l l l 1 I 1 1 A A A A A A A A A A 
+p 8 7 6 5 4 3 z l 0 9 8 7 6 5 4 3 z 1 0 
+r31 
+VA SI 30 0107 
+VB/ rt> 0 0106 
+VM/JCOIS DIOS 
+H3/K014 0104 
+H4/KD13 SS lJ 103 
+HS/KD12 25 DIOZ 
+RS/KO l·l tsR·L P1n Alloca.t1on DIOl 
+R7/K010 0100 
+HS/IRQ Kl7 
+HlO/ rt> OUT 60 100-;iiD OFF JC I 6 ...... 
+Hl l/C!7 20 XIS 
+Hl2/Ct6 Xl4 
+Hl3/C!5 Kl3 
+HU/CH It I 2 
+RlS/Ct3 65 XI J. 
+Ct2 ~.~ . ..: - 15 KIO 
+C!l MRQ 
+CtO WR 
+f, A ON 
+DIS 70 co 
+HA l 0 Cl 
+C!S/RD TEST 
+X09 vcc 
+I08 RESET 
+K07 75 C'ND 
+X06 s VDD 
+xos X4 
+KO' X3 
+K03 X2 
+I02 80 Xl 
+9 1 do 
+X K R T £ £ £ £ £ £ £ E £ £ £ £ E t £ £ 
+0 0 X X 1 1 1 1 I 1 9 8 7 6 5 4 3 2 1 0 
+IODDS43210 
+
+
+
+===== PAGE 42 / 89 : ESR-L_CPU_tech_manual.pdf =====
+Key output 
+Sub-clock wavef 
+output 
+Display power 
+Display power 
+LCD common sign 
+put 
+Adcress bus out 
+Data bus input/ 
+Key input 
+Memory request 
+ON input 
+Memory control 
+output 
+·. · ... 
+.·. ::. •.• 
+: ~: : .: : ~ : ..... '.~ 
+Sub-clock oscil 
+input 
+Display power 
+System power 
+System reset in 
+System power (­ 
+Test input 
+CMT input 
+CMT output 
+~ain clock csci 
+output 
+Main clock osci 
+input 
+Sub-clock oscil 
+output 
+53 to KOO to 
+5 6, K015 
+73 to 
+82 
+Function 
+•:; :-~ ~:: -. ~ ' 
+.: ,; .. ·. · .. 
+--1-When When 
+r 
+When 
+] halted off reset - --- - - - - 
+·11ation VGG VGG Oscilla- 
+tion 
+"llation 
+lation Oscilla- GND/osci- Oscilla- 
+tion llation tion 
+lat ion 
+VGG GND VGG 
+put 
+5.0 V) 
+Software Software 
+control cont:u>l 
+write Non- Non- Non- 
+active active active 
+output Nor!- Non- Non- 
+active active active 
+output Pull-up Pull-up Pull-up 
+put VGG VGG VGG 
+al out- Common GND Common 
+signal sic;nal 
+VDIS? GND VD ISP 
+VA, VM, GND VA, VM, 
+VB, waves VB waves 
+orm Oscilla- GND/VGG/ Oscilla- 
+tion oscilla- tion 
+tion 
+Status Status Status 
+retain- retain- retain- 
+ment ment ment 
+41 
+Pin List 
+Nos. Name 
+1 Xl 
+2 X2 
+3 X3 
+4 X4 
+5 VDD 
+6 GND 
+7 RESET 
+8 VGG 
+9 TEST 
+10 CI 
+11 co 
+12 ON 
+13 WR 
+14 MRQ 
+15 to KIO to 
+22 KI7 
+23 to DIOO to 
+30 DI07 
+31 to AO to 
+49 Al8 
+46 to Hl to 
+49, H7 ,· 
+54 to H9 ·to 
+65 Hl5 
+:50 VD ISP 
+51 to VA, VM, 
+53 VB 
+52 ¢0 
+
+
+
+===== PAGE 43 / 89 : ESR-L_CPU_tech_manual.pdf =====
+, ... 
+r. t ' 
+"." ::( ... :··. : .: 
+I• .... • 
+: : ~:c.~~:.;...;_ ' <( ' -~ 
+... . ~;~;:.:~:::i: :!· ~:: -~~ 
+. . .... . ... · .... · .. 
+··j 
+:: .~ ' . . . I ', . 
+' . ' 
+I 
+,.. - . . I 
+General inp 
+Memory cont 
+output 
+UART input 
+UART output 
+:: ... ·· 
+·:· ..... : .. · 
+AdC.=ess lat 
+output 
+LCD C.river 
+signal outp 
+Display syn 
+signal outp 
+Main clock 
+output 
+Chip enable 
+Fune 
+': · ... ·. 
+tion When When 
+I 
+When J halted off reset - ---- -- - - - -- equest 
+waveform VGG VGG Oscilla- 
+tion 
+output Non- Non- Non- 
+active active active 
+ch clock Non- Non- Non- 
+active active ac t i ve 
+cont=ol Softwa=e Soft...,are VGG 
+ut control control 
+chronizing Synchro- Undefin- Synchro- 
+ut nizing ed ni:zing 
+signal signal 
+rol read Non- Non- Non- 
+active active active 
+' 
+Software Soft~re Pull-u'!:l/ . 
+control control pull-down 
+ut/output Status Status Status 
+retain- retain- retain- 
+rnent ment ment 
+- 
+( 
+42 
+to EO to 
+0 ElS 
+RXD 
+TXD 
+RD 
+IRQ 
+r/JOUT 
+to CEO to 
+CE7 
+r/JA 
+DIS 
+HA 
+OS. Name 1--- 
+~~-+-~~-- ~~~~~ 
+!n~er=upt r 
+input 
+
+
+
+===== PAGE 44 / 89 : ESR-L_CPU_tech_manual.pdf =====
+3. PX/PY indexed 
+mv a, (px+23h) The valae, which is obtained by 
+mv (bp),(py+Sah) adding or subtracting l byte 
+immediate value to 9r from P~/PY 
+pointer content, specifies the 
+address in the ir.ternal memory 
+space. 
+The value,·which is obtained by 
+adding or subtracting 1 byte 
+immediate value to or from BP 
+pointer content, spe=ifies the 
+address in the internal memory 
+space. 
+2. BP indexed 
+mv a, (bp+Sah) 
+...... 
+Address in the internal rnemcry 
+space is specified eirectly. As 
+the internal memory has 256 bytes 
+area, the address is designated 
+by the unit of 1 byte. 
+B. Internal memory 
+l. Direct 
+mv a, (Sah) 
+Data itself is ex?ressed by 
+immediate value. Depending on 
+the length at the destination, l 
+to 3 bytes length is available. 
+A. Immediate value 
+rnv a,34h 
+Addressing Mode 
+The explanations are given below first on the addressing 
+modes of ESR-L and later on the cperation o: each command. 
+Refer to the separate "ESR-L Command Table" for details of 
+assembler codes and execution state nwrbers in each command. 
+ESR-L Command Settings and Operations 
+43 
+
+
+
+===== PAGE 45 / 89 : ESR-L_CPU_tech_manual.pdf =====
+(, 
+( 
+44 
+Address in the external memory is 
+specified by the register 
+ccntent. Automatical addition or 
+~ubtraction of the register can 
+also be made. 
+mv a, [x++ J 
+After data transmission, the 
+register is incremented. 
+mv at c---XJ 
+Data is transmitted after the 
+register is decremented. 
+When the destination of data is 
+either 2 bytes or 3 bytes, 
+addition or subtraction is made 
+for the same len9th of the data. 
+Address in the external memory 
+space is specified directly. As 
+the external memo r y, has 1 Mbyte 
+storage, the address is 
+designated by the unit of 
+3 bytes. In this case, the first 
+4 bits are "DON'T CARE". 
+2. Register indexed 
+mv a,[x.J 
+External memory 
+1. Direct- 
+mv a, [89ab3h) 
+Caution) PX pointer is used cnly when the pcinter is 
+directed to the second operand under the 
+internal memory addressing comr.:and in both 
+first and second operands. In all other cases, 
+PX pointer should be used. 
+The value, which is obtained by 
+adding PX or PY content to BP 
+pointer, speci!ies the address in 
+the internal memory space. 
+mv a, (bp+px) 
+mv (23h), (bp+py) 
+4. BP indexed with PX/PY offset 
+
+
+
+===== PAGE 46 / 89 : ESR-L_CPU_tech_manual.pdf =====
+The address in the external 
+memory is specified by the data 
+·OS9ab3h contained in 7bh - 7dh in 
+the internal memory. The data of 
+that address thus obtair.ed, Sah, 
+is trans~itted to accumulator. 
+4. Register indexed with offs~t 
+mv a, [x+23hJ Address in the external memory is 
+specified by the value obtained 
+by adding l byte data exprEssed 
+in immediate value to the 
+register content. 
+The offset value rani• is ;~ss. 
+In the above example of 'mv a, 
+[ (7bh) i. 
+Internal External 
+memory <, memory 
+a.dr. da. tl a.dr. data 
+7&h 891.bZh 
+7bli b3h 89&b3h S..h 
+7cb 91.h 89a.L ·!h 
+7dh 08h 
+internal memory denotes the 
+low-oraer acdress in t~e external 
+memory, while the larger-number 
+address in the internal memory 
+dPnotes the high-order address in 
+·the external memory. The first 4 
+bits are "DON'T CARE". 
+The address in the exte=nal 
+memory is speci:ied by the 
+successive 3 bytes cata starting 
+from the specified address in the 
+internal memory. In this case, 
+the smaller-number acdress in the 
+mV a,((7bh)] 
+3. Internal memory indexed 
+45 
+
+
+
+===== PAGE 47 / 89 : ESR-L_CPU_tech_manual.pdf =====
+( 
+46 
+The address in the external 
+~emery, 089ad6h, is specified by 
+adding offset value.23h to the 
+data 089ab3h contained in 7bh - 
+7dh in the internal memory. The 
+content of the address thus 
+-specified, BBh, is transmitted to 
+accurnulatcr. 
+adr. data adr. dat& 
+hh 89ad5li 7bh h 3h 89ad6h 88h 7ch 9&h ..... 8Sad7h 
+7dh 08h 
+External 
+memory 
+Internal 
+memory 
+5. Internal memory indexed with offset 
+mv a, [(7bh)+23h] Address in the external memory is 
+S?ecified by the value obtained 
+by adding 1 byte data expressed 
+in immediate value to the 
+·successive 3 bytes data of the 
+speci:ied address in the internal 
+memory. 
+The o::set value range is +255. 
+In the example of 'mv a, [ ( 7bh) ) 
++23h I I 
+
+
+
+===== PAGE 48 / 89 : ESR-L_CPU_tech_manual.pdf =====
+.· . .; : .. ~ .. 
+1 byte data is transffiittee from register A to resister 
+B, or vice versa. 
+Data transmission between regi-_ 
+ster A and register B 
+4. mv b,a 
+mv a,b 
+Source Immediate~l~~IInternal memor External memorv 
+o A IL 
+-- .. ;·:·:. 
+' 
+external memory. 
+Any addressing mode of the external memory is enabled 
+for[*]. 
+Data transmission to external 
+memory . 
+1 byte data is transmitted from the source to the 
+3. mv [*),source 
+Source Immediate value Internal rnemorv!External memory Register 
+0 0 I 0 A IL 
+'--~~~~~~~~~ 
+internal memory. ., 
+Any addressing mode of the internal memory is enabled 
+for (*). 
+Data transmission in internal 
+memory 
+1 byte data is transmitted from the source to the 
+2. rnv (*),source 
+Note) 'mv a,il' or 'mv il,a' is prohibited. 
+0 0 0 
+Source Immecia~e value !Internal menorv Ex~er~al memory IRecis~e~ 
+1. rnv register,source Data transmissicn to register 
+1 byte cata is transmitted from the source to register A 
+or register IL. When the data is t=ansmitted to 
+register A, the content of register Bis unchanged. 
+When the data is transmitted to register IL, the first 8 
+bits of reg~ster I become "O". 
+1 Byte Data T=ar.srr.ission Command 
+47 
+
+
+
+===== PAGE 49 / 89 : ESR-L_CPU_tech_manual.pdf =====
+.. : .e , : • ... .. 
+specified by (*) and tr.e adjacent.address of larger 
+number. 
+Any adressing mode of the internal memory is enabled for 
+( *) • 
+When the data in transmitted from the register to the 
+memory, lo~-order address data of the register is sent 
+to the srnaller-r.l.!1?".ber address in the memory while high­ 
+order address data of the register to the larger-number 
+~ddress in the memory. 
+When the data is transmitted inside of the memory, the 
+smaller-number address data of the source is sent to the 
+srnaller-nurr~er adcress of the destination, anc the larger­ 
+nur..ber adcress data of the source to the larger-number 
+accress of the destination. 
+The destination is· the address · internal memory. 
+Data transmission to internal 
+memory 
+trans~itted from the source to the 
+mvw (*),source 
+mv (*),source 
+2 bytes data is 
+Supplement} Like 'mv ba,x', 20 bits register can be 
+used as the source. 
+In this case, only 16 bits data in the 
+low-order address of the source regist~r are 
+transmitted to the destination register, 
+with the first 4 bits data being neglected. 
+mv register,source Data transmission to register 
+2 bytes data is transmitted from the source to register 
+BA or register I. 
+Whe~ the data (including immediate value} is t=ansrnitted 
+from the memory to the register, the smaller-number address 
+data in the memory is ser.t to the low-crder address of 
+the register while the larger-nurr~er address data in the 
+memory to the high-order address of the register. 
+Bytes Data Transmission Command 
+·::.: ... ,; -, 
+( 
+48 
+
+
+
+===== PAGE 50 / 89 : ESR-L_CPU_tech_manual.pdf =====
+~-. · ... ; . · ...... 
+Note) When the data source is memory (includir.g 
+immediate value), mnemonic is 'mvw' to indicate 2 
+bytes data transmission. Whe~ the source is 
+register, mnemonic is 'mv'. 
+Source Irr.mediate va lue-f!nternal memorv I Exter-nal memorv I Register: 
+I 0 I IBA 1 l 
+. . :'""~ ~· .: ; .. 
+. ' 
+2 bytes data is transmitted from the source to the 
+external memory. The destination is the acicress 
+specified by [*) and the acjacent address of larger 
+number. 
+Any addressing mode of the external me~ory is enablee 
+for [ * J • 
+When the data is transmitted from the register to the ..... 
+memory, low-order address data of the register is sent 
+to the srnaller-nUlT'~er address in the merr.ory ~hile . . 
+high-order.address data of the register to the 
+larger-nwr~er address in the memorv. •. 
+When the data is transmitted inside of the rne~ory, the 
+smaller-nurr~er address data of the source is sent to the 
+smaller-nurr~er address in the destination, and the larger­ 
+number address data of the sou=ce tc the larger-number 
+address in the memory. 
+Cata transmission to external 
+memory 
+(1") ,source 
+[ * J, source 
+3. mvw 
+mv 
+When the source is register, mne~cnic is 'rnv'. 
+Note) When the data source is memory (including 
+immeciate value), mne~onic is ·~~-....· to incicate 2 
+bytes data t=ansmission. 
+ImrneC.i.at.e-value !Int.ernal mernc rv 1-x~e-na.1 mernc rv Re · s t 
+--------· '- - I:. '- - - UI • ti _:,s.:.__"7~~ 
+0 ---- - 0 _J- - 0 -- BA I I 
+Source 
+49 
+
+
+
+===== PAGE 51 / 89 : ESR-L_CPU_tech_manual.pdf =====
+memory, and high-order address data of the register to 
+the larger-number address in the memory. When the cata 
+is transmitted in~ice cf the memory, the smaller-nur..ber 
+fiec by ( *) and the two acjacent addresses of larger 
+number. A.iy addressing mode of the internal memory is 
+enabled for ( *) • When tr.e data is transmitted from the 
+register to the memory, low-order address data of the 
+register is sent to the smaller-number acdress in the 
+3 bytes data is transmitted from the source to the 
+internal merr.ory. The destination is the address speci- 
+·· :. : : .:· , . Data transmission to internal 
+memory 
+2. mvp (*),source 
+mv (*),source 
+Supplement 1) Like 'mv x,ba', 16 bits register can be 
+used as the source. In this case, the 
+first 4 bits of the destination register 
+become "O". 
+Supplement 2) Like 'rr.v x,x', the data can be 
+transmitted to the register which.is used 
+to specify the address. 
+add.ressir.g. 
+*1) When the destination is register S, only direct 
+addressing is enabled for the ex t.e r na l m,er.:ory 
+x y u s 
+Reqisterj Source Im.mediate value Internal mern2EX~~t~nal mernor 
+o Ci . I o ·1 
+register. 
+3 bytes cata is transmitted from the source to any of 
+the registers X, Y, U or S. 
+Whe~ the cata is transmitted from the me~ory to the 
+register (including immediate value), the smaller-nwnber 
+address data in the memory is sent to the low-order 
+address of the register, while the larger-nur.~er address 
+data in the memory to the high-order address of the 
+Data transmissicn tc register 1. mv register,source 
+3 Bytes Data Transmission Command 
+.: =~ -, . . .• . 
+( 
+so 
+
+
+
+===== PAGE 52 / 89 : ESR-L_CPU_tech_manual.pdf =====
+*2) When the source is register S, only direct 
+adcressing is enablec for the addressin~ mode cf 
+the destination. 
+Note) When the data source is memory (including 
+immediate value), mnemonic is 'mvp' to indicate 3 
+bytes data transmission .. When the source is 
+register; mnemo nd c is 'mv'. 
+:_ :. 
+lmmeciate Internal External 
+I 
+~ 
+ivalue memory memo'!:'v Recister - - - - 
+0 
+I x y u s *2 
+-- 
+Source 
+3. mvp [*),source Data transmission to external 
+rnv [*],source memory 
+3 bytes data is transmitted frcm the source to the 
+external memory. The destination is the address 
+specified by [*] and the two adjacent addresses of 
+larger number. Any address ing mode of the exttrr.al 
+memory is enabled for(*]. When the data is trar.smitted 
+from the register to the memory, low-order address data 
+of the register is sent to the smaller-nurr.ber address in 
+the memory, and high-crder address data to the larger­ 
+number address. When the data is transmitted inside cf 
+the memory, the s~aller-number address data of the source 
+is sent to the smaller-r.wr~er address of the destination, 
+and the larger-number address data to the larger-number 
+address. 
+Note) When the data source is me~cry (including 
+Lrnme d i a t e value), mnemonic is "mvp ' to incicate 3 
+bytes data transmissicn. When the source is 
+register, mnemonic is 'mv'. 
+Source !Irnrnecia te value-!'int.ernal rnef:.or~1-IE;_t-ernal merao rv !Res is te::i 
+. I - 0 I -- 0 I ~- Ix y u=s] 
+accress data of the source is sent to the smaller-number 
+address of the destination, and the larger-nurr.ber 
+address data tc the larger-number address. 
+51 
+
+
+
+===== PAGE 53 / 89 : ESR-L_CPU_tech_manual.pdf =====
+52 
+·memC?rY 
+The data corresponding to the number ~f bytes contained 
+in register I is transmitted from the source to the 
+internal memory. Any adcressing mode of the internal 
+memory is enabled for (*). 
+Data transmission to internal l. mvl (*),source 
+Note l) After completion of block transmission command, the 
+content cf register I becomes "O". When the block 
+trans~ission corr.mand is executed with register I 
+beir.g "O", 65536 bytes cata is transrnlt~ed. 
+Note 2) While one corrJ11and is being executed in ESR-L, no 
+interrupt operation can be performed. Therefore, 
+cue attention should be pa id to interruption 
+interval when transreitting voluminous data by 
+giving block transmission corr~and. 
+Note 3) The block transmission command, which transmits data 
+inside of the internal memory, includes 'mvl 
+(*), (•) • and 'mvld (*}, (*} '. Either of these needs 
+to be selected depending on the direction of data 
+transmission. (The details will be described 
+below.) · 
+When the block cata t~ansmission comr::anc is executed, the 
+data correspcr.ci~g to the r.l.!l!'~er of bytes contained ir. 
+register I is trans~ittec from memory to memory. From the 
+source to the destinaticn, the cata is transnittec starting 
+from the s~ecified accress and then by incrementing the 
+address on each ~ide. When every l byte is transmitted, 
+register I address is decrerner.tec until it becomes "O". 
+When addressing mode is [--reg.] at either source or 
+destination, special process is followec ~hich should be 
+noted. 
+Block Data Transmission Corr~ar.c 
+
+
+
+===== PAGE 54 / 89 : ESR-L_CPU_tech_manual.pdf =====
+external memory. Any addressing mode of the internal 
+memory is enabled for [*]. 
+Cnly when the addressing mcde cf the destination is 
+[--reg.], the transmission is repeated until register I 
+becomes "O", by incrementing the source side address 
+starting from the specified one, and at the same time by 
+decrementing the destination side address starting from 
+smaller sice adjacent address of the specified one. 
+[*],source 
+: r.. 
+Data transmission to external 
+memory 
+The data correspcnding to the number of bytes contained 
+in register I is transmitted from the source to the 
+2. mvl 
+*1) OPE-CODO ~hich corresponds to 'mvl (*), [reg.J' 
+does not exist. In this case use 'mvl (*}, 
+[reg.+O]. 
+valuellnternai rnemorv IExternal-rne~ErvlRegiste~ 
+o I o ·1 I 
+Source Inunediate 
+.. -ill be done a·s s hown 
+in the right. 
+After completion, 
+x will be 38ab0h. 
+Note that the destination side is not pre-decrement. 
+21h 12h 1----- ..... 
+22h 34h 1----- ..... 
+23h 56h 
+I 
+I 
+I 
+12h ' 
+3'h 
+56h 
+88&b0h 
+88ablh 
+88ab2h 
+88ab3h 
+d&t& I dr. dat& adr. 
+In case of the operation like; 
+rr.v x,88ab3h 
+mv il,3 
+mvl {23h), (--x] 
+the data transmission 
+Only when the acc=essing mode of the source is [--reg.), 
+the transmissicn is repeated until register I becomes 
+"O" by decrementing the source side address starting 
+:rom smaller side acjacent acdress of the specified or.e, 
+and at the same time by incrementing the destination 
+side address starting frcm the specified one. 
+· .. ,; 
+53 
+
+
+
+===== PAGE 55 / 89 : ESR-L_CPU_tech_manual.pdf =====
+2. ex register,register Data exchange between registers 
+Data is exchanged between the.registers. Basically, the 
+first op~rand and the second operand shculd be both 16 
+bits register or both 20 bits register. When the 
+with each other. 
+Data exchange between regi~ter A 
+and register B 
+The contents of register A ar.d register Bare e~changed 
+l. ex a,b 
+. - -·' ·- .... '"' ' Exchange Command 
+~ . ; inc~ementing the address at both source and destination 
+sides. 
+As an example, take the case that-3 bytes data out o! 5 
+bytes need to be transmitted to the larger-number 
+address. After the first data has been transreitted, the 
+fourth byte data which is not yet transmitted will. be 
+destroyed. To avoid this, therefore, the data should be 
+transmitted by starting fro~ the large.=-number address 
+ar.d then decrementing one by one. In 'mvld {*) ,(*) ', 
+the data is transmitted by starting from the specified 
+address in both source ar.d destination, and then 
+decrementing the address. The nwnber of bytes to be 
+transmitted is the whcle content of the register I. 
+Ar.y addressing mode of the internal memory is enabled 
+for (*). 
+Cata transmission inside of 
+inte . .=nal memory 
+(*), (*) ', the data is transmitted while In 'mvl 
+3. mv ld ( *) , ( *) 
+does not exist. In this case 'mvl (reg.+O],source'. 
+(reg.],source' OPE-CCDE which corresponds to 'mvl *2) 
+Source rm_.,,ediate value [ifite=nal memorv !External memory r•~iste, 
+0 __ _I _ 
+....... ; -, 
+( 
+5~ 
+
+
+
+===== PAGE 56 / 89 : ESR-L_CPU_tech_manual.pdf =====
+· . 
+:_ : ... 
+55 
+Note 1) After completion of the block exchange corrmand, 
+the content cf re~ister I becomes "O". When the 
+block exchange ccrr~and is executed with resister 
+I being "O", 65536 (64K) bytes eata is 
+.exchanged. 
+Note 2) While one command is being executed in ESR-L, no 
+interrupt operation can be performed. 
+Therefore, due attention should be paid to 
+interruption interval when exchanging 
+vclu~inous data by giving exchange cor.inand. 
+Depending on the number of data to be exchanged, 
+mnemonic should be used separately as shown above. 
+When the data of 2 bytes or more is exchanged, the data 
+in the address larger than the specified address is 
+exchanged for the specified number of bytes ir. both 
+first anc seccnd operands. Atter.tion·shculc b~ paid to 
+avoid overlapping of the data specified by the first 
+operand and the data specified by the second O?erand . 
+. Any addressing mcde cf the internal memory is enabled 
+for ("'). 
+e x L (*), (*) 
+exp ( "'), ( "') 
+exw ("'), ("') 
+( "'), ("') 3. ex Data exchange between internal 
+memories (1 byte) 
+Data exchange between ir.ternal 
+memories (2 bytes) 
+Data exchange between internal 
+memories (3 bytes) 
+Data exchange ~etween internal 
+memories (n byte: Block exchange) 
+Data is exchanged between the internal memories. 
+registers cf cif:erent capacity are used as source and 
+destination, the ¢ases like follcwing will occur. When 
+'mv ba,x' ccrrJnand is executed, lcw-order side 16 bits 
+cata cf register Xis tr~nsmitted to register EA, with 
+the first 4 bits data being missed. At the same time, 
+16 bits data of register BA is trar.sreitted to re~ister 
+X, with the first 4 bits of register X beco~ing "OR. 
+
+
+
+===== PAGE 57 / 89 : ESR-L_CPU_tech_manual.pdf =====
+. · ; . 
+3. add register,register Addition between registers 
+sub register,register Subtraction between registers 
+The source register data is added to or subtracted fro~ 
+the destination register data. Though any of the 
+registers A, IL, BA, I, X, Y, O and Scan be used, the 
+cestination register should be same as or larger than 
+Source Immedi - Internal mernOr;ilExternal Rec;ister ate value memory 
+0 0 I -- 
+The source data and C FLAG data are added to or 
+subtracted from accumulator data. 
+Addition to accurr.ulator 
+Subtraction from a~cun:ulator 
+2. adc a,source 
+sbc ~,source 
+Source Immediate valuel!nternal memorylExternal memorv Reaiste~ 
+0 I 0 I A IL 
+l. add a,source Addition to accumulator 
+sub a,source Subtract ion from accumulatQr 
+The source data is added to or subtracted frcrn 
+accumulator data. 
+~hen the carry occurs as a result of operation, C (Carry) 
+FLAG becomes "l". Othen.'ise it becomes "O". When the 
+operation result is "O", Z (Zero) FLAG becorr.cs "l". 
+Otherwise it becomes "O". When the consecutive operation 
+cor.~a~d (accl, sbcl, dadl, dsbl) is executed, Z FLAG becomes 
+"l" on~y when all ci;its of the operation result are "O". 
+Otherwise Z FLAG becomes "O". 
+When the add/subtract command is executed, the source data 
+is acced to or subtracted from the destination data, and the 
+re~ult is stored in the destination. Adcition and subtrac­ 
+tion have both binary cperation and decimal operation. 
+Dyadic Operation No.l (Add/Subtract Command) 
+.. 
+. ·.· 
+( 56 
+
+
+
+===== PAGE 58 / 89 : ESR-L_CPU_tech_manual.pdf =====
+( *) I (,,.) dsbl 
+(*),(*) dadl 
+(*),(*) sbcl 
+Consecutive addition between· 
+internal memories 
+Consecutive subtraction between 
+internal memories 
+Consecutive additicn between 
+internal memories (Decimal) 
+Consecutive subt::-action between 
+internal memories (Decimal) 
+{*),(*) 6. adcl 
+Source Irnmeciate value lE}ernal rnemorv Ex}~.EE~f rnemorv Re5ister 
+0 A I 
+5. adc (*),source Addition to internal memory 
+sbc (*),source Subtraction from internal memory 
+The source data and c FLAG data are adde·d to or 
+subtractec from the internal memory data. 
+Any addressing mode of the internal memory is enabled 
+for (.) . 
+Source Immediate vaiue !Internal memory External memorv!Reaister 
+0 I ------ d IA 
+for (*). 
+internal memory data. 
+Any addressing mode of the internal memory is enabled 
+Addition to internal memory 
+Subtracticn from internal memory 
+added to or subtracted from the 
+add ( *) , s o u r c e 
+sub ( *) , source 
+The source data is 
+4 • 
+C FLAG ~s determinec by the carry :rem the tcp bit of 
+the destination register. In case of X, Y, U and S 
+registers, therefore, it de?er.ds on the carry from the 
+20th bit. Z FLAG becomes "l" when every bit of the 
+destination register is ~ace •o" as a result of the 
+operation. Ct~eri.;ise Z FLAG becomes "O". 
+the source register. When th~ destination register is 
+larger than the source register, the operation is 
+perforwed by regarding the lacked high-order bits of the 
+source register as "O". 
+57 
+
+
+
+===== PAGE 59 / 89 : ESR-L_CPU_tech_manual.pdf =====
+( 
+58 
+address specified by (*). "O" is added to or subtracted 
+from the internal memory data while incrementing the 
+address in case of binary operation and decrementing the 
+·address in case of decimal operation. In ·every one byte 
+operation, register I is decremented until it becomes 
+"O". At the first byte, the register A dDta is added to 
+or subtracted from the internal me~ory cata. From the 
+second byte onward, only C FLAG which is the result of 
+forrr.er operation is adced or subtracted. 
+Any addressing mode of the internal memory is enabled 
+for(*). 
+dsbl .(*),a 
+dadl (*),a 
+sbc l ( *) , a 
+Consecutive addition of register 
+A to internal mernQry 
+Consecutive subtraction o~ 
+register A from internal memory 
+Consecutive addition of register 
+A to internal memory (Decimal) 
+Consecutive subtra~tion of 
+register A from internal rremory 
+(Decimal) 
+The register A data is consecutively added to or 
+subtracted from the internal memory data. The register 
+A data is added to or subtracted from the data in the 
+7. adcl (*),a 
+The source interr.al memory cata is consecutively added 
+to or subtra~ted from the destination internal memory 
+cata. Starting from the address speci!ied by (*), the 
+cperation is rr.ace by incrementing the accress in case of 
+binary operatic~ and by decrementing the address in case 
+cf decimal operaticn at each of destination and source. 
+In every l byte operation, register I is decremented 
+until it beccmes ftO". At the first byte, cnly the 
+destination data and the source data are added or 
+subtracted. From the second byte onward, C FLAG data 
+which is the result of for~er cperation is also added or 
+subtracted together. 
+Any addressing mode of the internal memory is enabled 
+for ( *) • 
+
+
+
+===== PAGE 60 / 89 : ESR-L_CPU_tech_manual.pdf =====
+source Ir.unedi•t: value I Intern•l_ !"•~cry I External memory t•gistei "'' 
+The external memory cata and the source data are put to 
+logical operation. 
+Among the addressing modes of the eAternal memory, only 
+direct adcressing is enabled for [*]. 
+AND to external memory 
+OR to external memory 
+Exclusive OR to external ~emory 
+3. and [*],source 
+or [*),source 
+xor [ *] , source 
+Immediate value Internal merr.orv External mewory!Registerl 
+0 0 IA I 
+Source 
+The internal memory data and the source data are put to 
+logical operation. 
+Any addressing mode of the internal memory is enabled 
+for ( *) • 
+AND to internal memory 
+OR to internal memory 
+Exclusive OR to internal memory 
+2. and ( *) , source 
+or (*),source 
+xo r ( *) , source 
+Source Ir.imediate valuerriiternal memorv1Externa1 memory!Registe~ 
+0 I 0 I , I 
+logical operation. 
+AND to accumulator 
+OR to accumulator 
+Exclusive OR to accumulator 
+ar.d the source data are put to 
+and a,source 
+or a,source 
+xor a,source 
+The accumulator cata 
+l. 
+When the operation result is "O", Z (Zero) FLAG becomes "l". 
+Otherwise it becomes "O". C (Carry) FLAG content is kept 
+unchanged. 
+When the logical operation cor..mand is eY.ecuted, destination 
+data and source data are put to logical operation and the 
+result is stored in the destir.atio~. 
+Dyadic Operation No.2 (Logical Operation Command) 
+( 
+59 
+
+
+
+===== PAGE 61 / 89 : ESR-L_CPU_tech_manual.pdf =====
+-~~::. ,. 
+!Reciste? 
+A 
+Source Ir.unecia te \•alue Internal memo:::-v I External memor 
+0 I I 
+pmcf (*),source Addition to internal me~ory 
+The source cata is added to the internal memory data. 
+Dering the operation, C/Z FLAGS are kept unchanged. 
+A~y acdressing mode of the internal me~ory is enabled 
+for (•). 
+The comma~d is usec primarily to make relative change cf.the 
+contents of pointers BP, PX, PY, etc. 
+Data is acdec to the internal memory without changing C/Z 
+FLAGS. 
+Dyacic Operation No.3 (Pointer Add Command) 
+. . · .. ~ 
+( 
+60 
+
+
+
+===== PAGE 62 / 89 : ESR-L_CPU_tech_manual.pdf =====
+.:~:: •• e , 
+0 0 
+mernory!Registel'.i 
+IA I 
+Source ImmeC.iate value lnte::nal memorv 'E):ternal 
+ccrnparec. 
+Any addressing mode of the internal merecry is enabled 
+for (*). 
+(*),·source 
+: .· . 
+Comparisor. with 1·byte data of 
+internal memory 
+1 byte data of internal mereory and the source data are 
+2. cmp 
+Source Irrunediate value-'""Internal memory IE'Xt~r._n_a_I __ m_e_mory !Register. 
+0 .I I ______J 
+1. cmp a,source Comparison with accumulator 
+The accurr.ulator data and the source data are compared. 
+When more than 2 bytes data in the internal.memory are 
+co~pared, the data in those acdresses smaller in acdress 
+nurr.ber than the specified one is put to comparison. The 
+address smaller in address nwnber is the low-order address, 
+and the address larger in address number is the hi;"'h-order 
+address. The operation result is not stored anywhere. 
+Otherwise it becomes "O". 
+cor.~ecutive operation cor.~anc (crr.pw, CIT.??) is executed, z 
+FLAG becomes "l" only whee all operation results are "O", 
+i.e., when all digits of the operation result are "O". 
+~hen the ccrr.?are co~.rnand is executed, the source cata is 
+subtrac~ed from the cestination data, and accordi~g to its 
+result C/Z (Carry/Zero) FLAGS are changec. When the carry 
+cccurs as a ~esult of the operation, C FLAG beco~es "l". 
+Otherwise it becorr.es "O". When the operation result is "O", 
+Z FLAG becomes "l". Otherwise it becomes "O". When the 
+Dyadic Operation No.4 (Corepare Command) 
+( 
+61 
+
+
+
+===== PAGE 63 / 89 : ESR-L_CPU_tech_manual.pdf =====
+-~~:: .·.,. 
+·:,: r 
+Immediate value Internal merr.orv External memory Register -- 
+0 
+Source 
+S. cmp [*],source Co~parison ~ith external.memory 
+The external memory data and the source data are 
+compared • 
+.Among the addressing modes c! the external memory, only 
+cirect addressing is enabled for[*). 
+·Note) When the source is a 20 bits.register as in case 
+of 'cmpp (23h) ,r.', for example, the compariscn.is 
+made for 24 bits as well. The empty high-order 4 
+bits of the register are regarded as "o• in the 
+ccrr.parison. 
+4. cmpp (*),source Comparison with 3 bytes data of 
+internal memory 
+3 bytes data of internal merr.ory and the source data are 
+comparec. 
+Any adcressing mode of the internal memory is enabled 
+for (*). 
+Source Im.mediate valueTint""'e""rnal memorv!External-mernorvlReais~e~ 
+-----' . -0-- I - ,BA 
+1I 
+l 
+ccrr.pareC.. 
+Any accressing mode of the internal memory is er.abl~d 
+for (*}. 
+·~ ~ . :.: ;... 
+Comparison with 2 bytes data of 
+internal memory 
+2 bytes cata of ir.ternal memory and the source data are 
+3. cmpw {*),source 
+62 
+
+
+
+===== PAGE 64 / 89 : ESR-L_CPU_tech_manual.pdf =====
+"'·:: 
+. \, 
+Source !mr.iediate value Interr.al 
+0 I 
+memorylReqister memc:-vlE;.cternal 
+I 
+3. test [*],source Bit test of external memory 
+Exterr.al memory data is subjected to the bit test with 
+source data. 
+Among the addressing modes of the external memory, only 
+direct addressing is enabled for[*]. 
+Source Immediate valuelinte-rnal mencrvlExterna1--memoryjRe~ister 
+0 I IA 
+2. test (*),source Bit test of internal ~emory 
+Internal memory data is subjected to the bit te-st with 
+source data. 
+Any adcressing mode of the internal memory is er.abled 
+for ( *) • 
+Source lmmeciate value Internal me~orvfE:xterr.al rnemo~vl~egi.ster 
+0 -- I __ I_ 
+Accumulator cata is subjected to the bit test with 
+source cata. 
+Eit test of accumulator 1. test a,source 
+When the tiit test commar.c is e:>:ecuted, desti.r.ation data a nd 
+source data are ANDed .. Depencing on the operation result, 
+Z (Zero) FLAG is changed. When the operatior. result is "O", 
+Z FLAG beccrnes "l". Otherwise it becomes "O". C (Carry! 
+FLAG is ke?t unchanged. 
+The operati.cr. res~lt is net stored any...·here. 
+Dyacic Ope=ation No.5 (Bit Test Conunand) 
+I 
+63 
+
+
+
+===== PAGE 65 / 89 : ESR-L_CPU_tech_manual.pdf =====
+' . < .:-. : : .••. 
+When the cperand is "O" as a result of bit movement, Z 
+FI.AG becomes "1". Othen;ise it becomes "0". 
+.· ... ·. r------------------, [O-.J..-1 7 I 6 I 5 I 4 I 3 i 2 I 1 I D 1-.J 
+C FLAC op,rand 
+shr ,-----------------------, 
+L..-! 7 I 6 I 5 I 4 I 3 i 2 I I I D 1---[Q-.J 
+opr1nd C FLAG 
+sh I r-----------------------, L..-{I]---1 1 I s 1 s I • I 3 I 2 I 1 I o 1-.J 
+C FLAG operand 
+rol 
+ror r------------------, l..-1 1 I s I s I 4 I 3 I 2 I 1 I o 1-..i..-[O 
+oprand C fLAC 
+3. ror operand Rightward bit rotation 
+rol operand Le!tward bit rotation 
+shr operand Riahtward bit shift 
+shl operane Le!tward bit shift 
+Cperand data is. given the bit movement as shown below. 
+Irr.mediate Internal j Externa_l_ -- I ·Register rvalue memorv mem ory ·---- ..... i 
+0 
+I A IL BA I x y u s I 
+Operand 
+C FLAG is kept unchanged. 
+Cperand is incremented or decremented by "l". 
+When the result is "O", Z FLAG becomes "l". Otherwise 
+it becomes "O". 
+Increment 
+Decrement 
+operand 
+operand 
+inc 
+cec 
+2. 
+C (Carry) FLAG is kept unchanged. 
+High-order 4 bits and low-order 4 bits of the 
+accumulator data are exchanged with each other. 
+When the accumulator data is "O", Z (Zero) FLAG becomes 
+"l". Otherwise it becomes "O". 
+Digit exchange of accumulator l. swap a 
+Monadic Operation 
+, 
+' 
+64 
+
+
+
+===== PAGE 66 / 89 : ESR-L_CPU_tech_manual.pdf =====
+sc Setting of carry· flag,.. · 
+re Resetting of carry flag 
+'sc' sets C FLAG to "1", while 're' sets it to 
+"o•. z FLAG is kept unchanged. 
+C FLAG Control Command 
+•o• is given to the digit which is emptied by the shift. 
+The digit which is shifted last is cleared. 
+Due attention should be paid to·the fact that 'dsrl' 
+increments the accress, starting from the specified one 
+and 'dsll' decrements the address in the same manner as 
+above to repeat the shift. 
+2 3 
+" 
+5 
+6 0 
+23b 
+Hh 
+2Sh 
+l 2 
+3 
+" s 6 
+<, 
+0 1 
+2 3 
+" s 
+I 
+23h 
+Hh 
+25h 
+1 2 
+3 
+" s 6 
+I 
+Example) mv il,3 
+dsrl (23h) 
+23h 
+Hh 
+25b 
+•V i I, 3 
+dsll {2Sh) 
+23h 
+2•h 
+2Sh 
+The internal memory cata is given the Gigit shift as 
+shown below. The shift is rr.ade by the nur.ber of bytes 
+specified by register I. 
+When all digits are "O" as a result of the digit shift, 
+z (Zero) FLAG becomes "l". Otherwise it becomes •o". C 
+(Carry) FLAG is kept unchanged. 
+Any addressing mode of the internal memory is enabled 
+for (*). 
+Rightward digit shift cf internal memory 
+Leftward digit shift of internal memory 
+4 _ d s r I {*) 
+d s Ll, (*) 
+Register j 
+------ 
+A I 
+operand l.r.unediate Internal 
+~v~a~l~u_e..;.__ +..;;m;_;C!_El_E}"Y_ 
+0 
+65 
+
+
+
+===== PAGE 67 / 89 : ESR-L_CPU_tech_manual.pdf =====
+Note) When 'popu il' is executed, the high-order 8 bits 
+of register I become "O". 
+a/il/ba/i/x/y 
+imr 
+C (bit 0), z (bit 1), O (bits~ to 7) 
+Interrupt mask register (Internal• 
+memory FBH) 
+Register 
+FLAG 
+(Ofbn) 
+f 
+'popu' transmits the data in the address specified by 
+register U to the operand. When the operand is a 16/20 
+bits re~ister, the data is transmitted by incrementing 
+the add=ess, starting.from the address speci!ied by 
+register U. After the transmissicr., the content of 
+register Uhas been incremented by the number of bytes 
+trar.smittee. 
+Like the 'mv' command, the high-order byte of the 
+register corresponds to the larger-number address in the 
+rne~ory and the low-order byte to the smaller-nu.rr~er 
+address. 
+The following can be operands. 
+transmitted. 
+1. pushu operand Push command to U stack 
+po~u C?erand Pop corrunar.d from U stack 
+'pushu' transmits the operand data tu the srr.aller-n1.!r."..ber 
+address adjacent to the one specified by register U. 
+~hen the cperand is a 16/20 bits register, the data is 
+transmitted by decr~mentir.g the address, starting from 
+the smaller-nu~~er address adjacent the cne specified by 
+register u. After the transmission, the content of 
+registe= Uhas been decremented by the nurr~er of bytes 
+ESR-L has two stacks. One is S (System) stack which is 
+primarily usec tc store the necessary data while CPU is 
+making sub=outine call or interrupt. Another is u (tser) 
+stack which is used freely by the usei. 
+PUSH POP Co~.mand 
+( 
+66 
+
+
+
+===== PAGE 68 / 89 : ESR-L_CPU_tech_manual.pdf =====
+same function. 
+pushs i ar •'I' [--s];(Olbh) 
+pops i llr •'I' (Ofbh). (s+ +) 
+pushs register •'I' [--s] .register 
+pops register aY re(ister, [s++) 
+hardware, however, no OPE-CODE exists which enables 
+cperands to correspond to irnr/register. Instead, the 
+asser.~ler enables the 'mv' cor.ma~d which performs the 
+In terms cf same as those for 'pushu' and 'popu'. 
+'pushu' and 'popu'. However, the address is specified 
+by register S instead of register U. 
+What can be the cperands for the commands are also the 
+Push co~~and to S stack 
+Pop co~~and from S stack 
+these co~~ands are quite the same as 
+pushs operand 
+pops operand 
+The functions of 
+2. 
+67 
+
+
+
+===== PAGE 69 / 89 : ESR-L_CPU_tech_manual.pdf =====
+2. jp mn Gnconditional branch inside of mn: Immediate 
+segment value of 
+jp:z ~~ Conditional branch inside of 2 bytes 
+segment (Z="l") 
+jpnz tr.n Conditional branch inside of 
+segment (Z•"O") 
+jpc mn Conditional branch inside of •;• = 
+segment (C="l") 
+jpnc ren Conditional branch inside of 
+ses-ment (C="O") 
+Branching is implemented by re.acing a 2 bytes immediate 
+yalue into PC. At this time, the larger-number address 
+data of the immediate value is read into the high-order 
+side of PC, and the smaller-number address data into the 
+low-order side. 
+Conditional branching is implemer.tec when a correspond­ 
+ing ccndition is satisfied. When the ccncition is r.ot 
+met, the command becomes NCP. 
+Note) Address counting is made only in the PC, and no 
+carry is made to the page segment register (PS). 
+This means that the relative branch command cannot 
+cause control to jump out of the segreent. 
+The rel a titre b r anc h command changes, the content of 
+program counter (PC) to a value obtained by adding 2 to 
+the adc=ess where the command's mnemor.ic is ~ritten and 
+then adcing +n to the swr.. This means that since n is 
+an irr~ediate value of l byte, branching can be 
+implemented ~ithin the address range from -253 bytes to 
++257 byte~ counted from the address where the branch 
+corr~and is written. 
+Conditional relative branching is implemented when a 
+corresponding condition is satisfied. When the 
+condition is not rr.et, the command beco~es NOP. 
+1. jr +n Unconditional relative branch n: Immediate 
+jr:z +n Conditional relative branch (Z="l") value of 
+jrnz +n Conditional relative branch (Z="O") l byte 
+jrc +n Conditional relative b::-anch (C="l") 
+jrnc +n Concitional relative branch {C="O") 
+JUMP Command 
+( 
+68 
+
+
+
+===== PAGE 70 / 89 : ESR-L_CPU_tech_manual.pdf =====
+... 
+. : ,. 
+<, 
+Source !IzmneC.ia te value !Internal mer..cr~External merno r v I Recis~e: 
+I 0 1- ~----~ 1~~ -- ·1 x y u ~- 
+3. jpf operar.c Branch outside of segment 
+Eranching is implemented to the whole 1 Mbyte memory 
+area by reacing 3 bytes of oata from the operand into PC 
+ar.d PS. when the source is memory, the larger-number 
+address data in the memory is read into the high-order 
+side of PC, and the smaller-number address data into the 
+low-order side. 
+( 
+69 
+
+
+
+===== PAGE 71 / 89 : ESR-L_CPU_tech_manual.pdf =====
+Supplement) Refer to "PUSH POP Command" foJ:" t.h• d•~ail:s 
+of PUSH and POP. 
+3 bytes data is popped from S stack into PC and PS. 
+Return against callf 4. retf 
+2 cytes data is popped from S stack into PC. 
+Return against call 3. ret 
+address which is 4 bytes larger than the address where 
+the 'callf' command is written) is pushed into S stack, 
+and a 3 bytes·irrunediate value is read into PC ar.d PS 
+(pace segment register). At this time, the largest­ 
+r.urr..ber address data of the immediate value is read into 
+PS. Out of the r~maining 2 bytes data, the larger­ 
+number address data is read into the high-order side of 
+PC, arid the smaller-numb.er address data into the 
+low-order side. 
+The 20 bits address is p~shed by 3 bytes. At this time, 
+the highest-order 4 bits are "O". 
+Subroutine call 
+lmn: !:r..med i ate 
+The address of the ccrr.rr.and next 
+outside cf segment 
+value ~f 3 bytes 
+to this corr.rr.and (the 
+callf lrnn 2. 
+adcress which is 3 bytes larger than the address ~r.ere 
+the 'call' command is written) is pusr.ed into S stack, 
+and a 2 bytes immediate value is read into PC (pro~rarn 
+counter). At this time, the larger-nwr..ber acdress data 
+of the immediate value is read into the high-order sice 
+cf PC, and the srealler-nurr..ber acdress cata into the 
+low-order side. 
+The low-order 16 bits (2 bytes) are pushed out cf the 20 
+bits address. 
+Subroutine call inside of segment 
+mn: Immediate value of 2 bytes 
+The address of the corr.n:and next to this corr.man~ (the 
+1. call mn 
+CA~L RET Command 
+( 
+70 
+
+
+
+===== PAGE 72 / 89 : ESR-L_CPU_tech_manual.pdf =====
+Supple~ent) Refer to "PUSH pop··comrnand" for the details 
+of PUSH and POP. 
+3. reti Return interrupt 
+5 bytes data is popped from S stack and then put into 
+I~R, FLAG, PC and PS in this order. 
+Following the order of PS, PC, F~AG r.ad IMR (FBH of 
+inte=nal memory), their center.ts (a total of S bytes) 
+are pushed into S stack. 3 bytes data in addresses 
+FFFFAH to FFFFCH is read into PC and PS. (The data in 
+address FFFFCH is read into PS; and the data in FFFFBH 
+is read into the hi~h-crder side of PC, and the data in 
+FFFF~.H ir.tc the low-order side of PC.) , 
+After IMR is pushed, IRM (bit 7) of IY..R becomes "O". 
+Interrupt 2. int 
+3 bytes data in addres~es FFFFDH tc FFFFFH is read into 
+PC {prog=am counter) and PS (page segmer.t register). 
+(The data in address FFFFFH is read ir.to PS; and the 
+data ir. FFFFEH is read into the high-order side of PC 
+ar.c the data in FFFFDH into the lcw-orcer side of PC.) 
+Reset 1. reset 
+?...ESET INTERRUPT Command 
+71 
+
+
+
+===== PAGE 73 / 89 : ESR-L_CPU_tech_manual.pdf =====
+CPU is paused by halting MAIN CG of CPU. Re.fer to 
+'System Control lihLT I for the details of the HALT 
+condition. 
+5. off CPU off 
+CPU is turned off by stopping MAIN CG and SUB CG of CPU. 
+Refer to 'System Control OFF' for the details of the OFF. 
+condition. 
+CPU halt 4. halt· 
+When this corrunand is executed by settin~ "l" tc STCL 
+(bit 1) and MTCL (bit 0) of LCC (F~E in internal 
+memory), SUB CG timer and MAIN CG timer are reset 
+respectively. 
+Timer clear 3. tel 
+No operation is performed during one state. 
+NOP 2. nop 
+Note) While one corrmand is being executed in ES?.-L, any 
+interrupt operation is not performed. Due 
+a~tention should be paid to interruption interval 
+when the operation is suspended for a long period 
+of time by using the wait corrmand. 
+Decrement is repeated until register !"becomes "O". 
+Except for decrementing register I, the corrunand is NOP. 
+Wait 1. wait 
+CPU Control Corr~and 
+( 
+7 '2 
+
+
+
+===== PAGE 74 / 89 : ESR-L_CPU_tech_manual.pdf =====
+4. NUMBER OF EXECU- 
+TION STATES ••• As to addressir.g for internal memory, 
+the number shown is for the case when 
+(bp+n) is used. 
+When any other addressing mode is used, 
+l state should be added. 
+·r· ·ll· · CODE 
+a A 000 
+i I IL 001 
+ba BA. 010 
+i I 011 
+I x 100 
+1 t 101 
+" u 110 
+s s 111 
+3. CODE •••••••••• OP-CODE and POST-BYTE a=e expressed by 
+<, 
+binary form, and other operands are 
+expressed by 1, m, n, L, Mand N (byte). 
+Among OP-CODE and POST-BYTE, -r- and -R­ 
+are changed de?ending on the register as 
+shown below. 
+2. FLAG CHANGE ... CARRY/ZERO 
+C,Z: Changes according to the state with 
+the execution of a command. 
+1,0: Becomes l or O. 
+Does not change. 
+1. MNEMONIC 
+1 I 2 
+3 
+4 
+Reference Guide 
+ESR-L Cor:unand Table 
+73 
+
+
+
+===== PAGE 75 / 89 : ESR-L_CPU_tech_manual.pdf =====
+Source In l (n) [I mn) [x] 
+i I (b p::; n) (yJ 
+~ (px ~ n) (u) 
+(n± n) [s] 
+(bp+ px) 
+1De:stin1tion (bp+ py) 
+~ mv . I. 
+r:· . I. 
+~v . I. ~v . I. 
+IL OOOOl·R·,n OOOO·R·,n 10001-R·,nml 10010-R-, 
+00000-r· 
+a: 2/i I: 3 : 3/i I: 4 6 1:4/i I: 5 
+(N) 
+.. .r. [' .r. r:· . r. 
+'8V ./. 
+I 
+~· ./. (b p + h') 11001100,Nn 10100-r·,N 1001000,Nn 11010000, 11 DODOO, 
+(p x + H) ~nail 0000· I"", N 
+(b p + p x) a 7 
+. 
+[LMHj 
+~· .I. 
+lillV • /. 
+0101-r·,HML 11011000, 
+~MLn 
+6 - [X) llllV . I. 
+r .r. [Y] lOllO·r·, 1101000, 
+[-OJ 00000· R· 0000-R-,n 
+[SJ ~ 6 
+[X+ +) . llY .r. •v . I . 
+[Y+ +] 10110-r·, lll01000, 
+(U+ +] OOlOO·R· 00100-R-,n 
+[S++] 14 6 
+[--X] . ., . I. llllV ./ . 
+[- -Y] IOllO·r·, 11101000, 
+[--U) OOllO·R· 00110-R·,n 
+[--SJ 5 7 
+[X± HJ 
+r .r. r .r. fY::; H] OllO·r· 1101000, 
+[U..'._H] sOOO·R~:N sOOO·R·,nN 
+[S• HJ 
+( (H)] 
+·" 
+. I. lllV . I . 
+[ (b p ± H)] 10111-r·, 11111000, 
+[(px±N)] IOOOOOOOO,H 00000000,Hn 
+[(bp+px)] 9 11 
+( (M) ± H] llV . I. lllV .I . 
+[ (b p ± M)::; H] 10111-r·, 11111000, 
+[ (px::; M) ±HJ lsOOOOOO, MH ls 000000, Mn~ 
+[ (b P + p x) • H] 11 13 
+,. - - ' 
+( 
+1 Byte Transmission Cor.~and Nc.l 
+
+
+
+===== PAGE 76 / 89 : ESR-L_CPU_tech_manual.pdf =====
+Source [x+ +] [--x] [x:: n] [ (nJ ] ( (mJ :: n] 
+Iv+ + J [--y] [y± n) ((bp::n}] [ (bp:: m) :: n) 
+(u+ +] (--u] [u± n) ((px::n)J [(!'x::ri) ±n] 
+[s+ +] [--s] [s:: n] ((py::::n)] ((py±1:1) :l:n) 
+((bp+px)] ((Lp+p::)±u] 
+De s t i e e t i e n [ (b P + r r J J [(t:•+rr} ±n] 
+~ 
+r .r. 
+ll!IV . I. 
+r:· ./. r ./ . [' .r. IL 0010-R-, 10010-R-, 0010-R·, 0011-R-, 0011-R·, 
+0100-r· 00110-r· sOOO-r-,n 000~000,n sOOOOOO,mn 
+: 4/i I: 5 1.: S/i I: 6 : 6/ i I: i : 9/ 1I:10 :11/il:]2 
+(N) 
+r .r. 
+ll!IV . I. lllV . I. •• .r. r ./ . (bp+ HJ 1100000, 11100000, 11100000, 11110000, 11110000, 
+(p x +NJ 0100-r-,N 00110-r·,H !sOOO·r·,Nn DO?DOOOO,H" lsOOOOO~.u~~ 
+(b p + px) 6 7 18 ll 13 . 
+[LMN] 
+' . .... 
+[X] 
+[Y] 
+[U] . 
+[SJ 
+(X+ +J : 
+[Y+ +] 
+(U+ +) 
+[S+ +] 
+[- -X] 
+[- -Y] 
+[- -UJ 
+(--S] 
+[X± HJ 
+[Y± M) . 
+[U±NJ 
+[S+N) 
+l (H)) ' [ (bp± M)) : 
+({px±Ml] 
+((hp+ px) 
+[ (M) ±HJ . ' ! .. 
+[ (bp±M) ±NJ 
+•. 
+[ (p:i:±M) ±NJ 
+( (bp+ p:i:l,. HJ 
+1 Byte Transmission Command No.2 
+75 
+
+
+
+===== PAGE 77 / 89 : ESR-L_CPU_tech_manual.pdf =====
+Source lllln h (n) (Ian) [ x] 
+i (bp ± n) [y] 
+(px±n) [u] 
+(py::; n) [s] 
+(bp+ px) 
+Destination (b p + py) 
+BA •• .r. r .r. niv . I. •• .r. r .r. I 00001-R·,nm 11111101, 10000-R·,n lOOOl·R·,nml 10010-R·, 
+O·R·O·r· OOOOO·r· 
+3 2 4 7 5 
+(N) lllYW .r. r.y ./. jlDYW . /. ,:av• . I. llllYlf . ! . 
+lb:+h') 11001101,Nn~ 10100-r ·,N 11001001,Nn 11010001. 11100001, 
+I I~ .z: + h') ~nm! OOOOO·r·,H 
+(bp+px) .( 4 18 18 . 7 
+(UOi] 'IV . /. li!IVlf . I . 
+1 0 1 0 l • r • , h'Ml 11011001, 
+~MLn 
+6 7 ' 
+(X] 
+r .r. 
+~ YW .r. ' · 
+[Y) OllO·r·, 11101001, 
+[U] OOOO·R· OOOOO·R·,n . 
+(SJ 5 17 
+[X++] 
+y 
+. I. iavw ./ .. 
+(Y+ +) . 
+r!IO·•·, 
+11101001. 
+[U++] 0100-R· OOlOO·R·,n 
+[S+ +] 5 17 
+{--X] •v . I. 
+r .r. [- -Y] lOllO·r·, 1101001, 
+[--UJ OOllO·R· OllO·R·,n 
+[- -S] 6 0 
+[X±N] •• ./. • •• . / . 
+[Y ± h') lOllO·r·. 11101001. 
+[U± N] lsOOO· R·, N lsO~O- R·, nN 
+[S+N] 7 9 
+[ (H) J •• . I. • •• . I . 
+[(bp±N)] lOlll·r·, 11111001, 
+((px±M)] 00000000,N 00000000,Nn 
+: 
+. 
+[ (bp+ px) J 10 12 
+[ (M) ±NJ 
+r .r. ••• . I. 
+[ (bp± M) ± M] Olll·r·. 11111001, 
+[ (p:.::t M) ± H] sOOOOOO,M){ 1'000000, Mn~ 
+((bp+px)•N] 2 14 
+2 Byte Transmission Command No.l 
+( 
+76 
+
+
+
+===== PAGE 78 / 89 : ESR-L_CPU_tech_manual.pdf =====
+Source [x+ +] (--:r] [x:::!:: n] [ (nJ ] ( (m) :±: n] 
+b + +] [--y) [y-'-n] [(bp::n)] [(bp::m)±n] 
+[u+ +] [--u) [u± n) ((ri:r:±n)] [ (r r. ± h•) :.: n] 
+(s+ +] [--s] (s± n] ((JIY±n)] [ (pl'±••) :f: n J 
+[(bp+px)] ((bp+px) ±n) 
+IDestin~tion [ (br+ rYl) [ (I, r + ri· l :i: n 1 
+!BA 
+r .r. r .r. r ./. r .r. r:· . r. I 0010-R-, 0010-R-, 0010-R-, 0011-R-, 0011-R-, 
+0100-r- 0110-r- sOOO-r-,n 0000000,n sOOOOOO, cin 
+5 6 0 2 
+(HJ 
+r .r. ... .r. ['" . .!. 
+IDIVW . /. '8VW . I . 
+(bp + H) 1100001, 11100001. 11100~01, . 11110001, 11110001, 
+(px+ N) 0100-r-,N 00110-r-,N lsOOO-r-,Hn 00000000,Hn ls 000000, >111111 
+ih p + px) .. ,, 10 9 12 H 
+(LMN] 
+. 
+[XJ 
+j 
+:-- 
+[YJ 
+[U] 
+[SJ 
+(X+ + J . 
+[Y+ +] 
+[U+ +] 
+[S+ +] 
+(- -X] 
+[--YJ 
+[--U] 
+[--SJ 
+[X±H) 
+[Y::HJ 
+[U± HJ 
+[S+ NJ 
+[ 00] 
+[(bp±N)] 
+. ((px±N)] . 
+[(bp+px) 
+((Ml± HJ 
+[ (bp± Ml± HJ 
+((px±M):::!::M] '. 
+[ (bp+ p:r) -'-M] 
+2 Byte Trans~ission Command No.2 
+77 
+
+
+
+===== PAGE 79 / 89 : ESR-L_CPU_tech_manual.pdf =====
+Source l•n i.x (n) [lmn) [x J 
+IY (b p ± n) (y) 
+u (px± n) [u] 
+s {py±n) [s] 
+(bp+px) 
+!Destination (hp+ py) 
+tx llY . I. llY . I . 
+r:· . !. r ./. r .I . ty OOOOl·R·,nml 11111101. OOOO·R·,n OOOl·R·,nmllOOIO·R·, 
+~ O·R·O·r· OOOOO·r· 
+s .( 2 6 
+(N) lmYp . I. ~y . I. avp . I. lllvp ./ . l:IYp . I. 
+(bp + N) 11011100, lOlOO·r·,N 11001010,Hn 11010010, 11100010, 
+(p x + N) !Nnml ~nc. [ OOOOO·r·,U 
+(b p + p x) 5 5 10 9 18 
+[U!N] 
+t' .r. 
+CIYP ./. I 
+OlOl·r·,NMl 11011010, 
+!NMLn 
+18 ...... 
+[XJ 
+r .r. 
+11vp .!. 
+[YJ 011 O.:.!.:, 11101010, sis excluded for -r 
+[UJ OOOO·R· OOOOO·R·, n. Sis excluded·!or -R 
+. [S] s 18 
+(X+ + J 
+r .I. 
+•v p . I. 
+[Y+ +) 0110.:.!.:, 11101010, 
+[U+ +) OlOO·R· OOlOO·R·,n 
+[S+ + J 7 9 
+[--X] II v ./. lllvp . I . 
+(--Y) 1o11 o.:.!.:· 11101010, 
+(--U] OOllO·R· OOllO·R·,n 
+[--SJ 18 10 
+[X± NJ II v . /. lllYp . I . 
+[Y::: H] 1o11 o.:.!.:, 11101010. 
+{U± NJ IsOOO·R·,N lsOOO·R·,nN 
+[S• N] 18 10 
+[ (N) ) .. y ./. )IYp .r. 
+( (bp ± N)] ] 0 11 ] zz; • 11111010, 
+{ (px± N)] 00000000,N 00000000,Nri . 
+[(bp+px)] 11 13 
+( (M} ±HJ ... . /. lnp . I . 
+[ (bp± M) ±NJ . l 0 11 I.:!.:., 11111010, 
+((px::::M)±N] ls 00000 0, MN lsOOOOOO, Mn~ 
+((}ip.L..px) +HJ 13 15 
+3 Byte Transmission Command No.l 
+( 
+i8 
+
+
+
+===== PAGE 80 / 89 : ESR-L_CPU_tech_manual.pdf =====
+Source [x+ +] [--xJ [x± n] [ (n) J [(a)± nJ 
+[y++] [--y] [y~ a] [(bp±n)J [(bp±a):::n] 
+(u+ +] [--u) [u::: n) ((px±n)] [(pr± r.) = n] 
+[s+ + J [--s] [s± n] ((py±n)] ( (11y± m) ± 11) 
+[ (b p + p x)) [ (bp+ px) ± n] 
+Destination [ (b p + p y) J [ (b p + r l') :!: n J 
+x r .r. 
+•v . I. 
+r ./. 
+lllY . I. ~y . I. 
+y OOlO·R·, 10010-R·, OOlO·R·, 10011-R·, 10011-R·, 
+~ 0100-r· OOllO·r· sOOO·r·,n 00000000,n lsOOOOOO, mn 
+s 7 8 11 13 
+(NJ 
+r .r. 
+•vp . I. 
+r .r. ••• .r. f;''. .I. (bp + H) 1100010, 11100010, -11b0010, 11110010, 11110010, 
+(p x + N) 00100-r-,N 00110-r·,N sOOO·r·,Nn OO?OOOOO, Hn hOOOOOO, J.!;;11 
+(bp+px) 9 10 0 13 ls 
+[LMN) 
+[XJ 
+v, 
+I 
+(YJ 
+[UJ 
+[SJ 
+[X+ +] . 
+[Y+ +] 
+(U+ +) Sis excluded for .:S=· 
+[S+ + J 
+[--X] 
+[--YJ 
+[--UJ 
+[--SJ 
+(X± HJ 
+[Y::HJ 
+[U±N] 
+[S± NJ 
+l 00) 
+[(bp:::H)J 
+((px±>O) . 
+[ (bp+ p:r) 
+[ (M) ±NJ 
+[ (h::: M) ±HJ 
+[ (px± M) ± N] 
+[ (b p + p x) • H] 
+3 Byte Transmission Command No.2 
+79 
+
+
+
+===== PAGE 81 / 89 : ESR-L_CPU_tech_manual.pdf =====
+Source (n) (I an) [x+ +] (--x) (11:± n) 
+(b p ± n) [y+ +] [--y] [y::: n) 
+(p x ± n) [u+ +] [--u] (u:: n) 
+(p y::: n) [:+ + J [- -:) [s:: n) 
+(bp+px) 
+Dest ination (bp+ py) 
+(N) ["1; .. 1; ./. r ./. 
+~v l . I. nv l . I . , v l . /. 
+(bp + H) 1 O O 1 0 11. N n/ 1010011, 11100011, n iceun. 01010110, 
+(px+N} 1001111,Nn nal OOIOO·r·,N OOllO·r·,H lsOOO·r·,Nn 
+(b p ..J.. p x) +2Xi +2Xi 5+ 2X i i..!... 2 x i 5+ 2X i 
+(LMN] II ... I . I. I I I 
+11 !tl 1 0 11, NMLn 
+6+2Xi 
+[X+ +) .... 1 . I . 
+[Y+ +] 11101011, 
+[U+ +] OOIOO·R·,n source [ (n)}..._ [ (c):: n) 
+[S+ +] 5+ 2X i [(bp±n)] ( (bp± m) ::'.: n] 
+[--X] 111vl . /. ((px±n)) [ (p x± 11) ± n] 
+[--Y] 11101011, ((py:::n)] ((py±111)±n) 
+[--UJ OOilO·R·,n [(bp+px)] [ (bp+ px) ::'.: n) 
+[--SJ 7+2Xi Destination [ (b p + p y) J . [(bp+py)::'.:n) 
+[X± NJ lllV I . /. (H) lllV I . I . •v I . / . 
+[Y± K] . 01011110, (bp+ H) 11110011. 11110011, 
+[U± H] lsOOO·R·,nH (px+ N) 00000000,Nn lsOOOOOO, Nan 
+[S±N] a-- ax i (bp+px) 10+2Xi 12+2Xi 
+( (N)] lllV I . I. I 
+( (bp±N)] 11111011, 
+[ (p x± NJ] 00000000,Nn 
+[ (b p + p x)] 10+ 2X i 
+[ (M) ±JI') lllV I . I. 
+[ (bp:: Ml::'.: HJ 11111011, 
+((px±M) •NJ lsOOOOOO,MnN 
+[ (bp+ px):::: H) 12+2Xi 
+Block T=ansmission Corr~and 
+( 
+so 
+
+
+
+===== PAGE 82 / 89 : ESR-L_CPU_tech_manual.pdf =====
+a lb a IX (n) 
+lb i IY (b p =: n) 
+IU (px=: n) 
+IS (py=:n) ...... 
+(bp+ px) 
+(bp+ py} 
+IA IU . /. . 
+lB 11011101 
+3 
+tBA IU . I. 
+I 11101101, 
+IO-R-0-r- 
+14 
+·x . r .r. y 11101101, 
+·u -R-0-r· 
+s .. 
+(N) ex . I. e:r• ./ . 
+(bp± N) 11000000,Nn 11000001,Hn 
+(pr± ff) 
+' (bp+p~) 7 10 
+... exp .r. e:r I .r. 
+11000010,Nn 11000011.Nn 
+13 IS+ 3 x i 
+Exchange Command 
+I 
+Source a b 
+Destination 
+IA j:IV . /. 
+01110100 
+1 
+B 
+r:· .r. 1110101 
+Trans~ission Command Between a and b 
+( 
+Bl 
+
+
+
+===== PAGE 83 / 89 : ESR-L_CPU_tech_manual.pdf =====
+Source 111 a. i I Iha. tx (n) 
+i IY (bp ± n) 
+u (px± n) 
+s {py± n) 
+(bp+ px) 
+!Destination (bl'+H) 
+~ a.dd/sub c/z a.dd/sub c/r. 1uld/suli c./7. 
+01000000.n/ 01000110.0·R·O-r-/ 01000010.n/ 
+01001000.n 01001110.0-R-O·r- 01001010,n 
+3 3 
+" a.de/she c/z aac/sbc c/z 
+01010000,n/ 01010010, n/ 
+01011000,n 01011010,n 
+3 
+" IL 
+I 
+BA a.d a/sub c/z 
+I 01000100,0·R·O·r·/ 
+I' 
+01001100,0-R-O-r- 
+5 
+~ 1.dd/sub c/z 
+it' 01000101,0·R·O·r-/ 
+u 01001101. O·R-O·r- 
+s 7 
+(N) &dd/sub c/z a. d d/ sub c/z 
+(bp± 10 01000001,Nn/ 01000011,N/ 
+(px± N) 01001001,Hn 01001011,N 
+(bp+px) 
+"' 
+.( 
+a.dc/sbc c/z a.dc/sbc c/z 
+01010001,Hn/ 01010011.N/ 
+01011001,Nn 01011011,N 
+f4 .( 
+a.dcl/sbcl c/z 11dcl/sbcl c/z 
+01010101.N/ !01010100,Nn/ 
+01011101,ll !01011100,Nn 
+I 4+ i IS+2X i . 
+dadl/dsbl c/z !Gad l/dsb I · c/z 
+11000101,N/ 11000100,Nn/ 
+11010101,N 11010100,Nn 
+14+ i s+2x i 
+Dyacic Cperaticn No.1 (Acd/Subt=act Command) 
+( 
+82 
+
+
+
+===== PAGE 84 / 89 : ESR-L_CPU_tech_manual.pdf =====
+~ . . ." 
+_ .. ! . " ' 
+. ~. ·: ; r ,, ; . 
+Source.in I& 
+Destination 
+(NJ IJl•d £ ./. 1P•d£ ./. 
+(bp ± H) 01000111,Nn 01010111, N 
+(px± N) 
+(bp+px) ~ 
+" 
+Dyadic Operation No.3 (Pointer Add Command) 
+Source n ' 
+(n) 
+(b p ± n) 
+(p x± n) 
+(py± n) 
+(bp +pr.:) 
+!Destination • J~r+ py) 
+~ and/or/r.:or . /z and/or/xor . /':'. 
+01110000 , n/01111000, n/ 01110111, n/01111111, n/ 
+01101000,n 01101111,n 
+3 
+" (N) ~nd/oc/•o' ./• and/ or /xor ./z a.nd/or/xor ./z 
+(bp:::: N) 1110001,Nn/01111001, 011100 11, n/ 0 11110 11, 01110110,Nn/01111110, 
+(px::'.:: N) n/01101001,Nn n/01101011,n !l./n/01101110,Nn 
+(bp+px) f4 .. 6 
+(LMNJ .. ;;,,;,., ./, i 
+01110010,HMLn/0111101 
+~HMtn/01101010,NMtn 
+7 . 
+Dyadic Ope=ation No.2 (Logical Operaticr. Command) 
+83 
+
+
+
+===== PAGE 85 / 89 : ESR-L_CPU_tech_manual.pdf =====
+( 
+( 
+84 
+Source n a 
+IDutination 
+a tut ./z 
+01100100,n 
+3 
+00 test ./z tut ./z 
+(bp± N) 01100101,Nn !01100111,N 
+(px± H) 
+(bp+px) 4 14 
+(Ll(N] test ./z 
+01100110, 
+~MLn 
+6 
+Dyadic Operation No.5 (Test Command) 
+Source n a lb& x (n) 
+i y (hp±n) 
+u (pr::n) 
+s (r•y±n) 
+(bp+ p:i:) 
+IDestinition (nr+rr) 
+IA Clllp c/z 
+01100000.n 
+3 
+(N) Clllp c/z. cap c/z cmp c/z 
+(bp±Nl 01100001,Nn 01100011,N 10110111.Nn 
+(px:!: ~i) 
+(bp+px) 4 4 6 
+cmp• c/z c111p• c/z. 
+11010110, 11000110,Nn 
+OOOOO·r·,N 
+7 8 
+cmpp c/z. c11r 11 c/z 
+110101-11, 11000111,Mn 
+00000-r-,N 
+9 10 
+(!..MN] Clllp c/z 
+01100010, 
+>lMLn 
+6 
+Dyadic Operation No.4 (Compare Command) 
+
+
+
+===== PAGE 86 / 89 : ESR-L_CPU_tech_manual.pdf =====
+f imr I& ba -~ 
+i I i IY 
+u·stack pushu ./. pushu .I. 1Pushu ./. pushu . I . ~Uh• ./ • push 00101110 00101111 IOOlOl·r· 00101-r· 
+:OlOl·•· 
+3 3 13 -4 
+IPOPU c/z pop a .I. IPOPU . /. popu ./ . IJ!Opu ./ . 
+pop 00111110 00111111 IOOl 1 l·r· OOlll·r· iOOlll·r· 
+2 2 I: 2/i I: 3 3 
+' s·sta.ck pushs ./. pushs 1Pushs 
+push 01001111 
+•v •V [--s] ,r 
+3 [--s), iar 
+pops c/z pops !POPS 
+pop 01011111 
+.y u r, [s++] 
+:2 i ar , [s++) 
+PUSH POP Command 
+c FLAG Control Command 
+set ·reset 
+1/. 
+r:• O/. 
+...... 
+SC 
+10010111 :0011111 
+1 
+Oper&tion di' it increment/ ro tite lshift digit shift 
+Opera.nd e.xchanr;e decrement 
+I S•&p ./z inc/dee ./z ~or/rol c/-:-. :nr/shl c/:. 
+11101110 01101100, 11100]00/ 11110100/ 
+00000-r·/ 11100110 11110110 
+I 3 01111100, 2 2 
+i I 00000-r- -- 
+h i 3 
+% y u s 
+(n) inc/dee ./z ror/rol c/z snr/shl c/z dsrl/dsll ./z 
+(bp:: n) 0 11 0 11 0 1, n/ 11100101,n/ 11110101, n/ 11111100,n/ 
+(p :t _:_ n) 01111101,a 11100111,n 11110111,n 11101100,n 
+(bp+ px) 3 3 3 {+i 
+Monacic Operation 
+( 
+85 
+
+
+
+===== PAGE 87 / 89 : ESR-L_CPU_tech_manual.pdf =====
+call an .. eturn 
+I 11n 
+Near ca 11 . I. r e t .I . 
+00000100,na 00000110 
+s 14 
+hr e s l l I . /. r e t I . /. 
+~0000101,nmlOOOOOll~ 
+~ s 
+CALL RETURN Cor..mand 
++n -n ian It (n) 
+lmn y (hp± n) 
+u (px± n) 
+s (bp-!-p::) 
+Nea.r j r . I. jr .I. j p .I. 
+ever 00010010,n 00010011,n 00000010,r.:: 
+3 3 
+' jrz .!. jrz . I. jpz .!. 
+zero 00011000,n 00011001,n 00010100,nm 
+j: 3/n j: 2 j: 3/n j: 2 j: 4/nj: 3 
+jrnz . I. jrnz . I. j p ll z . I . 
+non·zero 00011010,n 00011011.n 00010101,nm 
+j: 3/n j: 2 j : 3/ n j : 2 j:4/nj:3 
+jrc .!. jrc . I. j J7 c . I . 
+c:i.rry 00011100,n 00011101,n 0 0 0 l 0 110, nm 
+j: 3/n j: 2 j ! 3/n j: 2 j :.(/nj: 3 '· 
+['"' .r. 
+jrnc ./. jpnc . / . 
+non·ca.rry. 0011110,n 00011111,n OOOIOlll,n11 
+:J/nj:2 j: 3/ n j: 2 j:l./nj:3 
+IF a.r jp{ .!. j p ./. jp . I . 
+00000011, nm I 00010001, 00010000,n 
+00000-r· 
+5 14 6 
+.JUMP C ornrnan d 
+( 
+86 
+
+
+
+===== PAGE 88 / 89 : ESR-L_CPU_tech_manual.pdf =====
+*} When the number of operands for the inte:nal memory is 
+only one, the assembler generates PRE-BYTE shown in the 
+column marked with• above is reqardless o! whether the 
+operand is the first or second one. 
+2nd.operand (n) (bp ± n) (py± n) (bp + py) 
+ht operand * 
+(N) - . I. - .I . - . I. - .!. 
+00110010 00110000 00110011 00110001 
+1 1 1 1 
+(b p ±Ii} - .r. - . I . 
+f ./ . 00100010 00100011 0100001' 
+1 1 
+(px± Ii) - . I. - .! . - .r. - ./ .. 
+00110110 IOOl 10100 00110111 00110101 
+l 1 1 1 
+(bp+px) - . I. - . I. - . I . - . / . 
+00100110 00100100 00100111 00100101 
+. 1 . 1 l 1 
+. . 
+PRE-BYTE (Internal Memory AdC.ressing Mode .~etting Byte) 
+' · 
+"'"'it Ion· It i mer Iha It ore 
+oper&tion clea.r 
+!wL j t ill Op . I. tc I .I. ~l LI t . I. 1U f [ . I. 
+11101111 00000000 11001110 11011110 1101-1111 
+When pes- 11."hen pas- 
+1+ j 1 1 s!.n;: 21 Sin;: 21 
+CPU Control Cor.~and 
+reset interrupt ~eturn 
+interrupt 
+r-eset . I. int . I. reti .I . 
+11111111 11111110 00000001 
+6 12 7 
+?..ESET INTERRUPT Comrr.and 
+( 
+87 
+
+
+
+===== PAGE 89 / 89 : ESR-L_CPU_tech_manual.pdf =====
+~ 
+- 
+; 0,, 1 2 .. 3. 4 5 6· r s 9 -A B c D E F ..... :.· '; 
+- . NOP JP 
+I 
+IPR[ 
+ADO AOC CMP AND ... I. 
+IMI Ill\ 
+Ml tx Ml 
+IMI 
+WI 
+J 
+o·: .. 111 Url l 111 A {i,) .A 1a1.11J lla1:: 1a1.{r1l •• ;.{111! l•I A.I A.I A.1 A.• A. t1i Ill .. •i ·~ IBPt1l 
+R£TI JP PR[ I PRE ADO AOC 
+IOIP 
+ANO ... , , ... I 1111 1.11· 
+Im 
+\Ill> l"I~ 1 ... 1·11. 
+1 rl IBP• • I I •ml laJ .D 1• 1.n l• I D 1111 .a IL.111 IL [rl) 11111 IL [r,].IL •• • 1111 1~ • ~ lar. 11U .h]: j •• (11 '· I 
+IBP• PY1 I IBPH YI i 
+JP JI! Pi[ 
+'Pll[ 
+ADO AOC C\CP AND Ml' l\IV r, 
+Ml ,[X~ \ (\'~ 
+r I \ff P 
+2 .. H IBP+•I la) A. In A 111 ius).n 1~111) .• BA. 1n1 b.'\ Iii. tal .BA (r,. .BA •Il l ,. , , •.. tit :. 111, I . { t J ~ • ••. (111} 
+In/ •nl I 
+JPF JR PR[ PRl ADD .'1X 1('4P ANO Ill l\t\l ''4\ Ml 1m \l\L 
+I "It l"\l 
+I 
+3 la A 
+-· llbh ml ,., In' .A In/ .A ! in· .A 1n1 .A I 1111 II [13: in: I [1J; I •lo) 11: '~) .1&.0 .•. ir3<t I&. l111J 
+i IPH ol 1PY+nl + J 
+(AU. JPZ PH m AOD ALXL TEST Ml \ti' 1\1\ LI\ \Cl DADL DSbc kUlr : !)H~ 
+! 4 •• •• IBP+P\ I IP\;- a} ,, •• ,,, A.a A.B \ lnl '>.. (131 ,,, \ Ir,:>. la J 111 ,. '. -t . A h 
+lb Pt ol i~f ,.,,,, t • i . ( ~ ' ' 
+1~ ~F 
+JP~Z Pko If'::[ ADll AlA.L I TEST Ml \I', 
+1\1\ 
+[M\ \I\ 1 (lAlll IJ>!;. :k(Jk 
+l)h• 5- •• IBP+ PX1 lf'>.ta J l] .t ta I.A 1111.n b A \' '"' Y ir,) 
+I'" 
+l lr3! I 1 ••i .A Ir.'·" , .. , ,, 
+IBP+ P\i ·•~+P¥1 
+im Jf'( PR[ I Pk[ ADO M\'l I H ST ANU ~.-. lll1 
+I"\ 
+\Cl ll\4~111 l\CF• l~Ol i ~~' ~ •• IBPtPXI 1 •Px+a l r1.r1 lal tx + l.ia) n ,. , 111) Ll.lh) IL lrJ: ir.1.l1 ilJ I (.,' I 1a 1 111! 
+" 
+:~ I 
+- r al I I I 11) •nl ' 
+l[TF JP he Pi[ pk[ P\COF ~\IOF TEST A~(l \IV lsi. 1111· l'\IP (\IPP (M!I'~ IOL )JI[ 
+1 •• IBP+PXI I PX+a! .. , ' 1a1 .A -er . A .~.in: ~ 1n1 
+I I'' s .. , '" .. , "' ,, r, '" ,,, 
+:. IPl to ! 1PYto l 
+Ml' nz PUSHU POPU Sl'B SB( WR Oil MV rll 
+I"'\ 
+II\ 
+1\1\ 1\1\ "II' WI 
+s~· A.I +. A .\ A.I A.o 
+'·' 
+A.1 A.llaoi ·'·I,.,; [lu ) .\ l11d .. o\ 
+·~' 
+111 lia&.._'t (13) ,,, (11:)11) 
+~~~- ~:.·: I I 
+r; f9.~. 
+M\' JllZ Pt1SHU POPU si•a S8( ~Ok Ok Ml r)\ II\ Ml M\'\l' 11\V. 11\'Y. W\'Y. 
+ll. 1 
+-· 
+IL IL ,., .. '•'·· '• ). 1 laJ.A IL ha•i 1l{ 111j [Ian) .ll [ 111 ).JL 1• 1.lai hu .• {1li,l11 [11:).lol 
+v, .... . 
+w.f ~7;; llV JRNZ PUSHU POPU sus SBC 101! 01 Ml' ~I \ti Ml' .,.1·p lllP Mvr MVP 
+iAi:1_ BA ... •• BA BA A.111 A. 111 hlll i.• (~llli.• B\. llll• i Bl. { '" j ha1J .ti.I {111) tiA t• i. ill (me: IL {rll 111 [111).i.J 
+' .~ .,,. llV JllNZ Pl•SHU POPU SUB SB( XOR Oil MV 
+ti 
+Ml 111· 
+tVL 
+Mil llVL 11\l 
+~ '.87( 1 ... -· I I 111 . .\ 111.A lnl .A 101 .A 1(1 •• 1 I. (111] [l•• l .I [111) .I l•l .111 haa .• , IT, t +) . (111).111 
+.• 11, 111 
+~ ...... ~ MV JR( PUSHU POPl' SUB SBCL INC DEC Ml' Ml Ill Iii\' Ml' Ml'P DSl.L OSll 
+c· - l. lu to l l rz. ~~ lel 111 
+' r l .(lu ] X [loJ) 11 .. r.x [111] .X ta) .I ,~,.la• ,,, ,,, i~~l::f 
+~ . r. • Ill ' )RC PUSHU POPU SUB SBCL IN( 0£( MV 111· 111· MV MVW n B Ill' 
+;o::'. Y.la1 
+-· 
+y y r1.r 111.A 111 111 r.11 .. ; \.(111) (lu).l' 1111) y 111.M A I r2.r2 r2.r2 
+' , .. 
+f] .IJ r1r1 
+111· IJHC PUSHU l'Ol'U SUB M\'l Wll Oil WI' 111· II\ II\' TCL HALT S~AP II 
+:fj'!'' ,~, •• +• r F '•·'I IX • •I 1a1. l1J ,., II / ~ lr.1] l'.iuJl llal~ .l' (111).U A 
+·5 .. :, . .., 
+. <"•. , ... JIN' PUSHU POPU PUSHS POPS IOi Oil Ml' RC WI' lll 'LD OfF "-AIT l[S[T 
+· ; .• S.tu -· IMI IMI F f .\. 11) A 111 s (lao] lt••l .S lal.lal 
+.J ·_."l!; • 
+TABLE INSTRUCTION 

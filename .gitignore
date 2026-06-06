@@ -1,0 +1,9 @@
+src/bin/
+src/obj/
+Reference/CSharpWrapper/src/bin/
+Reference/CSharpWrapper/src/obj/
+_verify_outputs/
+*.user
+*.suo
+.vs/
+*.githubcheck.*

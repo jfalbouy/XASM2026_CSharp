@@ -1,0 +1,22 @@
+; XASM2026-3 listing - SAMPLE5.ASM
+; Lines: 60
+; Code: 00E000h - 00E01Dh [30 bytes]
+
+; Bytes:
+00E000 00 00 00 00 56 FF 01 08 00 09 00 0B 02 00 90 24 
+00E010 90 24 90 24 90 24 90 24 90 24 90 24 90 24 
+
+; Sections:
+;   INIT             00E000h  00E006h  7
+;   MAIN             00E007h  00E01Dh  23
+
+ - Symbols -
+
+00E007h  MAIN
+00E007h  POINT
+000002h  POINT_SIZE
+000000h  POINT_X
+000001h  POINT_Y
+000002h  VERSION
+
+  No fatal error.

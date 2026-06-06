@@ -1,0 +1,1 @@
+SAMPLE5.native.obj: SAMPLE5.ASM

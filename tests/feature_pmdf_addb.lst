@@ -1,0 +1,14 @@
+000100                   	        ORG     0100H
+000100 30 47 EC 06       	        PMDF    (0ECH),6
+000104 57 02             	        PMDF    (BP+2),A
+000106 30 E8 37 FB       	        PUSHS   IMR
+00010A 2F                	        PUSHU   IMR
+00010B 46 01             	        ADDB    A,IL
+00010D 44 23             	        ADDW    BA,I
+00010F 45 45             	        ADDP    X,Y
+000111 4E 01             	        SUBB    A,IL
+000113 4C 23             	        SUBW    BA,I
+000115 4D 45             	        SUBP    X,Y
+000117                   	        END
+
+  No fatal error.  Code: 000100h - 000116h [       23 byte(s)]

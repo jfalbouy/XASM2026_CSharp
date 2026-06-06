@@ -1,0 +1,63 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug coverage_all",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build xasm2026-3",
+      "program": "${workspaceFolder}\\src\\bin\\Release\\net8.0\\xasm2026-3.dll",
+      "args": [
+        "coverage_all.asm",
+        "-O",
+        "coverage_all.debug.obj",
+        "-L",
+        "coverage_all.debug.lst",
+        "-E",
+        "-S",
+        "-TZ",
+        "-C",
+        "-W",
+        "-H",
+        "-I",
+        "coverage_all.debug.hex",
+        "-M",
+        "coverage_all.debug.s19",
+        "-P",
+        "coverage_all.debug.map",
+        "-D",
+        "coverage_all.debug.d",
+        "-B",
+        "coverage_all.debug.uu",
+        "-X",
+        "coverage_all.debug.txt",
+        "-V",
+        "-R"
+      ],
+      "cwd": "${workspaceFolder}\\tests",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    },
+    {
+      "name": "Debug REGISTER",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build xasm2026-3",
+      "program": "${workspaceFolder}\\src\\bin\\Release\\net8.0\\xasm2026-3.dll",
+      "args": [
+        "REGISTER.ASM",
+        "-O",
+        "REGISTER.debug.obj",
+        "-L",
+        "REGISTER.debug.lst",
+        "-E",
+        "-B",
+        "REGISTER.debug.uu",
+        "-V"
+      ],
+      "cwd": "${workspaceFolder}\\Exemples\\REGISTER",
+      "console": "integratedTerminal",
+      "stopAtEntry": false
+    }
+  ]
+}

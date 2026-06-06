@@ -1,0 +1,97 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build xasm2026-3",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}\\src\\Xasm2026.Native.csproj",
+        "-c",
+        "Release"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "coverage_all toutes options",
+      "type": "process",
+      "command": "${workspaceFolder}\\src\\bin\\Release\\net8.0\\xasm2026-3.exe",
+      "args": [
+        "coverage_all.asm",
+        "-O",
+        "coverage_all.vscode.obj",
+        "-L",
+        "coverage_all.vscode.lst",
+        "-E",
+        "-S",
+        "-TZ",
+        "-C",
+        "-W",
+        "-H",
+        "-I",
+        "coverage_all.vscode.hex",
+        "-M",
+        "coverage_all.vscode.s19",
+        "-P",
+        "coverage_all.vscode.map",
+        "-D",
+        "coverage_all.vscode.d",
+        "-B",
+        "coverage_all.vscode.uu",
+        "-X",
+        "coverage_all.vscode.txt",
+        "-V",
+        "-R"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}\\tests"
+      },
+      "dependsOn": "build xasm2026-3",
+      "problemMatcher": []
+    },
+    {
+      "label": "assembler REGISTER",
+      "type": "process",
+      "command": "${workspaceFolder}\\src\\bin\\Release\\net8.0\\xasm2026-3.exe",
+      "args": [
+        "REGISTER.ASM",
+        "-O",
+        "REGISTER.vscode.obj",
+        "-L",
+        "REGISTER.vscode.lst",
+        "-E",
+        "-B",
+        "REGISTER.vscode.uu",
+        "-V"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}\\Exemples\\REGISTER"
+      },
+      "dependsOn": "build xasm2026-3",
+      "problemMatcher": []
+    },
+    {
+      "label": "assembler VOGUE",
+      "type": "process",
+      "command": "${workspaceFolder}\\src\\bin\\Release\\net8.0\\xasm2026-3.exe",
+      "args": [
+        "VOGUE.S",
+        "-O",
+        "vogue.vscode.obj",
+        "-L",
+        "vogue.vscode.lst",
+        "-E",
+        "-B",
+        "vogue.vscode.uu",
+        "-V"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}\\Exemples\\VOGUE"
+      },
+      "dependsOn": "build xasm2026-3",
+      "problemMatcher": []
+    }
+  ]
+}

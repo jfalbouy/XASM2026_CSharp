@@ -1,0 +1,5775 @@
+
+
+===== PAGE 1 / 99 : pce500_tech_manual.pdf =====
+1990.oS
+DIVISION
+~ PC-ESOO
+TECHNICAL REFERENCE MANUAL 
+SHARP CORPORATION 
+INFORMATION SYSTEMS GROUP 
+PERSONAL EQUIPMENT 
+
+
+
+===== PAGE 2 / 99 : pce500_tech_manual.pdf =====
+(OOH'05H)
+(01H)
+(02H)
+(03H)
+(04H)
+(05H)
+(08wOEH)
+(08H)
+(09H)
+JOCS Entry " .
+IOCS
+(OOH)
+(01H)
+(02H)
+(03H)
+Writing (04H)
+(05H)
+Writing (06H)
+(07H)
+(08H)
+(09H)
+(OAH)
+(OSH)
+(OCH)
+(OEH)
+OH)
+1FILE
+Contents 
+..................................... CHAPTER 1 
+ CONTROL SYSTEM 
+Howtocall 
+ 1 
+Function 
+ 3 
+........................................... File Handle Table 4 
+......................................... Contents of error 5 
+................................... Explanation of Each Function 6 
+....................................... Creating a file 
+ 6 
+....................................... Opening a file 
+ 6 
+....................................... Closing a file 
+ 7 
+.............................. Reading a block of the file 
+ 7 
+............................... 
+a-block of the file 
+ 8 
+............................... Reading a byte of the file 
+ 8 
+............................... 
+a byte of the file 
+ 9 
+...................................... Verifying a file 
+ 9 
+............................ Nondestructive reading a file 
+ 10 
+.................................. Moving a file pointer 
+ 10 
+....................... Reading various information of a file 
+ 11 
+..................... . Changing directory information of drive 
+ 11 
+..................... Searching for corresponding file name 
+ 12 
+..................................... Renaming a file (ODH) 12 
+....................................... Deleting a file 
+ 13 
+.......................... Reading a free capacity of drive (OFH) 13 
+........................... Initializing a file control system (1 
+ 13 
+.................................. File name character string 14 
+.......................................... CHAPTER 2 OUTLINE OF 
+ 15 
+17 
+.......................................... Device number 17 
+......................................... Command number 17 
+Errorcode 
+ 18 
+......................... Device Driver Control Command 
+ 20 
+.......................... Checking the header address 1 
+ 20 
+.......................... Checking the header address 2 
+ 20 
+............................... Checking the drive name 
+ 21 
+................................. Processing the format 
+ 21 
+......................................... All initialize 
+ 21 
+............. Processing the File of Standard Character Device 
+ 22 
+............................... Character device OPEN 
+ 22 
+.............................. Character device CLOSE 
+ 22 
+
+
+
+===== PAGE 3 / 99 : pce500_tech_manual.pdf =====
+Writing
+(50H)
+(51H)
+(52H)
+(54H)
+37
+(4AH)
+(4BH)
+(4CH)
+(4DH)
+(4EH)
+(4FH)
+(46H)
+(47H) •..... ................................
+(48H)
+STOO:
+(3FH) E500
+(40H) .. .•.............................
+(41H) ••.................
+(OCH)
+(OAH)
+Write block (OSH)
+(OEH)
+(1Ow17H)
+°H)
+1H) .........
+(12H)
+(13H)
+(14H)
+(15H)
+(16H)
+(17H)
+(2Ow2FH)
+(3Fw7FH)
+(3FH)
+10CS (40H)
+(41w7FH)
+..................................... Read byte data 
+ 22 
+..................................... Write byte data (ODH) 23 
+..................................... Read block data 
+ 23 
+..................................... 
+data 
+ 23 
+........................... Nondestructive read byte data 
+ 24 
+.................. File Processing of Standard Block Device 
+ 24 
+....................................... Media check (1 
+ 24 
+................... Media parameter block address (1 
+ 25 
+........................................ Read sector 
+ 26 
+........................................ Write sector 
+ 26 
+.................................. Write 8 verify sector 
+ 27 
+........................................ Verify sector 
+ 27 
+........................................ Status read 
+ 28 
+................................... Get sector address 
+ 28 
+........................ Processing of Special File Device 
+ 29 
+. 
+...................................... Other Devices 
+ 30 
+................................... Format processing 
+ 30 
+.................................... 
+initialization 
+ 30 
+.......................... Function peculiar to device 
+ 30 
+.................................. CHAPTER 3 HOW TO USE EACH DEVICE 31 
+............................... No . 00 Icd Driver 
+ SCRN: 31 
+............................... Format 
+ peculiar to 
+ 32 
+Initializing LCD driver 
+ 33 
+One character output to arbitrary position 
+ 33 
+................................. Setting cursor position 
+ 33 
+Character output to arbitrary position 
+ 34 
+......................... Setting the type of cursor display 
+ 34 
+...................................... Symbol display 
+ 35 . 
+n line scroll-up 
+ 35 
+.................................... n line scroll-down 
+ 35 
+.......................................... Clear line 
+ 36 
+.................................. 8-dot pattern display 
+ 36 
+.................................... 8-dot pattern read 
+ 36 
+....................................... 1-dot display 
+ 37 
+......................................... 1-dot read 
+ 37 
+........................................ Line display 
+..................................... . Paint out of box 
+ 38 
+................................ Setting of display state 
+ 38 
+.................................. Clearing of display 1 
+ 39 
+.................................. Clearing of display 2 
+ 39 
+...................................... n line insertion 
+ 39 
+.......................... Reading of one-line dot pattern 
+ 40 
+........................... 
+of one-line dot pattern 
+ 40 
+
+
+
+===== PAGE 4 / 99 : pce500_tech_manual.pdf =====
+Format (3FH)
+Search
+Format (3FH)
+(STDL:PRN:l
+Format (3FHl .
+(41 H)
+(42H)
+(43H)
+RS, RR, (44w49 H)
+of CS CD ports (4Aw48 H)
+t-byte
+Format (3FHl
+(RS232C)
+t'.c 01
+Parameter
+_ :::_ :; ~e;arG,ess (57H)
+s: w::-: (58Hl
+........................... 
+a. 
+ of range 
+ 40 
+. ................................. . 
+a. 
+ . 
+ guide iine 
+ 41 
+.......................................... 
+work 41 
+. 
+ Key Driver (STDI: KYBD:) 
+ 43 
+Format 
+ peculiar to E500 
+ 43 
+.......................... Initialization of key device driver 
+ 44 
+............................... Read out of matrix code 
+ 44 
+...................... Non-destructive reading of matrix code 
+ 45 
+........................................ Key reading 
+ 46 
+............................. Data set to keyboard buffer 
+ 47 
+.......................................... Key clear 
+ 47 
+................................ Display of function key 
+ 48 
+.......................... Parameter for key input device driver 48 
+............................. No . 02 SIO 
+ Driver (COM:) 50 
+50 
+........................... Initialization of each parameter 
+ 51 
+................................... 1-byte direct output 
+ 51 
+.................................... 
+direct input 
+ 51 
+................................... Setting of hardware 
+ 52 
+...................... Setting of 
+ and ER ports 
+ 52 
+........................ Reading 
+ and 
+ 52 
+.......................................... Parameter work 53 
+.............................. No . 03 Printer Driver 
+ 60 
+60 
+Initialization of each parameter 
+ 61 
+................................... Printing data output 
+ 61 
+................................ Read of printing position 
+ 61 
+....................................... Printer check 
+ 61 
+................................... No . 04 Tape Driver (CAS:) 62' 
+Write. read. and verify of the header block 
+ 62 
+........................... Initialization of each parameter 
+ 63 
+................. Write. read. and verify of the data block 
+ 63 
+............................................ Format 
+ 63 
+.......................................... Parameter work 64 
+.......................................... Structure of file 65 
+.............................. No . 05 RAM Disk Driver (E: F: G:) 67 
+............................................ 
+ 67 
+........................... Initialization of each parameter 
+ 68 
+........................ No . 06 Memory Block Driver 
+ S2: S3) 69 
+............................ Initialization of memory driver 
+ 69 
+............................................ 
+ 70 
+............................. 
+for physical address 
+ 70 
+......................................... Ccncense 
+ 70 
+................................. 
+of block size 
+ 71 
+
+
+
+===== PAGE 5 / 99 : pce500_tech_manual.pdf =====
+IOCS
+Type of Variable .
+(45H,46H) .•...•••.....•............
+(40H) .
+..... .~..... ..... .... .. .... .. .. .. .. ..... .. ........
+(45H) .
+(46H) .....••.. ..•••.•......•.......
+Power off (41H)
+Creation.of
+Rename of block 
+ 71 
+Transfer of block 
+ 72 
+memory block 
+ 72 
+Deletion of memory block 
+ 73 
+Creation of memory block 2 
+ peculiar to E500 
+ 73 
+Parameter of memory block device 
+ 74 
+Structure of slot 
+ 74 
+No . 07 2.5 " FDD Driver (X: Y:) 
+ 75 
+Initialization of each parameter 
+ 75 
+No . 08 System Control Driver 
+ 76 
+76 
+..................................... Secure the work 
+ 77 
+Execution of 
+ 78 
+Acquire the address for processing 
+from the intermediate code 
+ 78 
+No . 09 Function Driver 
+ 79 
+83 
+Internal format of numeric value (at execution of operation) 
+ 83 
+Internal expression of character string 
+ 84 
+...................................... 
+Special Technique 85 
+BASIC 
+ 87 
+Internal expression of BASIC program 
+ 87 
+Location to store data 
+ 90 
+................................................ Interrupt 91 
+..................................... List of interrupt factor 91 
+
+
+
+===== PAGE 6 / 99 : pce500_tech_manual.pdf =====
+- 1 -
+0:
+• 0:
+•
+•
+Input/output
+input/output
+., cA("'L..F t/
+OFFFE4H·
+Input
+input/output
+input/output to /fromsystem
+FILE
+CHAPTER 1 
+ CONTROL SYSTEM 
+File control 
+ is the software to execute the file processing or 
+the device. In BASIC programming, in addition to the ordinary file processing, input 
+from key and output of PRINT statement are executed through this file transaction. Fil- 
+ing is performed using the file handle. Also, file and device are operated in the same 
+way. Accordingly redirection of 
+ is possible between the device and the 
+file. 
+How to call 
+To use the file control system, enter function number in 
+ register and execute far call 
+of 
+ For some functions, a, (cl), x, or y register may be used. 
+and output include characters, drawing line in the display and calculation of func - 
+tion. 
+This means every program has input and output. However, various levels (degree or 
+stage) of 
+ are required by the program. 
+of our pocket computer can be largely classified into three levels. Fea- 
+tures of each level are as follows. 
+Level 2: Level on which each device can be handled as a file. On this level, you 
+can only open a file, receive the data and close the file. 
+Level 1: Function of each device driver is utilized to its utmost on this level. Var- 
+ious functions can be used in accordance with device. You can handle a 
+function etc. only on this level. 
+Level 
+ Hardware is operated directly on this level. The operation on this level is 
+troublesome, but processing is very quick. 
+Concrete example of level as to LCD device 
+Level 2: It is possible to execute all processing that can be executed by OPEN state - 
+ment in BASIC. 
+Level 1: Commands such as writing the character, drawing the line from the arbitrary 
+position in the display or scrolling down etc. are supported to perform various 
+processing. 
+Level 
+ Every processing can be performed on this level. Actually it is rather difficult 
+to operate LCD, though it is very quick. 
+Level is considerably related to compatibility of program with different type device. 
+
+
+
+===== PAGE 7 / 99 : pce500_tech_manual.pdf =====
+·2 -
+IOCS
+structure/extension
+"0"
+o
+1
+IOCS
+Eachdevice
+r"--- ...... -- .....SlQ.....I--...J--...J-----.L-__J dnver
+Calif OFFFE4HCalif OFFFE8H
+&HFFFDC)
+BUilt-In
+Relation Input
+2.5" FDD 
+BEEP 
+of 
+ and output 
+(Call 
+Command number 
+software such as BASIC 
+I 
+Level 2 
+Level 
+Hardware I Level 
+When creating program with this pocket computer, it is recommended to use level 
+(direct operation of hardware) only when you have to perform quick processing to cor- 
+respond to succeeding device. (Actually, it is better not to use level 
+. . . . . . . . . . . . 
+Following is the outline of each chapter. 
+Cassette 
+CHAPTER 1: File control system (level 2) 
+How to use F.C.S. 
+CHAPTER 2: Outline of 
+ (level 1) 
+Instruction of 
+ of device driver 
+Explanation of call from file control system of device driver 
+Key 
+3: Use of each driver (level 1) 
+Mainly, explanation how to use (command) of individual device driver. 
+
+
+
+===== PAGE 8 / 99 : pce500_tech_manual.pdf =====
+bytes
+- 3-
+byte
+OOH
+01H
+02H
+03H
+04H
+OSH
+06H
+a7H
+a8H
+09H
+OAH
+aSH
+DCH
+OOH
+OEH
+OFH
+10H
+Function No.
+(004H)
+(OOSH)
+(006H) =
+(QD7H)=(qU: 1
+(008H) ~I):
+(009H) (dk):
+(OOAHr (Soi):
+(OOSH
+(OOCH
+~i):
+1 byte: (bl), (bh), (cl), (eh),
+Supplement) . 
+For transfer of parameter, symbols such as (cx), (dh) other than CPU register 
+are used. These are the logic register existing in some specified position on the 
+internal RAM, to make up the number of CPU registers. 
+(dl), (dh) 
+2 bytes: (bx), (cx), (dx) 
+3 bytes: (si), (di) 
+Internal RAM address Connection 
+= (bl): 1 byte 
+ (bx): 2 
+= (bh): 1 byte 
+(el): 1 byte 
+ (cx): 2 bytes 
+byte 
+= 
+ 1 byte 
+ 2 bytes 
+= 
+ 1 byte 
+3 
+(ODDH) = 
+ 3 bytes 
+Function 
+The contents of each function are shown below. 
+Create a file 
+Open a file 
+Close a file 
+Read a file block 
+Write a file block 
+Read a byte of file 
+Write a byte of file 
+Verify a file 
+Nondestructive read of file 
+Move a file pointer 
+Read of various information on file 
+Alteration of directory information of drive 
+Search of corresponding file name 
+Rename a file 
+Delete a file 
+Read of empty capacity of drive 
+Initialization of file control system 
+
+
+
+===== PAGE 9 / 99 : pce500_tech_manual.pdf =====
+stdo:
+::·'_f;'-fCBNo.o T
+31 p)"te:'S
+1.:... "~_"'''''''''''''"''"_' _ _''~''''' __'' _....._ . -e- .'. """::-",-l>", ----
+'--- .......~f~,kii¥ct;;&ll
+E
+corre-
+- 4 -
+=
+0=
+#n
++F
++3
++3
+~ +1
+BFC6DH+O
+File Handle-Table 
+File handle table is stored in the system memory and shows the relation of file handle 
+and FCB number. File handle is the value returned from the file control system when a 
+file is opened and it is a kind of 
+ of BASIC. 
+This value is used to read or write a command. The FCB is the table on which infor- 
+mation for controlling file is written and indicates which is FCB number. 
+Address File handle FCB No. Control block 
+sponding to FCB No. 
+Here, file handles from 
+ to 
+ and 
+ are included in the FCB number. 
+FCB number 
+unused 
+This file handle table can be altered directly with application. However, the following 
+operations will cause incorrect execution of file control. 
+(1) to write FCB number that is not open in the table. 
+(2) to delete FCB number that is open from the table. 
+0, 1, and 2 of file handle are reserved by the system. When BASIC is activated, these 
+file handles have been already opened and are assigned as follows. 
+Handle 
+ LCD display (standard output) 
+Handle 1 =key (standard input) stdi: 
+. Handle 2 
+ printer (standard listing output) stdl: 
+
+
+
+===== PAGE 10 / 99 : pce500_tech_manual.pdf =====
+- 5-
+OOH
+01H
+02H
+03H
+04H
+05H
+06H
+07H
+08H
+09H
+OAH
+OSH
+OCH
+FEH
+FFH
+. 
+Contents of error 
+When an error occurred in each function, cf = 1 is obtained, it returns to a register with 
+the following error codes. 
+An error occurred in the device and aborted. 
+The parameter is beyond the range. 
+The specified file does not exist. 
+The specified pass code does not exist. 
+The number of files to be opened exceeds the limit. 
+The file whose processing is not permitted. 
+Ineffective file handle was attempted. 
+Processing is not specified by open statement. 
+The file is during open. 
+The file name is duplicated. 
+The specified drive does not exist. 
+Error in data verification. 
+Processing of byte number has not been completed. 
+Fatal low battery. 
+Processing has been interrupted. (break key was pressed.) 
+
+
+
+===== PAGE 11 / 99 : pce500_tech_manual.pdf =====
+cf = 1
+=
+=
+o
+o
+o.
+.- 
+Explanation of Each Function 
+After entering function number and various parameter, execute fcall of 
+ Expla- 
+nations of each parameter are as follows. 
+Creating a file 
+New file with the specified file name is created in the corresponding drive and is 
+opened so that read and write are possible. When the file has been in the drive, open 
+with the file size 
+File attribute to be opened is given by putting value in a register. The file pointer is set 
+at 
+ Open as the read-out file in the read-out only device and as the write -in 
+file in the write-in only device. 
+entry 
+= 
+a = file attribute 
+bit 
+ write protect 
+bit 1 invisible 
+x = the lead address of file name character string 
+ in last with 
+shift JIS) 
+return 
+cf = 
+(cl) 
+ File handle 
+a 
+ File attribute 
+Error (a = 
+Opening a file (01 
+Open a file of the specified file name. File pointer is set at 
+ Even if the file is 
+opened for writing -in, new file is not created. In case the file cannot be opened in the 
+specified mode, an error occurs. 
+entry 
+a = 
+ File is opened for reading-out. 
+2 File is opened for writing-in. 
+3 File is opened for reading and writing 
+x = the lead address of file name character string 
+ in last with 
+shift JIS) 
+
+
+
+===== PAGE 12 / 99 : pce500_tech_manual.pdf =====
+=
+c~=
+E~~or =OOH, 06H, 07H, OCH, FFH)
+cf= 0
+=0
+=
+cf =1
+o
+=
+cf =1
+==
+cf=0
+(cl) 
+ File handle 
+a 
+ File attribute 
+Error (a = 
+Closing a file 
+Close a file of the specified file handle. Renewed directory information or FAT is writ- 
+ten on the display. The file handle is released. 
+entry 
+(cl) 
+ File handle 
+return 
+cf = 
+No error 
+Error (a 
+Reading a block of the file 
+Reading of datas with a specified number of bytes from files "in the specified file han- 
+dle" and writing into specified memory. 
+The number of bytes can be chosen by using the code 
+ (end of file) which speci - 
+fies the whole file or by specifying the number of bytes to be read. 
+entry 
+(cl) 
+ File handle 
+x =The lead address to which data is transferred. 
+y = Number of bytes to be read 
+a: bit 0 
+ File end is 
+ code. 
+(Pointer stops indicating 
+ is read.) 
+1 File end is a physical end of the file. 
+(Pointer stops indicating final byte of pointer + 1) 
+return 
+x = Next data of the read data 
+y = Number of read bytes 
+1 
+(a 
+x 
+ Sex: address that read correctly. 
+y 
+ of bytes that was read correctly. 
+
+
+
+===== PAGE 13 / 99 : pce500_tech_manual.pdf =====
+==
+=
+=
+o
+o =0).
+o
+0.=
+b
+cf=1
+cf=1
+Writing a block of the file 
+Write the data of specified number of bytes in the file of the specified file handle from 
+the specified memory. 
+Also, if the number of bytes to be written is set at 
+ (y 
+ the block from the file 
+pointer to the file end is discarded. 
+entry 
+(cl) = File handle 
+x =The lead address of data 
+y =Number of bytes to be written 
+return 
+cf = 
+x 
+ Next data of the written data 
+y 
+ Number of written bytes 
+Error (a 
+x 
+ Next address that was written correctly. 
+y 
+ Number of bytes that was written correctly. 
+Reading a byte of the file 
+Read 1-byte data in the register from the file of the specified file handle. You can 
+specify whether the file end is set 
+ code or in the physical file end. 
+entry 
+i = 
+(cl) = File handle 
+a : bit 0 = 
+ Fiie end is 
+ dode. 
+(Pointer stops indicating 
+ is read.) 
+1 File end is a physical end of the file. 
+(Pointer stops indicating final byte of pointer + 1) 
+return 
+cf = 
+Data 
+= Number of read data 
+Error (a 
+
+
+
+===== PAGE 14 / 99 : pce500_tech_manual.pdf =====
+·9-
+=
+=0
+=
+=
+o
+=
+cf = 1
+cf=O
+ofihe
+Writing a byte 
+ file 
+Write 1-byte data to the file of the specified file handle. 
+. entry 
+(cl) 
+ File handle 
+a = Data 
+return 
+cf = 
+b 
+ Number of read data 
+cf = 1 
+Error (a = 
+Verifying a file 
+Read the data of number of specified bytes from the file of the specified file handle and 
+verify the contents of memory. 
+You can specify whether the file end is set in 
+ code or in physical file end. 
+entry 
+(cl) = File handle 
+x =The lead address of the data to be verified 
+y 
+ Number of bytes to be verified 
+a: bit 0 
+ File end is 
+ code. 
+(Pointer stops indicating 
+ is read.) 
+1 File end is a physical end of the file. 
+(Pointer stops indicating final byte of pointer + 1) 
+return 
+x 
+ Next address of the data that was verified 
+y = Number of bytes verified 
+Error (a = 
+x =Address of data that an error was occurred 
+y = Number of bytes verified 
+
+
+
+===== PAGE 15 / 99 : pce500_tech_manual.pdf =====
+0, ofla' register
+(0
+- 10·
+=
+7= 0
+IS
+cf = 1
+cf =0
+=OOH:
+01H:
+02H:
+cf=0
+=
+ooaaaHFFFFFH
+Nondestrucfive reading a file 
+Read I-byte data into a register from the file of the specified file handle. File point 
+does not move. 
+entry 
+= 
+(cl) 
+ File handle 
+a: bit 0 = 
+ File end is 
+ code. 
+(Pointer stops indicating 
+ is read.) 
+1 File end 
+ a physical end of the file. 
+(Pointer stops indicating final byte of pointer + 1) 
+bit 
+ without data 
+1 with data 
+return 
+a = Data at the position on which the file pointer is. 
+b = Number of read bytes 
+ or 1) 
+when number of bytes is 
+ value 
+ is invalid. 
+cf = 1 
+Error (a = 
+Moving a file pointer 
+Move the specified amount of the file pointer with the specified method. Value from 
+to 
+ is specified. 
+In the write open mode, you can specify the value beyond file end. It is not possible to 
+specify excessively in the read open mode. 
+entry 
+= 
+(cl) = File handle 
+(si) =Number of bytes to move (3 bytes) 
+a 
+ Relative value from the file top (24 bits without sign) 
+Relative value from present position (24 bits with sign) 
+Relative value from file end + 1 (24 bits without sign) 
+return 
+(si) 
+ File pointer value (3 bytes) 
+error (a 
+
+
+
+===== PAGE 16 / 99 : pce500_tech_manual.pdf =====
+- 11 -
+e~"-,., ~,
+c' = .
+Size
+oattribute
+i nrr.e information OOH
+cats information OOH
+c:=0
+teeR iRla~
+~~"PGQ'5g .<L"~,,,,"~e 9",'~
+y =The leadaddress Ofmemory which directory information
+cf=1
+(1 byte)
+(1 byte)
+OH
+6H
++EH=" ..
+FH
+12H
+=
+=
+=
+cf=O
+=
+=0:
+::e:""._
+-ea: ; e 5ze. pcr.ter
+Reac.~g var.cus intormation
+ of a file 
+:re 
+ value, file name, extension and attribute in the file that is 
+(cl) = File handle 
+a 
+ Reading of file size, pointer value 
+1: Reading of file name, extension and attribute 
+x =Address to read various information of file (when a 
+ 1) 
+return 
+when called out with (a = 0) 
+. 
+a 
+ Open attribute 
+b = Device attribute 
+(si) = File pointer value 
+(di) 
+ File size 
+when called out with (a 
+ 1) 
+X + 
+ = drive name + 
+ : 
+ (6 bytes) 
++ 
+ = file name (8 bytes) 
+. 
++ 
+ = extension (3 bytes) 
++ 
+ = attribute 
+error (a 
+Changing directory information of drive 
+Read and change the directory information of the drive. This is used for processing of 
+files. 
+entry 
+i = 
+a 
+ Reading of the directory information of drive 
+1 Writing of the directory information of drive 
+x =The lead address of a file name character string 
+I. I 
+in 
+ is 
+written (write directory information) 
+y + 
+ byte 
++ 
+ (all 
+ when not specified) 
++ 3 
+ (all 
+ when not specified) 
++ 
+ ' e 
+ (read only) 
+. 
+,a 
+
+
+
+===== PAGE 17 / 99 : pce500_tech_manual.pdf =====
+- 12 -
+cf =1
+error OOH.02H. 03H. OSH.08H. 09H. OAH. FFH)
+cf= 0
+- iA la5t with 6t:lilt .lIst-
+=
+~OA ;1'1last "ill, sl,ift jl~)
+file=
+cf = 1
+cf= 0
+=
+file
+(OOAi••last witi'l ~RiH dIS)
+=
+Tor
+FILE
+CHAPTER 1 
+ CONTROL SYSTEM 
+Searching 
+ corresponding file name 
+Search for the file in the specified direction from the specified directory number. Wild 
+card can be used for the file name character string to be searched for. Also, it is pos - 
+sible to specify disregard of error. 
+entry 
+i = 
+a 
+ Search for the back of the specified directory number 
+Search for the front of the specified directory number 
+Perform 
+ disregarding to be invisible 
+81 
+ Perform 01 
+ disregarding to be invisible 
+(bx) 
+ Directory number to start searching (This position is also 
+searched for.) 
+x =Lead address of 
+ name character string to be searched 
+for. 
+y 
+ Lead address to return the result 
+return 
+(bx) =Directory number of the file detected 
+x = Lead address of file name character string to be searched 
+for 
+y = Lead address of file name character string that was detect- 
+ed 
+error (a 
+Renaming a file 
+Rename the file to the specified name. 
+entry 
+x 
+ Lead address of 
+ name character string before renaming 
+y 
+ Lead address of file name character string after renaming 
+return 
+none 
+(a = 
+
+
+
+===== PAGE 18 / 99 : pce500_tech_manual.pdf =====
+• 13.
+i=10H
+=OOH 01H"
+01H
+Initializing (10H)
+=
+o
+string (OGAi, i last i~ilRsAift diS,.
+drive(OFH)
+cf= 0
+nil
+cf=,
+error (a=DOH.02H. 03H, OSH. OAH. FFH)
+return
+tOeA iA1831with sl:1ift Jist
+file (OEH)
+Deleting a 
+Delete the specified file. 
+entry 
+x =Lead address of the file name character string to be deleted 
+Reading a free capacity of 
+Examine free capacity of the specified drive. 
+entry 
+a=O 
+x =Drive name character 
+return 
+cf = 
+(si) 
+ Free capacity of drive (3 bytes) 
+cf = 1 
+error (a = 
+a file control system 
+Initialize the work, FCB, file handle table, file buffer in the file control system. 
+entry 
+a 
+ Operation of initialization of the work and "a= 
+Release all FCB, file handle, and file buffer. Open 
+standard input, standard output, standard listing out 
+put. 
+Release file handle other than standard. 
+return 
+nil 
+
+
+
+===== PAGE 19 / 99 : pce500_tech_manual.pdf =====
+• 14 -
+I II : I
+C~AP'7"E'" 1 F,LE CONTROL SYS,EM
+File name character string 
+File name character string consists of the drive name and file name 
+Drive name is expressed in the byte from 1 to 5. End of drive name is marked with a 
+colon. 
+File name is expressed in 8 bytes filling from the head. The space is used to fill va - 
+cancy. Put period (.) at end of the file name. 
+Extension 
+Extension is expressed in 3 bytes from the head. The space is used to fill vacancy. 
+Vacancy may be filled with only space. Put 
+ in last. 
+1-5 bytes 8 bytes 3 bytes 
+. Drive name 
+ File name 
+
+
+
+===== PAGE 20 / 99 : pce500_tech_manual.pdf =====
+• 15 •
+built-in device IS
+Next address ~! f-r--. M '
+!
+8
+I I I
+this
+• ADevice
+OFFFFFH
+•
++8
++5
++4
++3
+IOCS
+IOCS
+OOH
+I
++0
+tile-
+cAlLF
+-tefti+ot FFFE8H_
+CHAPTER 2 OUTLINE OF IOCS 
+CHAPTER 2 OUTLINE OF IOCS 
+IOCS is a software with which you can make efficient use of the hardware. In addition 
+to a display and key, memory control and power control are provided as IOCS. As a 
+compatibility will be given on this level in future, it is recommended to design your ap- 
+plication software or device driver in accordance with this spec. 
+You can use IOCS by performing 
+ Command is used to operate 
+control and peculiar to device. 
+The IOCS consists of the IOCS main routine, IOCS routine of individual device, and 
+IOCS header. As the IOCS is built in the system by the IOCS header, you can write a 
+program assembled by the machine language and add the header to correspond with 
+new device or to alter the function of existing device. 
+Structure of IOCS header 
+Address to next 
+ header 3 bytes 
+Device number 1 byte 
+Device attribute 1 byte 
+Entry address of each 
+ 3 bytes 
+Drive name n bytes n byte 
+List the drive name marked with a colon. 
+in last. 
+Drive name is expressed in max. 5 bytes. 
+Address of next IOCS header 
+Lead address of next IOCS header is shown. In the case of last header, 
+is set. 
+number 
+The number to represent 
+ device. Device number is peculiarly assigned to each 
+device. 
+newly 
+ Device in ROM in the E500 
+Next address 
+ Next address 
+ Next address 
++ 8 + 8 + 
+In case of same device name, newly 
+ selected. 
+
+
+
+===== PAGE 21 / 99 : pce500_tech_manual.pdf =====
+. 16-
+0, "COM2" 1.
+"COM'"
+"COM1:"
+IOCS
+read/write,
+=
+simultaneously.
+=0
+=
+=0:
+=
+"COM2",
+•
+IOCS
+•
+ Device attribute 
+The following information to show characteristics of device is stored. 
+Bit 7 
+ 1: device able to handle file -control 
+Bit 6 = 1: special file device (device that cannot be handled with standard process - 
+ing by file-control) ' 
+Bit 5 
+ block device (device controlled by cluster) 
+1: character device 
+Bit 4 
+ 1: device that default is performed by ASCII code. 
+Bit 3 
+Bit 2 = 1: device that read and write cannot be executed 
+Bit 1 
+ 1: write enable device 
+Bit 0 = 1 : read enable device 
+For example, 
+ is the special device that enable 
+ but cannot execute 
+read and write simultaneously. 
+entry address 
+Address of 
+ entry. If BlOS call is executed, the desired header is detected 
+from BlOS number and control is transferred to the address shown in BlOS main 
+routine processing. 
+Drive name 
+List the drive name (max. 5 bytes) enable to handle by the header marked off with a 
+colon, and write OOH in the end. For example, if the drive name is 
+ and 
+indicate as follows. 
+The drive number corresponds to the drive name. In the above example, 
+becomes 
+ to 
+
+
+
+===== PAGE 22 / 99 : pce500_tech_manual.pdf =====
+• 17 -
+08H• OFHi
+10H - 1FH
+20H·3FH
+3FH
+40H
+41H ·7FH
+SOH· FFH
+STOO:I SCR.N : 0 0 , 1
+Key - 1 0 , 1
+2
+°3 0,1 A2H
+4 0
+F:,G: 5 0, 1, 2 83
+si. S2: S3: 6 0, 1,2
+I I
+7 0
+8 0
+9 NIL
+ca.n 'f\Ot {
+aso:i/(l.bJe.1
+H
+and
+IOCS
+roes
+CHAPTER 2 OUTLINE OF 
+Entry 
+Device number 
+Device number is the peculiar number to represent the device. If the different numbers 
+in every IOCS header 
+ unable to handle'are specified, an error occurs. 
+Device attribute is as follows. 8 
+ is the standard block device, AX is standard 
+character device and 
+ and C 
+ are special devices. 
+IOCS 
+Display 
+SIO 
+Printer 
+Tape 
+Memory file 
+Memory card 
+2.5" FDD 
+System 
+Function 
+Drive name 
+STDI:, KYBD: 
+COM: 
+STDL:, PRN: 
+CAS: 
+E:, 
+X: 
+SYSTM: 
+NIL 
+Device No. 
+-- 
+Drive No. Device attribute 
+A2 H 
+A1 H 
+D3H 
+D7H 
+H 
+C3H 
+OOH 
+OOH 
+OOH 
+Command number 
+IOCS entry command number consists of the part common to every device and the in- 
+dividual part of each device. Contents of the command are as follows. 
+Command for IOCS main routine. It does not jump to entry of each 
+IOCS. 
+File processing of standard character device. Use from file-control. 
+File processing of standard block device. Use from file-control. 
+File processing of special device. Use from file-control. 
+Format processing 
+Initialization. Common to all devices 
+Processing peculiar to each device 
+Reserve 
+
+
+
+===== PAGE 23 / 99 : pce500_tech_manual.pdf =====
+- 18·
+IOCS
+• =OOw1FH, 40H
+OOH
+01H
+_02H
+03H
+04H
+OSH
+06H
+07H
+OSH
+09H
+FEH
+FFH
+• =2Ow3EH
+DOH
+01H
+02H
+03H
+04H
+OSH
+06H
+07H
+OSH
+D9H
+OAH
+OSH
+OCH
+OOH
+FEH
+FFH
+IOCS
+CHAPTER 2 OUTLINE OF 
+Error code 
+When an error occurred, each 
+ entry is returned with cy = 1. In this return, an er- 
+ror code is set in a register. Error codes are classified into 4 systems depending on 
+the commands. 
+Command No. 
+An attempt was made to write in the media of write protect. 
+The drive does not exist. 
+The drive is not ready. 
+The command cannot be handled. 
+The media has been changed. 
+Write error 
+Read error 
+Verify error 
+Device unable to write 
+Device unable to read 
+Fatal low battery 
+Break was made. 
+Command NO. 
+An error occurred in the device and aborted. 
+The parameter is beyond the range. 
+The specified file does not exist. 
+The specified pass code does not exist. 
+The number of files to be opened exceeds the limit. 
+The file processing is not allowed. 
+Invalid file handle was used. 
+Processing is not specified when opened. 
+The file is during open. 
+The corresponding file does not exist. 
+The file name is duplicated. 
+The specified drive does not exist. 
+Verify error 
+Processing of the specified number of bytes has not been completed. 
+Fatal low battery 
+Break was made. 
+
+
+
+===== PAGE 24 / 99 : pce500_tech_manual.pdf =====
+loes
+. 19·
+•
+•
+CHAPTER 2 OUTLINE OF 
+Command No. 
+Same error code with BASIC 
+Command NO. 
+Refer to specifications of each device. 
+
+
+
+===== PAGE 25 / 99 : pce500_tech_manual.pdf =====
+·20·
+cy= error (a=01 H)
+=
+=02H
+(cI)=
+0:
+i= 01H
+(cl) =
+cy 0:
+cy = error (a=01 H)
+(cI)
+IOCS
+CHAPTER 2 OUTLINE OF 
+Device Driver Control Command 
+Searching for the drive name 
+Search the device number and drive number from the specified drive name. 
+en try 
+x = drive name lead address 
+return 
+= device number 
+(ch) = drive number 
+. 
+ = 
+ no error 
+1: 
+Checking the header address 1 
+Search the header address from the specified device number. 
+entry 
+device number 
+return 
+cy = 
+ x = header address 
+cy = 1 : error (a 
+Checking the Header Address 2 
+Search the header address from the specified device number. 
+entry 
+i 
+device number 
+x 
+ the first header address to start searching for return 
+return 
+cy = 0: x = header address 
+1: 
+
+
+
+===== PAGE 26 / 99 : pce500_tech_manual.pdf =====
+- 21 -
+0:
+cy
+=0: =
+cy= (a=01H)
+= 0: wdtten
+20H·by
+x=
+lOCS
+CHAPTER 2 OUTLINE OF 
+Checking the drive name 
+Search the drive name from the specified device number and drive number. 
+entry 
+= 
+(cl) = device number 
+(ch) = drive number 
+the lead address of area that returns drive name 
+(6 bytes are required.) 
+return 
+cy 
+ drive name +colon is 
+ from the position indicated 
+x, and filled with 
+1: error 
+Processing the format 
+Execute format of the device of the specified drive name. 
+entry 
+x = the lead address of (drive name +the set information charac- 
+ter string) 
+return 
+cy 
+ x 
+ next address processed as the set information char- 
+acter string 
+= 1: error 
+(a 
+ same error code with BASIC) 
+All initialize 
+Initialize all of the stored devices. 
+entry 
+= 
+a = initialization level 
+all reset 
+1: reset 
+2: off 
+3: on 
+return 
+nil 
+
+
+
+===== PAGE 27 / 99 : pce500_tech_manual.pdf =====
+- 22·
+=
+cy=0:
+return
+reading/writing
+file-
+.- ... 'II - ~-
+-- - ,,:::_ .......... ~...---­- -..-_- =._- .:..
+Processing the File of Standard Character Device 
+Common commands are provided for the character device that is able to handle 
+control with common processing. By supporting the following commands, file-control 
+car, be handled as the standard character device. 
+Character device OPEN 
+Execute initialization when the standard character device is opened. 
+entry 
+= 
+(cl) = device number 
+(ch) =drive number 
+x =the lead address of file name (1 2 bytes) 
+a = OPEN mode 
+1: for reading 
+2: for writing 
+3: for 
+return 
+cy 
+ : error (a = 
+Character device CLOSE 
+Execute processing when the standard character device is closed. 
+entry 
+= 
+(cl) =device number 
+(ch) =drive number 
+return 
+none 
+Read byte data 
+Read the data of 1 byte only. 
+entry 
+= 
+(cl) =device number 
+(ch) =drive number 
+no error 
+a =data 
+cy 
+ 1 : error (a 
+ 01 
+
+
+
+===== PAGE 28 / 99 : pce500_tech_manual.pdf =====
+·23 -
+cy =0:
+Cj =1: =O'H. 02H. 03H• 04H• OSH.08H. FEH. FFH)
+=
+=
+return
+=
+cy 0:
+==
+=OAH
+(c1)
+=
+cy 0:
+.ocs
+CHAPTER 2 OUTLINE OF 
+Write byte data 
+Write the data of 1 byte only. 
+entry 
+i 
+(cl) = device number 
+(ch) = drive number 
+a = data 
+return 
+= 
+ no error 
+cy 
+ 1: error (a 
+Read block data 
+Read out the data to the specified position by the specified number of bytes only. 
+entry 
+i 
+= device number 
+(ch) =drive number 
+x = The lead address to which data is transferred. 
+y = Number of bytes to be read 
+return 
+x 
+ Next address that read correctly. 
+y 
+ Number of bytes that was read correctly. 
+= 
+ no error 
+cy 
+ 1: error (a = 
+Write block 'data 
+Write out the data from the specified position by the specified number of byte only. 
+entry 
+(cl) = device number 
+(ch) =drive number 
+x =The lead address of the data 
+y = Number of bytes to be read 
+x 
+ Next address that read correctly. 
+y 
+ Number of bytes that was read correctly. 
+no error 
+error (a 
+
+
+
+===== PAGE 29 / 99 : pce500_tech_manual.pdf =====
+·24·
+=
+cy 0:
+=0:
+(10H)
+=
+cy=O:
+=
+...... ., .....-- ~ ...~.....- ~~~ --
+Nondestructive read byte data 
+Read data by only 1 byte. Data is returned but not deleted. 
+entry 
+(cl) 
+ device number 
+(ch) = drive number 
+return 
+no error 
+a = data 
+cy 
+ 1: error (a 
+File Processing of Standard Block Device (1 OH-1 
+Common command is provided to block device in which file-control is handled with 
+common processing. By supporting the following commands, file control can be used 
+as the standard block device. 
+Media check 
+Store in memory the media that is currently installed for checking of the media change. 
+Delete the contents stored. 
+entry 
+(cl) = device number 
+(ch) =drive number 
+a 
+ Media is stored in memory. After that, when the media is 
+changed, an error occurs. 
+1: Makes change of media possible. 
+2: Check whether at present media has been changed or 
+not. 
+return 
+= 
+ no error 
+cy 
+ 1 : error (a = 01 
+
+
+
+===== PAGE 30 / 99 : pce500_tech_manual.pdf =====
+directo-
+...)
+- 25 -
+sector/32
+=x
+ries/number
+2)/1.5]
+E,F)
+1092
+(x +5) =OOH
+(x+6)=01H
+0)=
+=
+cf 0
+Media
+IOCS
+CHAPTER 2 OUTLINE OF 
+parameter block address (1 
+The lead address of several bytes which show the physical structure of media is re- 
+turned. 
+entry 
+(cl) = device number 
+(ch) = drive number 
+return 
+= 
+ : no error 
+x 
+ the lead address 
+- (x + 
+ media descriptor 
+of media parameter block 
+byte (first byte of FAT) 
+(x + 1, 2) =number of bytes per sector (2 bytes of low and hi) 
+(x + 3) = (number of directories entered in a sector) - 1, but 32 bytes 
+per directory. 
+(x + 4) = 
+ (number of directories entered in a sector) 
+(x + 7, 8) = number of spare sectors (2 bytes of low and hi) - lead sector 
+of FAT 
+(X + 9) 
+(x +A, B) =number of root directories (2 bytes of low and hi) 
+(x + C, D) = Lead sector of data (2 bytes of low and hi) 
+(x + 
+ = Number of usable sectors + 1 (2 bytes of low and hi) 
+(x + 10) = Number of sectors occupied with 1 FAT 
+(x + 11, 12) = Lead sector of directories (2 bytes of low and hi) 
+However, number of bytes per sector = 2n 
+ 32 (n 
+ 1, 2, 
+number of directories contained in one sector = number of by- 
+tes per 
+Number of sectors occupied by one FAT = [number of usable sec- 
+tors + 
+Lead sector of directory =number of spare sectors + number of sectors 
+occupied by one FAT 
+Lead sector of data = lead sector of directory + [(number of root 
+of directories entered in one sector)] 
+Number of usable sectors = total number of sectors - lead sector of data 
+[x] =the smallest integer more than x 
+
+
+
+===== PAGE 31 / 99 : pce500_tech_manual.pdf =====
+- 25 .
+=
+=
+=
+=
+=
+=
+cf =0
+=
+=
+=
+=
+=
+=
+=
+==
+cf= 0
+=
+=
+Cr., the
+sector( 12H)
+Read 
+number of specified sectors is read to the specified position. 
+entry 
+(cl) 
+ device number 
+(ch) =drive number 
+x 
+ address to which sector is transferred 
+(dx) =number of addresses to be transferred 
+(bx) = sector number to start transfer 
+return 
+x 
+ address that transfer has been completed + 1 
+(dx) 
+ number of sectors correctly transferred 
+(bx) 
+ sector number that transfer has been completed + 'I 
+cf = 1: error (a= 
+x 
+ address of data in which an error occurred. 
+(dx) =number of sectors that has not been transferred correctly. 
+(bx) 
+ sector number to continue transfer 
+Write sector (1 
+Only number of bytes that was specified from the specified position is written. 
+entry 
+(cl) 
+ device number 
+(ch) 
+ drive number 
+x 
+ address to which sector is transferred 
+(dx) 
+ number of addresses to be transferred 
+(bx) =sector number to start transfer 
+return 
+x 
+ address that transfer has been completed + 1 
+(dx) 
+ number of sectors correctly transferred 
+(bx) 
+ sector number that transfer has been completed + 1 
+cf 
+ 1: error (a = 
+x 
+ address of data in which an error occurred. 
+(dx) =number of sectors that has not been transferred correctly. 
+(bx) 
+ sector number to continue transfer 
+
+
+
+===== PAGE 32 / 99 : pce500_tech_manual.pdf =====
+==
+=
+=
+=
+cf =0
+=
+x=address
+=
+=
+=
+=
+=
+=
+=
+cf= 0
+=
+&
+Write 
+ verify sector 
+Only number of sectors that was specified from the specified position is written and 
+after that is verified. 
+entry 
+return 
+Verify sector (1 
+(cl) = device number 
+(ch) 
+ drive number 
+x =address to which sector is transferred 
+(dx) = number of addresses to be transferred 
+(bx) = sector number to start transfer 
+x =address that transfer has been completed + 1 
+(bx) 
+ sector number that transfer has been completed + 1 
+cf 
+ 1: error (a 
+x 
+ address of data in which an error occurred. 
+(dx) 
+ number of sectors that has not been transferred correctly. 
+(bx) 
+ sector number to continue transfer 
+Only number of sectors that was specified from the specified position is verified. 
+entry 
+(cl) 
+ device number 
+(ch) 
+ drive number 
+to which sector is transferred 
+(dx) =number of sectors to be verified (number of bytes) 
+(bx) 
+ sector number to start to verify. 
+return 
+x 
+ address that transfer has been completed + 1 
+(bx) =sector number that transfer has been completed + 1 
+cf 
+ 1: error (a = 
+x 
+ address of data in which an error occurred. 
+(dx) 
+ number of sectors that has not been transferred correctly. 
+(bx) 
+ sector number to continue transfer 
+
+
+
+===== PAGE 33 / 99 : pce500_tech_manual.pdf =====
+- 28 -
+=
+=
+=
+o
+=
+=
+1=0: ???
+???
+drive=
+o
+0=
+=
+IOCS
+CHAPTER 2 OUTLINE OF 
+Status read 
+The specified drive attribute is read. 
+entry 
+(cl) 
+ device number 
+(ch) = drive number 
+return 
+cf = 
+ba bit 
+ 0: non write protect drive 
+1 : write protect 
+bit 
+= 1: 
+cf 
+ 1: error (a 
+Get sector address 
+The address of the specified sector is got. 
+entry 
+(cl) = device number 
+(ch) 
+ drive number 
+(bx) =sector number 
+return 
+cf = 
+x 
+ lead address of the specified sector 
+(cx) = sector size 
+(di) 
+ lead address of lead sector of the specified drive 
+cf 
+ 1 : error (a = 01 
+
+
+
+===== PAGE 34 / 99 : pce500_tech_manual.pdf =====
+·29 -
+(cl), i,
+•
+j= 20H DOH
+21H 01H
+22H 02H
+23H 03H
+24H 04H
+25H 05H
+26H OSH
+27H 07H
+28H 08H
+29H 09H
+2AH OAH
+2BH OBH
+2CH OCH
+2DH ODH
+2EH OEH
+2FH OFH
+10C:
+CHAPTER 2 OUTLINE OF 
+Processing of Special File Device 
+Execute processing of file control device that is neither standard character device nor 
+standard block device. 
+Contents of entry operation and error code are same as file-control. For more details, 
+refer the file-control. 
+Command No. file -control 
+Creating a file 
+Opening a file 
+Closing a file 
+Reading a block of the file 
+Writing a block of the file 
+Reading a byte of the file 
+Writing a byte of the file 
+Verifying a file 
+Non-destructive reading a file 
+Moving a file pointer 
+Reading various information of the file 
+Changing a drive directory information 
+Searching for corresponding file name 
+Renaming a file 
+Deleting a file name 
+Reading a drive space capacity 
+Entry specification 
+Registers 
+ (ch), x, y, 
+ a,.. , same as file-control, are called after putting FCB 
+No. in (dl). When using FCB as work, use this value as a reference. 
+. 
+
+
+
+===== PAGE 35 / 99 : pce500_tech_manual.pdf =====
+·30 .
+cf 0:
+1: 01H. FEH. FFH)
+0:
+Ices
+=
+cf =0
+x=
+=
+=
+INIT
+IOCS
+CHAPTER 2 OUTLINE OF 
+Other Devices 
+Format processing 
+Format processing of device (media) common to all devices. 
+For example, card is initialized in RAM file, or parameter is set when COM: device. 
+Format is called out with 
+ in BASIC program. 
+entry 
+(cl) 
+ device number 
+(ch) =drive number 
+x 
+ lead address of set information character string 
+return 
+next address that was processed as set information character 
+string. 
+cf = 1: error (same error code as a 
+ BASIC) 
+initialization 
+Each device is initialized in accordance with the specified level. 
+entry 
+= 
+(cl) = device number 
+(ch) = drive number 
+a = 
+ all reset initialization of all parameters 
+1: reset initialization of some parameters 
+2: off initialization for "off " 
+3: on initialization for "on" 
+return 
+= 
+ no error 
+cf = 
+ error (a = 
+Function peculiar to device 
+Command for use of function peculiar to each device 
+
+
+
+===== PAGE 36 / 99 : pce500_tech_manual.pdf =====
+- 31 •
+OSH ~Je3l3eeiBII3Fes9i.ing t..) • ." opera..tl"OVl
+09H --NospeerBI plocessillg Non op-c. rGl-t:io ...
+OAH
+OSH
+OCH
+OOH
+OEH
+OFH
+•
+• STDO:
+•
+••
+LCD Driver STDO:
+CALL&HFFFDC
+OSFEOOhH OSFE02H
+../'" CALL'HFFf~S
+(V (<:ALLFmr
+IOCS ex- l"rFFEP:I-I
+CHAPTER 3 HOW TO USE EACH DEVICE 
+This chapter describes how to use all device drivers equipped in the pocket computer 
+as standard features. 
+The device driver supports two command groups in rough classification. One is the 
+part called from the file control system explained in the previous chapter. And other is 
+"operation particular to each device " detailed in this chapter. 
+After setting the specified register, etc., each device driver is called using 
+plained in previous chapter. 
+And, command that requires only register il, (cl), (ch) is called after writing each value 
+for address 
+ to 
+ with setting as'follows. 
+For example, if called as follows, power is turned OFF. 
+POKE 
+The following is command list and the method to use peculiar commands of each de - 
+vice driver separately shown. 
+The "NO." of the left end of device name indicates the device number particular to 
+each device driver. 
+No. 00 
+ SCRN: 
+ = 
+. LCD driver is the following type of device. 
+Device usable as a file. 
+Standard character device 
+Able to write only. 
+LCD driver is opened as a standard output. 
+Command list 
+Command for standard character device 
+- 
+- 
+Error 
+Output to display 
+Error 
+Output to display 
+Error 
+Error 
+
+
+
+===== PAGE 37 / 99 : pce500_tech_manual.pdf =====
+·32 -
+•
+FH
+•
+2Ow2FH
+• 3FH Fo,. In (t t tin~
+40H
+41H
+42H n
+43H'Not
+44H
+45H
+46H
+47H n
+48H n
+49H
+4AH
+48H
+4CH 1
+4DH 1dot.
+4EH
+4FH
+50H
+51H
+52H
+53H
+54H n
+55H
+56H
+57H
+58H
+(3FH)
+entry
+(ex)=OOOOH
+il= 3FH
+CHAPTER 3 HOW TO USE EACH DEVICE 
+Command for standard block device 
+1 OH-1 
+ Error 
+Command for special device 
+Error 
+Command peculiar to each device 
+Initialization of each parameter 
+1 character output to arbitrary position 
+character output to arbitrary position 
+used 
+Sets cursor position 
+Sets type of cursor display 
+Performs symbol display 
+line scroll-up 
+line scroll-down 
+Clears 
+ line. 
+Displays 8-dot pattern. 
+Reads 8-dot patterns. 
+Displays 
+ dot. 
+Reads 
+Displays line. 
+Paints out the box. 
+Sets display state. 
+Clears display. 
+Clears from the specified position. 
+(Deletes one line.) 
+Inserts 
+ line. 
+Transfers one-line dot pattern to memory. 
+Displays dot pattern on the memory. 
+Displays regardless of display range. 
+Displays guide line. 
+Format 
+return 
+nil 
+
+
+
+===== PAGE 38 / 99 : pce500_tech_manual.pdf =====
+·33 ·
+(ex) =OOOOH
+i =0044H
+0:
+(ex) =OOOOH
+j =0041H
+0:
+(ex) =OOOOH
+jl =0040H
+Initializing LCD driver 
+Initialize work area of LCD driver. 
+entry 
+a = level of initialization 
+all reset 
+1: reset 
+2: off 
+3: on 
+return 
+nil 
+One character output to arbitrary position (41 
+Output one character. After output, add 1 to x coordinate (bl). No processing is ex- 
+ecuted if it is outside range. 
+entry 
+(bl) = x coordinate at output position 
+(bh) = y coordinate at output position 
+a =output data 
+return 
+(bl), (bh) = indicates next display position 
+cy = 
+ normal completion 
+cy = 1: outside range 
+a =output data 
+Setting cursor position 
+Set the display position of cursor. Condition of cursor does not change. 
+entry 
+(bi) = cursor x coordinate 
+(bh) = cursor y coordinate 
+return 
+cy =An attempt was made to display outside range. 
+
+
+
+===== PAGE 39 / 99 : pce500_tech_manual.pdf =====
+·3 4·
+(.pIG
+CoI /
+I () ()Insert
+~.(; I
+OG0:
+). 10=
+=
+=
+=
+(ex) =OOOOH
+i =0045H
+0:
+0:
+(bt),
+position (42H)
+Character output to arbitrary 
+Character string is displayed. (bl) is displayed with adding one address. When 
+reached right end of display, display is stopped. 
+entry 
+(cx) = 
+= 
+(bl) = x coordinate at output position 
+(bh) = y coordinate at output position 
+x =the lead address of character string 
+y = length of character string 
+return 
+(bh) = next display position is indicated. 
+x =address of data shown in last + 1 
+y =number of data that was not displayed. 
+cy = 
+ Displayed all. 
+1: Stopped display. 
+Setting the type of cursor display 
+Set the cursor type. 
+entry 
+a = 
+ Cursor is not displayed. 
+Bit 7=0 
+Bit 6 
+ 0 
+Bit 5 
+ Cursor is displayed. 
+Bit 4 
+ 0 
+Bit 3 
+ Blink 
+Bit 2-0 = 
+return 
+nil 
+Underline 
+ 6 
+1: Double underline 
+2: Full mark 
+3: Full space 
+4: 
+ mark 
+
+
+
+===== PAGE 40 / 99 : pce500_tech_manual.pdf =====
+·35·
+0,
+0, DSL,
+0,2ndF,
+0, RAD,
+(ex) :: OOOOH
+i =0048H
+(bx)=OOOOH
+(ex) =OOOOH
+i=0047H
+(bx) =OOOOH
+(ex) =OOOOH
+i =0046H
+entry
+ON/OFF
+Symbol display 
+Execute 
+ of symbol. 
+a =symbol pattern (1 =light up) 
+(bl) = symbol number 
+0: 0, 0, 0, 0, 0, 0, 
+ Low battery 
+1: 0, 0, 0, 
+ PRO, RUN, BUSY 
+2: 0, 0, 
+ CAPS, hyp, kana, lower case 
+3: 0, 0, 
+ DE, G, 
+ E, PRINT 
+return 
+nil 
+n line scroll -up 
+Execute scroll-up. Number of lines can be specified. 
+entry 
+a =number of lines to be scrolled. 
+return 
+nil 
+n line scroll -down 
+Execute scroll-down. Number of lines can be specified. 
+entry 
+a =number of lines to be scrolled. 
+return 
+nil 
+
+
+
+===== PAGE 41 / 99 : pce500_tech_manual.pdf =====
+- 36 -
+(ex) =OOOOH
+004BH
+[dotsop]
+0sFc9bH _.y 0:
+( \Mer t: Q.ye<t.)
+U:;,C CAI,.,M UCYlvCI,.,MAt-' t:H.j
+I 
+ nuw 
+ u 
+Clear line 
+Clear the specified line. 
+entry 
+(cx) = 
+(bh) = Y-coordinate of the line to be cleared. 
+return 
+nil 
+8-dot pattern display 
+Pattern of one vertical line composed of 8 dots is displayed in down direction from the 
+displayed arbitrary dot. 
+entry 
+(cx) = 
+= 
+x =X-coordinate on upper end of the pattern 
+y =Y-coordinate on upper end of the pattern 
+a = pattern data (1 =light up, upper end is LSB) 
+=operation mode when dot is displayed. 
+light up 
+1: clear 
+2: reverse 
+return 
+nil 
+8-dot pattern read 
+Pattern of one vertical line composed of 8 dots is read in down direction from the dis- 
+played arbitrary dot. 
+entry 
+= 
+x = X-coordinate on upper end of the pattern 
+y =Y-coordinate on upper end of the pattern 
+return 
+a =pattern data (1 =light up, upper end is LSB) 
+
+
+
+===== PAGE 42 / 99 : pce500_tech_manual.pdf =====
+- 37 •
+2:
+0:
+[dotsopj
+_f
+0BFc9bH
+(WIJt'"ka.vea.)
+(ex) =OOOOH
+i =004EH
+(ex) = OOOOH
+i 004DH
+0: lightup
+=Y-coordinate
+=
+(ex)=OOOOH
+i 004CH
+t-dot (4CH)
+display 
+Displayed arbitrary 1 dot is lit and cleared. 
+entry 
+. 
+= 
+x 
+ X-coordinate of dot 
+y 
+ of dot 
+a =operation 
+1: clear 
+2: reverse 
+return 
+nil 
+read 
+Displayed arbitrary 1 dot is read. 
+entry 
+= 
+x = X-coordinate of dot 
+y = Y-coordinate of dot 
+return 
+a =data (1 =light up) 
+Line display 
+Straight line is drawn between the specified 2 points in accordance with mode. 
+entry 
+x = X-coordinate of start point 
+y = Y-coordinate of start point 
+(bx) = X-coordinate of end point 
+(dx) = Y-coordinate of end point 
+= operation mode when dot is displayed. 
+light up 
+1: clear 
+reverse 
+
+
+
+===== PAGE 43 / 99 : pce500_tech_manual.pdf =====
+·38-
+(ex) =OOOOH
+i =0050H
+0:
+[dotsop]
+(ex) =OOOOH
+i =004FH
+return 
+=specify the dot pattern in 16-bit data. 
+return x = X-coordinate of end point 
+y = Y-coordinate of end point 
+[linptn] =Pattern next to the last pattern. 
+Paint out of box 
+Paint out a rectangle that has diagonal made of the specified 2 points. 
+entry 
+x = X-coordinate of diagonal . 
+y = Y-coordinate of diagonal 
+(bx) = X-coordinate of diagonal 
+(dx) = Y-coordinate of diagonal 
+=operation mode when dot is displayed. 
+light up 
+1: clear 
+2: reverse 
+[linptn] =specify the dot pattern in 16-bit data. 
+return 
+x = X-coordinate at entry 
+y = Y-coordinate at entry 
+[linptn] = Pattern next to the last pattern. 
+Setting of display state 
+ON and OFF of display 
+entry 
+a = display mode 
+0: OFF 
+1: ON 
+return 
+nil 
+
+
+
+===== PAGE 44 / 99 : pce500_tech_manual.pdf =====
+- 39 -
+(ex)=OOOOH
+i 0054H
+Insert n
+(ex)=OOOOH
+i 0052H
+(ex)=OOOOH
+i=0051H
+I,..:HAI-' j t:.N.j HUW IU U:;it:. I::A(..;HUt:VICI::
+Clearing of display 1 
+Clear the display completely. 
+entry 
+return 
+nil 
+Clearing of display 2 
+Clear the display from the specified position. 
+entry 
+= 
+a =number of characters to be cleared. 
+(bl) =X-coordinate to start to clear 
+(bh) = Y-coordinate to start to clear 
+return 
+nil 
+n line insertion 
+line. 
+entry 
+= 
+(bh) = Y-coordinate to start insertion 
+a =number of lines you want to insert. 
+return 
+nil 
+
+
+
+===== PAGE 45 / 99 : pce500_tech_manual.pdf =====
+·40 -
+=
+(ex) =OOOOH
+i =0057H
+(ex) =OOOOH
+i 0056H
+(ex) =OOOOH
+=0055H
+CHAPTER 3 HOW TO USE EACH DEVICE 
+Reading of one-line dot pattern 
+Expand the dot pattern of one line to an external memory. 
+entry 
+i 
+(bh) =Y-coordinate of line you want to read. 
+x =data expansion address. 
+(240 bytes are necessary.) 
+return 
+nil 
+Writing of one-line dot pattern 
+Write (display) the dot pattern of one line on external memory. 
+entry 
+= 
+(bh) =Y-coordinate of line you want to write. 
+x =data address 
+return 
+nil 
+Displaying regardless of range 
+Display one character regardless of the specified range of display. 
+entry 
+(bl) = X-coordinate of output position 
+(bh) = Y-coordinate of output position 
+a =output data 
+return 
+(bl), (bh) 
+ Next display position is indicated. 
+
+
+
+===== PAGE 46 / 99 : pce500_tech_manual.pdf =====
+·41 -
+(OBFCA1H.
+• (OBFC9BH.
+• (OBFC9CH.
+• (OBFC9DH.
+• (OBFC9EH.
+• (OBFC27H.
+stdo :/scrn
+location
+0:
+=
+=
+=
+(cx) =OOOOH
+i 0058H
+[ ].
+DEVICEHUWTU
+CHAPTER 3 
+ USE EACH 
+Display with guide line 
+Character string is displayed with guide line 
+entry 
+= 
+(bl) 
+ X-coordinate of output position 
+(bh) 
+ Y-coordinate of output position 
+a 
+ Number of character strings 
+b bit 0 = 
+ indicates with [ 
+1: indicates with ( ) 
+bit 8 = 0: display after clearing the specified line. 
+1: display without clearing the specified line. 
+x =line of character string. One character string ends with 
+A character string may be composed of any number of 
+characters, but characters over 7 cannot be displayed. 
+When the 
+ code is on the lead of one character string, 
+portion succeeding to 
+ to the last of that character 
+string is displayed until next 
+ appears. 
+Also, when the 
+ code is at the 
+ other than the 
+lead of one character string, portion from the lead of char 
+acter string to the from of it is displayed. 
+return 
+nil 
+Parameter work 
+Icd mode 
+ 1 byte) 
+Setting of display mode. Character output succeeding bit 6 is displayed reversely. 
+Icd crsr x 
+ 1 byte) 
+X-coordinate of cursor 
+Icd crsr y 
+ 1 byte) 
+Y-coordinate of cursor 
+Icd width 
+ 1 byte) 
+Number of digits possible to display is shown. 
+Icd height 
+ 1 byte) 
+Number of lines possible to display is shown. 
+scrn crsr x 
+ 1 byte) 
+X-coordinate displayed next to 
+ : device is shown. 
+
+
+
+===== PAGE 47 / 99 : pce500_tech_manual.pdf =====
+·42 -
+00W1FH
+20w7FH
+80w9FH
+AOWCFH
+EOWFOH
+(BFC87H.
+(BFC90H.
+(BFC8AH.
+(BFC93H.
+(BFC8DH.
+• (OBFC29H.
+boxfull
+• linprn (OBFC2AH.
+0:
+• dotsop (OBFC96H.
+stdo: /scrn:
+(OBFC28H.
+CHAPTER 3 HOW TO USE EACH DEVICE 
+scrn srst y 
+ 1 byte) 
+Y-coordinate displayed next to 
+ device is shown. 
+1 byte) 
+Specify operational method of the dot that has been already displayed by the line 
+etc. combined with the dot that is about to be displayed. 
+light up 
+1: clear 
+2: reverse 
+2 bytes) 
+Specify the dot pattern that is displayed by the line or 
+ with 16 dots. 
+1 byte) 
+Control code succeeding bit 6 is displayed. 
+(No control operation is executed.) 
+Storing address of character font 
+3 bytes) Storing address for character font 
+3 bytes) Storing address for character font 
+3 bytes) Storing address for character font 
+3 bytes) Storing address for character font 
+3 bytes) Storing address for character font 
+One character is composed of 6 bytes. 
+
+
+
+===== PAGE 48 / 99 : pce500_tech_manual.pdf =====
+(ex) =0001H
+i =3FH
+entry
+ASCII
+3FH Formo.ttl'lfl~
+40H
+H
+42H
+43H
+44H
+45H
+46H
+•
+•
+•
+08H ~Jeflf9CQSSif'lg- tJo ~ _ope (4. t \0 Yl
+09H 40JQprOC9S9if'l~ tJo n -opeva.t ,O V)
+OAH
+OBH
+OCH
+ODH
+OEH
+OFH
+•
+••
+•
+CHAPTER 3 HOW TO USE EACH DEVICE 
+No. 01 Key Driver (STDI: KYBD:) 
+The key driver is a device of the following type. 
+Device possible to use as a file. 
+Standard character device. 
+Only read is possible. 
+The key driver is opened as the standard input of STDI: 
+Command list 
+Command for standard character device 
+Key input 
+Error 
+Key input 
+Error 
+Key input 
+Error 
+Command for standard block device 
+1 OH-1 
+ Error 
+Command for special device 
+20H-2FH Error 
+Command peculiar to each device 
+Initialization of each parameter 
+41 
+ Read out matrix code 
+Non-destructive read out of matrix code 
+Key read out 
+Set data to key buffer 
+Buffer clear 
+Display of function key 
+Format 
+Return the pointer of the table that converts matrix code to 
+ code. (The pointer is 
+not referred inside the device driver.) 
+return 
+nil 
+
+
+
+===== PAGE 49 / 99 : pce500_tech_manual.pdf =====
+-44 -
+CQ,nce I
+=
+1:
+0:
+0,
+=
+" 1/
+!"Ion- Bv$"(
+[ (C PV is stefP'
+Lc
+of
+ofCTRL
+SHIFT
+SHIFT
+0:
+=0
+(ex) =OOOlH,
+i =0041H
+0:
+=0001H
+i=0040H
+l-byte
+tor 2-byte
+l-byte
+2-byte
+entry
+[OBFC2DH1:
+[OBFC30Hj:
+{OBFC33HJ:
+[OBFC36HJ:
+[OBFC39HJ:
+[OBFC3CHJ:
+CHAPTER 3 HOW TO USE EACH DEVICE 
+Pointer of conversion table (each 3 bytes) 
+for 
+ code 
+for 
+ code 
+for 1-byte code of 
+for 2-byte code of 
+for 
+ code 
+ CTRL 
+code 
+62 bytes per one table 
+Initialization of key device driver 
+entry 
+(CX) 
+a 
+ level of initialization 
+all reset 
+1: reset 
+2: off 
+3: on 
+return 
+nil 
+Read out of matrix code 
+Next data is taken out of the buffer of the key scan. 
+If the key is not input, next key input is waited in the state of lo , power. In case key 
+scan is impossible by some reason, such as low battery etc., return as cy 
+ 1. 
+When this routine is called up, counter for auto power off is reset and activates decre- 
+ment. If the key is not input even if the counter is showing 
+ code OFH is brought 
+back. 
+return 
+cy 
+a: bit 7 = 
+ when key is released. 
+when key is pressed. 
+bits 0-6 
+ Matrix code 
+b = 
+ no key input 
+1: key input 
+cy = 1 error ( 
+ ) 
+a = error code 
+
+
+
+===== PAGE 50 / 99 : pce500_tech_manual.pdf =====
+_45 _.
+Auco powlltr'
+OFF
+~E3'~ '~ Ii'Y f.'_';:firilwr~ ~ ~~i ~~~~~--III 10 15PACE1 P hyp RCL
+Ii! a sin STO
+~ I 2 a R cos I
+~ (>"<,BRl( FI 3 S tan
+OFF F2 T FSE
+~SIC 5 E U HEX
+:NU 6· F 1/ DEG
+'fIT F5 7 G I
+as 8 Inll
+ICAPS 9 y I;'
+12nd F Z I
+DEL + EXP
+IS C-CE ., L ; r
+~~
+.. _( r:
+1 )
+~ ., I / +1-
+ta.ple
+=
+ey
+=0
+0:
+=0
+(ex) =000lH
+i =0042H
+CHAP I t.t-I J HUW IU U~t. c;Al,.;Hut. VICE
+Non-destructive reading of matrix code 
+The next data is read from the buffer of key scan. However, the data is not removed 
+from the buffer. In case key is not input, return immediately. . 
+. entry 
+return 
+cy 
+a: bit 7 = 1: when key is released. 
+when key is pressed. 
+bits 0-6 = Matrix code 
+b 
+ :no key input 
+1 :key input 
+= 1 
+ error 
+a 
+ error code 
+Matrix code 
+
+
+
+===== PAGE 51 / 99 : pce500_tech_manual.pdf =====
+-46·
+Ii =TIIl 0 1 / ? 0 - 0 DEL! I 1 "";1: '/ , "7 i • i I
+, I
+r: ~T~~~ '" < : L Y I i 1';" 7 ? iii
+!~~.~,~C~0TR~,L~'~+-~~~~_~~=:_~I-=M-+~J~--m--t--I-+--~1~--t--~-t--A-;--~--t-~~~!----~:--I!
+~ CTRLNT> N ... n I - i I I I 't! "".! I !
+:t- i I) ,
+jl "7 I7' I ..
+mCTRLJ\ CTilL ~ + : I K ( k I " ..,t: a: 1
+t CTR\. J CTIILI. : i,J Z j I ,I I %::J" V j
+_ • CTRLH CTALX
+as
+1
+8 ! H X h. i :7
+II I '"
+CTFIL ' eTR\.l
+B CTRlG CT Al.
+., I
+::I I."I =6&
+~I
+y I1/F
+euE
+E CTlll FCTIILV
+IECTlll ( CTIIl U %
+T I Idos Ta :TR~ 0 CTRl T
+.,
+'" 1 Jc3 s.-!I CTAl C CTRLS
+II;,:;; uN8R ~
+;J 1 !RB2
+c
+IP!IICTAL8 CTALR
+U 'NS
+·IQI .7.,. 1..1 J
+b
+II CTR~" C TALQ QA
+4~£fT fNiE./+first
+--=-
+~ [K
+1st 41H
+I OOH I OFH
+of(waitingfor key input or execut·
+L J"'pr...ese. 1(I,r1&l,i.a.~e,
+cy
+11 0:
+H
+j =0043H
+a:bit
+CHAPTER 3 HOW TO USE EACH DEVICE 
+Key reading 
+Key input routine for the Roman character conversion routine. Execute processing of 
+shift key and ctrl key and then return in 2 bytes of shift JIS +expansion code. In case 
+of no key at call time, it is possible to specify either 
+ing immediate return. 
+entry 
+return 
+(cx) = 0001 
+7 0: return immediately when key does not exist. 
+1: wait for next key in low power mode when 
+key does not exist. 
+= 
+ No key input 
+1: key input 
+a =key data of the first byte 
+b =key data of the second byte 
+= 1: error 
+a = error code 
+-- 
+byte 
+ ~O H 
+2nd byte 
+A] 
+Value returned by key reading 
+ The 
+ byte a =?? (value in the table) 
+b = 
+[CTRL] + [off] 
+
+
+
+===== PAGE 52 / 99 : pce500_tech_manual.pdf =====
+=0001H
+j =0045H
+= 0001H
+i 0044H
+HOW TO
+CHAPTER 3 
+ USE EACH DEVICE 
+Data set to keyboard buffer 
+Set the data to keyboard buffer. 
+Set the keyed-in data displayed with data type of shift JIS +expansion code in the buff- 
+er in which result of Roman character conversion or contents of key function is. Cur- 
+rent data in the buffer is lost. 
+entry 
+(CX) 
+= 
+x =lead address of set data 
+a =number of set data bytes 
+return 
+nil 
+Key clear 
+Clear the key scan buffer and keyboard buffer. 
+entry 
+(CX) 
+return 
+nil 
+Value returned by key reading 
+ the second byte a = 00, b = ?? (value in the ta- 
+ble) 
+Display the following key in 2 bytes by the code came immediately after 
+ code. 
+Auto power OFF 
+- 47 
+
+
+
+===== PAGE 53 / 99 : pce500_tech_manual.pdf =====
+• (BFC46wBFC51H.
+"S1:"is0.If
+• (BFC45H. 1
+• (BFCC3H.
+(BFC41H.
+• (BFCCOH.
+• tBFCBEH ISOFTINT]
+sec
+(OBFCBCH.•
+Interval
+(OBFCBBH.•
+(OBFCBAH.•
+=0001H
+i =0046H
+[BFC3FH]
+CHAPTER 3 HOW TO USE EACH DEVICE 
+Display of function key 
+Display or clear the function key. Display status must be below 3 lines. And, if bit 2 of 
+is set at 
+ 1 
+ display is prohibited. 
+entry 
+(CX) 
+return 
+cy = 1 It was in 4-line display state. 
+Parameter for key input device driver 
+repeat wait 
+ 1 byte) 
+Specify the time from pressing of key until start of repeat. Unit: 16 msec. 
+repeat pitch 
+ 1 byte) 
+between two keys in repeat state. Unit: 16 msec 
+auto power off time 
+ 2 bytes, Low, hi) 
+Time for auto power off. Unit: approx. 0.5 
+bit 7: break 
+bit 6: low battery 
+bit 7: repeat on 
+bit 4: click on 
+3 bytes) 
+Lead address of the table to convert the code in hardware into the matrix code in 
+software. 
+This table corresponds to key matrix of hardware. Key can be rearranged. 
+3 bytes) Both are hook for key processing routine. 
+3 bytes) 
+byte) 
+Slot number having function key data (FUNCKEY.). 
+Ex: 
+ it is 
+ item in 
+ referred. 
+9 bytes) 
+File name having function key data. 
+
+
+
+===== PAGE 54 / 99 : pce500_tech_manual.pdf =====
+Shift
+JIS ")
+code )
+Hard-
+I
+·49 -
+IJser S.program
+Keyboard bvHerCAPS, FUNCKEY
+processing
+32
+characters•I
+.--_--L --l-_---.FUNCKEY .-- -l '-- --,
+...,
+Data flow
+Input
+3,5,7,8,
+File
+AH• CH, EH
+charac­
+terdevice
+41H.421-\
+Reading ~..I ~,
+matrix
+•
+CHAPTER 3 HOW TO USE EACH DEVICE 
+Internal RAM 
+bit 3: break key 
+From key pressing until reading out with file control system 
+request 
+Timer 
+interrupt 
+program 
+16 characters 
+out of 
+code 
+CTRL. SHIFT HYP 2nd 
+processing 
+Kana 
+wear 
+code 
+. Matrix 
+code 
+standard 
+control 
+command 
+
+
+
+===== PAGE 55 / 99 : pce500_tech_manual.pdf =====
+•50 ·
+(ex)= 0002H
+i= 3FH
+entry
+•
+08wOFH
+•
+Ow1FH
+•
+29H. 28H• 2DH,2EH,2FH error
+2Ow2FH
+block(2S"H).
+yt>rifJ(2'TH).
+•
+3FH
+40H
+41H
+42H
+43H
+44w49H RR,
+4Aw4BH CS CD
+(3FH)
+••
+• Read /write
+SID (RS232C)
+l:Al,;H DEVICE(.;HAI-' ER
+I 
+ 3 HOW TO USE 
+No. 02 
+ Driver (COM:) 
+SIO driver is the device of following type. 
+Device usable as a file. 
+Special device 
+possible. 
+Command List 
+Command for standard character device 
+error 
+Command for standard block device 
+1 
+ error 
+Command for special device 
+excluding the above supported 
+However, setting of a register is ignored at reading 
+ This is the same for 
+Use byte reading. 
+Command peculiar to each device 
+Format 
+Initialization of each parameter 
+Direct output of 1 byte 
+Direct input of 1 byte 
+Setting the hardware 
+Setting of RSL, 
+ and ER ports 
+Reading of 
+ and 
+ ports 
+Format 
+Clear the parameter and buffer to return to initial state of entire no input. 
+return 
+nil 
+
+
+
+===== PAGE 56 / 99 : pce500_tech_manual.pdf =====
+- 51 -
+OOH:time
+FEH:
+FFH:
+cy
+=
+cy 0:
+(ex) =0002H
+j =42H
+entry
+X-control1
+occLl ved
+cy 0:
+= 1:
+OOH
+FEH
+FFH
+(ex)=0002H
+i =41H
+(41H)
+0:
+(cx) =0002H
+40H
+HOW TO USE
+CHAPTER 3 
+ EACH DEVICE 
+Initialization of each parameter 
+entry 
+= 
+a = level of initialization 
+all reset 
+1: reset 
+2: off 
+3: on 
+1-byte direct output 
+Output I-byte data without conversion. However, X-control is possible according to the 
+setting condition. 
+entry 
+a =output data 
+return 
+= 
+ no error 
+cy 
+ error 
+a = 
+ : time out 
+: low battery 
+: break 
+1-byte direct input 
+Input 
+ -byte data directly. X -on 
+ and X-off (1 
+ controls are ignored. 
+ is 
+possible according to the setting condition. 
+return 
+= 
+ no error 
+a 
+ input data 
+= 1: error 
+a = 
+ out 
+low battery 
+break 
+
+
+
+===== PAGE 57 / 99 : pce500_tech_manual.pdf =====
+=0:
+=0002H
+=4AH:
+48H:
+of
+=0002H
+44H:Set
+45H:Set
+46H:Set RR port at level.
+47H:Set
+48H:Set
+49H:Set
+(ex) =0002H
+i =43H
+entry
+IOCS
+CHAPTER 3 HOW TO USE EACH DEVICE 
+Setting of hardware 
+Set the condition of 
+ system work in hardware and format. 
+return 
+nil 
+Setting of RS, RR, and ER ports 
+entry 
+(CX) 
+i = 
+ RS port at high level. 
+RS port at low level. 
+high 
+RR port at low level. 
+ER port at high level. 
+ER port at low level. 
+return 
+nil 
+Reading 
+ CS and CD ports 
+entry 
+(CX) 
+i 
+ Specify CS port. 
+Specify CD port. 
+return 
+cy 
+ Port is specified at low level. 
+1: Port is specified at high level. 
+
+
+
+===== PAGE 58 / 99 : pce500_tech_manual.pdf =====
+-53-
+0: X-on/off
+~data=OBFD62H
+\
+Transferred. SIO
+x-orvon=0:
+J
+= OBFD61H
+dati
+(
+Transferred.SIO open
+\
+0:
+I\
+in SIO0:
+open/close.
+OBFD34H
+shift in/out, on/off.
+H
+SIO
+o
+10CSchanqed,' 43r[
+1bita-bit
+• OBFD31wOBFD32H
+n x (sec) OFFFFH
+= OFFFFH
+• OBFD33H
+=3CH (001 1100(3)
+0
+c.Pit-t'l)
+stop
+Odd-parity 2 bits
+3
+CHAPTER 
+ HOW TO USE EACH DEVICE 
+Parameter Work 
+SIO timer master 
+Time 
+ on error timer 
+ 0.5 
+ However, 
+ is unlimited. 
+default value 
+ (unlimited) 
+SIO baud rate 
+Specify baud rate, length, parity 
+default value 
+ I 
+Bit 6, 5, 4 Bit 3, 2 Bit 1 Bit 
+Baud rate Parity Character length 
+ bit 
+000 None 00 Even-parity 0: 8 bits 0: 1 bit 
+001 300 baud 01 
+ 1: 7 bits 1: 
+010 600 baud 10 Non-parity 
+01 1 1200 baud 11 Non -parity 
+100 2400 baud 
+101 4800 baud 
+110 9600 baud 
+Example 
+1200 baud, Non-parity, 
+ length, stop 
+Note 
+If the specified condition has been 
+ hardware set 
+ must be 
+called. 
+Bit 7: 
+Setup 
+Specify 
+ X 
+ Specify transfer of transmission code at 
+Default value = 21 
+Bit 6 = 
+ 1-byte data stored 
+ open send data is not transmitted at open 
+state. 
+1 : 
+ send data 
+Bit 4 = 
+ 1-byte data stored in SIO close send 
+ is not transmitted at close 
+state. 
+1: 
+ close send 
+Bit 2 
+ Without 
+ designation at receiving 
+1: With designation 
+Bit 1 = 
+ Without 
+ designation at sending 
+. 1: With designation 
+
+
+
+===== PAGE 59 / 99 : pce500_tech_manual.pdf =====
+- 54 -
+data blMk
+=
+=
+OBFD38H
+=
+CS
+=
+OBFD37H
+0:
+RR 0 :
+RS= 0:
+OBFD36H
+=
+=
+OBFD35H
+in/out0=0:
+• SIO
+• SIO
+• SIO
+• SIO
+CHAPTER 3 HOW TO'USE EACH DEVICE 
+Bit 
+ Without shift 
+ designation 
+: With designation 
+receive port condition 
+Control of receive port 
+Default value = 
+Bit 2 CS 
+ 0: don't care 
+1: take in as receiving data when the CS signal is high and ignore at 
+low. 
+Bit 1 CD 
+ 0: don't care 
+1: take in as receiving data when the CD signal is high and ignore at 
+low. 
+receive port control 
+Control of receive port 
+Default value = 
+Bit 6 ER = 
+ When receiving buffer becomes full, ER signal becomes low. 
+1: don't care 
+Bit 5 
+ = 
+ When receiving buffer becomes full, RR signal becomes low. 
+1: don't care 
+Bit 4 
+ When receiving buffer becomes full, RS signal becomes low. 
+1: don't care 
+Example 
+If RR-receiving buffer becomes full, the transmission side is stopped in RR Low. 
+send port condition 
+Control of SEND port 
+Default value = 
+Bit 2 CS 
+ 0: don't care 
+1: Transmit when the 
+ signal becomes high. 
+When the CS signal is low, wait until it becomes high. 
+(within range of error timer) 
+Bit 1 CD 
+ 0: don't care 
+1: Transmit when the CD signal becomes high. 
+When the CD signal is low, wait until it becomes high. 
+(within range of error timer) 
+send port control 
+Control of send port 
+Default value 
+Bit 6 ER 
+ 0: don't care. 
+1: ER signal becomes high before transfer of transmission data block 
+and becomes low after transfer. 
+Bit 5 RR 
+ 0: don't care. 
+1: RR signal becomes high before transfer of transmission 
+and becomes low after transfer. 
+
+
+
+===== PAGE 60 / 99 : pce500_tech_manual.pdf =====
+- 55-
+• SIO
+y
+°9H
+,
+OOH OAH~OOH : OOH +- OOH OAH
+OOH-OOH OAH\ OOH ~ OOH OAH
+OBF03CH
+(1AH)·)
+tA,i
+09H,
+1AH -09H 09H +- 1AH
+09H ~ 1AH 09H ....1AH
+at
+01=OOH
+10=OAH
+11= OOH+OAH
+=
+H=
+OBF03BH• SIO
+SIDsend bytewailx
+Ltransmission data
+= H [
+• SIO OBF039H
+[OO-OFFHlX2
+=
+HOW TO
+CHAPTER 3 
+ USE EACH DEVICE 
+Bit 4 RS 
+ 0: don't care. 
+1: RS signal becomes high before transfer of transmission data block 
+and becomes low after transfer. 
+send delay 
+[msec] wait time is specified before or after transmission data block 
+at transmission. 
+Default value 
+ 01 
+ 2 msec 
+n byte 
+ block 
+n 
+ 2 [rnsec] 
+msec] 
+crlf 
+Specify the delimiter. External code is converted into internal delimiter 
+ + 
+Default value 
+ 01 
+ If 
+Bit 1, 0: 00 
+ Not use 
+Example bit 
+when specified the delimiter at 
+ with 01, code is converted as follows. 
+External Internal E500 
+sending 
+ + 
+ + 
+at receiving 
+ + 
+ + 
+eof code 
+To specify the end code (external code is converted in internal end code 
+valuer 
+Example 
+When specified in end code 
+ code is converted as follows. 
+External Internal E500 
+at sending 
+at receiving 
+
+
+
+===== PAGE 61 / 99 : pce500_tech_manual.pdf =====
+- 56 -
+1.IJyte sata
+conditioniwith'SIO
+waiting
+(1
+SIC software
+in/out:
+:1
+rate:300,
+• n OBFD60H
+[00xOFFH]x2
+=OOH
+• OBFD61H
+( H
+When SIO SIO
+• SIO OBFD62H
+3H
+When\SIO close.
+=
+=
+=
+OBFD41H• SIO
+IV) I j mVIYY'l GO!I~
+nx
+OBFD40H• SIO
+CHAPTER 3 HOW TO USE EACH DEVICE 
+open close wait 
+Wait 
+ 0.5 (msec) immediately after opening or immediately before closing. 
+(for level converter CE-130T standby) 
+Default value = 
+ (20 msec) 
+Note 
+Input of 
+ specifies 256 
+ 5 (msec) . . . 
+ n 
+open port control 
+Open of SIO port. 
+Default value = 
+Bit 6 ER 
+ 0: don't care 
+1: ER signal becomes high at open and low at close. 
+Bit 5 RR 
+ 0: don't care 
+1: RR signal becomes high at open and low at close. 
+Bit 4 RS 
+ 0: don't care 
+1: RS signal becomes high at open and low at close. 
+SIO send 
+ byte wait 
+Specify insertion time of 
+ (msec) wait between send data 1 byte at 
+sending. 
+Default value 
+ (non-wait) 
+SIO open send data 
+Default value = 1 1 
+setup'bit-6 is 1, 
+ open send data is transferred by 1 byte at open. 
+close send data 
+Default value = 1 
+setup
+1 
+bit-4 is 1, SIO close send data is transferred by 1 byte at 
+SIO hardware specifications 
+Baud 
+ 600, 1200, 2400, 4800, 9600 (bps) 
+Data length: 7 or 8 bits 
+Stop bit 
+ or 2 bits 
+Parity :even number, odd number, none 
+Duplex 
+Xon-off :possible to specify 
+Shift 
+ possible to specify 
+specifications 
+Transmission 
+ byte) 
+In case of Xon-off is specified, if Xoff code is being received, transmission side 
+keeps 
+ until X-code is received and released. 
+And, if the signal (port specified 
+ send port 
+ to be monitored is 
+not set ON (high level), it keeps waiting. 
+When above conditions are satisfied and in CPU ready, empty state, 
+is output. 
+
+
+
+===== PAGE 62 / 99 : pce500_tech_manual.pdf =====
+5 IV)
+o(V) TXOpin
+(SO)
+ONfBRK
+MSB
+·57 -
+TxO_j , ;,I.~~ M~~,: L
+~I+------____'I++I++I
+Error
+processing
+N
+~ ---
+CHAPTER 3 HOW TO USE EACH DEVICE 
+Xon-off designation? 
+Receiving Xoff code 
+Temporary stop state ( 
+Error processing 
+Normal end 
+Data processing 
+. . . ... 
+ .... . .. . 
+ . . .. . .. ............ 
+Start bit Data 
+ Parity Stop bit 
+Example 
+, parity odd number, stop bit 1 
+LSB 
+..... 
+Data 
+Parity 
+Stop 
+
+
+
+===== PAGE 63 / 99 : pce500_tech_manual.pdf =====
+- 58 -
+(High)status
+SIO
+specified
+routineSIO
+PC-E500
+~on
+CHAPTER 3 HOW TO USE EACH DEVICE 
+X-off code 
+X-on code 
+at sending: When Xoff code is received, sending stops tempo- 
+rarily. 
+at receiving: If the buffer is almost full, X-off code is sent and 
+transmission is stopped temporarily. 
+at sending: When transmission is stopped temporarily, if 
+code is received, transmission is resumed. 
+at receiving: If the buffer is empty and the opponent side is tem- 
+porarily stopped, 
+ code is sent and then receiv - 
+ing is resumed. 
+- 
+ shift - cut code : 
+Reception (1 byte) 
+has the receiving buffer for reception of data from SIO. When the data is 
+being received, 
+ reception is interrupted and interrupt 
+ writes the data. Xon 
+and Xoff control codes do not write in the receiving buffer. 
+SIO buffer is the ring buffer controlled by write-pointer and read-pointer. When the 
+received data are accumulated and the receiving buffer come short, Xoff code is 
+transferred if specified by Xon-off. Also, regardless whether 
+ or not, the port 
+that is indicated by 
+ receive port control is made off (low) status and the unit of 
+other party is stopped. 
+When buffer becomes empty, Xon code is transferred. And regardless whether speci- 
+fied or not by Xon-off, the port that is indicated by SIO receive port control is made 
+on 
+ and permission of transfer is given to the unit of other party. 
+When the data is read from the receiving buffer, it is checked whether the data is in 
+the receiving buffer. If there is the data, 2 bytes is read. 
+
+
+
+===== PAGE 64 / 99 : pce500_tech_manual.pdf =====
+- 59-
+input/output(voltage
+of
+so(TXf)) ~
+RD(Rx1)) Input
+_.
+(RTS)
+Clear to Send CS Input(CTS)
+Signal Ground SG
+is
+-- ----
+ER Output(DTA)
+VC
+DEVICE
+CHAPT ER 3 HOW TO USE EACH 
+Pin 
+number 
+2 
+3 
+4 
+5 
+7 
+8 
+11 
+14 
+1 
+10 
+13 
+Signal name 
+ Symbol 
+ Signal direction Functions 
+Send Data 
+Receive Data. 
+Signal Ground 
+Request to Send 
+Output 
+RS 
+Carrier Detect 
+Equipment 
+Ready 
+Output 
+Receive Ready 
+Frame ground 
+ FG 
+CD 
+Data signal to be sent 
+Input 
+RR 
+Receiving data signal 
+Output 
+This signal become high level 
+by data transmission and low 
+level by transmission end. 
+When data is sent, transmis - 
+sion is executed if this signal is 
+in high level, and is stopped if 
+the signal is in low level. 
+Adjust the reference electric 
+potential between inpuffoutput 
+devices. 
+Transmission is executed 
+when this signal is in high level 
+and is stopped when the signal 
+in low level. 
+High level when reception is 
+possible and low level when 
+reception is impossible. 
+When serial inpuffoutput device 
+circuit is open (if executed 
+OPEN command), signal be- 
+comes high level. 
+Grounding for maintenance 
+Supply voltage 
+Notes 1) High level means voltage level of VC. Low level means voltage level of SG. 
+2) As the inside is composed 
+ C-MOS parts, if voltage exceeding permissible 
+range 
+ level between SG-VC) is given to 
+ pin, the inside 
+may be broken. 
+
+
+
+===== PAGE 65 / 99 : pce500_tech_manual.pdf =====
+·60 -
+•
+08H
+09H
+OAH
+OSH
+OCH
+ODH
+OEH
+•
+OW1FH
+•
+2Ow2FH
+• 3FH
+40H
+41H
+42H
+43H
+(3FH)
+•••
+• sroi,
+(STDL:PRN:)
+DEVICE
+CHAPTER 3 HOW TO USE EACH 
+No. 03 Printer Driver 
+This device is explained as follows. 
+Available as a file. 
+Standard character device 
+Only write is possible. 
+: Printer driver is opened as the standard listing output. 
+Command list 
+. Standard character device command 
+open 
+close 
+error 
+output to printer 
+error 
+output to printer 
+error 
+Standard block device command 
+1 
+ error 
+Command for special block device 
+error 
+Command peculiar to each device 
+Format 
+Initialization of each parameter 
+Printing data output 
+Read of printing position 
+Printer check 
+Format 
+entry 
+(cx) 
+i 
+return 
+nil 
+
+
+
+===== PAGE 66 / 99 : pce500_tech_manual.pdf =====
+- 61 •
+= max.
+0:
+(ex)
+(ex) =0003H
+i =42H
+ey 0:
+0:
+(ex)=0003H
+i =40H
+TO
+CHAPTER 3 HOW 
+ USE EACH DEVICE 
+Initialization of each parameter 
+entry 
+a = level of initialization 
+all reset 
+1: reset 
+2: off 
+3: on 
+Printing data output (41 
+entry 
+(cx) 
+a = output data 
+return 
+= 
+ no error 
+= 1: error 
+Read of printing position 
+entry 
+return 
+a =position of present printing head 
+Printer check 
+entry 
+= 0003 H 
+i = 
+return 
+cy = 
+ a = type of printer 
+i 
+ number of 
+ printing digit 
+cy = 1: not connected 
+a = 
+ (Printer error) 
+
+
+
+===== PAGE 67 / 99 : pce500_tech_manual.pdf =====
+ey
+ey 0:
+(ex) =0004H
+=44H: OlltpUt. to t"'pe
+entry
+3FH
+40H
+41W43H
+44H- 45H
+•
+•
+•
+•
+•••
+CHAPTER 3 HOW TO USE EACH DEVICE 
+No. 04 Tape Driver (CAS:) 
+Tape driver is the device driver shown as follows. 
+Device can be used as a file. 
+Special device 
+Both of read and write possible. Execute read only or write only one time. 
+Command List 
+Standard character device command 
+error 
+Standard block device command 
+1 
+ error 
+Special device command 
+excluding the above command 20H - 2FH supported 
+Command peculiar to each device 
+format 
+initialization of each parameter 
+write, read, verify of data block 
+write, read of the header block 
+Write, read, and verify of the header block 
+i 
+= 45H: Input from tape 
+x =address of header block 
+return 
+= 
+ no error 
+x = next address of the data that could be transferred 
+(compared). 
+y = number of bytes of the data that could be transferred 
+(compared). 
+= 1: error 
+x = next address of the data that was correctly transferred 
+(compared). 
+y = number of bytes of the data that was correctly 
+transferred 
+a = error code 
+
+
+
+===== PAGE 68 / 99 : pce500_tech_manual.pdf =====
+(Vevi:fy)
+·63·
+All
+cy =
+cy 0:
+=0004H
+41H: Output
+42H:
+43H: Input
+0:
+CHAI-' It:H J HUW IU U!::ic
+ EACH DEVICE 
+Initialization of each parameter 
+entry 
+(cx) 
+a = level of initialization 
+all reset 
+1: reset 
+2: off 
+3: on 
+return 
+nil 
+Write, read, and verify of the data block 
+entry 
+(cx) 
+i = 
+ to tape 
+Input from tape 
+from tape and comparison 
+x =data address 
+y =data size 
+return 
+= 
+ no error 
+x = next address of the data that could be transferred 
+(compared). 
+y = number of bytes of the data that could be transferred 
+(compared). 
+1: error 
+x = next address of the data that was correctly transferred 
+(compared). 
+y = number of bytes of the data that was correctly 
+transferred 
+a = error code 
+Format 
+parameter are initialized. 
+entry 
+(cx) 
+return 
+nil 
+
+
+
+===== PAGE 69 / 99 : pce500_tech_manual.pdf =====
+a
+9
+[BFD4AH
+[BFD4CHl [BFD4DHl 30 [BFD49Hl[BFD48Hl
+Header block -11U:Ire tJ\Q.n rl'l:m!thlln
+[BFD4CHJ tho..~
+\
+[BFDnH.UyCt [BFD4DHl
+{BFD4AH [BFD50HJ [BFD51HJ 1 0 [BFD52Hl
+byte +_a_
+'"tore tl\(l11mo.... etha.V1
+[BFD51Hl 1 0
+'0' ifp-RlS3H,2byte [BFD50Hl 'e ,byte .a.
+•
+o
+oPll---.I-P10--.,...' PhySical
+PhysicalL..- _---,I"
+LogICal
+r------------- Physical 1."eJ 1
+__ ....I-+PO1-+-1-+poa-+-1 Physical level 0Logical ~el 0
+•
+(BFD42H, 0 (P01)
+(BFD43H, 0 0
+(BFD44H, (P1
+(BFD45H' o(P10)
+(BFD46H, 1 0
+CHAPTER 3 HOW TO USE EACH DEVICE 
+Parameter work 
+Pulse length (baud rate can be changed.) 
+1 byte) length of logical level 
+ and physical level 1 
+1 byte) length of logical level 
+ and physical level 
+ (POO) 
+1 byte) length of logical level 1 and physical level 1 
+ 1) 
+1 byte) length of logical level 1 and physical level 
+byte) threshold of logical level 
+ and physical level 1 
+level 1 
+level 1 
+ level 
+Following 
+ and 1 should be logical level. 
+Header block and data block 
+: Check sum (1 byte) 
+Header block 
+at write 
+at read 
+Data block at 
+write 
+Data block at 
+read 
+a 
+0' 
+0 
+b 
+2 byte] 
+c 
+ d 
+ e 
+1 
+1 
+2 byte] 
+f 
+byte + a 
+30 byte + a 
+or more arbitrary 
+or more arbitrary 
++ 
+more 
+'0' 
+more than 
+
+
+
+===== PAGE 70 / 99 : pce500_tech_manual.pdf =====
+sys-
+- 65-
++ 10 20
++20 ""'0-0-',;-:00----1-;.-00""""&-0-0-1",:::'O~.:_::00'_,06R::OO)
+(01, Dh, De)=Data size
+File name+00 02
++6+4+2 +8 +A +C +E
+20 20 20 20
+00 '·;00 00', 00 De 00 :00
+.0,:t..
+:
+::00- OO~)too'00. 00 ::00 ',00.RO,:._.
++0
+•
+tern'(ex .
++00 04 File name 20 20 20 20 20!!~fo~n:...
++ 10 ~ 00I?9::\:~~:00':,-??d-~.~-:~\:9:?:::~_p~.;,qo;~,~P.:.?,~__ '_00:-_:00 :-_00
++20 00 ,00 -00:- 00 00 '-00;:QO'-\OO" 00-:::--90 :00 00 ::00-"00 00 00
+.'::._' ....
++A+8+6+4+2 +E+C+0
+of ;one
+•
+TO
+CHAPTER 3 HOW 
+ USE EACH DEVICE 
+Structure of 
+ byte 
+start end 
+Structure of file 
+One file consists 
+ header block and some data blocks. 
+Data of header block is always 
+ bytes with following composition. 
+The most top is the discriminator. 
+ indicates that this is the file 
+ control 
+SAVE, OPEN commands, etc.). Files created by csave, csavem do not take 
+this form. 
+Basically, length of the data block is arbitrary. One data block created by open or save 
+is 256 bytes. In this case, file ends with 
+Structure of CSAVE header block 
+
+
+
+===== PAGE 71 / 99 : pce500_tech_manual.pdf =====
++0 +2 +4 +8 +C
++00
++10 Ee
++20 00 00 00 00 00 00 00 00 00 00 00 00 00
+(OI,Dh, size
+{SI,
+(EI.:£h, =
+•
+OEVIC~
+CHAPTER 3 HOW TO USE EACH 
+Structure of CSAVEM header block 
++ 6 
+ +A 
+ + E 
+Sh, Se) =data start address 
+Ee) 
+entry address 
+20 20 01 
+Eh 00 00 00 00 00 00 
+File name 
+00 
+ oo 
+ oo 
+De) = data 
+OD 
+20 20 00 00 
+El 
+Sh Dh 
+
+
+
+===== PAGE 72 / 99 : pce500_tech_manual.pdf =====
+BASIC
+·67-
+=
+cy= 0:
+(0/1/2)
+(cJ) =OSH
+08wOFH
+•
+1Ow17H
+•
+2Ow2FH
+•
+3FH
+40H
+(3FH)
+<file)
+S1,
+Read/write
+••
+TO USE
+CHAPTER 3 HOW 
+ EACH DEVICE 
+No. 05 RAM Disk Driver (E: F: G:) 
+This driver is the device of following type. 
+Device that can be used as a file. 
+Standard block device 
+possible 
+Command List 
+Standard character device command 
+Error 
+Standard block device command 
+Supported 
+Special device command 
+Error 
+Command peculiar to each device 
+Format 
+Initialization of each parameter 
+Format 
+Secure, change and release the RAM disk area. The RAM disk area is secured as 
+memory block "RAMFILE." as E on 
+ F on S2 and G on S3. 
+entry 
+(ch) 
+ drive number 
+x =lead address of set information character 
+return 
+no error 
+x 
+ last of the set information + 1 
+= 1: error 
+a = same error number as 
+
+
+
+===== PAGE 73 / 99 : pce500_tech_manual.pdf =====
+- 68-
+3=on
+=reset
+o
+CHAPTER 3 HOW TO USE EACH DEVICE 
+Initialization of each parameter 
+entry 
+(cx) 
+= 
+a = level of initialization 
+= all reset 
+1 
+2 = off 
+return- 
+nil 
+
+
+
+===== PAGE 74 / 99 : pce500_tech_manual.pdf =====
+-69-
+0:
+3FH
+40H
+41H
+42H
+43H
+44H
+45H
+46H
+47H
+48H
+•
+•
+•
+•
+••
+• Read /write
+(S1:
+CHAPTER 3 HOW TO USE EACH DEVICE 
+No. 06 Memory Block Driver 
+ S2: S3) 
+This driver is the device of following type. 
+Device that can be used as a file. 
+Special device 
+possible 
+Command list 
+Standard character device command 
+- 
+ Error 
+Standard block device command 
+1 OH-1 
+ Error 
+Special device command 
+Command peculiar to each device 
+Format 
+Initialization of each parameter 
+Search for physical address 
+Change of block size 
+Transfer of block 
+Rename of block 
+Creation of memory block 
+Deletion of memory block 
+Condense 
+Create memory block on the block top. (not supported) 
+Initialization of memory driver 
+entry 
+(cx) 
+a =level of initialization 
+all reset 
+1: reset 
+2: off 
+3: on 
+return 
+nil 
+
+
+
+===== PAGE 75 / 99 : pce500_tech_manual.pdf =====
+·70 ·
+cy
+0:cy
+(cl) =06H
+cy 0:
+=
+= H
+j =3FH $1:
+S1:
+CHAPTER 3 HOW TO USE EACH DEVICE 
+Format 
+Connect and disconnect RAM in the pocket computer with RAM in the RAM card. 
+entry 
+(cx) 
+ 0006 
+x =lead address of the set information character string 
+[x] = "P": connection. Combined one becomes 
+"S": disconnection. Divided into "S" 
+ and S2: 
+return, 
+x =next address 
+= 
+ no error 
+1: error 
+a = 
+ syntax error 
+memory error 
+Search for physical address (41 
+Search for the lead address of the block from the memory block name. 
+entry 
+(ch) =slot number (01112) 
+x =address of block name character string 
+return 
+= 
+ no error 
+x = last of block name + 1 
+y = lead address of block 
+= 1: error 
+x = (no change) 
+a = 01 
+ no specified slot. 
+no block is found. 
+Condense 
+Fill the space in each memory block. 
+entry 
+(ch) = slot number 
+i 
+return 
+nil 
+
+
+
+===== PAGE 76 / 99 : pce500_tech_manual.pdf =====
+·71.
+x=last
+y=last
+cy =0:
+1: error
+a= OOH:
+01H:
+04H: ~ot
+(el) =06H
+= old
+lbioek
+OOH:
+01H:
+04H: blo,k hot
+OCH:
+ey =
+ey =0:
+=
+(eI) =o6H
+DEVICE
+CHAPTER 3 HOW TO USE EACH 
+Change of block size 
+entry 
+(ch) 
+ slot number 
+= 
+a =free area pointer number (011) 
+x =address of block name character string 
+y =request size 
+return 
+no error 
+x = last of block name + 1 
+1: error 
+x: (no change) 
+a = 
+ slot (card) is protected. 
+no specified slot. 
+is 
+ found. 
+insufficient memory 
+y = size possible to change 
+block is protected. 
+return 
+Rename of block 
+Change the block name. 
+entry 
+(ch) 
+ slot number 
+x =address of 
+ name character string 
+y =address of new block name 
+of old block name + 
+of new block name + 1 
+no error 
+slot (card) is protected. 
+no specified slot. 
+block is 
+ found. 
+block is protected. 
+the same block name exists. 
+
+
+
+===== PAGE 77 / 99 : pce500_tech_manual.pdf =====
+OOH:
+01H:
+09H:
+OCH:
+cy 0:
+(cJesf.i l1a {.
+DEVICE
+CHAPTER 3 HOW TO USE EACH 
+Transfer of block 
+Transfer the block to the address from the specified address by the specified size. 
+entry 
+(cx) 
+x =address from which transferred 
+y =address to which transferred 
+ ion) 
+(si) =size to be transferred 
+return, 
+x =completion address from which transferred + 
+y =completion address to which transferred + 1 
+Creation of memory block 
+Create new memory block. 
+entry 
+(cl) 
+(ch) =slot number 
+i 
+x =address of block name 
+return 
+= 
+ no error 
+y =lead address of created block 
+x =last of block name + 1 
+cy = 1: error 
+a = 
+ slot (card) is protected. 
+no specified slot. 
+the same block name exists. 
+insufficient memory 
+
+
+
+===== PAGE 78 / 99 : pce500_tech_manual.pdf =====
+- 73-
+OOH:
+01H:
+09H:
+OCH:
+=
+OOH:
+01H:
+02H: blod::ISnot
+OSH:
+cy 1:
+cy 0:
+cy
+cy 0:~
+CHAPTER 3 HOW TO USE EACH DEVICE
+Deletion of memory block 
+Delete the memory block. 
+entry 
+(cl) 
+(ch) = slot number 
+x =address of block name 
+return 
+= 
+ no error 
+= 1: error 
+a = 
+ slot (card) is protected. 
+no specified slot. 
+found. 
+block is protected. 
+Creation of memory block 2 
+Create the memory block at the lead of the blocks 
+entry 
+(cl) 
+(ch) =slot number 
+x 
+ lead address of block name 
+y =size of memory block you want to create 
+return 
+= 
+ no error 
+x = last of block name + 1 
+y = lead address of block created 
+= 
+ error 
+a = 
+ slot (card) is protected. 
+no specified slot. 
+the same block name exists. 
+insufficient memory 
+
+
+
+===== PAGE 79 / 99 : pce500_tech_manual.pdf =====
+- 74-
+Memory
+block dataAbsolutelu-existed
+delimiter
+Space
++FIle
+length
+11-- -- ---1 1
+File enbty
+(19, lA. B] :
+[IF. 21J :
+16. 18J
+ic , 10. E]1
++18
++100
+'. Lel1g1tlof memory, biOckdata 10next
+I
++8ext,e....d' ~l U .tt.I-;
+010c.k"a.1I1e':"IxAte
++0 +, +2 +3 +4 +5 +6 +7
+00 02 00 0 0 +0
+00 00 00 00 +8
+00 00 00 +10
+protect 5101lIag
++1 +2 +3 +4 +5 + 6 +7
++0
+(83:)
+212K (83 :)
+(52:)
+1/2K (82 :)
+0(51:)
+O/2K (81 :)
+0(81:) 1
+(BFC09H.
+(BFCOCH•
+(BFCOFH.
+(BFC12H.
+(BFC15H.
+(BFC18H.
+(BFCOEH.
+Arbitrary
+18 bytest
+Afbotrary
+Parameter of memory block device 
+3 bytes) lead address of slot 2 
+2 bytes) capacity of slot 
+ bytes 
+3 bytes) lead address of slot 1 
+2 bytes) capacity of slot 
+ bytes 
+3 bytes) lead address of slot 
+2 bytes) capacity of slot 
+ bytes 
+3 bytes) last addres of slot 
+ + 
+Structure of slot 
+Memory block 
+data 
+Memory block 
+Memory block 
+data 
+one 
+or data 
+Block name 1 
+Same as above 
+[ + 
+ 17. 
+ and 
+ 1 
+ free area 
+[+ 
+ 1 
+ and 
+ 20, 
+ lree area 
+Memory data 
+block length 
+
+
+
+===== PAGE 80 / 99 : pce500_tech_manual.pdf =====
+-75 -
+0:
+•
+08wOFH error
+•
+OW1FH
+•
+2Ow2FH
+•
+3FH
+40H
+No. 07 2.5" FDD Driver (X: Y:) 
+This driver cannot be used. 
+Command List 
+Standard character device command 
+Standard block device command 
+1 
+ error 
+Special device command 
+error 
+Command peculiar to each device 
+error 
+initialization of each parameter 
+Initialization of each parameter 
+entry 
+(cx) 
+a = level of initialization 
+all reset 
+1: reset 
+2: off 
+3: on 
+
+
+
+===== PAGE 81 / 99 : pce500_tech_manual.pdf =====
+·76·
+L ':'_
+(ex) =OOO8H
+i =41H
+entry
+•
+08wOFH
+•
+1OW1 FH
+•
+20w2FH error
+3FH
+40H
+41H
+42H
+43H
+44H
+45H,46H
+(41H)
+U.:::>C C/"II.-M UI: V II.-t;;
+I 
+ nuvv 
+ u 
+No. 08 System Control Driver 
+This driver cannot be used. 
+Command List 
+Standard character device command 
+error 
+Standard block device command 
+error 
+Special device command 
+Command peculiar to each device 
+error 
+no processing 
+power OFF 
+secure of work 
+execution of BASIC 
+(polynomial evaluation) 
+Obtain processing address from the intermediate code. 
+Power off 
+Stop all of interrupt, switch off the LCD and stop the CPU. 
+With pressing ON key, original state returns from this routine. 
+return 
+nil 
+
+
+
+===== PAGE 82 / 99 : pce500_tech_manual.pdf =====
+- T7.
+cy 0:
+BFCDEH:
+BFCE1H:
+BFCE4H:
+BFCE7H:
+BFCEAH:
+BFCEDH:
+BFCFOH:
+BFCF3H:
+BFCF6H:
+BFCF9H:
+BFCFCH:
+BFCFFJ-i:
+BFD02H:
+BFD05H:
+BFD08H: reserve
+BFDOBH:
+BFDOEH:
+BFD11H:
+BFD14H:
+BFD17H: IOCS
+BFD1AH:
+o(S1:).
+Secure the work 
+Specify one of 21 work area pointers on the system memory and change the area size. 
+Work area itself is secured by dividing slot 
+Condensation of slot of memory area may be necessary before executing this comm 
+entry 
+return 
+(cx) 
+= 
+x =work area pointer 
+for U stack 
+for S stack 
+reserve 
+reserve 
+reserve 
+reserve 
+reserve 
+reserve 
+reserve 
+reserve 
+reserve 
+reserve 
+reserve 
+reserve 
+reserve 
+BASIC work 
+reserve 
+reserve 
+work 
+machine language area 
+y =size you want to secure 
+= 
+ no error 
+cy = 1: error: insufficient memory 
+
+
+
+===== PAGE 83 / 99 : pce500_tech_manual.pdf =====
+of BASfe.
+(uec~tlon)
+-78 ·
+= 0:
+= 0:
+= 0:
+=0:
+cy
+cy 0:
+y
+=0008H
+i =45H:
+46H:
+cy 0:
+Execution of BASIC 
+Execute the specified intermediate language character string. 
+entry 
+(CX) 
+i 
+x = intermediate language character string address 
+a: bit 1 
+ TROFF 
+1: TRON 
+bit 2 
+ program execution 
+1: manual execution 
+bit 4 
+ PRO mode 
+1: RUN mode 
+bit 0 
+ normal operation 
+1: step operation 
+return 
+x =data up to position where executed 
+= 
+ no error 
+1: error 
+a = error code of BASIC 
+Acquire the address for processing from the intermediate code 
+entry 
+(cx) 
+When command address is needed. 
+When function address is needed. 
+a = intermediate code 
+return 
+= 
+ no error 
+= address for processing mu 
+ ( 
+= 1 : error 
+y = address of syntax error routine 
+
+
+
+===== PAGE 84 / 99 : pce500_tech_manual.pdf =====
+bp-sop
+bp-sop
+bp-sbp
+()._1 =
+[BFE03H]
+{BFEO~Hl E (../
+(bp)-(bp =
+(bp 14)-(bp =
+cy =
+cy =0:
+(cy) =A
+B
+=c
+•
+•
+No. 09 Function Driver 
+Device unable to use. 
+Command List 
+Standard character device command 
+error 
+Standard block device command 
+1 OH-1 
+ error 
+Special device command 
+error 
+en try 
+(ch) = 
+i 
+when adding D and E, 
+= D 
+= 
+when X is necessary, 
++ 14) 
+ X 
+also when Y is necessary, 
++ 
+ + 29) 
+ Y 
+return 
+no error 
+(bp + 
+ 5) 
+ pointer to number or character string 
+2-variable function, 
+ + 15 in comparison 
+1: error 
+2-variable function, 
+ + 30 in comparison 
+1-variable function, 
+ + 15 in comparison 
+
+
+
+===== PAGE 85 / 99 : pce500_tech_manual.pdf =====
+·80 -
+IA B C
+~ 47H
+Subtraction ~ 48H
+,. Multiplication y*x ~x 49Hf
+ylX.~X 4AH
+YI\X~X 4BH
+EXP ~~X 4CH
+SIN sinX~X 4DH -
+COS cosX~X 4EH
+TAN tanX~X 4FH
+SIN-' sin-'X~X 50H
+Numerical COSo, COS-1X~X 51Hvalue
+f TAN-' tan-1X~X 52H
+1 X-DEG~X 9 0 53H
+f" X-DMS~X 54H
+ASS Ixl-x 55H
+intX-X 56H
+sgnX~X 57H
+RND rndX-X 58H
+SQR v'x~X 59H
+LOR logX-X 5AH
+LN InX-X 58H
+Y<>X 41H
+Y<X 42H
+,.. Y>X 43H
+Comparison
+value Y=X 44H
+Y~X 45H
+Yi;X 46H
+r- '~
+Individual command of each device 
+Function 
+I 
+Addition Y + X 
+ X 
+Y-X 
+ X 
+?-variable 
+unction 
+-variable 
+unction 
+Division 
+Power 
+unction 
+DEG 
+DMS 
+INT 
+ I 
+SGN 
+Jumerical 
+
+
+
+===== PAGE 86 / 99 : pce500_tech_manual.pdf =====
+- 81 -
+A 8 C
+Y< >X 70H
+Y<X 71H
+Y>X 72H
+Comparison
+73H
+9 0
+Y;;;X 74H
+Y=,=X 75H
+-
+7EH
+Conversion
+-
+7FH
+I 76H
+Character
+I
+string oper- CJR S :; H';: ~ 77H
+ational lune- S 78H
+tion f-VAL-
+79H
+Addition
+I
+41H
+I
+I
+42H
+Multiplication 43H
+44H
+inverse 45H
+46H
+47H
+HIl.t.i'"ix: Multiply scholar 48H
+opera- X-1 9 1 49Htion
+I
+4AH
+Transposed matrix 48H
+Reversion ot symbol 40H
+4EH
+4FH
+50H
+5tH
+Function I 
+Character Y=X 
+Decimal 
+ Binary conversion 
+Binary 
+ Decimal conversion 
+ASC 
+STR 
+Addition 
+Subtraction 
+Division 
+Addition to scholar I 
+Subtraction from scholar 
+Multiply 
+ scholar 
+Replace X with Y 
+Value of determinant 
+Square 
+Store X in M 
+- - 
+Call M to X 
+Add M and X 
+CALL after entering 
+scholar value in X. 
+4CH 
+ Answer enters in x. 
+
+
+
+===== PAGE 87 / 99 : pce500_tech_manual.pdf =====
+-82 -
+A 8 C
+to -
+r1cz..trj:::(.
+53H A-Z
+1
+54H
+55H
+1-variable statistics 41H 255
+Line regression 42H
+~I regression" 43H ~
+Logarithm reg~
+~
+44~ ~
+------
+L--
+v 45H quence
+.>
+....
+--
+~6H
+Secondary r~ 46H' .............__
+~ssion· 47H ~
+t:A~H Ut: VI~t:L.Mt'l1'"' _ .j HUVV
+I 
+ I u ust 
+opera- 
+tion 
+Statistics 
+regression 
+Function I 
+I 
+Put X 
+ MA 
+ MZ 
+Balance of simultaneous equations 
+Put MA - MZ to X 
+Simultaneous equations 
+Power regression' 9 
+Reciprocal regression' 
+9 
+52H 
+ A-Z 
+0-8 Y se- 
+quence 
+
+
+
+===== PAGE 88 / 99 : pce500_tech_manual.pdf =====
+·83 ·
+Computation
+correction
+Mantissa
+I I
+(bp+ 14)(bpl
+1099±± x 10-99
+•
+o
+o.
+90 0-99)-63 0-99)
+mantissa
+fo"!
+~
+.;zE?0/Eight
+I
+Computation
+correcuon
+Mantissa
+(bp+ 14)(bp)
+oX 10-99±± x 10-99
+•
+CHAPTER 3 HOW TO USE EACH DEVICE 
+Type of Variable 
+Internal format of numeric value (at execution of operation) 
+Single accuracy numeric value 
+Single accuracy numeric value consists of 15 bytes. It is possible to represent 
+numbers from 
+ 1 
+ to 
+ 9.999999999 
+ and 
+ with combination of expo- 
+nent, mantissa sign and mantissa. 
+don' 
+care 
+Exponent 
+is used when the mantissa is positive. 
+is used when the 
+ is negative. 
+Exponent 
+The exponent is expressed using hexadecimal. The negative numbers are ex- 
+pressed using a complement. 
+(1 
+ (1 
+Carry 
+This is used only during operation. Normally, it is reset to 
+Mantissa 
+10-digit mantissa of numerical value is stored in memory with BCD code. 
+Computation correction 
+Computation correction is performed only during computation. Normally, it is 
+reset 
+to 
+ after rounding off. 
+Double accuracy numeric value 
+Double accuracy numeric value consists of 15 bytes and is able to express num- 
+bers from 
+ 1 
+ to 
+ 9.9999999999999999999 x 
+ and 0. 
+Exponent 
+
+
+
+===== PAGE 89 / 99 : pce500_tech_manual.pdf =====
+·84 ·
+stnng
+identification code
+(bp+ 14)(bp)
+ASCII
+BCD
+CHAPTER 3 HOW TO USE EACH DEVICE 
+Mantissa sign 
+1 is used when the mantissa is positive. 
+9 is used when the mantissa is negative. 
+Mantissa 
+20-digit mantissa of numeric value is stored in memory with 
+ code. 
+Other portions are same as single accuracy numeric value. 
+The above expression method is expression at operation. In the text or 
+variable, it is expressed in the style excepting carry, computation correction 
+and don't care. 
+Internal expression of character string 
+When a character string is stored in the variable, it is stored with 
+ code. At op- 
+eration of character string etc., when the processing is carried out in the CPU, internal 
+expression is composed of 15 bytes (effective data 5 bytes) as a character string infor- 
+mation. 
+t care 
+Character string 
+Character 
+ head address 
+
+
+
+===== PAGE 90 / 99 : pce500_tech_manual.pdf =====
+70*P:Q=PEEK P+PEEK (P+l)*&100+PEEK (P+2)*&10000
+*W:Q=PEEK P+PEEK (P+1)*&
+*P=&BFD17:GOSUB *P:Al=Q
+110 W=(10-PEEK (A1+&27»*&IF
+L Al+&27.10
+P=Al+&28:GOSUB,W;Q=W+Q
+Q &FF.Q/&100
+P=Al+&2B:GOSUB*W:Q=W+Q
+Q & Q/&100
+P=&FFFfD:GOSUB *p
+180 CALLQ
+&FFFD8&FF.S1/&100:Sl
+P=&BFD17:GOSUB *P:Al=Q
+P=&BFDIA:GOSUB *P:A2=Q
+W=(10-PEEK (A1+&27»*&lF
+S=(A2-AI)+W:S1=S/&100
+&BFE03.&17.&FD.&B.S-INT Sl*&
+GOTO*. :
+Input
+~K.e:e,!w'QHlQ~ar~g...t;a~Hf~feH'-r-~·s9-pessiele Ie ehooge Ie FA9fe thSA32 ehBfseters.
+IOCS
+TO
+CHAPTER 3 HOW 
+ USE EACH DEVICE 
+Special Technique 
+Area from address written in 
+ to address written in 
+ is assigned, as the 
+working area of IOCS. Address written in 
+ is also written in 
+ of internal 
+RAM. This area is generally 
+ bytes. 
+Some buffers are included in this area. Following three buffers will become effective 
+by changing the size. 
+It 
+SIO buffer: Buffer of serial interface can be expanded. 
+FCB area: .Maximum open-capable number can be extended to more than 5. 
+Pointer informations are shown in the figure. 
+Example: Refer the following program. Set the maximum opencapable file 
+number at 10. 
+Execute as: (1) 
+ program 
+(2) RUN . 
+(3) When the menu appears, select BASIC mode and input 
+The following table shows meaning of some parameters. 
+10 
+20 
+30 
+40 
+50 POKE 
+ 100. 
+ AND 
+ CALL 
+60 EKD 
+:RETURN 
+80 
+ 100 :RETURN 
+90 
+100 
+120 POKE 
+130 
+140 POKE P. 
+ AND 
+150 
+160 POKE P. 
+ AND 
+ FF. 
+170 
+
+
+
+===== PAGE 91 / 99 : pce500_tech_manual.pdf =====
+-86 -
+[P+8Hl
+-
+[P + 9Hl
+=0
+=2 full
+=0
+=
+[P +BH, CHl
+IP +EH, FHl
+. . sec.
+each parameter
+f
+14Hl
+J
+EH.
+1FHl >-
+[P 1CH. 1DH]
+~
+FCB
+[P 27Hl
+>
+~
+-
+[BFD17H 0, 2)
+P+ IP +28, 29HI
+H
+Pt-[P"tlBH,.2CH)
+(~FVIAI'1+0, L2J
+P +[P+25, 26H]
+H
+P+IP+ 16, 17Hl
+101
+P+[P+1~,11H]
+CHAPTER 3 HOW TO USE EACH DEVICE 
+Pointer information 
+P is set as (internal RAM 
+ + 0, 1, 2) or 
+ + 
+ 1, 
+address 
+P+O 
+address 
+keyboard buffer 
+[P + 
+ buffer 
+size 
+Amount of buffer 
+when [P + 1 
+Xon. 
+SIO buffer 
++ 
+buffer size 
+area 
++ 
+maximum OPEN 
+capable file 
+number 
+Other buffer 
+Other work 
+size 
+Meaning 
+LCD display start offset value 
+Set in LCD in every approx. 5 min. 
+Information of cursor form 
+bit 0-2 
+ underline 
+= 1 double underline 
+mark 
+= 3 full space 
+= 4 insert mark 
+bit 3 
+ no blink 
+1 with blink 
+But, when all bits are 0, cursor is not displayed. 
+Relative position of cursor screen buffer 
+During power is ON, counter to effect increment in 
+approx. 5 
+ interval. 
+
+
+
+===== PAGE 92 / 99 : pce500_tech_manual.pdf =====
+·87·
+z:
+Code BASIC
+00
+OA
+10
+FE
+jlntermediate
+61
+.,
+00
+14
+A
+00
+1E
+GOTO GOTO
+B
+0
+~ termination program
+BASIC
+Internal
+TO USE
+CHAPTER 3 HOW 
+ EACH DEVICE 
+BASIC 
+expression of BASIC program 
+BASIC of this pocket computer, same as other microcomputer, uses the intermediate 
+language to store 
+ program. By converting into the intermediate language, mem- 
+ory saving and operating speed have been improved. 
+Following table shows the command and intermediate code of function. Actual pro- 
+gram is converted as follows. 
+Data 
+(hexadecimal) Description 
+10 
+ Expression of line 
+ in decimal 
+A 
+I 
+OD 
+INPUT 
+ code of INPUT 
+showing head of 
+ program 
+I 
+I 
+41 
+ A 
+ Character code of A 
+04 
+0 D 
+ Delimiter of 1 line 
+Line length (4 bytes by inclusion of stop code) 
+20 
+ Expression of line 20 in decimal 
+04 
+FE 
+60 
+30 
+ Expression of line 30 in decimal 
+4 1 
+OD 
+PRINT 
+Line length (4 bytes by inclusion of stop code) 
+Intermediate code of PRINT 
+06 
+FE . 
+2 
+Character code of A 
+Delimiter of 1 line 
+1 F 
+00 
+A 
+0 D 
+FF 
+Line length (6 bytes by inclusion of stop code) 
+lntermediate code of 
+10 
+Delimiter of 1 line 
+Code showina 
+ of BASIC 
+Line number discrimination code 
+Expression of line 10 in decimal 
+
+
+
+===== PAGE 93 / 99 : pce500_tech_manual.pdf =====
+L,ei~'F'U
+0=0:
+GOTO
+n at skip
+1E 10
+n
+CHAPTER 3 HOW TO USE EACH DEVICE 
+Line number discrimination code (1 
+ put in front of line number to which 
+command in the program (statement) jumps. Actual line number is stored in memory 
+by 2-byte binary code. The 2 bytes are stored in the order from the upper rank to low- 
+er rank contrary to normal case. 
+In addition, skip number discrimination code (1 
+ and real number discrimination code 
+(1 
+ are provid. 
+Skip number discrimination code, real number discrimination code 
+Number of bytes 
+ bit 
+ single accuracy data 
+1 : double accuracy data 
+ELSE etc. 
+
+
+
+===== PAGE 94 / 99 : pce500_tech_manual.pdf =====
+IO:RUN 20:CSAVE 30:01 M 40: - - -
+01: II:NEW 21:0PEN 3 1:CAll02: 12:CONT 22:ClOSE 32:POKE 42:lF
+03: 13:PASS 23: 33:GPRJNT 43:CSIZE
+04: I4:LIS T 24:CONSOLE 34:PSET 44:COLOR
+05: 15:LlIST 25:RANDOMIZ~ 35:PRESET 45 :
+06: 16:ClOAO 26:DEGREE 35:BASIC 46:0EFDBl
+07: 17:MERGE 27:RADI 37: TEXT ••• _ . I ••• V
+08: 28:GRAD 38: 48 :
+09: 29:BEEP
+OA: IA:AUTO 2A:WAIT 3A:ERASE 4A:
+OB:BTEXTS IB:DEtETE 2B :GOTO 3B:lFllES 48:
+OC:BOATA$ 1C:FI 3C:Klll 4C:
+OD:MEM$ 10: INIT 2D:TROFF 3D: 40:
+oE: IE: 2E:ClEAR 4E:
+OF: H:USING 3F:SET 4f:
+50:ClS 50:PRINT 70:PAINT 80: MD F
+51 S1: 71:OUTPUT 81 :REC 91 :IN
+52:TO 62:GOSUB 72:APPEND 82:POl 92 :
+53:STEP 6 3: 73 :AS 83:ROT 93 :EXP
+54:THEN 64:lPRINT 74:ARUN 84:0ECI SQR
+55:0N 65:RETURN 75:AUTOGOTO 85:HEX 95:SIN
+56: IF 66: 76:ElSE 86:TEN 96:COS~ I 77:RESUME 87:RCP 97:TAN
+58:lET 68:GCURSOR 78: 88:50U
+59:REM 69:LlNE 7 9:KEY 89:CUR 99 :ABS
+5A:ENO iA: 7A: 8A:HSN 9A:
+5B 6B:RL 7B: 8B:HCS 9B:OEG
+5C: '6C:GlCURSOR 7C: 8C:HTN 9C:OMS
+5D:READ ·60: 70: 8D:AHS 9D :ASN
+5E:OATA 6E:CROTATE 7E: BE:AHC 9E:ACS
+5F:?AUSE 6F:C I 7F: BF:AHT 9F:ATN
+AO:RND B0 : F CO:ERN DO:ASC fO:CHR!AI: AND Bl:DSKF C 1:ERL 01:VAl f STR
+A2:0R 82:l0F C2: 02: E2 : F2 :
+"3: 83:l0C C3 : 03 : F3 :
+A4:PEEK B4 : C4: 04: F4:
+A5:XOR 85: C5: 05: E5 : F 5:
+A6 : B6:NCR- C6: 06 : E6: F6:
+A 87:NPR C7: 07: E7 : F7:
+A8: B8: CB: 08 : E8: Fa
+A9: 89: C9: 09 : E9:INKEYS F9:
+AA; BA: EA:MIO$ FA:
+A B : BB : F B :
+A- -- EC:R1GHT$Fe:
+AO:POINT B0: co: Oil: ED: FD:
+AE:PI BE :HR C E: DE: E E: I
+AF:FRE Bf:CUB .- -- E F: F
+HOW TO
+CHAPTER 3 
+ USE EACH DEVICE 
+Table for BASIC intermediate code 
+00: (RESERVED) 
+: LOCATE 
+i7: FOR 
+:NEXT 
+STOP 
+NOT 
+18: LOAD 
+19 : RENUM 
+LES 
+IF: 
+INPUT 
+RESTORE 
+j7: CHA I N 
+LL INE 
+INE 
+SORGN 
+RCLE 
+. EO 
+. 
+7: EVAL 
+C : BC: 
+SAVE 
+AN 
+2C: TRON 
+ERROR 
+:VAL 
+D2: LEN 
+D4: 
+39: 
+COPY 
+3 E :NAME 
+I EO: 
+El: 
+E3: 
+E4: 
+CA: DA: 
+CB: DB: EB: L EFTS 
+CC: DC: 
+CF : DF: 
+LTEXT 
+4 1 :GRAPH 
+47: DEFSNG 
+49: 
+90: FACT 
+LOG 
+94: 
+98: INT 
+SGN 
+I : 
+HEX$ 
+FE: 
+F : 
+Intermediate code is expressed in 2 bytes for 
+ plus value in the above table. 
+For example, INPUT command is stored in memory in the order 
+
+
+
+===== PAGE 95 / 99 : pce500_tech_manual.pdf =====
+•90 -
+FILES "S1:"
+BASIC
+o
+©
+oo
+CHAPTER 3 HOW TO USE EACH DEVICE 
+Location to store data 
+Data that may be necessary when operating 
+ are roughly classified as follows. 
+Text data (program) 
+Variable data 
+Function key data 
+AER data 
+All of these data exist as the block of slot file. Set as 
+ and press the 
+[RET] key. 
+If no alteration is in each, data is stored in the following file name. 
+TEXT . BAS 
+DATA . BAS 
+FUNCKN . 
+AER 
+Explanation on text data and variable data. Below is memory map in PRO mode and 
+RUN mode. 
+RUN MODE PRO MODE 
+Others 
+ Others 
+
+
+
+===== PAGE 96 / 99 : pce500_tech_manual.pdf =====
+=
+interval
+interval
+PC·E500
+processing-
+•
+(1)
+(2)
+(3)
+(4)
+(5)
+(6)
+(7)
+(8)
+•
+CHAPTER 3 HOW TO USE EACH DEVICE 
+Point to pay attention is that free space of memory moves according to RUN mode and 
+PRO mode. Structure of the block file requests to separate the time when variable is 
+increased and the time when text (program) is increased. 
+lnterrupt 
+Interrupt processing for 
+ is described below concretely. 
+lnterrupt service 
+Eight kinds of interrupt are provided in out pocket computer, but only one address for 
+interrupt 
+ by CPU specification is on the ROM. 
+This interrupt is index service routine that jumps to each processing classified by the 
+factor. 
+It is advantageous to the users that this interrupt service sub -routine has 8 addresses 
+for processing separated by its factor on the RAM. Accordingly, we can rewrite freely 
+the addresses for processing into own interrupt processing program. 
+List of interrupt factor 
+Fast timer interrupt 
+Slow timer interrupt 
+Key interrupt 
+ON key interrupt 
+SIO transmission interrupt 
+SIO reception interrupt 
+External interrupt 
+Software interrupt 
+All of key scan including break key 
+Blinking of cursor, etc. 
+not used 
+not used 
+not used 
+completion of SIO reception 
+low battery 
+not used 
+Description of each interrupt 
+Fast timer interrupt 
+lnterrupt occurs in every constant time. Possible to select one 
+ of time arbitrar- 
+ily from 4 msec and 16 msec. Ordinarily time 
+ is set in 16 msec. 
+(Internal RAM 
+ bit 1 
+ 0: 4 msec. 
+1 
+ 16 msec. 
+However, as this interrupt is made with the CPU clock divided, it is ignored when the 
+CPU clock is stopped, that is, during execution of half or off command. 
+
+
+
+===== PAGE 97 / 99 : pce500_tech_manual.pdf =====
+·92 ·
+{4}
+rupts.
+{3}
+•
+e
+(K10-K17)
+interrupt
+sec
+sec
+sec.sec.sec
+CHAPTER 3 HOW TO USE EACH DEVICE 
+Slow timer interrupt 
+An interrupt occurs in every constant time. Possible to select one interval of time arbi- 
+trarily from approx. 0.5 
+ and approx. 2 
+ Usually, it is set in approx.. 5 
+(Internal RAM 
+ bit 2 = 0: approx. 0.5 
+= 1 : approx. 2 
+However, as this interrupt is made with the sub-clock divided, interrupt is ignored when 
+sub-clock is stopped, that is, during execution of off command. 
+Also, time interval fluctuates considerably in compliance with power voltage. 
+Key 
+In the key matrix, when any of key-input ports 
+ is level 1, that is, when 
+(internal RAM F2H is not 0, an interrupt occurs. 
+On key interrupt 
+An interrupt occurs when ON key is pressed. 
+SIO transmission interrupt 
+An interrupt occurs when the SIO has completed to transmit 1 byte. 
+SIO reception interrupt 
+An interrupt occurs when receiving 1 byte from the SIO. 
+External interrupt 
+Request of interrupt from outside of the CPU. This is connected with battery 
+checker in the pocket computer. 
+Software interrupt 
+If command ir is carried out, this interrupt occurs. 
+Caution when creating interrupt processing program 
+For interrupt program 
+(1) Complete processing is executed with "retf". 
+(2) Do not use U stack or S stack frequently. (Limited to several ten bytes) 
+Display' 
+In case of continuous input in horizontal direction just before interrupt, if display 
+output is executed during interrupt processing, irregular shape may appear on the 
+display. 
+Avoid overlapping of the program with the program just before a work area inter 
+Do not run several work. 
+It is not permitted to operate same area of program just before interrupt except 
+when receiving data. 
+(5) Keep aside the contents of the internal RAM. Return it to the original value after 
+use. 
+
+
+
+===== PAGE 98 / 99 : pce500_tech_manual.pdf =====
+·93.
+ca.llf
+=
+=
+O.
+© (OFBH)
+== sec
+===
+O.
+(OEBH)
+sec
+sec.timer
+•
+BP
+CHAPTER 3 HOW TO USE EACH DEVICE 
+(In case the program of just before interrupt is using 
+ as stack pointer, it is 
+possible to use as work corresponding to BP.) 
+Register related to interrupt 
+The following three registers are provided for interrupt. 
+lnterrupt status register isr 
+bit 0 = 16 msec timer 
+bit 1 = 0.5 
+bit 2 = key 
+bit 3 = ON key 
+bit 4 =transmission 
+bit 5 = reception 
+bit 6 = low battery 
+bit 7 
+ 0 
+lnterrupt is requested by 1. Completion of service makes 
+lnterrupt enable register imr 
+bit 0 
+ 16 msec timer 
+bit 1 
+ 0.5 
+ timer 
+bit 2 = key 
+bit 3 
+ ON key 
+bit 4 
+ transmission 
+bit 5 
+ reception 
+bit 6 = low battery 
+bit 7 =carry out all mask of interrupt. 
+lnterrupt is permitted by 1. lnterrupt is prohibited by 
+lnterrupt during service register iisr 
+bit 0 = 16 msec timer 
+bit 1 = 0.5 
+ timer 
+bit 2 =key 
+bit 3 = ON key 
+bit 4 = transmission 
+bit 5 
+ reception 
+bit 6 = low battery 
+bit 7 = execution of'ir'command 
+Bit = 1 while interrupt routine is executed. 
+isr register is set in accordance with interrupt status. By setting imr, interrupt process- 
+ing is controlled actually by the factor. 
+Wile executing interrupt processing routine, bit corresponding to iisr has become 1. 
+And, bit of isr is reset. 
+If an interrupt occurred, the' 
+ 'control is carried out to address shown by vector ac- 
+cording to the kind. 
+
+
+
+===== PAGE 99 / 99 : pce500_tech_manual.pdf =====
+·94 -
+vector
+BFCC6H:
+BFCC9H:
+BFCCCH:
+BFCCFH:
+BFCD2H: SIO
+BFCD5H: SIO
+BFCD8H:
+BFCDBH:
+among
+r
+factor
+(OFCH) I I
+isr r I
+iisr{OEBH.I J I
+roune routine prorubu secuon servce
+execuuoo
+t trouune
+CHAPTER 3 HOW TO USE EACH DEVICE 
+lnterrupt vector 
+All 
+ has 3 bytes. 
+fast timer interrupt 
+slow timer interrupt 
+key interrupt 
+ON key interrupt 
+transmission interrupt 
+reception interrupt 
+Outside interrupt 
+Software interrupt 
+Relation 
+ isr, imr, and iisr operations 
+interrupt 
+isr 
+(OFB,) 
+Contents 
+of 
+Normal 
+Interrupt 
+Interrupt Interrupt 
+Normal 
+ routine 
+n 
