@@ -751,7 +751,7 @@ DECPU4:
 	RET
 ;
 ;
-;Key input routine ==============       ;１キー入力 ================
+;Key input routine ==============================
 ;IN     none
 ;OUT    BA:Key code
 ;REG    none
@@ -810,7 +810,7 @@ HANDLE: DB      0                       ;File handle
 TOPSLT: DP      0                       ;Adresse maximale de la fente
 STRBUF:                                 ;Tampon de developpement de chaine
 ;
-;LABELS -------------------------       ;ラベル
+;LABELS -------------------------
 ;
 ;Inner RAM label & port                 
 TXTBAS:  EQU 0CBH                        ;TEXT.BAS 
@@ -822,7 +822,7 @@ DX:      EQU 0D8H                        ;Registre logique
 SI:      EQU 0DAH                        ;Registre logique
 DI:      EQU 0DDH                        ;Registre logique
 IOCSW:   EQU 0E6H                        ;IOCS
-;BP:      EQU 0ECH                        ;内部RAM相対指定レジスタ
+;BP:      EQU 0ECH                       ;
 PX:      EQU 0EDH                        ;Registre de designation relatif auxiliaire RAM interne
 PY:      EQU 0EEH                        ;Registre de designation relatif auxiliaire RAM interne
 KO:      EQU 0F0H                        ;Specification de la ligne de clavier
@@ -863,7 +863,7 @@ USRWRK:  EQU 0BFD1AH                     ;zone de travail de l'utilisateur
 FCS:     EQU 0FFFE4H                     ;FCS
 IOCS:    EQU 0FFFE8H                     ;IOCS
 ;
-;ＳＣＣ Source sonore liee
+;Source sonore liee
 SCCB:    EQU 19000H ;BANK SELECT MEGA ROM Changement de banque
 SCCW:    EQU 19800H ;WAVE TABLE (32*4)
 SCCT:    EQU 19880H ;TONE TABLE (2*5)
