@@ -7,4 +7,8 @@
     <AssemblyName>xasm2026-3</AssemblyName>
     <RootNamespace>Xasm2026.Native</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Xasm2026.Tests" />
+  </ItemGroup>
 </Project>

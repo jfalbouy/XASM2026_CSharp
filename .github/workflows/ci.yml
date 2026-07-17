@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore xasm2026-3.sln
+
+      - name: Build (Release)
+        run: dotnet build xasm2026-3.sln -c Release --no-restore
+
+      - name: Test (non-regression goldens)
+        run: dotnet test tests/Xasm2026.Tests/Xasm2026.Tests.csproj -c Release --no-build --verbosity normal

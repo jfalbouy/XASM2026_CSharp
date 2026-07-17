@@ -4,16 +4,24 @@ internal sealed class ExpressionEvaluator
 {
     private readonly IReadOnlyDictionary<string, long> _symbols;
     private readonly string? _localScope;
+    private readonly IReadOnlySet<string>? _reservedZero;
 
     /// <summary>
     /// Action : prepare un evaluateur d'expressions avec table des symboles et contexte local.
-    /// Donnees d'entree : parametres de la signature (IReadOnlyDictionary<string, long> symbols, string? localScope = null) et etat courant necessaire.
+    /// Donnees d'entree : parametres de la signature (IReadOnlyDictionary<string, long> symbols, string? localScope = null,
+    ///   IReadOnlySet<string>? reservedZero = null) et etat courant necessaire.
     /// Donnees de sortie : instance initialisee.
+    /// reservedZero : identifiants reserves (mnemoniques de registres) qui valent 0 dans une
+    ///   expression d'adressage et ne doivent pas etre signales comme symboles indefinis.
     /// </summary>
-    public ExpressionEvaluator(IReadOnlyDictionary<string, long> symbols, string? localScope = null)
+    public ExpressionEvaluator(
+        IReadOnlyDictionary<string, long> symbols,
+        string? localScope = null,
+        IReadOnlySet<string>? reservedZero = null)
     {
         _symbols = symbols;
         _localScope = localScope;
+        _reservedZero = reservedZero;
     }
 
     /// <summary>
@@ -23,9 +31,17 @@ internal sealed class ExpressionEvaluator
     /// </summary>
     public long Evaluate(string expression)
     {
-        var parser = new Parser(expression, _symbols, _localScope);
-        return Regular(parser.ParseExpression());
+        var parser = new Parser(expression, _symbols, _localScope, _reservedZero);
+        var value = Regular(parser.ParseExpression());
+        Undefined = parser.Undefined;
+        return value;
     }
+
+    /// <summary>
+    /// Noms rencontres lors de la derniere evaluation qui ne sont ni des symboles connus
+    /// ni des constantes numeriques valides. Vide lorsque l'expression est entierement resolue.
+    /// </summary>
+    public IReadOnlyCollection<string> Undefined { get; private set; } = Array.Empty<string>();
 
     /// <summary>
     /// Action : borne une valeur au format entier 24 bits utilise par l'assembleur.
@@ -42,18 +58,30 @@ internal sealed class ExpressionEvaluator
         private readonly string _text;
         private readonly IReadOnlyDictionary<string, long> _symbols;
         private readonly string? _localScope;
+        private readonly IReadOnlySet<string>? _reservedZero;
+        private readonly List<string> _undefined = new();
         private int _position;
+
+        /// <summary>
+        /// Jetons non resolus (ni symbole connu, ni nombre valide) collectes durant l'analyse.
+        /// </summary>
+        public IReadOnlyCollection<string> Undefined => _undefined;
 
         /// <summary>
         /// Action : initialise le parseur recursif d'expression.
         /// Donnees d'entree : parametres de la signature (string text, IReadOnlyDictionary<string, long> symbols, string? localScope) et etat courant necessaire.
         /// Donnees de sortie : instance initialisee.
         /// </summary>
-        public Parser(string text, IReadOnlyDictionary<string, long> symbols, string? localScope)
+        public Parser(
+            string text,
+            IReadOnlyDictionary<string, long> symbols,
+            string? localScope,
+            IReadOnlySet<string>? reservedZero)
         {
             _text = text;
             _symbols = symbols;
             _localScope = localScope;
+            _reservedZero = reservedZero;
         }
 
         /// <summary>
@@ -173,7 +201,25 @@ internal sealed class ExpressionEvaluator
                 return symbolValue;
             }
 
-            return ParseNumber(token);
+            if (TryParseNumber(token, out var number))
+            {
+                return number;
+            }
+
+            // Mnemonique de registre servant de base d'adressage : vaut 0 dans l'expression
+            // (sa contribution est encodee dans l'opcode), ce n'est pas un symbole indefini.
+            if (_reservedZero is not null && _reservedZero.Contains(token))
+            {
+                return 0;
+            }
+
+            // Ni symbole connu, ni constante numerique : reference non resolue.
+            if (!string.IsNullOrEmpty(token))
+            {
+                _undefined.Add(token);
+            }
+
+            return 0;
         }
 
         /// <summary>
@@ -184,12 +230,19 @@ internal sealed class ExpressionEvaluator
         private long ParseCharacter()
         {
             _position++;
-            if (_position >= _text.Length)
+            if (_position < _text.Length - 1 && _text[_position] == '\'' && _text[_position + 1] == '\'')
             {
-                return 0;
+                _position += 2;
+                return '\'';
             }
 
-            var value = _text[_position++];
+            long value = 0;
+            while (_position < _text.Length && _text[_position] != '\'')
+            {
+                value = _text[_position];
+                _position++;
+            }
+
             if (_position < _text.Length && _text[_position] == '\'')
             {
                 _position++;
@@ -225,20 +278,36 @@ internal sealed class ExpressionEvaluator
         /// Donnees d'entree : parametres de la signature (string token) et etat courant necessaire.
         /// Donnees de sortie : valeur long calculee par la procedure.
         /// </summary>
-        private static long ParseNumber(string token)
+        private static bool TryParseNumber(string token, out long value)
         {
+            value = 0;
             token = token.Trim();
-            if (token.Length > 0 && token[0] == '$')
+            if (token.Length == 0)
             {
-                return Convert.ToInt64(token[1..], 16);
+                return false;
             }
 
-            if (token.EndsWith("H", StringComparison.OrdinalIgnoreCase) && IsHexToken(token[..^1]))
+            if (token[0] == '$')
             {
-                return Convert.ToInt64(token[..^1], 16);
+                var hex = token[1..];
+                if (hex.Length > 0 && IsHexToken(hex))
+                {
+                    value = Convert.ToInt64(hex, 16);
+                    return true;
+                }
+
+                return false;
             }
 
-            return long.TryParse(token, out var value) ? value : 0;
+            if (token.Length > 1 &&
+                (token[^1] is 'H' or 'h') &&
+                IsHexToken(token[..^1]))
+            {
+                value = Convert.ToInt64(token[..^1], 16);
+                return true;
+            }
+
+            return long.TryParse(token, out value);
         }
 
         /// <summary>

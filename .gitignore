@@ -1,5 +1,8 @@
 src/bin/
 src/obj/
+tests/Xasm2026.Tests/bin/
+tests/Xasm2026.Tests/obj/
+[Tt]est[Rr]esults/
 Reference/CSharpWrapper/src/bin/
 Reference/CSharpWrapper/src/obj/
 _verify_outputs/
