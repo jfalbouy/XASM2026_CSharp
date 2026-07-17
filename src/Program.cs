@@ -13,7 +13,7 @@ internal static class Program
     public static int Main(string[] args)
     {
         Console.WriteLine();
-        Console.WriteLine("<<< XASM2026-3 native C# port for CPU-SC62015 >>>");
+        Console.WriteLine("<<< XASM2026-4 native C# port for CPU-SC62015 >>>");
         Console.WriteLine();
 
         if (args.Length == 0)
@@ -31,7 +31,7 @@ internal static class Program
 
         if (options.SourceFile is null)
         {
-            Console.Error.WriteLine("XASM2026-3: fichier source manquant.");
+            Console.Error.WriteLine("XASM2026-4: fichier source manquant.");
             Usage.Write();
             return 1;
         }
@@ -54,7 +54,7 @@ internal static class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"XASM2026-3: {ex.Message}");
+            Console.WriteLine($"XASM2026-4: {ex.Message}");
             WriteFailureOutputs(options, ex);
             return 1;
         }
@@ -154,11 +154,11 @@ internal static class Program
         var message = exception.Message;
         var lines = new List<string>
         {
-            "; XASM2026-3 error report",
+            "; XASM2026-4 error report",
             $"; Source: {options.SourceFile}",
             "; Status: Fatal error",
             string.Empty,
-            $"XASM2026-3: {message}",
+            $"XASM2026-4: {message}",
         };
 
         if (TryParseErrorLine(message, out var lineNumber, out var detail, out var sourceText))

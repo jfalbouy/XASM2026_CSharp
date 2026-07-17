@@ -18,7 +18,7 @@ Pour un projet avec des fichiers inclus comme `VOGUE.S`, se placer dans son doss
 
 ```powershell
 cd .\Exemples\VOGUE
-..\..\bin\xasm2026-3.exe VOGUE.S -O vogue.obj -L vogue.lst -B vogue.uu
+..\..\bin\xasm2026-4.exe VOGUE.S -O vogue.obj -L vogue.lst -B vogue.uu
 ```
 
 Pour reconstruire depuis les sources :

@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "build xasm2026-3",
+      "label": "build xasm2026-4",
       "type": "process",
       "command": "dotnet",
       "args": [
@@ -17,7 +17,7 @@
     {
       "label": "coverage_all toutes options",
       "type": "process",
-      "command": "${workspaceFolder}\\src\\bin\\Release\\net8.0\\xasm2026-3.exe",
+      "command": "${workspaceFolder}\\src\\bin\\Release\\net8.0\\xasm2026-4.exe",
       "args": [
         "coverage_all.asm",
         "-O",
@@ -48,13 +48,13 @@
       "options": {
         "cwd": "${workspaceFolder}\\tests"
       },
-      "dependsOn": "build xasm2026-3",
+      "dependsOn": "build xasm2026-4",
       "problemMatcher": []
     },
     {
       "label": "assembler REGISTER",
       "type": "process",
-      "command": "${workspaceFolder}\\src\\bin\\Release\\net8.0\\xasm2026-3.exe",
+      "command": "${workspaceFolder}\\src\\bin\\Release\\net8.0\\xasm2026-4.exe",
       "args": [
         "REGISTER.ASM",
         "-O",
@@ -69,13 +69,13 @@
       "options": {
         "cwd": "${workspaceFolder}\\Exemples\\REGISTER"
       },
-      "dependsOn": "build xasm2026-3",
+      "dependsOn": "build xasm2026-4",
       "problemMatcher": []
     },
     {
       "label": "assembler VOGUE",
       "type": "process",
-      "command": "${workspaceFolder}\\src\\bin\\Release\\net8.0\\xasm2026-3.exe",
+      "command": "${workspaceFolder}\\src\\bin\\Release\\net8.0\\xasm2026-4.exe",
       "args": [
         "VOGUE.S",
         "-O",
@@ -90,7 +90,7 @@
       "options": {
         "cwd": "${workspaceFolder}\\Exemples\\VOGUE"
       },
-      "dependsOn": "build xasm2026-3",
+      "dependsOn": "build xasm2026-4",
       "problemMatcher": []
     }
   ]

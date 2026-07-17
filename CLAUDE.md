@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-XASM2026-3 is a standalone C# (.NET 8) port of the XASM2026 cross-assembler for the
+XASM2026-4 is a standalone C# (.NET 8) port of the XASM2026 cross-assembler for the
 **SHARP PC-E500S** pocket computer's **SC62015** CPU. It replaces the original C engine
 (preserved in `Reference/C/`) with native C#, while reproducing the historical command-line
 interface, directives, and output formats **byte-for-byte**. The overriding constraint of
@@ -15,19 +15,19 @@ Documentation and code comments are in French; keep that convention when editing
 ## Build & run
 
 ```powershell
-# Build (produces src/bin/Release/net8.0/xasm2026-3.exe)
+# Build (produces src/bin/Release/net8.0/xasm2026-4.exe)
 dotnet build .\src\Xasm2026.Native.csproj -c Release
 
 # Assemble an example. Run from the source file's own directory so INCLUDEs resolve.
 cd .\Exemples\VOGUE
-..\..\bin\xasm2026-3.exe VOGUE.S -O vogue.obj -L vogue.lst -B vogue.uu
+..\..\bin\xasm2026-4.exe VOGUE.S -O vogue.obj -L vogue.lst -B vogue.uu
 ```
 
-`bin/xasm2026-3.exe` (and `.dll`) is a hand-copied convenience build; the canonical output
+`bin/xasm2026-4.exe` (and `.dll`) is a hand-copied convenience build; the canonical output
 of a build is under `src/bin/Release/net8.0/`. After a meaningful change, rebuild and copy
 the fresh binary to `bin/` if you rely on it.
 
-VS Code tasks (`.vscode/tasks.json`) wrap the common flows: `build xasm2026-3`,
+VS Code tasks (`.vscode/tasks.json`) wrap the common flows: `build xasm2026-4`,
 `assembler VOGUE`, `assembler REGISTER`, and `coverage_all toutes options`.
 
 ## Command-line interface

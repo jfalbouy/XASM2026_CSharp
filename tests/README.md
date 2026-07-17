@@ -3,7 +3,7 @@
 Ce dossier est reserve aux comparaisons entre :
 
 - la reference `xasm2026-1` ;
-- le port C# natif `xasm2026-3`.
+- le port C# natif `xasm2026-4`.
 
 ## Principe
 

@@ -10,5 +10,5 @@
     "*.s19": "plaintext",
     "*.hex": "plaintext"
   },
-  "dotnet.defaultSolution": "xasm2026-3.sln"
+  "dotnet.defaultSolution": "xasm2026-4.sln"
 }

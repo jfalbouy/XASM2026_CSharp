@@ -6,15 +6,15 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v8.0": {
-      "xasm2026-3/1.0.0": {
+      "xasm2026-4/1.0.0": {
         "runtime": {
-          "xasm2026-3.dll": {}
+          "xasm2026-4.dll": {}
         }
       }
     }
   },
   "libraries": {
-    "xasm2026-3/1.0.0": {
+    "xasm2026-4/1.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
