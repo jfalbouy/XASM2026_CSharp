@@ -1,4 +1,4 @@
-# XASM140 - Information, version française enrichie xasm2026-3
+# XASM140 - Information, version française enrichie xasm2026-4
 
 Version du document : 05/06/2026
 
@@ -8,7 +8,7 @@ XASM est un assembleur croisé absolu pour le CPU Sharp ESR-L / SC62015. Il a é
 
 La version historique XASM 1.40 a été améliorée à partir des versions 1.26 et 1.27j. Le moteur original, issu d'une conversion Turbo Pascal vers C, a notamment gagné en vitesse grâce à une gestion des symboles par hash.
 
-`xasm2026-3` reprend cette base historique, mais remplace le coeur d'assemblage par un port C# natif maintenable, tout en conservant l'interface et les sorties utiles à la validation sur Sharp PC-E500S.
+`xasm2026-4` reprend cette base historique, mais remplace le coeur d'assemblage par un port C# natif maintenable, tout en conservant l'interface et les sorties utiles à la validation sur Sharp PC-E500S.
 
 ## 2. Caractéristiques de XASM 1.40
 
@@ -24,9 +24,9 @@ Les caractéristiques historiques restent au coeur du projet :
 - plusieurs types de sortie objet ;
 - compatibilité avec les workflows de transfert vers pocket computer.
 
-## 3. Apports de xasm2026-3
+## 3. Apports de xasm2026-4
 
-`xasm2026-3` finalise un port C# natif en conservant le comportement utile de XASM 1.40 et de `xasm2026-2`.
+`xasm2026-4` finalise un port C# natif en conservant le comportement utile de XASM 1.40 et de `xasm2026-2`.
 
 | Domaine | Travail réalisé |
 |---|---|
@@ -104,9 +104,9 @@ La table valide est :
 | `(PX+n)` | `36h` | `34h` | `37h` | `35h` |
 | `(BP+PX)` | `26h` | `24h` | `27h` | `25h` |
 
-Attention : `PY+n` et `BP+PY` ne sont pas des formes de premier opérande. Elles ne doivent pas être utilisées comme destination ou opérande unique. `xasm2026-3` renvoie désormais `Prebyte error` pour ces cas.
+Attention : `PY+n` et `BP+PY` ne sont pas des formes de premier opérande. Elles ne doivent pas être utilisées comme destination ou opérande unique. `xasm2026-4` renvoie désormais `Prebyte error` pour ces cas.
 
-## 8. Options de xasm2026-3
+## 8. Options de xasm2026-4
 
 ```text
 -L  listing
@@ -129,12 +129,12 @@ Attention : `PY+n` et `BP+PY` ne sont pas des formes de premier opérande. Elles
 
 ## 9. Diagnostics et correction des erreurs
 
-Quand `-L -E` sont utilisés et qu'une erreur fatale survient, `xasm2026-3` écrit un rapport dans `.err` et `.lst`.
+Quand `-L -E` sont utilisés et qu'une erreur fatale survient, `xasm2026-4` écrit un rapport dans `.err` et `.lst`.
 
 Exemple :
 
 ```text
-XASM2026-3: ligne 3: Prebyte error | mv (py+3),a
+XASM2026-4: ligne 3: Prebyte error | mv (py+3),a
 
 bad_prebyte.asm    3    Prebyte error
     mv (py+3),a

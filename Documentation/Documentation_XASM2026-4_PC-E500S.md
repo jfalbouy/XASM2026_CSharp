@@ -1,22 +1,22 @@
-# Documentation XASM2026-3 pour Sharp PC-E500S
+# Documentation XASM2026-4 pour Sharp PC-E500S
 
 Version du document : 05/06/2026
 
 ## 1. Objet du document
 
-Ce document décrit `xasm2026-3`, port C# natif de l'assembleur XASM pour CPU Sharp ESR-L / SC62015. Il reprend la documentation pratique établie pour `xasm2026-1`, ajoute les choix de portage effectués pour `xasm2026-3`, décrit les options de sortie modernes et inclut en annexe le contenu complet du fichier `README - PC-E500 Instruction Table.md`.
+Ce document décrit `xasm2026-4`, port C# natif de l'assembleur XASM pour CPU Sharp ESR-L / SC62015. Il reprend la documentation pratique établie pour `xasm2026-1`, ajoute les choix de portage effectués pour `xasm2026-4`, décrit les options de sortie modernes et inclut en annexe le contenu complet du fichier `README - PC-E500 Instruction Table.md`.
 
-`xasm2026-3` a été construit pour conserver le comportement observable de XASM 1.40 et du moteur C `xasm2026-2`, tout en remplaçant progressivement le coeur assembleur par du code C# maintenable.
+`xasm2026-4` a été construit pour conserver le comportement observable de XASM 1.40 et du moteur C `xasm2026-2`, tout en remplaçant progressivement le coeur assembleur par du code C# maintenable.
 
 | Élément | Valeur |
 |---|---|
-| Projet | `xasm2026-3` |
+| Projet | `xasm2026-4` |
 | Langage | C# / .NET 8 |
 | CPU cible | Sharp ESR-L / SC62015 |
 | Machines visées | Sharp PC-E500 / PC-E500S et proches compatibles |
 | Référence historique | XASM 1.40 |
 | Référence de comparaison | `xasm2026-2`, XASM 1.40 sous DOSBox et sorties historiques |
-| Exécutable principal | `C:\Codex\xasm2026-3\bin\xasm2026-3.exe` |
+| Exécutable principal | `C:\Codex\xasm2026-4\bin\xasm2026-4.exe` |
 
 ## 2. Arborescence du projet
 
@@ -34,7 +34,7 @@ Ce document décrit `xasm2026-3`, port C# natif de l'assembleur XASM pour CPU Sh
 
 ## 3. Compilation du projet
 
-Depuis `C:\Codex\xasm2026-3` :
+Depuis `C:\Codex\xasm2026-4` :
 
 ```powershell
 dotnet build .\src\Xasm2026.Native.csproj -c Release
@@ -43,13 +43,13 @@ dotnet build .\src\Xasm2026.Native.csproj -c Release
 Le build génère :
 
 ```text
-C:\Codex\xasm2026-3\src\bin\Release\net8.0\xasm2026-3.exe
+C:\Codex\xasm2026-4\src\bin\Release\net8.0\xasm2026-4.exe
 ```
 
 Une copie pratique est maintenue ici :
 
 ```text
-C:\Codex\xasm2026-3\bin\xasm2026-3.exe
+C:\Codex\xasm2026-4\bin\xasm2026-4.exe
 ```
 
 ## 4. Ligne de commande
@@ -57,13 +57,13 @@ C:\Codex\xasm2026-3\bin\xasm2026-3.exe
 Forme générale :
 
 ```powershell
-xasm2026-3.exe sourcefile[.ext] [options]
+xasm2026-4.exe sourcefile[.ext] [options]
 ```
 
 Exemple complet :
 
 ```powershell
-xasm2026-3.exe coverage_all.asm -O coverage_all.obj -L coverage_all.lst -E -S -TZ -C -W -H -I coverage_all.hex -M coverage_all.s19 -P coverage_all.map -D coverage_all.d -B coverage_all.uu -X coverage_all.txt -V -R
+xasm2026-4.exe coverage_all.asm -O coverage_all.obj -L coverage_all.lst -E -S -TZ -C -W -H -I coverage_all.hex -M coverage_all.s19 -P coverage_all.map -D coverage_all.d -B coverage_all.uu -X coverage_all.txt -V -R
 ```
 
 | Option | Effet |
@@ -130,7 +130,7 @@ Règles principales :
 
 ## 7. Prébytes et nomenclature mémoire interne
 
-La mémoire interne du SC62015 utilise des prébytes pour certaines combinaisons d'adressage. `xasm2026-3` respecte la table du manuel :
+La mémoire interne du SC62015 utilise des prébytes pour certaines combinaisons d'adressage. `xasm2026-4` respecte la table du manuel :
 
 | 1er opérande \ 2e opérande | `(n)` | `(BP+n)` | `(PY+n)` | `(BP+PY)` |
 |---|---:|---:|---:|---:|
@@ -190,7 +190,7 @@ Le coverage `tests/coverage_all.asm` vérifie plusieurs centaines de lignes de c
 Depuis la finalisation du projet, une erreur fatale est écrite dans `.err` et `.lst` lorsque `-E` et `-L` sont utilisés. Exemple :
 
 ```text
-XASM2026-3: ligne 3: Prebyte error | mv (py+3),a
+XASM2026-4: ligne 3: Prebyte error | mv (py+3),a
 
 bad_prebyte.asm    3    Prebyte error
     mv (py+3),a
@@ -201,7 +201,7 @@ Assemble aborted.
 
 Cela permet de corriger les erreurs sans perdre l'information de la console.
 
-## 11. Travail réalisé sur xasm2026-3
+## 11. Travail réalisé sur xasm2026-4
 
 Les principaux blocs finalisés sont :
 
@@ -234,8 +234,8 @@ Les validations effectuées en fin de projet :
 ## 13. Commandes de validation recommandées
 
 ```powershell
-cd C:\Codex\xasm2026-3\tests
-..\bin\xasm2026-3.exe coverage_all.asm -O coverage_all.obj -L coverage_all.lst -E -S -TZ -C -W -H -I coverage_all.hex -M coverage_all.s19 -P coverage_all.map -D coverage_all.d -B coverage_all.uu -X coverage_all.txt -V -R
+cd C:\Codex\xasm2026-4\tests
+..\bin\xasm2026-4.exe coverage_all.asm -O coverage_all.obj -L coverage_all.lst -E -S -TZ -C -W -H -I coverage_all.hex -M coverage_all.s19 -P coverage_all.map -D coverage_all.d -B coverage_all.uu -X coverage_all.txt -V -R
 ```
 
 Pour comparer les exemples, utiliser `fc.exe /b` sur les `.OBJ` et `fc.exe` sur les `.LST` quand une référence stricte existe.

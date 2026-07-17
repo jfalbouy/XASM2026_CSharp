@@ -1,16 +1,16 @@
-# Description des fichiers sources XASM2026-3
+# Description des fichiers sources XASM2026-4
 
-Ce document presente le role de chaque fichier source utile du projet `xasm2026-3`.
+Ce document presente le role de chaque fichier source utile du projet `xasm2026-4`.
 
 Les fichiers generes par .NET dans les dossiers `bin` et `obj` ne sont pas documentes ici : ils sont regenerables par la compilation et ne font pas partie du code maintenu.
 
 ## Vue d'ensemble
 
-`xasm2026-3` est le port C# natif de l'assembleur XASM pour le processeur Sharp PC-E500 / CPU-SC62015.
+`xasm2026-4` est le port C# natif de l'assembleur XASM pour le processeur Sharp PC-E500 / CPU-SC62015.
 
 Le projet est organise en blocs fonctionnels :
 
-- `src` : implementation C# native utilisee pour produire `xasm2026-3.exe`.
+- `src` : implementation C# native utilisee pour produire `xasm2026-4.exe`.
 - `src/Assembly` : lecture du source assembleur, expansion des includes/macros, gestion des symboles et encodage des instructions.
 - `src/Core` : structures de donnees communes produites par l'assemblage.
 - `src/Expressions` : evaluation des expressions numeriques de l'assembleur.
@@ -177,7 +177,7 @@ Il affiche les octets sous forme hexadecimale avec une colonne ASCII lisible lor
 
 Ancien lanceur C# autour du moteur historique.
 
-Il conserve une trace de la logique de transition entre `xasm2026-2` et le port natif `xasm2026-3`.
+Il conserve une trace de la logique de transition entre `xasm2026-2` et le port natif `xasm2026-4`.
 
 Ce fichier n'est plus le coeur du projet final, mais il reste utile pour comprendre le chemin de portage.
 
@@ -255,13 +255,13 @@ Projet .NET principal.
 
 Il definit la cible de compilation du port C# natif.
 
-### `xasm2026-3.sln`
+### `xasm2026-4.sln`
 
 Solution Visual Studio classique.
 
 Elle permet d'ouvrir et compiler le projet dans Visual Studio 2022.
 
-### `xasm2026-3.slnx`
+### `xasm2026-4.slnx`
 
 Solution Visual Studio au format moderne.
 

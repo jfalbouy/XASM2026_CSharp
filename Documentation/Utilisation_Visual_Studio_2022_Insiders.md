@@ -1,4 +1,4 @@
-# Utiliser xasm2026-3 avec Visual Studio 2022 et VS Code Insiders
+# Utiliser xasm2026-4 avec Visual Studio 2022 et VS Code Insiders
 
 ## 1. Prérequis
 
@@ -17,13 +17,13 @@ C:\Codex\xasm2026-github-final\src\Xasm2026.Native.csproj
 La solution Visual Studio est :
 
 ```text
-C:\Codex\xasm2026-github-final\xasm2026-3.sln
+C:\Codex\xasm2026-github-final\xasm2026-4.sln
 ```
 
 Une solution au nouveau format existe aussi :
 
 ```text
-C:\Codex\xasm2026-github-final\xasm2026-3.slnx
+C:\Codex\xasm2026-github-final\xasm2026-4.slnx
 ```
 
 Pour Visual Studio 2022, utiliser de préférence le fichier `.sln` classique.
@@ -35,7 +35,7 @@ Pour Visual Studio 2022, utiliser de préférence le fichier `.sln` classique.
 3. Ouvrir :
 
 ```text
-C:\Codex\xasm2026-github-final\xasm2026-3.sln
+C:\Codex\xasm2026-github-final\xasm2026-4.sln
 ```
 
 4. Définir `Xasm2026.Native` comme projet de démarrage si Visual Studio ne le fait pas automatiquement.
@@ -53,10 +53,10 @@ Profils disponibles :
 
 | Profil | Rôle |
 |---|---|
-| `xasm2026-3 - coverage_all toutes options` | Compile le banc de couverture avec toutes les sorties. |
-| `xasm2026-3 - REGISTER` | Compile `REGISTER.ASM`. |
-| `xasm2026-3 - VOGUE` | Compile `VOGUE.S`. |
-| `xasm2026-3 - source personnel` | Profil simple à modifier pour un source utilisateur. |
+| `xasm2026-4 - coverage_all toutes options` | Compile le banc de couverture avec toutes les sorties. |
+| `xasm2026-4 - REGISTER` | Compile `REGISTER.ASM`. |
+| `xasm2026-4 - VOGUE` | Compile `VOGUE.S`. |
+| `xasm2026-4 - source personnel` | Profil simple à modifier pour un source utilisateur. |
 
 Dans Visual Studio :
 
@@ -80,7 +80,7 @@ Le `workingDirectory` est important : les fichiers `INCLUDE` et les sorties sont
 Depuis un terminal ouvert dans `C:\Codex\xasm2026-github-final` :
 
 ```powershell
-dotnet build .\xasm2026-3.sln -c Release
+dotnet build .\xasm2026-4.sln -c Release
 ```
 
 Ou seulement le projet natif :
@@ -92,20 +92,20 @@ dotnet build .\src\Xasm2026.Native.csproj -c Release
 L'exécutable généré est :
 
 ```text
-C:\Codex\xasm2026-github-final\src\bin\Release\net8.0\xasm2026-3.exe
+C:\Codex\xasm2026-github-final\src\bin\Release\net8.0\xasm2026-4.exe
 ```
 
 La copie pratique du projet est :
 
 ```text
-C:\Codex\xasm2026-github-final\bin\xasm2026-3.exe
+C:\Codex\xasm2026-github-final\bin\xasm2026-4.exe
 ```
 
 ## 6. Exemple de ligne de commande complète
 
 ```powershell
 cd C:\Codex\xasm2026-github-final\tests
-..\bin\xasm2026-3.exe coverage_all.asm -O coverage_all.obj -L coverage_all.lst -E -S -TZ -C -W -H -I coverage_all.hex -M coverage_all.s19 -P coverage_all.map -D coverage_all.d -B coverage_all.uu -X coverage_all.txt -V -R
+..\bin\xasm2026-4.exe coverage_all.asm -O coverage_all.obj -L coverage_all.lst -E -S -TZ -C -W -H -I coverage_all.hex -M coverage_all.s19 -P coverage_all.map -D coverage_all.d -B coverage_all.uu -X coverage_all.txt -V -R
 ```
 
 Sorties attendues :
@@ -140,7 +140,7 @@ Les fichiers fournis sont :
 
 Commandes utiles dans VS Code Insiders :
 
-- **Terminal > Run Build Task** : lance `build xasm2026-3`.
+- **Terminal > Run Build Task** : lance `build xasm2026-4`.
 - **Terminal > Run Task** puis `coverage_all toutes options`.
 - **Run and Debug** puis `Debug coverage_all`.
 - **Run and Debug** puis `Debug REGISTER`.
@@ -178,7 +178,7 @@ Puis :
 
 ```powershell
 cd C:\Codex\xasm2026-github-final\tests
-..\src\bin\Release\net8.0\xasm2026-3.exe coverage_all.asm -O coverage_all.check.obj -L coverage_all.check.lst -E -S -TZ -C -W -H -I coverage_all.check.hex -M coverage_all.check.s19 -P coverage_all.check.map -D coverage_all.check.d -B coverage_all.check.uu -X coverage_all.check.txt -V -R
+..\src\bin\Release\net8.0\xasm2026-4.exe coverage_all.asm -O coverage_all.check.obj -L coverage_all.check.lst -E -S -TZ -C -W -H -I coverage_all.check.hex -M coverage_all.check.s19 -P coverage_all.check.map -D coverage_all.check.d -B coverage_all.check.uu -X coverage_all.check.txt -V -R
 ```
 
 Le banc `coverage_all.asm` doit compiler sans erreur.

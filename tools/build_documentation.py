@@ -12,7 +12,7 @@ from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
 
 
-ROOT = Path(r"C:\Codex\xasm2026-3")
+ROOT = Path(r"C:\Codex\xasm2026-4")
 FINAL_ROOT = Path(r"C:\Codex\xasm2026-github-final")
 DOC_DIR = ROOT / "Documentation"
 FINAL_DOC_DIR = FINAL_ROOT / "Documentation"
@@ -38,25 +38,25 @@ def fenced(text: str) -> str:
 def build_xasm2026_3_markdown() -> str:
     instruction = read(INSTRUCTION_TABLE).strip()
     today = date.today().strftime("%d/%m/%Y")
-    return f"""# Documentation XASM2026-3 pour Sharp PC-E500S
+    return f"""# Documentation XASM2026-4 pour Sharp PC-E500S
 
 Version du document : {today}
 
 ## 1. Objet du document
 
-Ce document décrit `xasm2026-3`, port C# natif de l'assembleur XASM pour CPU Sharp ESR-L / SC62015. Il reprend la documentation pratique établie pour `xasm2026-1`, ajoute les choix de portage effectués pour `xasm2026-3`, décrit les options de sortie modernes et inclut en annexe le contenu complet du fichier `README - PC-E500 Instruction Table.md`.
+Ce document décrit `xasm2026-4`, port C# natif de l'assembleur XASM pour CPU Sharp ESR-L / SC62015. Il reprend la documentation pratique établie pour `xasm2026-1`, ajoute les choix de portage effectués pour `xasm2026-4`, décrit les options de sortie modernes et inclut en annexe le contenu complet du fichier `README - PC-E500 Instruction Table.md`.
 
-`xasm2026-3` a été construit pour conserver le comportement observable de XASM 1.40 et du moteur C `xasm2026-2`, tout en remplaçant progressivement le coeur assembleur par du code C# maintenable.
+`xasm2026-4` a été construit pour conserver le comportement observable de XASM 1.40 et du moteur C `xasm2026-2`, tout en remplaçant progressivement le coeur assembleur par du code C# maintenable.
 
 | Élément | Valeur |
 |---|---|
-| Projet | `xasm2026-3` |
+| Projet | `xasm2026-4` |
 | Langage | C# / .NET 8 |
 | CPU cible | Sharp ESR-L / SC62015 |
 | Machines visées | Sharp PC-E500 / PC-E500S et proches compatibles |
 | Référence historique | XASM 1.40 |
 | Référence de comparaison | `xasm2026-2`, XASM 1.40 sous DOSBox et sorties historiques |
-| Exécutable principal | `C:\\Codex\\xasm2026-3\\bin\\xasm2026-3.exe` |
+| Exécutable principal | `C:\\Codex\\xasm2026-4\\bin\\xasm2026-4.exe` |
 
 ## 2. Arborescence du projet
 
@@ -74,7 +74,7 @@ Ce document décrit `xasm2026-3`, port C# natif de l'assembleur XASM pour CPU Sh
 
 ## 3. Compilation du projet
 
-Depuis `C:\\Codex\\xasm2026-3` :
+Depuis `C:\\Codex\\xasm2026-4` :
 
 ```powershell
 dotnet build .\\src\\Xasm2026.Native.csproj -c Release
@@ -83,13 +83,13 @@ dotnet build .\\src\\Xasm2026.Native.csproj -c Release
 Le build génère :
 
 ```text
-C:\\Codex\\xasm2026-3\\src\\bin\\Release\\net8.0\\xasm2026-3.exe
+C:\\Codex\\xasm2026-4\\src\\bin\\Release\\net8.0\\xasm2026-4.exe
 ```
 
 Une copie pratique est maintenue ici :
 
 ```text
-C:\\Codex\\xasm2026-3\\bin\\xasm2026-3.exe
+C:\\Codex\\xasm2026-4\\bin\\xasm2026-4.exe
 ```
 
 ## 4. Ligne de commande
@@ -97,13 +97,13 @@ C:\\Codex\\xasm2026-3\\bin\\xasm2026-3.exe
 Forme générale :
 
 ```powershell
-xasm2026-3.exe sourcefile[.ext] [options]
+xasm2026-4.exe sourcefile[.ext] [options]
 ```
 
 Exemple complet :
 
 ```powershell
-xasm2026-3.exe coverage_all.asm -O coverage_all.obj -L coverage_all.lst -E -S -TZ -C -W -H -I coverage_all.hex -M coverage_all.s19 -P coverage_all.map -D coverage_all.d -B coverage_all.uu -X coverage_all.txt -V -R
+xasm2026-4.exe coverage_all.asm -O coverage_all.obj -L coverage_all.lst -E -S -TZ -C -W -H -I coverage_all.hex -M coverage_all.s19 -P coverage_all.map -D coverage_all.d -B coverage_all.uu -X coverage_all.txt -V -R
 ```
 
 | Option | Effet |
@@ -170,7 +170,7 @@ Règles principales :
 
 ## 7. Prébytes et nomenclature mémoire interne
 
-La mémoire interne du SC62015 utilise des prébytes pour certaines combinaisons d'adressage. `xasm2026-3` respecte la table du manuel :
+La mémoire interne du SC62015 utilise des prébytes pour certaines combinaisons d'adressage. `xasm2026-4` respecte la table du manuel :
 
 | 1er opérande \\ 2e opérande | `(n)` | `(BP+n)` | `(PY+n)` | `(BP+PY)` |
 |---|---:|---:|---:|---:|
@@ -230,7 +230,7 @@ Le coverage `tests/coverage_all.asm` vérifie plusieurs centaines de lignes de c
 Depuis la finalisation du projet, une erreur fatale est écrite dans `.err` et `.lst` lorsque `-E` et `-L` sont utilisés. Exemple :
 
 ```text
-XASM2026-3: ligne 3: Prebyte error | mv (py+3),a
+XASM2026-4: ligne 3: Prebyte error | mv (py+3),a
 
 bad_prebyte.asm    3    Prebyte error
     mv (py+3),a
@@ -241,7 +241,7 @@ Assemble aborted.
 
 Cela permet de corriger les erreurs sans perdre l'information de la console.
 
-## 11. Travail réalisé sur xasm2026-3
+## 11. Travail réalisé sur xasm2026-4
 
 Les principaux blocs finalisés sont :
 
@@ -274,8 +274,8 @@ Les validations effectuées en fin de projet :
 ## 13. Commandes de validation recommandées
 
 ```powershell
-cd C:\\Codex\\xasm2026-3\\tests
-..\\bin\\xasm2026-3.exe coverage_all.asm -O coverage_all.obj -L coverage_all.lst -E -S -TZ -C -W -H -I coverage_all.hex -M coverage_all.s19 -P coverage_all.map -D coverage_all.d -B coverage_all.uu -X coverage_all.txt -V -R
+cd C:\\Codex\\xasm2026-4\\tests
+..\\bin\\xasm2026-4.exe coverage_all.asm -O coverage_all.obj -L coverage_all.lst -E -S -TZ -C -W -H -I coverage_all.hex -M coverage_all.s19 -P coverage_all.map -D coverage_all.d -B coverage_all.uu -X coverage_all.txt -V -R
 ```
 
 Pour comparer les exemples, utiliser `fc.exe /b` sur les `.OBJ` et `fc.exe` sur les `.LST` quand une référence stricte existe.
@@ -289,7 +289,7 @@ Pour comparer les exemples, utiliser `fc.exe /b` sur les `.OBJ` et `fc.exe` sur 
 def build_xasm140_info_fr_markdown() -> str:
     original = read(XASM140_INFO_TXT).strip()
     today = date.today().strftime("%d/%m/%Y")
-    return f"""# XASM140 - Information, version française enrichie xasm2026-3
+    return f"""# XASM140 - Information, version française enrichie xasm2026-4
 
 Version du document : {today}
 
@@ -299,7 +299,7 @@ XASM est un assembleur croisé absolu pour le CPU Sharp ESR-L / SC62015. Il a é
 
 La version historique XASM 1.40 a été améliorée à partir des versions 1.26 et 1.27j. Le moteur original, issu d'une conversion Turbo Pascal vers C, a notamment gagné en vitesse grâce à une gestion des symboles par hash.
 
-`xasm2026-3` reprend cette base historique, mais remplace le coeur d'assemblage par un port C# natif maintenable, tout en conservant l'interface et les sorties utiles à la validation sur Sharp PC-E500S.
+`xasm2026-4` reprend cette base historique, mais remplace le coeur d'assemblage par un port C# natif maintenable, tout en conservant l'interface et les sorties utiles à la validation sur Sharp PC-E500S.
 
 ## 2. Caractéristiques de XASM 1.40
 
@@ -315,9 +315,9 @@ Les caractéristiques historiques restent au coeur du projet :
 - plusieurs types de sortie objet ;
 - compatibilité avec les workflows de transfert vers pocket computer.
 
-## 3. Apports de xasm2026-3
+## 3. Apports de xasm2026-4
 
-`xasm2026-3` finalise un port C# natif en conservant le comportement utile de XASM 1.40 et de `xasm2026-2`.
+`xasm2026-4` finalise un port C# natif en conservant le comportement utile de XASM 1.40 et de `xasm2026-2`.
 
 | Domaine | Travail réalisé |
 |---|---|
@@ -395,9 +395,9 @@ La table valide est :
 | `(PX+n)` | `36h` | `34h` | `37h` | `35h` |
 | `(BP+PX)` | `26h` | `24h` | `27h` | `25h` |
 
-Attention : `PY+n` et `BP+PY` ne sont pas des formes de premier opérande. Elles ne doivent pas être utilisées comme destination ou opérande unique. `xasm2026-3` renvoie désormais `Prebyte error` pour ces cas.
+Attention : `PY+n` et `BP+PY` ne sont pas des formes de premier opérande. Elles ne doivent pas être utilisées comme destination ou opérande unique. `xasm2026-4` renvoie désormais `Prebyte error` pour ces cas.
 
-## 8. Options de xasm2026-3
+## 8. Options de xasm2026-4
 
 ```text
 -L  listing
@@ -420,12 +420,12 @@ Attention : `PY+n` et `BP+PY` ne sont pas des formes de premier opérande. Elles
 
 ## 9. Diagnostics et correction des erreurs
 
-Quand `-L -E` sont utilisés et qu'une erreur fatale survient, `xasm2026-3` écrit un rapport dans `.err` et `.lst`.
+Quand `-L -E` sont utilisés et qu'une erreur fatale survient, `xasm2026-4` écrit un rapport dans `.err` et `.lst`.
 
 Exemple :
 
 ```text
-XASM2026-3: ligne 3: Prebyte error | mv (py+3),a
+XASM2026-4: ligne 3: Prebyte error | mv (py+3),a
 
 bad_prebyte.asm    3    Prebyte error
     mv (py+3),a
@@ -611,16 +611,16 @@ def markdown_to_docx(markdown: str, out_path: Path, title: str) -> None:
 
 def main() -> None:
     DOC_DIR.mkdir(parents=True, exist_ok=True)
-    xasm_doc_md = DOC_DIR / "Documentation_XASM2026-3_PC-E500S.md"
-    xasm_doc_docx = DOC_DIR / "Documentation_XASM2026-3_PC-E500S.docx"
-    info_md = DOC_DIR / "XASM140_Information_FR_xasm2026-3.md"
-    info_docx = DOC_DIR / "XASM140_Information_FR_xasm2026-3.docx"
+    xasm_doc_md = DOC_DIR / "Documentation_XASM2026-4_PC-E500S.md"
+    xasm_doc_docx = DOC_DIR / "Documentation_XASM2026-4_PC-E500S.docx"
+    info_md = DOC_DIR / "XASM140_Information_FR_xasm2026-4.md"
+    info_docx = DOC_DIR / "XASM140_Information_FR_xasm2026-4.docx"
 
     xasm_markdown = build_xasm2026_3_markdown()
     info_markdown = build_xasm140_info_fr_markdown()
     write(xasm_doc_md, xasm_markdown)
     write(info_md, info_markdown)
-    markdown_to_docx(xasm_markdown, xasm_doc_docx, "Documentation XASM2026-3 pour Sharp PC-E500S")
+    markdown_to_docx(xasm_markdown, xasm_doc_docx, "Documentation XASM2026-4 pour Sharp PC-E500S")
     markdown_to_docx(info_markdown, info_docx, "XASM140 - Information, version française enrichie")
 
     FINAL_DOC_DIR.mkdir(parents=True, exist_ok=True)
