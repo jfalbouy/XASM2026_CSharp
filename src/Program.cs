@@ -129,15 +129,11 @@ internal static class Program
     /// Donnees de sortie : aucune valeur retournee ; effets sur la console et les fichiers de sortie.
     ///
     /// Fidelite a mes.c (err_handle) : les avertissements sont muets sans -W et ne rendent
-    /// jamais l'assemblage fatal. Le format de ligne reprend "fichier\tligne\ttexte".
+    /// jamais l'assemblage fatal. Le format de ligne reprend "fichier\tligne\ttexte", avec
+    /// "col N" insere sous -V.
     ///
-    /// Divergences assumees, faute des informations correspondantes dans le port :
-    /// - le C intercale chaque avertissement dans le listing a la ligne fautive, on les
-    ///   regroupe en fin de listing ;
-    /// - le C ajoute "col N" sous -V, on ne suit pas la colonne d'analyse et on prefere
-    ///   ne rien afficher plutot qu'une valeur factice ;
-    /// - les numeros rapportes pour le fichier principal sont ceux des lignes developpees.
-    /// Ces trois points se resoudront ensemble avec le portage des numeros de ligne physiques.
+    /// L'insertion dans le listing n'est pas faite ici : ListingWriter les intercale a la
+    /// ligne fautive, comme le C. Cette procedure ne traite que la console et le .err.
     /// </summary>
     private static void ReportWarnings(CommandLineOptions options, Core.AssemblyResult result)
     {
@@ -147,7 +143,7 @@ internal static class Program
         }
 
         var lines = result.Warnings
-            .Select(w => $"{w.File}\t{w.Line}\t{w.Message}")
+            .Select(w => w.Format(options.VerboseErrorsEnabled))
             .ToList();
 
         foreach (var line in lines)
@@ -155,16 +151,11 @@ internal static class Program
             Console.WriteLine($"                 \r{line}");
         }
 
-        var block = string.Join(Environment.NewLine, lines) + Environment.NewLine;
-
-        if (options.ListingEnabled && File.Exists(options.ListingFile))
-        {
-            File.AppendAllText(options.ListingFile, block);
-        }
-
         if (options.ErrorReportEnabled)
         {
-            File.AppendAllText(Path.ChangeExtension(options.ListingFile, ".err"), block);
+            File.AppendAllText(
+                Path.ChangeExtension(options.ListingFile, ".err"),
+                string.Join(Environment.NewLine, lines) + Environment.NewLine);
         }
     }
 

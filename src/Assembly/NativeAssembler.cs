@@ -36,6 +36,9 @@ internal sealed partial class NativeAssembler
     // situer les avertissements et les erreurs fatales dans le fichier reellement ecrit
     // par l'utilisateur, et non dans le source developpe.
     private SourceRef? _currentOrigin;
+
+    // Colonne 1-base du fragment fautif dans la ligne courante, rapportee sous -V.
+    private int _currentColumn;
     private readonly Stack<bool> _preStack = new();
 
     /// <summary>
@@ -88,7 +91,29 @@ internal sealed partial class NativeAssembler
 
         var file = _currentOrigin?.File ?? _options.SourceFile ?? string.Empty;
         var line = _currentOrigin?.Line ?? 0;
-        _warnings.Add(new AssemblyWarning(file, line, message));
+        _warnings.Add(new AssemblyWarning(file, line, _currentColumn, message));
+    }
+
+    /// <summary>
+    /// Action : determine la colonne 1-base du fragment fautif dans une ligne source.
+    /// Donnees d'entree : parametres de la signature (string rawLine, SourceLine line).
+    /// Donnees de sortie : colonne 1-base, ou 0 si elle ne peut pas etre localisee.
+    ///
+    /// On designe le debut de l'operande, ou a defaut celui du mnemonique : c'est le
+    /// fragment que l'utilisateur doit corriger pour les avertissements portes.
+    /// </summary>
+    private static int ColumnOf(string rawLine, SourceLine line)
+    {
+        var probe = string.IsNullOrWhiteSpace(line.OperandText)
+            ? line.Mnemonic
+            : line.OperandText.Trim();
+        if (string.IsNullOrEmpty(probe))
+        {
+            return 0;
+        }
+
+        var index = rawLine.IndexOf(probe, StringComparison.OrdinalIgnoreCase);
+        return index >= 0 ? index + 1 : 0;
     }
 
     /// <summary>
@@ -131,6 +156,7 @@ internal sealed partial class NativeAssembler
             var lineAddress = _locationCounter;
             var lineByteStart = result.GeneratedBytes.Count;
             var line = SourceLine.Parse(rawLine);
+            _currentColumn = ColumnOf(rawLine, line);
             if (line.IsEmpty)
             {
                 AddListingLine(emit, result, lineAddress, lineByteStart, rawLine);
@@ -520,7 +546,7 @@ internal sealed partial class NativeAssembler
     /// Donnees d'entree : parametres de la signature (bool emit, AssemblyResult result, long address, int byteStart, string sourceText) et etat courant necessaire.
     /// Donnees de sortie : aucune valeur retournee ; effets attendus sur fichiers, resultat ou etat interne.
     /// </summary>
-    private static void AddListingLine(bool emit, AssemblyResult result, long address, int byteStart, string sourceText)
+    private void AddListingLine(bool emit, AssemblyResult result, long address, int byteStart, string sourceText)
     {
         if (!emit)
         {
@@ -531,7 +557,14 @@ internal sealed partial class NativeAssembler
             .Skip(byteStart)
             .Select(x => x.Value)
             .ToArray();
-        result.ListingLines.Add(new ListingLine(address, bytes, sourceText.TrimEnd('\u001A', '\r', '\n')));
+        // L'origine est rattachee a la ligne de listing : c'est elle qui permet au
+        // redacteur du .lst d'intercaler les avertissements a la ligne fautive.
+        result.ListingLines.Add(new ListingLine(
+            address,
+            bytes,
+            sourceText.TrimEnd('\u001A', '\r', '\n'),
+            _currentOrigin?.File ?? string.Empty,
+            _currentOrigin?.Line ?? 0));
     }
 
     /// <summary>

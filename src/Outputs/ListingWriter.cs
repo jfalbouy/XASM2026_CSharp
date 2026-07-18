@@ -15,12 +15,38 @@ internal static class ListingWriter
     public static void Write(string path, CommandLineOptions options, AssemblyResult result)
     {
         using var writer = new StreamWriter(path, false);
+
+        // Les avertissements sont intercales a la ligne fautive, comme le fait err_handle
+        // dans le C. Sans -W ils sont totalement absents du listing, ce qui garantit
+        // l'invariance des sorties de reference.
+        var pending = options.WarningEnabled
+            ? result.Warnings.ToList()
+            : new List<AssemblyWarning>();
+
         if (result.ListingLines.Count > 0)
         {
             foreach (var line in result.ListingLines)
             {
                 WriteListingLine(writer, line);
+
+                // Ordre d'emission preserve : plusieurs avertissements peuvent viser la
+                // meme ligne (33 et 38 sur la derniere ligne d'un fichier inclus).
+                var matched = pending
+                    .Where(w => w.Line == line.Line &&
+                                string.Equals(w.File, line.File, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+                foreach (var warning in matched)
+                {
+                    writer.WriteLine(warning.Format(options.VerboseErrorsEnabled));
+                    pending.Remove(warning);
+                }
             }
+        }
+
+        // Avertissements sans ligne de listing correspondante : on ne les perd pas.
+        foreach (var warning in pending)
+        {
+            writer.WriteLine(warning.Format(options.VerboseErrorsEnabled));
         }
 
         if (options.SymbolListEnabled)

@@ -231,6 +231,61 @@ public sealed class BehaviorTests
         Assert.Null(options.SourceFile);
     }
 
+    /// <summary>
+    /// Sous -W, chaque avertissement est intercale immediatement apres la ligne de listing
+    /// fautive (comportement de err_handle) ; sans -W, le listing n'en porte aucune trace,
+    /// ce qui garantit l'invariance des sorties de reference.
+    /// </summary>
+    [Fact]
+    public void Listing_interleaves_warnings_only_under_W()
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "l.asm"),
+                "        ORG 0E000H\n" +
+                "        DS  0\n" +      // ligne 2 : warning 32
+                "        DB  22H\n" +
+                "        END\n");
+
+            Assert.Equal(0, Program.Main(new[] { "l.asm", "-O", "l.obj", "-L", "with.lst", "-W" }));
+            Assert.Equal(0, Program.Main(new[] { "l.asm", "-O", "l.obj", "-L", "without.lst" }));
+
+            var with = File.ReadAllLines(Path.Combine(dir, "with.lst"));
+            var without = File.ReadAllText(Path.Combine(dir, "without.lst"));
+
+            var offending = Array.FindIndex(with, l => l.Contains("DS  0", StringComparison.Ordinal));
+            Assert.True(offending >= 0, "ligne fautive absente du listing");
+            Assert.Contains("Warning: No effective code", with[offending + 1], StringComparison.Ordinal);
+
+            Assert.DoesNotContain("Warning", without, StringComparison.Ordinal);
+        });
+    }
+
+    /// <summary>
+    /// La colonne rapportee sous -V designe le debut de l'operande fautif.
+    /// </summary>
+    [Fact]
+    public void Warning_column_points_at_the_operand()
+    {
+        RunInTempDir(dir =>
+        {
+            //        123456789012345 -> l'operande "0" est en colonne 13
+            File.WriteAllText(Path.Combine(dir, "col.asm"),
+                "        ORG 0E000H\n" +
+                "        DS  0\n" +
+                "        DB  22H\n" +
+                "        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "col.asm" });
+            var result = new NativeAssembler(options).Assemble();
+
+            var warning = Assert.Single(result.Warnings);
+            Assert.Equal(13, warning.Column);
+            Assert.Equal("col.asm\t2\tcol 13\tWarning: No effective code", warning.Format(verbose: true));
+            Assert.Equal("col.asm\t2\tWarning: No effective code", warning.Format(verbose: false));
+        });
+    }
+
     private static void RunInTempDir(Action<string> body)
     {
         var dir = Path.Combine(Path.GetTempPath(), "xasm_behavior", Guid.NewGuid().ToString("N"));

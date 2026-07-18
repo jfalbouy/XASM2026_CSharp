@@ -60,10 +60,18 @@ neither of which the port implements. Add them alongside those features, not bef
 
 Semantics follow the C: warnings never make the assembly fatal (exit code stays 0) and are
 **silent unless `-W`** — which is why they cannot affect the goldens, none of which were
-produced with `-W`. Output goes to the console as `file<TAB>line<TAB>text`, and is appended to
-the `.lst` and `.err` when those are enabled. Two deviations remain: the C interleaves each
-warning at the offending listing line (we group them at the end of the listing), and the C adds
-`col N` under `-V` (we track no parse column and print none rather than a fake value).
+produced with `-W`. The rendering is `file<TAB>line<TAB>text`, or `file<TAB>line<TAB>col
+N<TAB>text` under `-V` (`AssemblyWarning.Format` — one formatter for all three destinations,
+mirroring the single `errtext` of `err_handle`). Warnings go to the console, to the `.err`, and
+are **interleaved into the `.lst` right after the offending line**, which `ListingWriter` does
+by matching `AssemblyWarning`'s origin against `ListingLine`'s — hence the `File`/`Line` fields
+on `ListingLine`. Anything left unmatched is flushed at the end so it can never be silently
+dropped.
+
+The reported column is the 1-based start of the offending operand (or of the mnemonic when
+there is no operand). It is deliberately *not* the C's `pp`, which is the parser's current
+position at the time of the error: this is a stable, verifiable approximation, not a
+reproduction.
 
 ### Source positions
 

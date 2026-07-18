@@ -50,10 +50,12 @@ internal sealed partial class NativeAssembler
             var localDepth = 0;
             var preDepth = 0;
             var fileLineCount = 0;
+            string? lastLine = null;
 
             foreach (var rawLine in File.ReadAllLines(path))
             {
                 fileLineCount++;
+                lastLine = rawLine;
                 var line = SourceLine.Parse(rawLine);
                 switch (line.Mnemonic.ToUpperInvariant())
                 {
@@ -82,16 +84,21 @@ internal sealed partial class NativeAssembler
 
             if (!isTopLevel)
             {
+                // Le desequilibre n'est constate qu'a la fermeture du fichier : on rattache
+                // l'avertissement a sa derniere ligne, comme le C dont current_file->lines
+                // vaut alors le nombre de lignes lues.
+                var lastColumn = lastLine is null ? 0 : ColumnOf(lastLine, SourceLine.Parse(lastLine));
+
                 if (localDepth != 0)
                 {
                     _warnings.Add(new AssemblyWarning(
-                        fileName, fileLineCount, "Warning: LOCAL and ENDL not match in included file"));
+                        fileName, fileLineCount, lastColumn, "Warning: LOCAL and ENDL not match in included file"));
                 }
 
                 if (preDepth != 0)
                 {
                     _warnings.Add(new AssemblyWarning(
-                        fileName, fileLineCount, "Warning: PRE_PUSH and PRE_POP not match"));
+                        fileName, fileLineCount, lastColumn, "Warning: PRE_PUSH and PRE_POP not match"));
                 }
             }
 
