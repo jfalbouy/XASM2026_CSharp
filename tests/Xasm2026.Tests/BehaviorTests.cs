@@ -286,6 +286,126 @@ public sealed class BehaviorTests
         });
     }
 
+    /// <summary>
+    /// Les arguments d'INCLUDE sont referencables par @0..@9 dans le fichier inclus,
+    /// et se combinent normalement dans une expression.
+    /// </summary>
+    [Fact]
+    public void Include_arguments_are_referenced_by_at_digit()
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "sub.asm"),
+                "        DB  @0\n" +
+                "        DB  @1\n" +
+                "        DB  @0+@1\n" +
+                "        END\n");
+            File.WriteAllText(Path.Combine(dir, "main.asm"),
+                "base:   EQU 10H\n" +
+                "        ORG 0E000H\n" +
+                "        INCLUDE 'sub.asm',base,3\n" +
+                "        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "main.asm" });
+            var result = new NativeAssembler(options).Assemble();
+
+            Assert.Equal(
+                new[] { 0x10, 0x03, 0x13 },
+                result.GeneratedBytes.Select(b => (int)b.Value).ToArray());
+        });
+    }
+
+    /// <summary>
+    /// Une reference @n au-dela des arguments recus est une erreur explicite (err 31 du C),
+    /// situee dans le fichier inclus fautif.
+    /// </summary>
+    [Fact]
+    public void Argument_beyond_the_supplied_count_is_an_error()
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "sub.asm"), "        DB  @3\n        END\n");
+            File.WriteAllText(Path.Combine(dir, "main.asm"),
+                "        ORG 0E000H\n        INCLUDE 'sub.asm',1\n        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "main.asm" });
+            var ex = Assert.Throws<InvalidOperationException>(() => new NativeAssembler(options).Assemble());
+
+            Assert.Contains("Bad argument number", ex.Message, StringComparison.Ordinal);
+            Assert.Contains("sub.asm", ex.Message, StringComparison.Ordinal);
+        });
+    }
+
+    /// <summary>
+    /// La directive PRE emet un seul octet, et refuse une valeur hors des plages de
+    /// prebytes legaux (21h-27h et 30h-37h, err 1 du C).
+    /// </summary>
+    [Fact]
+    public void Pre_directive_emits_one_byte_and_validates_its_range()
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "ok.asm"),
+                "        ORG 0E000H\n        PRE 21H\n        PRE 37H\n        END\n");
+            var okOptions = CommandLineOptions.Parse(new[] { "ok.asm" });
+            var result = new NativeAssembler(okOptions).Assemble();
+            Assert.Equal(new[] { 0x21, 0x37 }, result.GeneratedBytes.Select(b => (int)b.Value).ToArray());
+
+            File.WriteAllText(Path.Combine(dir, "bad.asm"),
+                "        ORG 0E000H\n        PRE 99H\n        END\n");
+            var badOptions = CommandLineOptions.Parse(new[] { "bad.asm" });
+            var ex = Assert.Throws<InvalidOperationException>(() => new NativeAssembler(badOptions).Assemble());
+            Assert.Contains("Prebyte error", ex.Message, StringComparison.Ordinal);
+        });
+    }
+
+    /// <summary>
+    /// PRE employe alors que le prebyte automatique est actif declenche l'avertissement 29,
+    /// que le portage de la directive rend enfin atteignable.
+    /// </summary>
+    [Fact]
+    public void Pre_while_auto_prebyte_is_active_warns()
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "p.asm"),
+                "        ORG 0E000H\n" +
+                "        PRE_ON\n" +
+                "        PRE 21H\n" +
+                "        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "p.asm" });
+            var result = new NativeAssembler(options).Assemble();
+
+            Assert.Contains(
+                result.Warnings,
+                w => w.Message == "Warning: Used PRE while auto-prebyte is active");
+        });
+    }
+
+    /// <summary>
+    /// Avertissement 34 : un argument d'INCLUDE non resoluble. Il n'est observable que si
+    /// l'argument n'est jamais utilise dans le fichier inclus ; sinon son emploi via @n
+    /// provoque d'abord une erreur fatale de symbole indefini, plus utile.
+    /// </summary>
+    [Fact]
+    public void Unresolvable_include_argument_warns_when_never_used()
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "sub.asm"), "        DB  55H\n        END\n");
+            File.WriteAllText(Path.Combine(dir, "main.asm"),
+                "        ORG 0E000H\n        INCLUDE 'sub.asm',JAMAIS_DEFINI\n        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "main.asm" });
+            var result = new NativeAssembler(options).Assemble();
+
+            Assert.Contains(
+                result.Warnings,
+                w => w.Message == "Warning: INCLUDE argument isn't defined yet");
+        });
+    }
+
     private static void RunInTempDir(Action<string> body)
     {
         var dir = Path.Combine(Path.GetTempPath(), "xasm_behavior", Guid.NewGuid().ToString("N"));

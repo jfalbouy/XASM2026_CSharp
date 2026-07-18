@@ -117,4 +117,39 @@ public sealed class ExpressionEvaluatorTests
     {
         Assert.Equal(0x20, Eval("**2", locationCounter: 0x10));
     }
+
+    [Theory]
+    [InlineData("0F0H|0FH", 0xFF)]
+    [InlineData("0FFH&0F0H", 0xF0)]
+    [InlineData("17%5", 2)]
+    [InlineData("10%2", 0)]
+    public void Bitwise_and_modulo_operators_are_supported(string expression, long expected)
+    {
+        Assert.Equal(expected, Eval(expression));
+    }
+
+    /// <summary>
+    /// Precedence de oprlevel_set (init.c), du plus faible au plus fort :
+    /// "|" 3 &lt; "&amp;" 4 &lt; "%" 5 &lt; "+ -" 6 &lt; "* /" 7.
+    ///
+    /// Le piege : le modulo lie **moins fort** que l'addition, contrairement au C. Ces cas
+    /// echoueraient avec la precedence du C, ils verrouillent donc la regle historique.
+    /// </summary>
+    [Theory]
+    [InlineData("1+2%3", 0)]        // (1+2)%3 = 0, et non 1+(2%3) = 3
+    [InlineData("2*3%4", 2)]        // (2*3)%4 = 2
+    [InlineData("1|2&3", 3)]        // & plus fort que | : 1|(2&3) = 1|2 = 3
+    [InlineData("6&3+1", 4)]        // + plus fort que & : 6&(3+1) = 6&4 = 4
+    [InlineData("(1+2)%3", 0)]
+    [InlineData("1+(2%3)", 3)]      // parentheses explicites : l'autre lecture
+    public void Operator_precedence_follows_oprlevel(string expression, long expected)
+    {
+        Assert.Equal(expected, Eval(expression));
+    }
+
+    [Fact]
+    public void Modulo_by_zero_yields_zero_like_division()
+    {
+        Assert.Equal(0, Eval("5%0"));
+    }
 }

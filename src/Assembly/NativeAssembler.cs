@@ -262,10 +262,28 @@ internal sealed partial class NativeAssembler
                     }
                     break;
                 case "INCLUDE":
+                    // genop.c case 76 : un argument dont l'expression n'est pas encore
+                    // resoluble a ce point declenche l'err 34. Le fichier lui-meme a deja
+                    // ete integre par le preprocesseur ; il ne reste qu'a controler.
+                    foreach (var argument in SplitOperands(line.OperandText).Skip(1))
+                    {
+                        var probe = new ExpressionEvaluator(
+                            _symbols.Values, _symbols.CurrentScope, ReservedRegisters, _locationCounter);
+                        probe.Evaluate(_symbols.NormalizeScopedExpression(
+                            SubstituteArguments(argument.Trim(), _currentOrigin?.Args)));
+                        if (probe.Undefined.Count > 0)
+                        {
+                            AddWarning("Warning: INCLUDE argument isn't defined yet");
+                        }
+                    }
+
                     break;
                 case "DB":
                 case "DM":
                     EmitData(line.OperandText, 1, emit, result);
+                    break;
+                case "PRE":
+                    EmitPrebyte(line.OperandText, emit, result);
                     break;
                 case "DW":
                     EmitData(line.OperandText, 2, emit, result);
@@ -2434,6 +2452,36 @@ internal sealed partial class NativeAssembler
     /// Donnees d'entree : parametres de la signature (string operandText, bool emit, AssemblyResult result) et etat courant necessaire.
     /// Donnees de sortie : aucune valeur retournee ; effets attendus sur fichiers, resultat ou etat interne.
     /// </summary>
+    /// <summary>
+    /// Action : emet un prebyte explicite (directive PRE).
+    /// Donnees d'entree : parametres de la signature (string operandText, bool emit, AssemblyResult result).
+    /// Donnees de sortie : aucune valeur retournee ; un octet emis par operande.
+    ///
+    /// genop.c case 70 : PRE appartient a la famille des directives de donnees avec
+    /// offset = 1, ce qui emet un seul octet (set_reg_opecode n'ecrit que l'octet bas).
+    /// La valeur doit etre un prebyte legal, soit 21h-27h soit 30h-37h, sinon err 1 ;
+    /// et l'emploi de PRE alors que le prebyte automatique est actif declenche l'err 29.
+    /// </summary>
+    private void EmitPrebyte(string operandText, bool emit, AssemblyResult result)
+    {
+        foreach (var operand in SplitOperands(operandText))
+        {
+            var value = Eval(operand);
+            if (value is (< 33 or > 39) and (< 48 or > 55))
+            {
+                throw new InvalidOperationException(
+                    $"Prebyte error: {value} hors des plages 21h-27h et 30h-37h");
+            }
+
+            if (_preOn)
+            {
+                AddWarning("Warning: Used PRE while auto-prebyte is active");
+            }
+
+            Emit(value, emit, result);
+        }
+    }
+
     private void EmitStorage(string operandText, bool emit, AssemblyResult result)
     {
         var operands = SplitOperands(operandText);

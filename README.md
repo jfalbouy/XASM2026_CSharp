@@ -370,11 +370,21 @@ séparateur visuel ignoré : `1010_1010B`, `0F_FH`, `1_000`.
 
 ### Expressions
 
-Les opérateurs portés sont :
+Les opérateurs portés, **du moins prioritaire au plus prioritaire** :
 
-```
-+   -   *   /   ( )
-```
+| Niveau | Opérateurs |
+|---|---|
+| 3 | `\|` — OU binaire |
+| 4 | `&` — ET binaire |
+| 5 | `%` — modulo |
+| 6 | `+` `-` |
+| 7 | `*` `/` |
+
+Les parenthèses forcent le regroupement.
+
+> **Attention** : le modulo lie **moins fort que l'addition** dans ce langage, contrairement
+> au C. `1+2%3` vaut donc `(1+2)%3` = 0, et non `1+(2%3)` = 3. Cette précédence est celle de
+> `oprlevel_set` dans `init.c`.
 
 Ils opèrent sur les constantes et les symboles. Les mnémoniques de registres (`BP`, `PX`,
 `A`, …) valent `0` dans une expression d'adressage : leur contribution est encodée dans
@@ -419,8 +429,16 @@ unitaires dédiés.
 > Un `END` situé dans un fichier **inclus** ne termine pas l'assemblage global : il ne
 > ferme que ce fichier. Ce comportement est intentionnel et doit être préservé.
 
-> Les **arguments d'`INCLUDE`** (`INCLUDE f.asm,100H,200H` et les références `@0`…`@9`) du
-> moteur C ne sont pas portés.
+`INCLUDE` accepte jusqu'à dix arguments, référencés par `@0`…`@9` dans le fichier inclus :
+
+```asm
+        INCLUDE subfunc.asm, 100H, 200H
+; dans subfunc.asm :
+;   MV X, @0    ; = 100H
+;   MV Y, @1    ; = 200H
+```
+
+Une référence `@n` au-delà des arguments reçus est une erreur explicite.
 
 ### Données
 
@@ -431,6 +449,7 @@ unitaires dédiés.
 | `DW expr[,…]` | Mots 16 bits |
 | `DP expr[,…]` | Pointeurs 20 bits |
 | `DS n[,val]` | Réserve `n` octets initialisés à `val` |
+| `PRE octet` | Émet un prebyte explicite (21h-27h ou 30h-37h) |
 
 ### Portées, macros, structures
 
@@ -485,19 +504,16 @@ w_b:    DS  2
 
 ## Avertissements
 
-Le moteur C définit six avertissements non fatals parmi ses codes d'erreur. **Quatre sont
-portés**, ceux dont le portage dispose de l'état nécessaire à la détection :
+Les **six** avertissements non fatals du moteur C sont portés :
 
 | Code | Message | Déclencheur |
 |---|---|---|
 | 28 | `Warning: Location counter already set` | `ORG` après que l'origine a déjà été fixée |
+| 29 | `Warning: Used PRE while auto-prebyte is active` | `PRE` alors que `PRE_ON` est actif |
 | 32 | `Warning: No effective code` | `DS 0`, qui ne réserve rien |
 | 33 | `Warning: LOCAL and ENDL not match in included file` | Déséquilibre `LOCAL`/`ENDL` dans un `INCLUDE` |
+| 34 | `Warning: INCLUDE argument isn't defined yet` | Argument d'`INCLUDE` non résoluble |
 | 38 | `Warning: PRE_PUSH and PRE_POP not match` | Déséquilibre `PRE_PUSH`/`PRE_POP` dans un `INCLUDE` |
-
-Les codes 29 (`Used PRE while auto-prebyte is active`) et 34 (`INCLUDE argument isn't
-defined yet`) ne sont **pas** portés : ils supposent respectivement la directive de données
-`PRE` et les arguments d'`INCLUDE`, absents du portage.
 
 Comme dans le C, un avertissement ne rend **jamais** l'assemblage fatal et reste **muet sans
 `-W`**. Sous `-W`, il est affiché sur la console, ajouté au `.err`, et **intercalé dans le
@@ -629,11 +645,17 @@ exemples de référence.
 
 | Domaine | Écart |
 |---|---|
-| Expressions | Opérateurs `%`, `&`, `\|` non portés |
-| `INCLUDE` | Arguments et références `@0`…`@9` non portés |
-| Directives | Directive de données `PRE` non portée |
-| Avertissements | Codes 29 et 34 non portés (ils dépendent des deux points ci-dessus) |
+| Division | Une division ou un modulo par zéro rend `0` au lieu de l'erreur fatale 2 du C |
+| Avertissement 34 | Implémenté, mais peu atteignable : voir ci-dessous |
 | Colonne `-V` | Désigne le début de l'opérande fautif, et non la position courante de l'analyseur (`pp` du C) |
+
+**Sur l'avertissement 34.** Il est implémenté mais rarement observable, à cause d'une
+différence d'architecture : le préprocesseur du portage évalue tous les `EQU` avant les
+passes, si bien qu'un symbole défini *plus loin* dans le source est déjà connu — la notion de
+« pas encore défini », qui dépend de l'ordre de lecture dans le C, disparaît en grande partie.
+Et si le symbole n'est défini nulle part, son emploi via `@n` déclenche d'abord une **erreur
+fatale** de symbole indéfini, plus utile qu'un avertissement. L'avertissement ne remonte donc
+que lorsque l'argument fautif n'est jamais utilisé dans le fichier inclus.
 
 Les mnémoniques ou formes d'adressage non encore portés provoquent une erreur explicite
 (`opcode ou directive non encore portee: …`) plutôt qu'un encodage silencieusement faux.

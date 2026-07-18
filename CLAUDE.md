@@ -43,20 +43,26 @@ basename with a new extension. Flags are parsed in `src/CommandLineOptions.cs`:
 
 ### Warnings (`-W`)
 
-The C reference (`mes.c`, `err_handle`) defines six non-fatal warnings among its error codes.
-Four are ported, because the port has the state needed to detect them — the ORG/DS ones are
-raised in `NativeAssembler`, the include-scope ones in `NativeAssembler.Preprocessor.cs`:
+All six non-fatal warnings of the C reference (`mes.c`, `err_handle`) are ported. The
+ORG/DS/PRE ones are raised in `NativeAssembler`, the include-scope ones in
+`NativeAssembler.Preprocessor.cs`:
 
 | Code | Message | Trigger |
 | --- | --- | --- |
 | 28 | `Warning: Location counter already set` | `ORG` after the origin was already fixed |
+| 29 | `Warning: Used PRE while auto-prebyte is active` | `PRE` while `PRE_ON` is in effect |
 | 32 | `Warning: No effective code` | `DS 0` — reserves nothing |
 | 33 | `Warning: LOCAL and ENDL not match in included file` | unbalanced `LOCAL`/`ENDL` in an INCLUDE |
+| 34 | `Warning: INCLUDE argument isn't defined yet` | unresolvable INCLUDE argument |
 | 38 | `Warning: PRE_PUSH and PRE_POP not match` | unbalanced `PRE_PUSH`/`PRE_POP` in an INCLUDE |
 
-Codes 29 (`Used PRE while auto-prebyte is active`) and 34 (`INCLUDE argument isn't defined yet`)
-are **not** ported: they need the `PRE` data directive and INCLUDE arguments respectively,
-neither of which the port implements. Add them alongside those features, not before.
+Code 34 is implemented but rarely observable, and that is architectural rather than a bug:
+the preprocessor evaluates every `EQU` before the passes, so a symbol defined *later* in the
+source is already known — the C's order-dependent notion of "not defined *yet*" largely
+evaporates. And when the symbol is defined nowhere, using it through `@n` raises a fatal
+undefined-symbol error first, which is more useful. The warning therefore only surfaces when
+the offending argument is never used inside the included file. Don't "fix" this by weakening
+the fatal check.
 
 Semantics follow the C: warnings never make the assembly fatal (exit code stays 0) and are
 **silent unless `-W`** — which is why they cannot affect the goldens, none of which were
@@ -154,8 +160,8 @@ Flow: `Program.Main` → `CommandLineOptions.Parse` → `NativeAssembler.Assembl
   Counterpart of `hash.c` plus the C's `l_stack`.
 - **`src/Assembly/RegisterTable.cs`** — stateless SC62015 register/opcode lookup tables.
   Imported by the assembler with `using static`, so call sites stay unqualified.
-- **`src/Assembly/SourceRef.cs`** — a source line plus its physical origin (see *Source
-  positions* above).
+- **`src/Assembly/SourceRef.cs`** — a source line plus its physical origin and the INCLUDE
+  argument expressions in scope for it (see *Source positions* above).
 - **`src/Assembly/SourceLine.cs`** — parses one raw line into label / mnemonic / operand text.
 - **`src/Expressions/ExpressionEvaluator.cs`** — numeric expression evaluation (`+ - * /`,
   parentheses) over the symbol table. Two rules come straight from `eval.c` and are easy to
@@ -189,6 +195,17 @@ to understand current coverage and known-good vs. not-yet-ported instruction for
 ## Directives supported
 
 `ORG`, `END`, `EQU`, `SECTION`, `STRUCT`/`ENDS`, `REPEAT`/`ENDR`, `IFEQ`/`IFNE`/`IFGT`/`IFLT`
-(and other conditionals), `MACRO`, `INCLUDE`, `DB`/`DM`/`DW`/`DP`/`DS`. An INCLUDE'd file's
-internal `END` must **not** terminate the whole assembly — this is an intentional, previously-fixed
-behavior; preserve it.
+(and other conditionals), `MACRO`, `INCLUDE`, `DB`/`DM`/`DW`/`DP`/`DS`, `PRE`. An INCLUDE'd
+file's internal `END` must **not** terminate the whole assembly — this is an intentional,
+previously-fixed behavior; preserve it.
+
+`INCLUDE file[,arg0,…,arg9]` passes arguments, referenced as `@0`…`@9` inside the included
+file. Because includes are flattened *before* any pass, the symbol table is not yet populated
+when they are read, so `SourceRef.Args` carries the argument **expressions as text** and the
+substitution happens at evaluation time (`SubstituteArguments`, parenthesized to preserve
+precedence). A parent file's own `@n` are substituted into the arguments before they are handed
+down, so nested `@n` still resolve against the right scope.
+
+`PRE value` emits a single explicit prebyte (`genop.c` case 70 uses the data-directive family
+with `offset = 1`). The value must be a legal prebyte — `21h`–`27h` or `30h`–`37h` — otherwise
+it is a fatal error, and using `PRE` while `PRE_ON` is in effect raises warning 29.

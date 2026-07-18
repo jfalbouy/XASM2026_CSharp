@@ -25,7 +25,11 @@ internal sealed partial class NativeAssembler
     /// Donnees d'entree : parametres de la signature (string sourceFile, string baseDirectory, bool isTopLevel) et etat courant necessaire.
     /// Donnees de sortie : collection calculee par la procedure.
     /// </summary>
-    private List<SourceRef> ReadSourceWithIncludes(string sourceFile, string baseDirectory, bool isTopLevel)
+    private List<SourceRef> ReadSourceWithIncludes(
+        string sourceFile,
+        string baseDirectory,
+        bool isTopLevel,
+        IReadOnlyList<string>? args = null)
     {
         var path = Path.IsPathRooted(sourceFile) ? sourceFile : Path.Combine(baseDirectory, sourceFile);
         var fullPath = Path.GetFullPath(path);
@@ -67,18 +71,30 @@ internal sealed partial class NativeAssembler
 
                 if (line.Mnemonic.Equals("INCLUDE", StringComparison.OrdinalIgnoreCase))
                 {
-                    var includeName = line.OperandText.Trim().Trim('\'', '"');
+                    // genop.c case 76 : INCLUDE fichier[,arg0,...,arg9]. Les expressions
+                    // d'arguments sont transmises telles quelles, apres substitution des
+                    // arguments du fichier courant pour qu'un @n imbrique reste correct.
+                    var includeParts = SplitOperands(line.OperandText);
+                    var includeName = includeParts[0].Trim().Trim('\'', '"');
+                    var includeArgs = includeParts
+                        .Skip(1)
+                        .Select(x => SubstituteArguments(x.Trim(), args))
+                        .ToArray();
                     _dependencies.Add(includeName);
-                    lines.Add(new SourceRef(rawLine, fileName, fileLineCount));
-                    lines.AddRange(ReadSourceWithIncludes(includeName, Path.GetDirectoryName(path) ?? baseDirectory, isTopLevel: false));
+                    lines.Add(new SourceRef(rawLine, fileName, fileLineCount, args));
+                    lines.AddRange(ReadSourceWithIncludes(
+                        includeName,
+                        Path.GetDirectoryName(path) ?? baseDirectory,
+                        isTopLevel: false,
+                        includeArgs));
                 }
                 else if (!isTopLevel && line.Mnemonic.Equals("END", StringComparison.OrdinalIgnoreCase))
                 {
-                    lines.Add(new SourceRef(IncludedEndMarker + rawLine, fileName, fileLineCount));
+                    lines.Add(new SourceRef(IncludedEndMarker + rawLine, fileName, fileLineCount, args));
                 }
                 else
                 {
-                    lines.Add(new SourceRef(rawLine, fileName, fileLineCount));
+                    lines.Add(new SourceRef(rawLine, fileName, fileLineCount, args));
                 }
             }
 
@@ -144,6 +160,7 @@ internal sealed partial class NativeAssembler
             }
 
             var origin = sourceLines[i];
+            _currentOrigin = origin;
             var line = SourceLine.Parse(StripInternalMarker(origin.Text));
             var mnemonic = line.Mnemonic.ToUpperInvariant();
 

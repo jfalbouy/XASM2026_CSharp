@@ -97,7 +97,77 @@ internal sealed class ExpressionEvaluator
         /// Donnees d'entree : aucune donnee directe ; utilise l'etat courant de l'objet ou de l'application.
         /// Donnees de sortie : valeur long calculee par la procedure.
         /// </summary>
-        public long ParseExpression()
+        public long ParseExpression() => ParseOr();
+
+        /// <summary>
+        /// Action : analyse le OU binaire, niveau de precedence le plus faible.
+        /// </summary>
+        private long ParseOr()
+        {
+            var value = ParseAnd();
+            while (true)
+            {
+                SkipSpaces();
+                if (TryRead('|'))
+                {
+                    value |= ParseAnd();
+                }
+                else
+                {
+                    return value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Action : analyse le ET binaire.
+        /// </summary>
+        private long ParseAnd()
+        {
+            var value = ParseModulo();
+            while (true)
+            {
+                SkipSpaces();
+                if (TryRead('&'))
+                {
+                    value &= ParseModulo();
+                }
+                else
+                {
+                    return value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Action : analyse le modulo.
+        ///
+        /// Attention : dans ce langage le modulo lie **moins fort** que l'addition
+        /// (niveau 5 contre 6 dans oprlevel_set de init.c), contrairement au C ou il a la
+        /// precedence de la multiplication. "1+2%3" vaut donc (1+2)%3, et non 1+(2%3).
+        /// </summary>
+        private long ParseModulo()
+        {
+            var value = ParseAdditive();
+            while (true)
+            {
+                SkipSpaces();
+                if (TryRead('%'))
+                {
+                    var divisor = ParseAdditive();
+                    value = divisor == 0 ? 0 : value - value / divisor * divisor;
+                }
+                else
+                {
+                    return value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Action : analyse les additions et soustractions.
+        /// </summary>
+        private long ParseAdditive()
         {
             var value = ParseProduct();
             while (true)
@@ -279,7 +349,7 @@ internal sealed class ExpressionEvaluator
             while (_position < _text.Length)
             {
                 var c = _text[_position];
-                if (char.IsWhiteSpace(c) || c is '+' or '-' or '*' or '/' or ',' or ')')
+                if (char.IsWhiteSpace(c) || c is '+' or '-' or '*' or '/' or '%' or '&' or '|' or ',' or ')')
                 {
                     break;
                 }

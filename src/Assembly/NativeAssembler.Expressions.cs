@@ -26,7 +26,8 @@ internal sealed partial class NativeAssembler
         // rendue par l'operande "*", pendant de la globale lc du C lue au moment de l'eval.
         var evaluator = new ExpressionEvaluator(
             _symbols.Values, _symbols.CurrentScope, ReservedRegisters, _locationCounter);
-        var value = evaluator.Evaluate(_symbols.NormalizeScopedExpression(expression));
+        var prepared = SubstituteArguments(expression, _currentOrigin?.Args);
+        var value = evaluator.Evaluate(_symbols.NormalizeScopedExpression(prepared));
 
         // En passe d'emission, un symbole encore non resolu ne peut plus l'etre : c'est une erreur,
         // sinon la reference serait silencieusement assemblee a 0 (binaire faux non signale).
@@ -44,6 +45,45 @@ internal sealed partial class NativeAssembler
     /// Donnees d'entree : parametres de la signature (string expression) et etat courant necessaire.
     /// Donnees de sortie : valeur int calculee par la procedure.
     /// </summary>
+    /// <summary>
+    /// Action : remplace les references @0..@9 par l'expression de l'argument correspondant.
+    /// Donnees d'entree : expression source, arguments de l'INCLUDE du fichier courant.
+    /// Donnees de sortie : expression ou chaque @n est remplace par "(expression)".
+    ///
+    /// eval.c traite '@' avec set_x == FALSE : @ suivi d'un chiffre unique rend
+    /// current_file->arg[n], et une reference hors plage donne l'err 31. Ici la substitution
+    /// est textuelle et parenthesee, ce qui preserve la precedence de l'expression injectee.
+    /// </summary>
+    private static string SubstituteArguments(string expression, IReadOnlyList<string>? args)
+    {
+        if (expression.IndexOf('@') < 0)
+        {
+            return expression;
+        }
+
+        var result = new System.Text.StringBuilder(expression.Length);
+        for (var i = 0; i < expression.Length; i++)
+        {
+            if (expression[i] != '@' || i + 1 >= expression.Length || !char.IsAsciiDigit(expression[i + 1]))
+            {
+                result.Append(expression[i]);
+                continue;
+            }
+
+            var index = expression[i + 1] - '0';
+            if (args is null || index >= args.Count)
+            {
+                throw new InvalidOperationException(
+                    $"Bad argument number: @{index} (le fichier a recu {args?.Count ?? 0} argument(s))");
+            }
+
+            result.Append('(').Append(args[index]).Append(')');
+            i++;
+        }
+
+        return result.ToString();
+    }
+
     private int EvalDisplacement(string expression)
     {
         var value = Eval(expression);
