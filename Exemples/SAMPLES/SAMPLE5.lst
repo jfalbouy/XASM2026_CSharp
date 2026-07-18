@@ -1,43 +1,44 @@
 000000                   	; SAMPLE5.ASM - Test des nouvelles fonctionnalites XASM modernes
 000000                   	;
 00E000                   	        ORG     0E000H
+00E000                   	
 00E000                   	; ── Test SECTION ─────────────────────────────────────────────
 00E000                   	        SECTION INIT
+00E000                   	
 00E000                   	; ── Test REPEAT / ENDR ───────────────────────────────────────
 00E000                   	; Genere 4 NOP consecutifs
-00E000                   	        REPEAT  4
 00E000 00                	        NOP
 00E001 00                	        NOP
 00E002 00                	        NOP
 00E003 00                	        NOP
+00E004                   	
 00E004                   	; ── Test IFEQ / IFNE / IFGT / IFLT ──────────────────────────
 00E004                   	VERSION:        EQU     2
-00E004                   	;;        IFEQ    VERSION-2
+00E004                   	
 00E004 56                	        DB      056H            ; code specifique V2
-00E005                   	;;        ENDIF
-00E005                   	;;        IFNE    VERSION-1
+00E005                   	
 00E005 FF                	        DB      0FFH            ; pas la version 1
-00E006                   	;;        ENDIF
-00E006                   	;;        IFGT    VERSION-1
+00E006                   	
 00E006 01                	        DB      001H            ; version > 1
-00E007                   	;;        ENDIF
-00E007                   	;;        IFLT    VERSION-5
-00E007                   	;;        DB      002H            ; version < 5
-00E007                   	;;        ENDIF
+00E007                   	
+00E007                   	
 00E007                   	; ── Test STRUCT / ENDS ───────────────────────────────────────
 00E007                   	POINT:          STRUCT
 00E007                   	POINT_X:        EQU     0
 00E007                   	POINT_Y:        EQU     1
 00E007                   	                ENDS
+00E007                   	
 00E007                   	; POINT_SIZE est automatiquement defini = 2
+00E007                   	
 00E007                   	; ── Test SECTION MAIN ────────────────────────────────────────
 00E007                   	        SECTION MAIN
+00E007                   	
 00E007                   	MAIN:
 00E007 08 00             	        MV      A,0             ; initialisation
 00E009 09 00             	        MV      IL,POINT_X      ; utiliser champ de structure
 00E00B 0B 02 00          	        MV      I,POINT_SIZE    ; utiliser taille de structure
+00E00E                   	
 00E00E                   	; Boucle avec REPEAT : copier 8 octets
-00E00E                   	        REPEAT  8
 00E00E 90 24             	        MV      A,[X++]
 00E010 90 24             	        MV      A,[X++]
 00E012 90 24             	        MV      A,[X++]
@@ -46,6 +47,16 @@
 00E018 90 24             	        MV      A,[X++]
 00E01A 90 24             	        MV      A,[X++]
 00E01C 90 24             	        MV      A,[X++]
+00E01E                   	
 00E01E                   	        END
+
+ - Symbols -
+
+00E007h  MAIN
+00E007h  POINT
+000002h  POINT_SIZE
+000000h  POINT_X
+000001h  POINT_Y
+000002h  VERSION
 
   No fatal error.  Code: 00E000h - 00E01Dh [       30 byte(s)]

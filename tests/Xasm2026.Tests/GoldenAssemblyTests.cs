@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text.RegularExpressions;
 using Xasm2026.Native;
 using Xunit;
 
@@ -11,53 +12,62 @@ public sealed class AssemblerCollection { }
 
 /// <summary>
 /// Non-regression octet-a-octet : reassemble chaque exemple de reference et compare
-/// les sorties machine (obj/hex/s19/txt) aux golden files commits dans Exemples/.
-/// Ces formats sont independants du nom de fichier de sortie, donc reproductibles.
+/// les huit sorties (obj/hex/s19/txt + lst/map/d/uu) aux golden files commits dans Exemples/.
+///
+/// Les formats de presentation (.lst/.map/.d/.uu) embarquent le nom du fichier source et
+/// celui des sorties : ils ne sont reproductibles que si l'on rejoue **l'invocation
+/// historique exacte** ayant produit les goldens, a savoir des noms entierement en
+/// minuscules (`sample5.asm` -> `sample5.lst`, ...) et l'option `-S` (table des symboles
+/// annexee au listing). Les noms minuscules ne resolvent le fichier source reel
+/// (`SAMPLE5.ASM`) que sur un systeme insensible a la casse : c'est l'une des raisons
+/// pour lesquelles la CI tourne sur windows-latest.
 /// </summary>
 [Collection("assembler")]
 public sealed class GoldenAssemblyTests
 {
-    // Formats machine deterministes et independants du nom de sortie : compares octet a octet.
-    private static readonly string[] MachineExtensions = { "obj", "hex", "s19", "txt" };
+    // Toutes les sorties sont desormais comparees octet a octet.
+    private static readonly string[] AllExtensions =
+        { "obj", "hex", "s19", "txt", "lst", "map", "d", "uu" };
 
-    // Formats de presentation : ils embarquent le nom de fichier de sortie et ont
-    // derive dans le depot ; on verifie seulement qu'ils sont produits et non vides.
-    private static readonly string[] PresentationExtensions = { "lst", "map", "d", "uu" };
+    // Le writer BASIC uuencode date la ligne de soumission avec le jour courant :
+    // seul champ non deterministe de l'ensemble des sorties, on le neutralise.
+    private static readonly Regex UuSubmittedDate =
+        new(@"' Submitted \d{2}/\d{2}/\d{4}", RegexOptions.Compiled);
 
     public static IEnumerable<object[]> Cases()
     {
-        yield return new object[] { "SAMPLES", "SAMPLE5.ASM", "sample5" };
-        yield return new object[] { "VOGUE", "VOGUE.S", "vogue" };
-        yield return new object[] { "REGISTER", "REGISTER.ASM", "register" };
-        yield return new object[] { "TMAP", "TMAP2020.asm", "tmap2020" };
+        yield return new object[] { "SAMPLES", "sample5.asm", "sample5" };
+        yield return new object[] { "VOGUE", "vogue.s", "vogue" };
+        yield return new object[] { "REGISTER", "register.asm", "register" };
+        yield return new object[] { "TMAP", "tmap2020.asm", "tmap2020" };
     }
 
     [Theory]
     [MemberData(nameof(Cases))]
-    public void Reassembling_example_matches_golden_machine_outputs(
-        string exampleDir, string sourceFile, string goldStem)
+    public void Reassembling_example_matches_golden_outputs(
+        string exampleDir, string sourceFile, string stem)
     {
         var work = CopyExampleToTemp(exampleDir);
         try
         {
-            var stem = Path.GetFileNameWithoutExtension(sourceFile);
             var exit = RunAssembler(work, sourceFile, stem);
             Assert.Equal(0, exit);
 
-            foreach (var ext in MachineExtensions)
+            foreach (var ext in AllExtensions)
             {
-                var golden = Path.Combine(TestPaths.ExamplesDir, exampleDir, $"{goldStem}.{ext}");
-                var produced = Path.Combine(work, $"{stem}.out.{ext}");
+                var golden = Path.Combine(TestPaths.ExamplesDir, exampleDir, $"{stem}.{ext}");
+                var produced = Path.Combine(work, $"{stem}.{ext}");
                 Assert.True(File.Exists(golden), $"Golden manquant : {golden}");
                 Assert.True(File.Exists(produced), $"Sortie non produite : {produced}");
-                AssertBytesEqual(golden, produced, ext);
-            }
 
-            foreach (var ext in PresentationExtensions)
-            {
-                var produced = Path.Combine(work, $"{stem}.out.{ext}");
-                Assert.True(File.Exists(produced), $"Sortie non produite : {produced}");
-                Assert.True(new FileInfo(produced).Length > 0, $"Sortie vide : {produced}");
+                if (ext == "uu")
+                {
+                    AssertUuEqual(golden, produced);
+                }
+                else
+                {
+                    AssertBytesEqual(golden, produced, ext);
+                }
             }
         }
         finally
@@ -75,14 +85,15 @@ public sealed class GoldenAssemblyTests
             return Program.Main(new[]
             {
                 sourceFile,
-                "-O", $"{stem}.out.obj",
-                "-L", $"{stem}.out.lst",
-                "-I", $"{stem}.out.hex",
-                "-M", $"{stem}.out.s19",
-                "-P", $"{stem}.out.map",
-                "-D", $"{stem}.out.d",
-                "-B", $"{stem}.out.uu",
-                "-X", $"{stem}.out.txt",
+                "-O", $"{stem}.obj",
+                "-L", $"{stem}.lst",
+                "-I", $"{stem}.hex",
+                "-M", $"{stem}.s19",
+                "-P", $"{stem}.map",
+                "-D", $"{stem}.d",
+                "-B", $"{stem}.uu",
+                "-X", $"{stem}.txt",
+                "-S",
             });
         }
         finally
@@ -101,7 +112,28 @@ public sealed class GoldenAssemblyTests
             File.Copy(file, Path.Combine(work, Path.GetFileName(file)), overwrite: true);
         }
 
+        // On assemble sous les memes noms que les goldens : on retire les copies de sorties
+        // pour que le test echoue si un format n'est pas reellement regenere.
+        foreach (var file in Directory.GetFiles(work))
+        {
+            var ext = Path.GetExtension(file).TrimStart('.');
+            if (AllExtensions.Contains(ext, StringComparer.OrdinalIgnoreCase))
+            {
+                File.Delete(file);
+            }
+        }
+
         return work;
+    }
+
+    /// <summary>
+    /// Compare deux sorties BASIC uuencode apres neutralisation de la date de soumission.
+    /// </summary>
+    private static void AssertUuEqual(string golden, string produced)
+    {
+        var expected = UuSubmittedDate.Replace(File.ReadAllText(golden), "' Submitted <DATE>");
+        var actual = UuSubmittedDate.Replace(File.ReadAllText(produced), "' Submitted <DATE>");
+        Assert.Equal(expected, actual);
     }
 
     private static void AssertBytesEqual(string golden, string produced, string ext)

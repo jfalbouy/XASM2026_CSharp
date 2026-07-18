@@ -1,7 +1,7 @@
 100 '
 110 ' UUENCODE SELF-DECODER Ver1.20
 120 '
-130   FNAME$="SAMPLE5 .OBJ"  ' Submitted 02/06/2026
+130   FNAME$="SAMPLE5 .OBJ"  ' Submitted 20/06/2026
 140 '
 150 PRINT "UUENCODE SELF-DECODER"
 160 A$=""
@@ -37,8 +37,9 @@
 460 IF B$="Y" THEN 480 ELSE IF B$="N" THEN END
 470 GOTO 440
 480 CALL &BFE00
-1001 'begin 644 SAMPLE5.obj
+1001 'begin 644 sample5.obj
 1002 'M_P`&`1`>````X`#___\`#P````!6_P$(``D`"P(`D"20))`DD"20))`DD"200
-1003 '!)```D
+1003 '!)``&J
 1004 '``
 1005 'end
+1006 'size 46

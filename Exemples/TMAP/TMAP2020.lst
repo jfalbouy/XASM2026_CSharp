@@ -44,7 +44,6 @@
 0BE04B 16 97 E1          		JPC     ERROR
 0BE04E                   	;	PRE 30H 
 0BE04E 30 D8 CC E6 0B D6 		MV      [HANDLE],(CX)
-	
 0BE054                   	;
 0BE054 0D A1 E6 0B       		MV      Y,_TITLE
 0BE058 04 51 E4          		CALL    PRINT
@@ -67,7 +66,6 @@
 0BE086 88 1A FC 0B       		MV      A,[0BFC09H+6+6+5]
 0BE08A                   	;	PRE 30H	
 0BE08A 30 DC DA B4 E5 0B 		MVP	(SI),_S1
-	
 0BE090 04 B9 E1          		CALL    PFILE0
 0BE093                   	;
 0BE093                   	;Affichage de travaux variables
@@ -136,9 +134,7 @@
 0BE111                   	;	PRE 30H 	
 0BE111 30 49 EC 06       		SUB     (0ECH),6
 0BE115 30 D2 00 1A FD 0B 		MVP     (0),[USRWRK]    ;BOTTOM
-	
 0BE11B 30 DC 03 FF FB 0B 		MVP     (3),0BFBFFH     ;TOP
-	
 0BE121 04 FF E2          		CALL    DVINFO
 0BE124 04 62 E4          		CALL    SCRENL
 0BE127                   	NOUSR:
@@ -146,14 +142,12 @@
 0BE12B 88 14 FC 0B       		MV      A,[0BFC09H+6+5]
 0BE12F                   	;	PRE 30H		
 0BE12F 30 DC DA C6 E5 0B 		MVP	(SI),_S2
-	
 0BE135 04 AA E1          		CALL    PFILE
 0BE138                   	;
 0BE138 8D 09 FC 0B       		MV      Y,[0BFC09H]     ;[S3:]
 0BE13C 88 0E FC 0B       		MV      A,[0BFC09H+5]
 0BE140                   	;	PRE 30H		
 0BE140 30 DC DA D8 E5 0B 		MVP	(SI),_S3
-	
 0BE146 04 AA E1          		CALL    PFILE
 0BE149                   		                                ;Afficher l'etat du lien de l'appareil
 0BE149 0D 51 E6 0B       		MV      Y,_DEV
@@ -186,7 +180,6 @@
 0BE186 04 62 E4          		CALL    SCRENL
 0BE189                   	;	PRE 30H 	
 0BE189 30 D0 D6 CC E6 0B 		MV      (CX),[HANDLE]
-	
 0BE18F 09 02             		MV      IL,2
 0BE191 05 E4 FF 0F       		CALLF   FCS
 0BE195 9F                		RC
@@ -305,7 +298,7 @@
 0BE26C 7C 01             		DEC     IL
 0BE26E 1B 08             		JRNZ    PFS1
 0BE270                   	;
-0BE270 95 06             		MV      Y,[U]                   ;BTEXT / BDATA ???H
+0BE270 95 06             		MV      Y,[U]                   ;BTEXT / BDATA ���H
 0BE272                   	;	PRE 30H 	
 0BE272 30 D7 05 CE       		CMPP    (DATBAS),Y
 0BE276 18 06             		JRZ     PFS2
@@ -637,7 +630,6 @@
 0BE46F 4D 54             		SUB     Y,X
 0BE471                   	;	PRE 30H 	
 0BE471 30 D0 D6 CC E6 0B 		MV      (CX),[HANDLE]
-	
 0BE477 09 04             		MV      IL,4
 0BE479 05 E4 FF 0F       		CALLF   FCS
 0BE47D 66 CB E6 0B 01    		TEST    [FLAG],1
@@ -759,7 +751,7 @@
 0BE501 06                		RET
 0BE502                   	;
 0BE502                   	;
-0BE502                   	;Key input routine ==============       ;?P?L?[???? ================
+0BE502                   	;Key input routine ==============================
 0BE502                   	;IN     none
 0BE502                   	;OUT    BA:Key code
 0BE502                   	;REG    none
@@ -792,7 +784,6 @@
 0BE543 D5 FC 0B DB FC 0B 	
 0BE549 C9 FC 0B 41 FC 0B 	
 0BE54F C3 FC 0B 00 00 00 	
-	
 0BE555                   	;
 0BE555 02 05 08 0B 00    	BASTBL:	DB      2,5,8,0BH,0
 0BE55A                   	;
@@ -817,31 +808,25 @@
 0BE5B4 20 3D 3D 3D 20 53 	_S1:		DB      ' === S1: ==== == ', 0
 0BE5BA 31 3A 20 3D 3D 3D 	
 0BE5C0 3D 20 3D 3D 20 00 	
-	
 0BE5C6                   	;
 0BE5C6 20 3D 3D 3D 20 53 	_S2:		DB      ' === S2: ==== == ', 0
 0BE5CC 32 3A 20 3D 3D 3D 	
 0BE5D2 3D 20 3D 3D 20 00 	
-	
 0BE5D8                   	;
 0BE5D8 20 3D 3D 3D 20 53 	_S3:		DB      ' === S3: ==== == ', 0
 0BE5DE 33 3A 20 3D 3D 3D 	
 0BE5E4 3D 20 3D 3D 20 00 	
-	
 0BE5EA                   	;
 0BE5EA 20 20 20 20 3C 66 	_FFREE:	DB      '    <free> ', 0
 0BE5F0 72 65 65 3E 20 00 	
-	
 0BE5F6                   	;
 0BE5F6 20 28 66 72 65 65 	_IFREE:	DB      ' (free)          ', 0
 0BE5FC 29 20 20 20 20 20 	
 0BE602 20 20 20 20 20 00 	
-	
 0BE608                   	;
 0BE608 2D 42 46 42 46 46 	_UFREE:	DB      '-BFBFF <usr free>', 0
 0BE60E 20 3C 75 73 72 20 	
 0BE614 66 72 65 65 3E 00 	
-	
 0BE61A                   	;
 0BE61A 3C 64 65 76 3E    	_ADEV:  DB      '<dev>'
 0BE61F 3C 74 73 72 3E    	_ATSR:  DB      '<tsr>'
@@ -869,7 +854,6 @@
 0BE695                   	;
 0BE695 46 69 6C 65 20 65 	_FERR:	DB      'File error.', 10
 0BE69B 72 72 6F 72 2E 0A 	
-	
 0BE6A1                   	_FERRE:
 0BE6A1                   	;
 0BE6A1 54 6D 61 70 20 56 	_TITLE:	DB      'Tmap Version 1.05          (C)TORO 1994', 13,10,0
@@ -879,14 +863,13 @@
 0BE6B9 20 20 20 28 43 29 	
 0BE6BF 54 4F 52 4F 20 31 	
 0BE6C5 39 39 34 0D 0A 00 	
-	
 0BE6CB                   	;
 0BE6CB 00                	FLAG:   DB      0                       ;b0:affiche a l'ecran
 0BE6CC 00                	HANDLE: DB      0                       ;File handle
 0BE6CD 00 00 00          	TOPSLT: DP      0                       ;Adresse maximale de la fente
 0BE6D0                   	STRBUF:                                 ;Tampon de developpement de chaine
 0BE6D0                   	;
-0BE6D0                   	;LABELS -------------------------       ;???x??
+0BE6D0                   	;LABELS -------------------------
 0BE6D0                   	;
 0BE6D0                   	;Inner RAM label & port                 
 0BE6D0                   	TXTBAS:  EQU 0CBH                        ;TEXT.BAS 
@@ -898,7 +881,7 @@
 0BE6D0                   	SI:      EQU 0DAH                        ;Registre logique
 0BE6D0                   	DI:      EQU 0DDH                        ;Registre logique
 0BE6D0                   	IOCSW:   EQU 0E6H                        ;IOCS
-0BE6D0                   	;BP:      EQU 0ECH                        ;????RAM?????w?????W?X?^
+0BE6D0                   	;BP:      EQU 0ECH                       ;
 0BE6D0                   	PX:      EQU 0EDH                        ;Registre de designation relatif auxiliaire RAM interne
 0BE6D0                   	PY:      EQU 0EEH                        ;Registre de designation relatif auxiliaire RAM interne
 0BE6D0                   	KO:      EQU 0F0H                        ;Specification de la ligne de clavier
@@ -939,7 +922,7 @@
 0BE6D0                   	FCS:     EQU 0FFFE4H                     ;FCS
 0BE6D0                   	IOCS:    EQU 0FFFE8H                     ;IOCS
 0BE6D0                   	;
-0BE6D0                   	;?r?b?b Source sonore liee
+0BE6D0                   	;Source sonore liee
 0BE6D0                   	SCCB:    EQU 19000H ;BANK SELECT MEGA ROM Changement de banque
 0BE6D0                   	SCCW:    EQU 19800H ;WAVE TABLE (32*4)
 0BE6D0                   	SCCT:    EQU 19880H ;TONE TABLE (2*5)
@@ -952,154 +935,155 @@
 
  - Symbols -
 
-0BE013 : OPT1
-0BE019 : OPT11
-0BE01B : OPT12
-0BE021 : OPT2
-0BE031 : OPT3
-0BE03D : OPT4
-0BE043 : OPT5
-0BE099 : VW
-0BE0EA : VW1
-0BE127 : NOUSR
-0BE154 : DLINK1
-0BE186 : DLINK2
-0BE197 : ERROR
-0BE1AA : PFILE
-0BE1AD : _197
-0BE1B1 : FP00
-0BE1B9 : PFILE0
-0BE1D7 : _218
-0BE1DB : FP01
-0BE1ED : PFILE1
-0BE203 : PFILE2
-0BE249 : PFS
-0BE268 : PFS1
-0BE27E : PFS2
-0BE283 : PFS3
-0BE2C3 : PFI1
-0BE2CB : PFILE3
-0BE2F0 : PFILEE
-0BE2F3 : PSMOV
-0BE2F5 : PFMOV1
-0BE2FF : DVINFO
-0BE305 : DV1
-0BE31A : DV2
-0BE325 : DV3
-0BE347 : DV4
-0BE34E : DV5
-0BE355 : DV6
-0BE375 : DV7
-0BE376 : DV8
-0BE383 : IOCSINFO
-0BE38B : IINFO1
-0BE397 : IINFO2
-0BE39E : SKIPSPC
-0BE3AB : SKIPS1
-0BE3AF : SETFIL
-0BE3B8 : SF1
-0BE3CA : SF2
-0BE3DB : SF3
-0BE3EB : SF4
-0BE3ED : SF5
-0BE401 : SF6
-0BE40F : SF7
-0BE415 : SF8
-0BE425 : SF9
-0BE42F : SF10
-0BE433 : SF11
-0BE439 : SF12
-0BE444 : SF13
-0BE446 : CHPUTS
-0BE451 : PRINT
-0BE45A : SCREND
-0BE462 : SCRENL
-0BE467 : SCREEN
-0BE493 : SCREN1
-0BE49A : ADRPUT
-0BE4AA : BYTPUT
-0BE4B0 : HEXPUT
-0BE4B8 : HEXPU1
-0BE4BD : ZDECPUT
-0BE4C7 : ZDECP1
-0BE4D6 : ZDECP2
-0BE4D8 : DECPUT
-0BE4DF : DECPU1
-0BE4E3 : DECPU2
-0BE4E5 : DECPU3
-0BE4F8 : DECPU4
-0BE502 : KEYIN
-0BE515 : _DECPU
-0BE52A : _SCRN
-0BE531 : VECTBL
-0BE555 : BASTBL
-0BE55A : _ROMV
-0BE567 : _FILE
-0BE5B4 : _S1
-0BE5C6 : _S2
-0BE5D8 : _S3
-0BE5EA : _FFREE
-0BE5F6 : _IFREE
-0BE608 : _UFREE
-0BE61A : _ADEV
-0BE61F : _ATSR
-0BE624 : _ASYS
-0BE651 : _DEV
-0BE695 : _FERR
-0BE6A1 : _FERRE
-0BE6A1 : _TITLE
-0BE6CB : FLAG
-0BE6CC : HANDLE
-0BE6CD : TOPSLT
-0BE6D0 : STRBUF
-0000CB : TXTBAS
-0000CE : DATBAS
-0000D1 : BASWRK
-0000D4 : BX
-0000D6 : CX
-0000D8 : DX
-0000DA : SI
-0000DD : DI
-0000E6 : IOCSW
-0000ED : PX
-0000EE : PY
-0000F0 : KO
-0000F2 : KI
-0000F3 : EO
-0000F5 : EI
-0000FB : IMR
-0000FD : SCR
-0000FF : SSR
-0BFC27 : SCRNX
-0BFC28 : SCRNY
-0BFC57 : MENUV
-0BFC7D : DEFDRV
-0BFC96 : DOTSOP
-0BFC9B : CSRX
-0BFC9C : CSRY
-0BFC9D : WIDTH
-0BFC9E : HEIGHT
-0BFCA1 : LCDMOD
-0BFCA2 : IOCSH
-0BFCC6 : FASTV
-0BFCC9 : SLOWV
-0BFCCC : KEYV
-0BFCCF : ONV
-0BFCD2 : SIOSV
-0BFCD5 : SIORV
-0BFCDB : EXV
-0BFCC9 : IRV
-0BFCDE : UWORK
-0BFCE1 : SWORK
-0BFCF6 : HISBUF
-0BFCF9 : SCCBUF
-0BFD1A : USRWRK
-0FFFE4 : FCS
-0FFFE8 : IOCS
-019000 : SCCB
-019800 : SCCW
-019880 : SCCT
-01988A : SCCV
-01988F : SCCM
-0FFFFF : _COMPO
+0BE49Ah  ADRPUT
+0BE555h  BASTBL
+0000D1h  BASWRK
+0000D4h  BX
+0BE4AAh  BYTPUT
+0BE446h  CHPUTS
+0BFC9Bh  CSRX
+0BFC9Ch  CSRY
+0000D6h  CX
+0000CEh  DATBAS
+0BE4DFh  DECPU1
+0BE4E3h  DECPU2
+0BE4E5h  DECPU3
+0BE4F8h  DECPU4
+0BE4D8h  DECPUT
+0BFC7Dh  DEFDRV
+0000DDh  DI
+0BE154h  DLINK1
+0BE186h  DLINK2
+0BFC96h  DOTSOP
+0BE305h  DV1
+0BE31Ah  DV2
+0BE325h  DV3
+0BE347h  DV4
+0BE34Eh  DV5
+0BE355h  DV6
+0BE375h  DV7
+0BE376h  DV8
+0BE2FFh  DVINFO
+0000D8h  DX
+0000F5h  EI
+0000F3h  EO
+0BE197h  ERROR
+0BFCDBh  EXV
+0BFCC6h  FASTV
+0FFFE4h  FCS
+0BE6CBh  FLAG
+0BE1B1h  FP00
+0BE1DBh  FP01
+0BE6CCh  HANDLE
+0BFC9Eh  HEIGHT
+0BE4B8h  HEXPU1
+0BE4B0h  HEXPUT
+0BFCF6h  HISBUF
+0BE38Bh  IINFO1
+0BE397h  IINFO2
+0000FBh  IMR
+0FFFE8h  IOCS
+0BFCA2h  IOCSH
+0BE383h  IOCSINFO
+0000E6h  IOCSW
+0BFCC9h  IRV
+0BE502h  KEYIN
+0BFCCCh  KEYV
+0000F2h  KI
+0000F0h  KO
+0BFCA1h  LCDMOD
+0BFC57h  MENUV
+0BE127h  NOUSR
+0BFCCFh  ONV
+0BE013h  OPT1
+0BE019h  OPT11
+0BE01Bh  OPT12
+0BE021h  OPT2
+0BE031h  OPT3
+0BE03Dh  OPT4
+0BE043h  OPT5
+0BE2C3h  PFI1
+0BE1AAh  PFILE
+0BE1B9h  PFILE0
+0BE1EDh  PFILE1
+0BE203h  PFILE2
+0BE2CBh  PFILE3
+0BE2F0h  PFILEE
+0BE2F5h  PFMOV1
+0BE249h  PFS
+0BE268h  PFS1
+0BE27Eh  PFS2
+0BE283h  PFS3
+0BE451h  PRINT
+0BE2F3h  PSMOV
+0000EDh  PX
+0000EEh  PY
+019000h  SCCB
+0BFCF9h  SCCBUF
+01988Fh  SCCM
+019880h  SCCT
+01988Ah  SCCV
+019800h  SCCW
+0000FDh  SCR
+0BE467h  SCREEN
+0BE493h  SCREN1
+0BE45Ah  SCREND
+0BE462h  SCRENL
+0BFC27h  SCRNX
+0BFC28h  SCRNY
+0BE3AFh  SETFIL
+0BE3B8h  SF1
+0BE42Fh  SF10
+0BE433h  SF11
+0BE439h  SF12
+0BE444h  SF13
+0BE3CAh  SF2
+0BE3DBh  SF3
+0BE3EBh  SF4
+0BE3EDh  SF5
+0BE401h  SF6
+0BE40Fh  SF7
+0BE415h  SF8
+0BE425h  SF9
+0000DAh  SI
+0BFCD5h  SIORV
+0BFCD2h  SIOSV
+0BE3ABh  SKIPS1
+0BE39Eh  SKIPSPC
+0BFCC9h  SLOWV
+0000FFh  SSR
+0BE6D0h  STRBUF
+0BFCE1h  SWORK
+0BE6CDh  TOPSLT
+0000CBh  TXTBAS
+0BFD1Ah  USRWRK
+0BFCDEh  UWORK
+0BE531h  VECTBL
+0BE099h  VW
+0BE0EAh  VW1
+0BFC9Dh  WIDTH
+0BE4C7h  ZDECP1
+0BE4D6h  ZDECP2
+0BE4BDh  ZDECPUT
+0BE1ADh  _197
+0BE1D7h  _218
+0BE61Ah  _ADEV
+0BE624h  _ASYS
+0BE61Fh  _ATSR
+0FFFFFh  _COMPO
+0BE515h  _DECPU
+0BE651h  _DEV
+0BE695h  _FERR
+0BE6A1h  _FERRE
+0BE5EAh  _FFREE
+0BE567h  _FILE
+0BE5F6h  _IFREE
+0BE55Ah  _ROMV
+0BE5B4h  _S1
+0BE5C6h  _S2
+0BE5D8h  _S3
+0BE52Ah  _SCRN
+0BE6A1h  _TITLE
+0BE608h  _UFREE
+
   No fatal error.  Code: 0BE000h - 0BE6CFh [     1744 byte(s)]

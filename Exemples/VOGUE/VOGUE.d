@@ -1,1 +1,1 @@
-VOGUE.obj: VOGUE.S runtime.s screen.s compile.s main.s database.s
+vogue.obj: vogue.s runtime.s screen.s compile.s main.s database.s

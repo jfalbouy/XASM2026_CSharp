@@ -51,12 +51,17 @@ dotnet test tests\Xasm2026.Tests\Xasm2026.Tests.csproj -c Release
 
 `GoldenAssemblyTests` re-assembles SAMPLE5 / VOGUE / REGISTER / TMAP2020 in a temp dir
 (calling `Program.Main` in-process — the main project exposes internals via
-`InternalsVisibleTo("Xasm2026.Tests")`) and asserts the machine outputs (`.obj`, `.hex`,
-`.s19`, `.txt`) are **byte-identical** to the committed goldens in `Exemples/`. These four
-formats are filename-independent, so they are the reliable regression gate. The presentation
-formats (`.lst`, `.map`, `.d`, `.uu`) embed the output filename and have drifted in-repo, so
-the harness only checks they are produced and non-empty — making them byte-exact would require
-pinning the exact historical invocation (future work). `BehaviorTests` covers the guard rails
+`InternalsVisibleTo("Xasm2026.Tests")`) and asserts that **all eight** outputs (`.obj`,
+`.hex`, `.s19`, `.txt`, `.lst`, `.map`, `.d`, `.uu`) are **byte-identical** to the committed
+goldens in `Exemples/`.
+
+The presentation formats (`.lst`, `.map`, `.d`, `.uu`) embed the source and output filenames,
+so they only reproduce if you replay the **exact historical invocation**: all-lowercase names
+(`sample5.asm` → `sample5.lst`, …) plus `-S` (symbol table appended to the listing). The
+lowercase source name only resolves to the real file (`SAMPLE5.ASM`) on a case-insensitive
+filesystem — one more reason CI runs on windows-latest. The single non-deterministic field in
+any output is the `' Submitted dd/mm/yyyy` line of the `.uu`, which the harness normalizes
+before comparing. `BehaviorTests` covers the guard rails
 (undefined-symbol detection, cyclic-include detection). `.github/workflows/ci.yml` runs build
 + test on push/PR (windows-latest, to avoid CRLF drift in the text formats).
 
