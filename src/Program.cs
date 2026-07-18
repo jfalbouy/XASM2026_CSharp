@@ -41,6 +41,7 @@ internal static class Program
             var assembler = new NativeAssembler(options);
             var result = assembler.Assemble();
             WriteOutputs(options, result);
+            ReportWarnings(options, result);
             if (options.CountLinesEnabled)
             {
                 Console.WriteLine($"    {result.SourceLineCount} line(s)");
@@ -121,6 +122,51 @@ internal static class Program
         if (options.DependencyEnabled)
         {
             DependencyWriter.Write(options.DependencyFile, options, result);
+        }
+    }
+
+    /// <summary>
+    /// Action : affiche les avertissements non fatals et les annexe au listing et au rapport .err.
+    /// Donnees d'entree : parametres de la signature (CommandLineOptions options, Core.AssemblyResult result).
+    /// Donnees de sortie : aucune valeur retournee ; effets sur la console et les fichiers de sortie.
+    ///
+    /// Fidelite a mes.c (err_handle) : les avertissements sont muets sans -W et ne rendent
+    /// jamais l'assemblage fatal. Le format de ligne reprend "fichier\tligne\ttexte".
+    ///
+    /// Divergences assumees, faute des informations correspondantes dans le port :
+    /// - le C intercale chaque avertissement dans le listing a la ligne fautive, on les
+    ///   regroupe en fin de listing ;
+    /// - le C ajoute "col N" sous -V, on ne suit pas la colonne d'analyse et on prefere
+    ///   ne rien afficher plutot qu'une valeur factice ;
+    /// - les numeros rapportes pour le fichier principal sont ceux des lignes developpees.
+    /// Ces trois points se resoudront ensemble avec le portage des numeros de ligne physiques.
+    /// </summary>
+    private static void ReportWarnings(CommandLineOptions options, Core.AssemblyResult result)
+    {
+        if (!options.WarningEnabled || result.Warnings.Count == 0)
+        {
+            return;
+        }
+
+        var lines = result.Warnings
+            .Select(w => $"{w.File}\t{w.Line}\t{w.Message}")
+            .ToList();
+
+        foreach (var line in lines)
+        {
+            Console.WriteLine($"                 \r{line}");
+        }
+
+        var block = string.Join(Environment.NewLine, lines) + Environment.NewLine;
+
+        if (options.ListingEnabled && File.Exists(options.ListingFile))
+        {
+            File.AppendAllText(options.ListingFile, block);
+        }
+
+        if (options.ErrorReportEnabled)
+        {
+            File.AppendAllText(Path.ChangeExtension(options.ListingFile, ".err"), block);
         }
     }
 

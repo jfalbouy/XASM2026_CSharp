@@ -38,8 +38,34 @@ basename with a new extension. Flags are parsed in `src/CommandLineOptions.cs`:
 
 `-O` object, `-L` listing, `-I` Intel HEX, `-M` S-record (`.s19`), `-P` map, `-D` dependency,
 `-B` BASIC uuencode (`.uu`, self-decodable), `-X` HxD-style text dump, `-T<type>` object type
-(e.g. `-TZ`), `-E` error report (`.err`), `-S` symbol list, `-C` line count, `-W` warnings,
-`-H` disable hash, `-V` verbose errors, `-R` section size report, `-?` help.
+(e.g. `-TZ`), `-E` error report (`.err`), `-S` symbol list, `-C` line count, `-W` warnings
+(see below), `-H` disable hash, `-V` verbose errors, `-R` section size report, `-?` help.
+
+### Warnings (`-W`)
+
+The C reference (`mes.c`, `err_handle`) defines six non-fatal warnings among its error codes.
+Four are ported, because the port has the state needed to detect them — the ORG/DS ones are
+raised in `NativeAssembler`, the include-scope ones in `NativeAssembler.Preprocessor.cs`:
+
+| Code | Message | Trigger |
+| --- | --- | --- |
+| 28 | `Warning: Location counter already set` | `ORG` after the origin was already fixed |
+| 32 | `Warning: No effective code` | `DS 0` — reserves nothing |
+| 33 | `Warning: LOCAL and ENDL not match in included file` | unbalanced `LOCAL`/`ENDL` in an INCLUDE |
+| 38 | `Warning: PRE_PUSH and PRE_POP not match` | unbalanced `PRE_PUSH`/`PRE_POP` in an INCLUDE |
+
+Codes 29 (`Used PRE while auto-prebyte is active`) and 34 (`INCLUDE argument isn't defined yet`)
+are **not** ported: they need the `PRE` data directive and INCLUDE arguments respectively,
+neither of which the port implements. Add them alongside those features, not before.
+
+Semantics follow the C: warnings never make the assembly fatal (exit code stays 0) and are
+**silent unless `-W`** — which is why they cannot affect the goldens, none of which were
+produced with `-W`. Output goes to the console as `file<TAB>line<TAB>text`, and is appended to
+the `.lst` and `.err` when those are enabled. Three deviations, all rooted in the missing
+physical-line mapping: the C interleaves each warning at the offending listing line (we group
+them at the end), the C adds `col N` under `-V` (we track no column and print none rather than
+a fake value), and line numbers for the main source are **expanded**-line numbers. Fixing the
+line mapping resolves all three at once.
 
 ## Non-regression testing (the core workflow)
 

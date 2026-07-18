@@ -17,6 +17,11 @@ internal sealed partial class NativeAssembler
     private readonly List<SectionBuilder> _sections = [];
     private readonly Dictionary<string, List<long>> _symbolOccurrences = new(StringComparer.OrdinalIgnoreCase);
     private readonly Stack<string?> _localScopeStack = new();
+
+    // Avertissements non fatals (mes.c / err_handle). Ceux du preprocesseur sont collectes
+    // une seule fois ; ceux des passes ne sont retenus qu'en passe d'emission pour eviter
+    // les doublons, l'assemblage etant execute deux fois.
+    private readonly List<AssemblyWarning> _warnings = [];
     private long _locationCounter;
     private long _startAddress;
     private bool _originSet;
@@ -26,6 +31,9 @@ internal sealed partial class NativeAssembler
     private string? _currentLocalScope;
     private bool _preOn;
     private bool _emitPass;
+
+    // Index de la ligne developpee en cours de traitement, utilise pour situer les warnings.
+    private int _currentLineIndex;
     private readonly Stack<bool> _preStack = new();
 
     /// <summary>
@@ -50,13 +58,34 @@ internal sealed partial class NativeAssembler
             throw new InvalidOperationException("Source file is required.");
         }
 
+        _warnings.Clear();
         var sourceLines = ReadSourceWithIncludes(_options.SourceFile);
         _expandedLines.Clear();
         ExpandSource(sourceLines);
 
         RunPass(emit: false);
         var result = RunPass(emit: true);
+        result.Warnings.AddRange(_warnings);
         return result;
+    }
+
+    /// <summary>
+    /// Action : enregistre un avertissement non fatal rattache a une ligne du source developpe.
+    /// Donnees d'entree : parametres de la signature (int lineIndex, string message) et etat courant necessaire.
+    /// Donnees de sortie : aucune valeur retournee ; effet sur la liste interne d'avertissements.
+    ///
+    /// Le numero rapporte est celui de la ligne **developpee** (apres INCLUDE et macros),
+    /// comme pour les erreurs fatales : la correspondance avec la ligne physique du fichier
+    /// d'origine reste a porter.
+    /// </summary>
+    private void AddWarning(string message)
+    {
+        if (!_emitPass)
+        {
+            return;
+        }
+
+        _warnings.Add(new AssemblyWarning(_options.SourceFile ?? string.Empty, _currentLineIndex + 1, message));
     }
 
     /// <summary>
@@ -92,6 +121,7 @@ internal sealed partial class NativeAssembler
 
         for (var lineIndex = 0; lineIndex < _expandedLines.Count; lineIndex++)
         {
+            _currentLineIndex = lineIndex;
             var storedLine = _expandedLines[lineIndex];
             var isIncludedEnd = IsIncludedEnd(storedLine);
             var rawLine = StripInternalMarker(storedLine);
@@ -156,6 +186,13 @@ internal sealed partial class NativeAssembler
                             _startAddress = _locationCounter;
                             _originSet = true;
                         }
+                        else
+                        {
+                            // genop.c case 64 : un ORG apres que l'origine a deja ete fixee
+                            // repositionne le compteur et signale l'ecrasement (err 28).
+                            AddWarning("Warning: Location counter already set");
+                        }
+
                         break;
                 case "EQU":
                 case "STRUCT":
@@ -2363,6 +2400,12 @@ internal sealed partial class NativeAssembler
         var operands = SplitOperands(operandText);
         var count = Eval(operands[0]);
         var fill = operands.Length > 1 ? Eval(operands[1]) : 0;
+        if (count == 0)
+        {
+            // genop.c case 73 : un DS de taille nulle ne reserve rien (err 32).
+            AddWarning("Warning: No effective code");
+        }
+
         for (var i = 0; i < count; i++)
         {
             Emit(fill, emit, result);

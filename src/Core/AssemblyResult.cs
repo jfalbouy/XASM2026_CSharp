@@ -12,6 +12,7 @@ internal sealed class AssemblyResult
     public Dictionary<string, long> Symbols { get; } = new(StringComparer.OrdinalIgnoreCase);
     public List<SectionInfo> Sections { get; } = [];
     public List<string> Dependencies { get; } = [];
+    public List<AssemblyWarning> Warnings { get; } = [];
     public long StartAddress { get; set; }
     public long EndAddress { get; set; }
     public int SourceLineCount { get; set; }

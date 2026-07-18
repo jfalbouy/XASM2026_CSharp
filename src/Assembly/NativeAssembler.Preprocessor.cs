@@ -1,3 +1,5 @@
+using Xasm2026.Native.Core;
+
 namespace Xasm2026.Native.Assembly;
 
 // Preprocesseur : lecture des sources, resolution des INCLUDE (avec detection de cycle),
@@ -39,9 +41,27 @@ internal sealed partial class NativeAssembler
         try
         {
             var lines = new List<string>();
+
+            // genop.c case 66 : a la fermeture d'un fichier inclus, le C compare la profondeur
+            // des piles LOCAL et PRE_PUSH a celle observee au moment du INCLUDE (err 33 et 38).
+            // On compte ici les directives propres au fichier ; un fichier imbrique equilibre
+            // contribue zero, et s'il ne l'est pas il produit son propre avertissement.
+            var localDepth = 0;
+            var preDepth = 0;
+            var fileLineCount = 0;
+
             foreach (var rawLine in File.ReadAllLines(path))
             {
+                fileLineCount++;
                 var line = SourceLine.Parse(rawLine);
+                switch (line.Mnemonic.ToUpperInvariant())
+                {
+                    case "LOCAL": localDepth++; break;
+                    case "ENDL": localDepth--; break;
+                    case "PRE_PUSH": preDepth++; break;
+                    case "PRE_POP": preDepth--; break;
+                }
+
                 if (line.Mnemonic.Equals("INCLUDE", StringComparison.OrdinalIgnoreCase))
                 {
                     var includeName = line.OperandText.Trim().Trim('\'', '"');
@@ -56,6 +76,22 @@ internal sealed partial class NativeAssembler
                 else
                 {
                     lines.Add(rawLine);
+                }
+            }
+
+            if (!isTopLevel)
+            {
+                var includedName = Path.GetFileName(path);
+                if (localDepth != 0)
+                {
+                    _warnings.Add(new AssemblyWarning(
+                        includedName, fileLineCount, "Warning: LOCAL and ENDL not match in included file"));
+                }
+
+                if (preDepth != 0)
+                {
+                    _warnings.Add(new AssemblyWarning(
+                        includedName, fileLineCount, "Warning: PRE_PUSH and PRE_POP not match"));
                 }
             }
 
