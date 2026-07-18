@@ -406,6 +406,71 @@ public sealed class BehaviorTests
         });
     }
 
+    /// <summary>
+    /// Une division ou un modulo par zero est une erreur fatale (err 2 de mes.c), et non
+    /// un 0 silencieux : sans cela le binaire serait faux sans que rien ne le signale.
+    /// </summary>
+    [Theory]
+    [InlineData("        DB  10/0\n")]
+    [InlineData("        DB  10%0\n")]
+    [InlineData("zero:   EQU 0\n        DB  10/zero\n")]
+    public void Division_by_zero_is_fatal(string faulty)
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "d.asm"),
+                "        ORG 0E000H\n" + faulty + "        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "d.asm" });
+            var ex = Assert.Throws<InvalidOperationException>(() => new NativeAssembler(options).Assemble());
+
+            Assert.Contains("Division by zero", ex.Message, StringComparison.Ordinal);
+        });
+    }
+
+    /// <summary>
+    /// Le controle ne doit pas se declencher en passe de resolution : ici le diviseur est un
+    /// label defini **plus loin**, donc encore inconnu (valeur 0) pendant la premiere passe.
+    /// Un controle trop precoce rejetterait ce source pourtant valide.
+    /// </summary>
+    [Fact]
+    public void Forward_reference_as_divisor_does_not_false_positive()
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "f.asm"),
+                "        ORG 0E000H\n" +
+                "        DB  20H/taille\n" +   // taille n'est connu qu'apres
+                "taille: EQU 4\n" +
+                "        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "f.asm" });
+            var result = new NativeAssembler(options).Assemble();
+
+            Assert.Equal(0x08, result.GeneratedBytes.Single().Value);
+        });
+    }
+
+    /// <summary>
+    /// Un diviseur symbolique jamais defini doit etre signale comme symbole indefini, et non
+    /// comme division par zero : le vrai defaut est le symbole manquant.
+    /// </summary>
+    [Fact]
+    public void Undefined_divisor_reports_the_symbol_not_the_division()
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "u.asm"),
+                "        ORG 0E000H\n        DB  10/INCONNU\n        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "u.asm" });
+            var ex = Assert.Throws<InvalidOperationException>(() => new NativeAssembler(options).Assemble());
+
+            Assert.Contains("symbole indefini", ex.Message, StringComparison.Ordinal);
+            Assert.DoesNotContain("Division by zero", ex.Message, StringComparison.Ordinal);
+        });
+    }
+
     private static void RunInTempDir(Action<string> body)
     {
         var dir = Path.Combine(Path.GetTempPath(), "xasm_behavior", Guid.NewGuid().ToString("N"));

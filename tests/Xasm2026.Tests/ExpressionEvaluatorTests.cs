@@ -147,9 +147,33 @@ public sealed class ExpressionEvaluatorTests
         Assert.Equal(expected, Eval(expression));
     }
 
-    [Fact]
-    public void Modulo_by_zero_yields_zero_like_division()
+    /// <summary>
+    /// L'evaluateur ne leve pas : il rend 0 et signale le fait via DividedByZero. C'est
+    /// l'assembleur qui en fait l'erreur fatale (err 2), et seulement en passe d'emission,
+    /// car en passe de resolution un diviseur symbolique vaut encore 0.
+    /// </summary>
+    [Theory]
+    [InlineData("5/0")]
+    [InlineData("5%0")]
+    [InlineData("10/(3-3)")]
+    public void Division_by_zero_is_reported_not_thrown(string expression)
     {
-        Assert.Equal(0, Eval("5%0"));
+        var evaluator = new ExpressionEvaluator(NoSymbols);
+        var value = evaluator.Evaluate(expression);
+
+        Assert.Equal(0, value);
+        Assert.True(evaluator.DividedByZero, "la division par zero doit etre signalee");
+    }
+
+    [Theory]
+    [InlineData("10/2")]
+    [InlineData("10%3")]
+    [InlineData("0/5")]
+    public void Sound_division_is_not_flagged(string expression)
+    {
+        var evaluator = new ExpressionEvaluator(NoSymbols);
+        evaluator.Evaluate(expression);
+
+        Assert.False(evaluator.DividedByZero);
     }
 }

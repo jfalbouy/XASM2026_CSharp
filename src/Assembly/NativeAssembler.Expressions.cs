@@ -31,10 +31,20 @@ internal sealed partial class NativeAssembler
 
         // En passe d'emission, un symbole encore non resolu ne peut plus l'etre : c'est une erreur,
         // sinon la reference serait silencieusement assemblee a 0 (binaire faux non signale).
+        // Ce controle passe avant celui de la division par zero : quand un diviseur est un
+        // symbole inconnu, le vrai defaut est le symbole, pas la division.
         if (strict && _emitPass && evaluator.Undefined.Count > 0)
         {
             throw new InvalidOperationException(
                 $"symbole indefini: {string.Join(", ", evaluator.Undefined)}");
+        }
+
+        // err 2 de mes.c. Comme pour les symboles, le controle n'a lieu qu'en passe
+        // d'emission : en passe de resolution un diviseur symbolique vaut encore 0, et
+        // signaler la sur cette base produirait un faux positif sur un source valide.
+        if (strict && _emitPass && evaluator.DividedByZero)
+        {
+            throw new InvalidOperationException($"Division by zero: {expression.Trim()}");
         }
 
         return value;

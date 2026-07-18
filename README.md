@@ -380,7 +380,9 @@ Les opérateurs portés, **du moins prioritaire au plus prioritaire** :
 | 6 | `+` `-` |
 | 7 | `*` `/` |
 
-Les parenthèses forcent le regroupement.
+Les parenthèses forcent le regroupement. Une **division ou un modulo par zéro est une erreur
+fatale** (code 2 du moteur C) : l'assemblage s'arrête et aucun objet n'est écrit, plutôt que
+de produire silencieusement un `0`.
 
 > **Attention** : le modulo lie **moins fort que l'addition** dans ce langage, contrairement
 > au C. `1+2%3` vaut donc `(1+2)%3` = 0, et non `1+(2%3)` = 3. Cette précédence est celle de
@@ -645,7 +647,6 @@ exemples de référence.
 
 | Domaine | Écart |
 |---|---|
-| Division | Une division ou un modulo par zéro rend `0` au lieu de l'erreur fatale 2 du C |
 | Avertissement 34 | Implémenté, mais peu atteignable : voir ci-dessous |
 | Colonne `-V` | Désigne le début de l'opérande fautif, et non la position courante de l'analyseur (`pp` du C) |
 

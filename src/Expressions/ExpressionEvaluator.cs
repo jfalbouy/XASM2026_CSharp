@@ -39,6 +39,7 @@ internal sealed class ExpressionEvaluator
         var parser = new Parser(expression, _symbols, _localScope, _reservedZero, _locationCounter);
         var value = Regular(parser.ParseExpression());
         Undefined = parser.Undefined;
+        DividedByZero = parser.DividedByZero;
         return value;
     }
 
@@ -47,6 +48,13 @@ internal sealed class ExpressionEvaluator
     /// ni des constantes numeriques valides. Vide lorsque l'expression est entierement resolue.
     /// </summary>
     public IReadOnlyCollection<string> Undefined { get; private set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Vrai si la derniere evaluation a rencontre une division ou un modulo par zero.
+    /// Pendant de l'err 2 de mes.c : c'est l'appelant qui decide d'en faire une erreur
+    /// fatale, car un diviseur symbolique vaut encore 0 en passe de resolution.
+    /// </summary>
+    public bool DividedByZero { get; private set; }
 
     /// <summary>
     /// Action : borne une valeur au format entier 24 bits utilise par l'assembleur.
@@ -72,6 +80,11 @@ internal sealed class ExpressionEvaluator
         /// Jetons non resolus (ni symbole connu, ni nombre valide) collectes durant l'analyse.
         /// </summary>
         public IReadOnlyCollection<string> Undefined => _undefined;
+
+        /// <summary>
+        /// Vrai si une division ou un modulo par zero a ete rencontre pendant l'analyse.
+        /// </summary>
+        public bool DividedByZero { get; private set; }
 
         /// <summary>
         /// Action : initialise le parseur recursif d'expression.
@@ -155,7 +168,15 @@ internal sealed class ExpressionEvaluator
                 if (TryRead('%'))
                 {
                     var divisor = ParseAdditive();
-                    value = divisor == 0 ? 0 : value - value / divisor * divisor;
+                    if (divisor == 0)
+                    {
+                        DividedByZero = true;
+                        value = 0;
+                    }
+                    else
+                    {
+                        value -= value / divisor * divisor;
+                    }
                 }
                 else
                 {
@@ -206,7 +227,15 @@ internal sealed class ExpressionEvaluator
                 else if (TryRead('/'))
                 {
                     var divisor = ParseTerm();
-                    value = divisor == 0 ? 0 : value / divisor;
+                    if (divisor == 0)
+                    {
+                        DividedByZero = true;
+                        value = 0;
+                    }
+                    else
+                    {
+                        value /= divisor;
+                    }
                 }
                 else
                 {
