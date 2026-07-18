@@ -1,4 +1,4 @@
-using Xasm2026.Native.Core;
+﻿using Xasm2026.Native.Core;
 
 namespace Xasm2026.Native.Assembly;
 
@@ -60,7 +60,7 @@ internal sealed partial class NativeAssembler
     /// </summary>
     private void CopySymbols(AssemblyResult result)
     {
-        foreach (var symbol in _symbols)
+        foreach (var symbol in _symbols.Values)
         {
             result.Symbols[symbol.Key] = symbol.Value;
         }

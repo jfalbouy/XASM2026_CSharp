@@ -1,5 +1,6 @@
 ﻿using Xasm2026.Native.Core;
 using Xasm2026.Native.Expressions;
+using static Xasm2026.Native.Assembly.RegisterTable;
 
 namespace Xasm2026.Native.Assembly;
 
@@ -8,15 +9,13 @@ internal sealed partial class NativeAssembler
     private const char IncludedEndMarker = '\u0001';
 
     private readonly CommandLineOptions _options;
-    private readonly Dictionary<string, long> _symbols = new(StringComparer.OrdinalIgnoreCase);
+    private readonly SymbolTable _symbols = new();
     private readonly HashSet<string> _definedSymbols = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, MacroDefinition> _macros = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<SourceRef> _expandedLines = [];
     private readonly List<string> _dependencies = [];
     private readonly HashSet<string> _includeStack = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<SectionBuilder> _sections = [];
-    private readonly Dictionary<string, List<long>> _symbolOccurrences = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Stack<string?> _localScopeStack = new();
 
     // Avertissements non fatals (mes.c / err_handle). Ceux du preprocesseur sont collectes
     // une seule fois ; ceux des passes ne sont retenus qu'en passe d'emission pour eviter
@@ -28,7 +27,6 @@ internal sealed partial class NativeAssembler
     private string? _currentStruct;
     private long _currentStructSize;
     private SectionBuilder? _currentSection;
-    private string? _currentLocalScope;
     private bool _preOn;
     private bool _emitPass;
 
@@ -130,13 +128,12 @@ internal sealed partial class NativeAssembler
         _currentStruct = null;
         _currentStructSize = 0;
         _currentSection = null;
-        _currentLocalScope = null;
         _preOn = false;
-        _localScopeStack.Clear();
+        _symbols.ResetScopes();
         _preStack.Clear();
         if (!emit)
         {
-            _symbolOccurrences.Clear();
+            _symbols.ClearOccurrences();
         }
         if (emit)
         {
@@ -181,7 +178,7 @@ internal sealed partial class NativeAssembler
                 if (mnemonic == "EQU")
                 {
                     var value = Eval(line.OperandText);
-                    _symbols[SymbolNameForDefinition(line.Label, forceGlobal: false)] = value;
+                    _symbols[_symbols.NameForDefinition(line.Label, forceGlobal: false)] = value;
                     if (_currentStruct is not null && value + 1 > _currentStructSize)
                     {
                         _currentStructSize = value + 1;
@@ -195,11 +192,11 @@ internal sealed partial class NativeAssembler
                 }
                 else
                 {
-                    var symbolName = SymbolNameForDefinition(line.Label, forceGlobal: false);
+                    var symbolName = _symbols.NameForDefinition(line.Label, forceGlobal: false);
                     _symbols[symbolName] = _locationCounter;
                     if (!emit)
                     {
-                        AddSymbolOccurrence(symbolName, _locationCounter);
+                        _symbols.AddOccurrence(symbolName, _locationCounter);
                     }
                 }
             }
@@ -249,12 +246,11 @@ internal sealed partial class NativeAssembler
                 case "IFNDEF":
                     if (line.Label is not null)
                     {
-                        _localScopeStack.Push(_currentLocalScope);
-                        _currentLocalScope = SymbolNameForDefinition(line.Label, forceGlobal: false);
+                        _symbols.EnterScope(_symbols.NameForDefinition(line.Label, forceGlobal: false));
                     }
                     break;
                 case "ENDL":
-                    _currentLocalScope = _localScopeStack.Count > 0 ? _localScopeStack.Pop() : null;
+                    _symbols.ExitScope();
                     break;
                 case "ENDS":
                     CloseStruct();

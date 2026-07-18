@@ -1,15 +1,22 @@
-namespace Xasm2026.Native.Assembly;
+﻿namespace Xasm2026.Native.Assembly;
 
-// Tables de correspondance registre SC62015 -> identifiants et opcodes.
-// Regroupees ici pour alleger le noyau NativeAssembler ; comportement inchange.
-internal sealed partial class NativeAssembler
+/// <summary>
+/// Action : tables de correspondance des registres SC62015 (identifiants et opcodes).
+/// Donnees d'entree : nom de registre tel qu'ecrit dans le source assembleur.
+/// Donnees de sortie : identifiant numerique ou opcode d'encodage.
+///
+/// Extrait du noyau NativeAssembler : ces tables sont sans etat et ne dependent d'aucun
+/// contexte d'assemblage, elles constituent donc un type autonome. Les appelants les
+/// importent via "using static" pour eviter de prefixer chaque appel.
+/// </summary>
+internal static class RegisterTable
 {
     /// <summary>
     /// Action : indique si une chaine designe un registre reconnu.
     /// Donnees d'entree : parametres de la signature (string value) et etat courant necessaire.
     /// Donnees de sortie : booleen indiquant si le traitement a reussi ou si la condition est verifiee.
     /// </summary>
-    private static bool IsRegister(string value)
+    public static bool IsRegister(string value)
     {
         return value.Trim().ToUpperInvariant() is "A" or "IL" or "BA" or "I" or "X" or "Y" or "U" or "S" or "B" or "F" or "IMR";
     }
@@ -19,7 +26,7 @@ internal sealed partial class NativeAssembler
     /// Donnees d'entree : parametres de la signature (string register) et etat courant necessaire.
     /// Donnees de sortie : valeur int calculee par la procedure.
     /// </summary>
-    private static int XasmRegisterId(string register)
+    public static int XasmRegisterId(string register)
     {
         return register.Trim().ToUpperInvariant() switch
         {
@@ -43,7 +50,7 @@ internal sealed partial class NativeAssembler
     /// Donnees d'entree : parametres de la signature (string register) et etat courant necessaire.
     /// Donnees de sortie : valeur int calculee par la procedure.
     /// </summary>
-    private static int RegisterToAbsoluteStoreOpcode(string register)
+    public static int RegisterToAbsoluteStoreOpcode(string register)
     {
         return register.Trim().ToUpperInvariant() switch
         {
@@ -64,7 +71,7 @@ internal sealed partial class NativeAssembler
     /// Donnees d'entree : parametres de la signature (string register) et etat courant necessaire.
     /// Donnees de sortie : valeur int calculee par la procedure.
     /// </summary>
-    private static int RegisterFromAbsoluteLoadOpcode(string register)
+    public static int RegisterFromAbsoluteLoadOpcode(string register)
     {
         return register.Trim().ToUpperInvariant() switch
         {
@@ -85,7 +92,7 @@ internal sealed partial class NativeAssembler
     /// Donnees d'entree : parametres de la signature (string register) et etat courant necessaire.
     /// Donnees de sortie : valeur int calculee par la procedure.
     /// </summary>
-    private static int RegisterId(string register)
+    public static int RegisterId(string register)
     {
         return register.Trim().ToUpperInvariant() switch
         {
