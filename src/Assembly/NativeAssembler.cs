@@ -1,4 +1,4 @@
-using Xasm2026.Native.Core;
+﻿using Xasm2026.Native.Core;
 using Xasm2026.Native.Expressions;
 
 namespace Xasm2026.Native.Assembly;
@@ -11,7 +11,7 @@ internal sealed partial class NativeAssembler
     private readonly Dictionary<string, long> _symbols = new(StringComparer.OrdinalIgnoreCase);
     private readonly HashSet<string> _definedSymbols = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, MacroDefinition> _macros = new(StringComparer.OrdinalIgnoreCase);
-    private readonly List<string> _expandedLines = [];
+    private readonly List<SourceRef> _expandedLines = [];
     private readonly List<string> _dependencies = [];
     private readonly HashSet<string> _includeStack = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<SectionBuilder> _sections = [];
@@ -32,8 +32,10 @@ internal sealed partial class NativeAssembler
     private bool _preOn;
     private bool _emitPass;
 
-    // Index de la ligne developpee en cours de traitement, utilise pour situer les warnings.
-    private int _currentLineIndex;
+    // Origine physique (fichier, ligne) de la ligne en cours de traitement, utilisee pour
+    // situer les avertissements et les erreurs fatales dans le fichier reellement ecrit
+    // par l'utilisateur, et non dans le source developpe.
+    private SourceRef? _currentOrigin;
     private readonly Stack<bool> _preStack = new();
 
     /// <summary>
@@ -74,9 +76,8 @@ internal sealed partial class NativeAssembler
     /// Donnees d'entree : parametres de la signature (int lineIndex, string message) et etat courant necessaire.
     /// Donnees de sortie : aucune valeur retournee ; effet sur la liste interne d'avertissements.
     ///
-    /// Le numero rapporte est celui de la ligne **developpee** (apres INCLUDE et macros),
-    /// comme pour les erreurs fatales : la correspondance avec la ligne physique du fichier
-    /// d'origine reste a porter.
+    /// Le fichier et le numero rapportes sont ceux de la ligne **physique** d'origine,
+    /// meme si elle provient d'un INCLUDE ou de l'expansion d'une macro.
     /// </summary>
     private void AddWarning(string message)
     {
@@ -85,7 +86,9 @@ internal sealed partial class NativeAssembler
             return;
         }
 
-        _warnings.Add(new AssemblyWarning(_options.SourceFile ?? string.Empty, _currentLineIndex + 1, message));
+        var file = _currentOrigin?.File ?? _options.SourceFile ?? string.Empty;
+        var line = _currentOrigin?.Line ?? 0;
+        _warnings.Add(new AssemblyWarning(file, line, message));
     }
 
     /// <summary>
@@ -121,10 +124,10 @@ internal sealed partial class NativeAssembler
 
         for (var lineIndex = 0; lineIndex < _expandedLines.Count; lineIndex++)
         {
-            _currentLineIndex = lineIndex;
             var storedLine = _expandedLines[lineIndex];
-            var isIncludedEnd = IsIncludedEnd(storedLine);
-            var rawLine = StripInternalMarker(storedLine);
+            _currentOrigin = storedLine;
+            var isIncludedEnd = IsIncludedEnd(storedLine.Text);
+            var rawLine = StripInternalMarker(storedLine.Text);
             var lineAddress = _locationCounter;
             var lineByteStart = result.GeneratedBytes.Count;
             var line = SourceLine.Parse(rawLine);
@@ -491,7 +494,14 @@ internal sealed partial class NativeAssembler
             }
             catch (Exception ex) when (ex is not NotSupportedException || !ex.Message.StartsWith("ligne ", StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException($"ligne {lineIndex + 1}: {ex.Message} | {rawLine.Trim()}", ex);
+                // On situe l'erreur dans le fichier physique. Le nom n'est mentionne que
+                // lorsqu'il differe du source principal, afin de conserver le format
+                // historique "ligne N: ..." dans le cas courant.
+                var origin = storedLine.File;
+                var location = string.Equals(origin, Path.GetFileName(_options.SourceFile), StringComparison.OrdinalIgnoreCase)
+                    ? $"ligne {storedLine.Line}"
+                    : $"ligne {storedLine.Line} ({origin})";
+                throw new InvalidOperationException($"{location}: {ex.Message} | {rawLine.Trim()}", ex);
             }
         }
 
@@ -2512,10 +2522,10 @@ internal sealed partial class NativeAssembler
     {
         /// <summary>
         /// Action : memorise la definition d'une macro et ses arguments.
-        /// Donnees d'entree : parametres de la signature (string name, string[] arguments, IReadOnlyList<string> body) et etat courant necessaire.
+        /// Donnees d'entree : parametres de la signature (string name, string[] arguments, IReadOnlyList<SourceRef> body) et etat courant necessaire.
         /// Donnees de sortie : instance initialisee.
         /// </summary>
-        public MacroDefinition(string name, string[] arguments, IReadOnlyList<string> body)
+        public MacroDefinition(string name, string[] arguments, IReadOnlyList<SourceRef> body)
         {
             Name = name;
             Arguments = arguments;
@@ -2524,6 +2534,6 @@ internal sealed partial class NativeAssembler
 
         public string Name { get; }
         public string[] Arguments { get; }
-        public string[] Body { get; }
+        public SourceRef[] Body { get; }
     }
 }

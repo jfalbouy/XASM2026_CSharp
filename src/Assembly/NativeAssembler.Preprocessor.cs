@@ -1,4 +1,4 @@
-using Xasm2026.Native.Core;
+﻿using Xasm2026.Native.Core;
 
 namespace Xasm2026.Native.Assembly;
 
@@ -12,7 +12,7 @@ internal sealed partial class NativeAssembler
     /// Donnees d'entree : parametres de la signature (string sourceFile) et etat courant necessaire.
     /// Donnees de sortie : collection calculee par la procedure.
     /// </summary>
-    private List<string> ReadSourceWithIncludes(string sourceFile)
+    private List<SourceRef> ReadSourceWithIncludes(string sourceFile)
     {
         _dependencies.Clear();
         _includeStack.Clear();
@@ -25,7 +25,7 @@ internal sealed partial class NativeAssembler
     /// Donnees d'entree : parametres de la signature (string sourceFile, string baseDirectory, bool isTopLevel) et etat courant necessaire.
     /// Donnees de sortie : collection calculee par la procedure.
     /// </summary>
-    private List<string> ReadSourceWithIncludes(string sourceFile, string baseDirectory, bool isTopLevel)
+    private List<SourceRef> ReadSourceWithIncludes(string sourceFile, string baseDirectory, bool isTopLevel)
     {
         var path = Path.IsPathRooted(sourceFile) ? sourceFile : Path.Combine(baseDirectory, sourceFile);
         var fullPath = Path.GetFullPath(path);
@@ -40,7 +40,8 @@ internal sealed partial class NativeAssembler
 
         try
         {
-            var lines = new List<string>();
+            var lines = new List<SourceRef>();
+            var fileName = Path.GetFileName(path);
 
             // genop.c case 66 : a la fermeture d'un fichier inclus, le C compare la profondeur
             // des piles LOCAL et PRE_PUSH a celle observee au moment du INCLUDE (err 33 et 38).
@@ -66,32 +67,31 @@ internal sealed partial class NativeAssembler
                 {
                     var includeName = line.OperandText.Trim().Trim('\'', '"');
                     _dependencies.Add(includeName);
-                    lines.Add(rawLine);
+                    lines.Add(new SourceRef(rawLine, fileName, fileLineCount));
                     lines.AddRange(ReadSourceWithIncludes(includeName, Path.GetDirectoryName(path) ?? baseDirectory, isTopLevel: false));
                 }
                 else if (!isTopLevel && line.Mnemonic.Equals("END", StringComparison.OrdinalIgnoreCase))
                 {
-                    lines.Add(IncludedEndMarker + rawLine);
+                    lines.Add(new SourceRef(IncludedEndMarker + rawLine, fileName, fileLineCount));
                 }
                 else
                 {
-                    lines.Add(rawLine);
+                    lines.Add(new SourceRef(rawLine, fileName, fileLineCount));
                 }
             }
 
             if (!isTopLevel)
             {
-                var includedName = Path.GetFileName(path);
                 if (localDepth != 0)
                 {
                     _warnings.Add(new AssemblyWarning(
-                        includedName, fileLineCount, "Warning: LOCAL and ENDL not match in included file"));
+                        fileName, fileLineCount, "Warning: LOCAL and ENDL not match in included file"));
                 }
 
                 if (preDepth != 0)
                 {
                     _warnings.Add(new AssemblyWarning(
-                        includedName, fileLineCount, "Warning: PRE_PUSH and PRE_POP not match"));
+                        fileName, fileLineCount, "Warning: PRE_PUSH and PRE_POP not match"));
                 }
             }
 
@@ -105,10 +105,10 @@ internal sealed partial class NativeAssembler
 
     /// <summary>
     /// Action : developpe les macros et prepare les lignes source internes.
-    /// Donnees d'entree : parametres de la signature (IReadOnlyList<string> sourceLines) et etat courant necessaire.
+    /// Donnees d'entree : parametres de la signature (IReadOnlyList<SourceRef> sourceLines) et etat courant necessaire.
     /// Donnees de sortie : aucune valeur retournee ; effets attendus sur fichiers, resultat ou etat interne.
     /// </summary>
-    private void ExpandSource(IReadOnlyList<string> sourceLines)
+    private void ExpandSource(IReadOnlyList<SourceRef> sourceLines)
     {
         _macros.Clear();
         _definedSymbols.Clear();
@@ -117,14 +117,14 @@ internal sealed partial class NativeAssembler
 
     /// <summary>
     /// Action : traite un bloc source en detectant definitions et appels de macros.
-    /// Donnees d'entree : parametres de la signature (IReadOnlyList<string> sourceLines, int start, int end, List<string> output, bool expandMacroDefinitions) et etat courant necessaire.
+    /// Donnees d'entree : parametres de la signature (IReadOnlyList<SourceRef> sourceLines, int start, int end, List<SourceRef> output, bool expandMacroDefinitions) et etat courant necessaire.
     /// Donnees de sortie : aucune valeur retournee ; effets attendus sur fichiers, resultat ou etat interne.
     /// </summary>
     private void ExpandSourceBlock(
-        IReadOnlyList<string> sourceLines,
+        IReadOnlyList<SourceRef> sourceLines,
         int start,
         int end,
-        List<string> output,
+        List<SourceRef> output,
         bool expandMacroDefinitions)
     {
         var conditions = new Stack<bool>();
@@ -136,7 +136,8 @@ internal sealed partial class NativeAssembler
                 continue;
             }
 
-            var line = SourceLine.Parse(StripInternalMarker(sourceLines[i]));
+            var origin = sourceLines[i];
+            var line = SourceLine.Parse(StripInternalMarker(origin.Text));
             var mnemonic = line.Mnemonic.ToUpperInvariant();
 
             if (active && line.Label is not null && mnemonic == "EQU")
@@ -206,11 +207,11 @@ internal sealed partial class NativeAssembler
             if (mnemonic == "REPEAT")
             {
             var count = (int)Eval(line.OperandText);
-            var block = new List<string>();
+            var block = new List<SourceRef>();
             i++;
                 while (i < end)
             {
-                var blockLine = SourceLine.Parse(StripInternalMarker(sourceLines[i]));
+                var blockLine = SourceLine.Parse(StripInternalMarker(sourceLines[i].Text));
                 if (blockLine.Mnemonic.Equals("ENDR", StringComparison.OrdinalIgnoreCase))
                 {
                     break;
@@ -232,14 +233,14 @@ internal sealed partial class NativeAssembler
                 var header = SplitOperands(line.OperandText);
                 if (header.Length == 0)
                 {
-                    throw new InvalidOperationException($"MACRO sans nom: {sourceLines[i].Trim()}");
+                    throw new InvalidOperationException($"MACRO sans nom: {origin.Text.Trim()}");
                 }
 
-                var body = new List<string>();
+                var body = new List<SourceRef>();
                 i++;
                 while (i < end)
                 {
-                    var blockLine = SourceLine.Parse(StripInternalMarker(sourceLines[i]));
+                    var blockLine = SourceLine.Parse(StripInternalMarker(sourceLines[i].Text));
                     if (blockLine.Mnemonic.Equals("ENDM", StringComparison.OrdinalIgnoreCase))
                     {
                         break;
@@ -264,7 +265,14 @@ internal sealed partial class NativeAssembler
                 var args = SplitOperands(line.OperandText).Select(x => x.Trim()).ToArray();
                 foreach (var macroLine in macro.Body)
                 {
-                    output.Add(ExpandMacroLine(macroLine, macro.Arguments, args));
+                    // Les lignes issues d'une macro sont rattachees au **site d'appel** et non
+                    // au corps de la definition : c'est la ligne que l'utilisateur doit corriger,
+                    // et c'est aussi ce que suit le C, dont current_file->lines vaut la ligne
+                    // en cours de lecture au moment ou la macro est rejouee.
+                    output.Add(origin with
+                    {
+                        Text = ExpandMacroLine(macroLine.Text, macro.Arguments, args),
+                    });
                 }
                 continue;
             }

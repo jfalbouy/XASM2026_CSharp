@@ -130,6 +130,107 @@ public sealed class BehaviorTests
         });
     }
 
+    /// <summary>
+    /// Une erreur situee dans un fichier inclus est rapportee avec le nom de ce fichier et
+    /// son numero de ligne **physique**, et non la position dans le source developpe.
+    /// </summary>
+    [Fact]
+    public void Error_in_included_file_reports_physical_file_and_line()
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "lib.asm"),
+                "; commentaire\n" +
+                "        DB  01H\n" +
+                "        DB  UNDEFINED_IN_INCLUDE\n" +   // ligne 3 de lib.asm
+                "        END\n");
+            File.WriteAllText(Path.Combine(dir, "main.asm"),
+                "        ORG 0E000H\n" +
+                "        INCLUDE 'lib.asm'\n" +
+                "        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "main.asm" });
+            var ex = Assert.Throws<InvalidOperationException>(() => new NativeAssembler(options).Assemble());
+
+            Assert.Contains("ligne 3 (lib.asm)", ex.Message, StringComparison.Ordinal);
+        });
+    }
+
+    /// <summary>
+    /// Une erreur provenant du corps d'une macro est rattachee au site d'appel : c'est la
+    /// ligne que l'utilisateur doit corriger.
+    /// </summary>
+    [Fact]
+    public void Error_from_macro_body_reports_call_site()
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "mac.asm"),
+                "        ORG 0E000H\n" +
+                "        MACRO  bad,v\n" +
+                "        DB     v\n" +
+                "        DB     MISSING_SYM\n" +
+                "        ENDM\n" +
+                "        DB     01H\n" +
+                "        bad    02H\n" +   // ligne 7 : site d'appel
+                "        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "mac.asm" });
+            var ex = Assert.Throws<InvalidOperationException>(() => new NativeAssembler(options).Assemble());
+
+            Assert.Contains("ligne 7", ex.Message, StringComparison.Ordinal);
+        });
+    }
+
+    /// <summary>
+    /// Les avertissements sont eux aussi situes sur la ligne physique : ici DS 0 et le second
+    /// ORG sont en lignes 3 et 4 du source, alors qu'ils occupent les lignes 7 et 8 du source
+    /// developpe (l'INCLUDE ayant insere quatre lignes).
+    /// </summary>
+    [Fact]
+    public void Warnings_report_physical_line_numbers()
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "inc.asm"),
+                "        DB  11H\n" +
+                "        DB  12H\n" +
+                "        DB  13H\n" +
+                "        END\n");
+            File.WriteAllText(Path.Combine(dir, "w.asm"),
+                "        ORG 0E000H\n" +
+                "        INCLUDE 'inc.asm'\n" +
+                "        DS  0\n" +       // ligne 3
+                "        ORG 0E100H\n" +  // ligne 4
+                "        DB  22H\n" +
+                "        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "w.asm" });
+            var result = new NativeAssembler(options).Assemble();
+
+            var noCode = Assert.Single(result.Warnings, w => w.Message.Contains("No effective code"));
+            Assert.Equal("w.asm", noCode.File);
+            Assert.Equal(3, noCode.Line);
+
+            var orgSet = Assert.Single(result.Warnings, w => w.Message.Contains("Location counter already set"));
+            Assert.Equal("w.asm", orgSet.File);
+            Assert.Equal(4, orgSet.Line);
+        });
+    }
+
+    /// <summary>
+    /// Une option placee avant le nom du source est prise en compte : "xasm -?" affichait
+    /// autrefois une erreur de fichier introuvable, le premier argument etant pris pour un source.
+    /// </summary>
+    [Fact]
+    public void Leading_help_option_is_recognized()
+    {
+        var options = CommandLineOptions.Parse(new[] { "-?" });
+
+        Assert.True(options.ShowHelp);
+        Assert.Null(options.SourceFile);
+    }
+
     private static void RunInTempDir(Action<string> body)
     {
         var dir = Path.Combine(Path.GetTempPath(), "xasm_behavior", Guid.NewGuid().ToString("N"));

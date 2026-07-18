@@ -61,11 +61,25 @@ neither of which the port implements. Add them alongside those features, not bef
 Semantics follow the C: warnings never make the assembly fatal (exit code stays 0) and are
 **silent unless `-W`** — which is why they cannot affect the goldens, none of which were
 produced with `-W`. Output goes to the console as `file<TAB>line<TAB>text`, and is appended to
-the `.lst` and `.err` when those are enabled. Three deviations, all rooted in the missing
-physical-line mapping: the C interleaves each warning at the offending listing line (we group
-them at the end), the C adds `col N` under `-V` (we track no column and print none rather than
-a fake value), and line numbers for the main source are **expanded**-line numbers. Fixing the
-line mapping resolves all three at once.
+the `.lst` and `.err` when those are enabled. Two deviations remain: the C interleaves each
+warning at the offending listing line (we group them at the end of the listing), and the C adds
+`col N` under `-V` (we track no parse column and print none rather than a fake value).
+
+### Source positions
+
+Every source line carries its physical origin through the whole pipeline via
+`src/Assembly/SourceRef.cs` (`Text`, `File`, `Line`). The origin travels **on the line itself**
+rather than in a parallel list, because MACRO bodies and REPEAT blocks are copied and replayed,
+which destroys any positional correspondence. Consequences:
+
+- Errors and warnings name the **real file** — an INCLUDE reports its own name and line, as
+  `ligne N (file.asm): …`; the plain `ligne N: …` form is kept when the fault is in the main
+  source, so the historical shape is preserved in the common case.
+- Lines produced by a macro expansion are attributed to the **call site**, not the macro body:
+  that is the line the user has to fix, and it matches the C, whose `current_file->lines` is the
+  line being read when the macro is replayed.
+- `Program.TryParseErrorLine` parses both forms and re-reads the faulty line from the file that
+  actually contains it.
 
 ## Non-regression testing (the core workflow)
 

@@ -12,9 +12,7 @@ internal static class Program
     /// </summary>
     public static int Main(string[] args)
     {
-        Console.WriteLine();
-        Console.WriteLine("<<< XASM2026-4 native C# port for CPU-SC62015 >>>");
-        Console.WriteLine();
+        Usage.WriteTitle();
 
         if (args.Length == 0)
         {
@@ -207,16 +205,20 @@ internal static class Program
             $"XASM2026-4: {message}",
         };
 
-        if (TryParseErrorLine(message, out var lineNumber, out var detail, out var sourceText))
+        if (TryParseErrorLine(message, out var lineNumber, out var originFile, out var detail, out var sourceText))
         {
+            // Le fichier fautif peut etre un INCLUDE : c'est lui qu'on nomme et qu'on relit,
+            // pas le source principal.
+            var faultyFile = string.IsNullOrEmpty(originFile) ? options.SourceFile : originFile;
+
             lines.Add(string.Empty);
-            lines.Add($"{options.SourceFile}\t{lineNumber}\t{detail}");
+            lines.Add($"{faultyFile}\t{lineNumber}\t{detail}");
             if (!string.IsNullOrWhiteSpace(sourceText))
             {
                 lines.Add($"    {sourceText.Trim()}");
             }
 
-            var physicalLine = TryReadSourceLine(options.SourceFile, lineNumber);
+            var physicalLine = TryReadSourceLine(faultyFile, lineNumber);
             if (!string.IsNullOrWhiteSpace(physicalLine) &&
                 !string.Equals(physicalLine.Trim(), sourceText.Trim(), StringComparison.Ordinal))
             {
@@ -231,13 +233,18 @@ internal static class Program
     }
 
     /// <summary>
-    /// Action : extrait le numero de ligne, le libelle et le texte source depuis un message d'erreur normalise.
-    /// Donnees d'entree : parametres de la signature (string message, out int lineNumber, out string detail, out string sourceText) et etat courant necessaire.
+    /// Action : extrait le fichier, le numero de ligne, le libelle et le texte source depuis un message d'erreur normalise.
+    /// Donnees d'entree : parametres de la signature (string message, out int lineNumber, out string originFile, out string detail, out string sourceText) et etat courant necessaire.
     /// Donnees de sortie : booleen indiquant si le traitement a reussi ou si la condition est verifiee.
+    ///
+    /// Deux formes sont acceptees : "ligne N: ..." quand l'erreur vient du source principal,
+    /// et "ligne N (fichier): ..." quand elle vient d'un fichier inclus.
     /// </summary>
-    private static bool TryParseErrorLine(string message, out int lineNumber, out string detail, out string sourceText)
+    private static bool TryParseErrorLine(
+        string message, out int lineNumber, out string originFile, out string detail, out string sourceText)
     {
         lineNumber = 0;
+        originFile = string.Empty;
         detail = message;
         sourceText = string.Empty;
         const string prefix = "ligne ";
@@ -247,7 +254,20 @@ internal static class Program
         }
 
         var colon = message.IndexOf(':', prefix.Length);
-        if (colon < 0 || !int.TryParse(message[prefix.Length..colon].Trim(), out lineNumber))
+        if (colon < 0)
+        {
+            return false;
+        }
+
+        var locator = message[prefix.Length..colon].Trim();
+        var open = locator.IndexOf('(');
+        if (open >= 0 && locator.EndsWith(')'))
+        {
+            originFile = locator[(open + 1)..^1].Trim();
+            locator = locator[..open].Trim();
+        }
+
+        if (!int.TryParse(locator, out lineNumber))
         {
             return false;
         }

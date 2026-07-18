@@ -37,10 +37,23 @@ internal sealed class CommandLineOptions
     public static CommandLineOptions Parse(string[] args)
     {
         var options = new CommandLineOptions();
-        options.SourceFile = NormalizeSourceName(args[0]);
-        options.ApplyDefaultOutputNames();
 
-        for (var i = 1; i < args.Length; i++)
+        // Le premier argument n'est le fichier source que s'il n'est pas une option : sinon
+        // une invocation comme "xasm -?" prenait "-?" pour un nom de source (et l'aide,
+        // analysee seulement a partir de l'indice 1, n'etait jamais vue).
+        var firstIsOption = args[0].StartsWith('-') && args[0].Length >= 2;
+        var start = 1;
+        if (!firstIsOption)
+        {
+            options.SourceFile = NormalizeSourceName(args[0]);
+            options.ApplyDefaultOutputNames();
+        }
+        else
+        {
+            start = 0;
+        }
+
+        for (var i = start; i < args.Length; i++)
         {
             var arg = args[i];
             if (!arg.StartsWith('-') || arg.Length < 2)
