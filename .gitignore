@@ -10,3 +10,7 @@ _verify_outputs/
 *.suo
 .vs/
 *.githubcheck.*
+
+# Caches Python (outils de tools/)
+__pycache__/
+*.pyc

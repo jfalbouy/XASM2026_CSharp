@@ -11,19 +11,19 @@ Installer :
 Le projet principal est :
 
 ```text
-C:\Codex\xasm2026-github-final\src\Xasm2026.Native.csproj
+src\Xasm2026.Native.csproj
 ```
 
 La solution Visual Studio est :
 
 ```text
-C:\Codex\xasm2026-github-final\xasm2026-4.sln
+xasm2026-4.sln
 ```
 
 Une solution au nouveau format existe aussi :
 
 ```text
-C:\Codex\xasm2026-github-final\xasm2026-4.slnx
+xasm2026-4.slnx
 ```
 
 Pour Visual Studio 2022, utiliser de préférence le fichier `.sln` classique.
@@ -35,7 +35,7 @@ Pour Visual Studio 2022, utiliser de préférence le fichier `.sln` classique.
 3. Ouvrir :
 
 ```text
-C:\Codex\xasm2026-github-final\xasm2026-4.sln
+xasm2026-4.sln
 ```
 
 4. Définir `Xasm2026.Native` comme projet de démarrage si Visual Studio ne le fait pas automatiquement.
@@ -46,7 +46,7 @@ C:\Codex\xasm2026-github-final\xasm2026-4.sln
 Les profils sont dans :
 
 ```text
-C:\Codex\xasm2026-github-final\src\Properties\launchSettings.json
+src\Properties\launchSettings.json
 ```
 
 Profils disponibles :
@@ -77,7 +77,7 @@ Le `workingDirectory` est important : les fichiers `INCLUDE` et les sorties sont
 
 ## 5. Compiler depuis le terminal Visual Studio
 
-Depuis un terminal ouvert dans `C:\Codex\xasm2026-github-final` :
+Depuis un terminal ouvert a la racine du projet :
 
 ```powershell
 dotnet build .\xasm2026-4.sln -c Release
@@ -92,19 +92,19 @@ dotnet build .\src\Xasm2026.Native.csproj -c Release
 L'exécutable généré est :
 
 ```text
-C:\Codex\xasm2026-github-final\src\bin\Release\net8.0\xasm2026-4.exe
+src\bin\Release\net8.0\xasm2026-4.exe
 ```
 
 La copie pratique du projet est :
 
 ```text
-C:\Codex\xasm2026-github-final\bin\xasm2026-4.exe
+bin\xasm2026-4.exe
 ```
 
 ## 6. Exemple de ligne de commande complète
 
 ```powershell
-cd C:\Codex\xasm2026-github-final\tests
+cd tests
 ..\bin\xasm2026-4.exe coverage_all.asm -O coverage_all.obj -L coverage_all.lst -E -S -TZ -C -W -H -I coverage_all.hex -M coverage_all.s19 -P coverage_all.map -D coverage_all.d -B coverage_all.uu -X coverage_all.txt -V -R
 ```
 
@@ -124,11 +124,7 @@ coverage_all.txt
 
 ## 7. Utiliser VS Code Insiders
 
-Ouvrir le dossier :
-
-```text
-C:\Codex\xasm2026-github-final
-```
+Ouvrir le dossier racine du projet (celui qui contient `xasm2026-4.sln`).
 
 Les fichiers fournis sont :
 
@@ -171,13 +167,13 @@ Breakpoints recommandés :
 Après une modification du code :
 
 ```powershell
-dotnet build C:\Codex\xasm2026-github-final\src\Xasm2026.Native.csproj -c Release
+dotnet build src\Xasm2026.Native.csproj -c Release
 ```
 
 Puis :
 
 ```powershell
-cd C:\Codex\xasm2026-github-final\tests
+cd tests
 ..\src\bin\Release\net8.0\xasm2026-4.exe coverage_all.asm -O coverage_all.check.obj -L coverage_all.check.lst -E -S -TZ -C -W -H -I coverage_all.check.hex -M coverage_all.check.s19 -P coverage_all.check.map -D coverage_all.check.d -B coverage_all.check.uu -X coverage_all.check.txt -V -R
 ```
 

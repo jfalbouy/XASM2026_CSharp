@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 from pathlib import Path
+import os
 import re
 
 from docx import Document
@@ -12,14 +13,20 @@ from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
 
 
-ROOT = Path(r"C:\Codex\xasm2026-4")
-FINAL_ROOT = Path(r"C:\Codex\xasm2026-github-final")
+# Racines deduites de l'emplacement du script : le generateur suit le depot dans lequel
+# il se trouve, au lieu de dependre d'une arborescence machine (anciennement C:\Codex\...).
+ROOT = Path(__file__).resolve().parent.parent
+FINAL_ROOT = Path(os.environ.get("XASM_FINAL_ROOT", str(ROOT)))
 DOC_DIR = ROOT / "Documentation"
 FINAL_DOC_DIR = FINAL_ROOT / "Documentation"
-INSTRUCTION_TABLE = Path(r"C:\Codex\Manuels - Sharp PC-E500S\Documents\README - PC-E500 Instruction Table.md")
-XASM140_INFO_TXT = Path(
-    r"<archive>\XASM140 - Information.DOC.txt"
-)
+
+# Ressources externes absentes du depot : surchargeables par variable d'environnement.
+INSTRUCTION_TABLE = Path(os.environ.get(
+    "XASM_INSTRUCTION_TABLE",
+    r"C:\Codex\Manuels - Sharp PC-E500S\Documents\README - PC-E500 Instruction Table.md"))
+XASM140_INFO_TXT = Path(os.environ.get(
+    "XASM140_INFO_TXT",
+    r"<archive>\XASM140 - Information.DOC.txt"))
 
 
 def read(path: Path) -> str:
@@ -56,7 +63,7 @@ Ce document décrit `xasm2026-4`, port C# natif de l'assembleur XASM pour CPU Sh
 | Machines visées | Sharp PC-E500 / PC-E500S et proches compatibles |
 | Référence historique | XASM 1.40 |
 | Référence de comparaison | `xasm2026-2`, XASM 1.40 sous DOSBox et sorties historiques |
-| Exécutable principal | `C:\\Codex\\xasm2026-4\\bin\\xasm2026-4.exe` |
+| Exécutable principal | `bin\\xasm2026-4.exe` |
 
 ## 2. Arborescence du projet
 
@@ -74,7 +81,7 @@ Ce document décrit `xasm2026-4`, port C# natif de l'assembleur XASM pour CPU Sh
 
 ## 3. Compilation du projet
 
-Depuis `C:\\Codex\\xasm2026-4` :
+Depuis la racine du projet :
 
 ```powershell
 dotnet build .\\src\\Xasm2026.Native.csproj -c Release
@@ -83,13 +90,13 @@ dotnet build .\\src\\Xasm2026.Native.csproj -c Release
 Le build génère :
 
 ```text
-C:\\Codex\\xasm2026-4\\src\\bin\\Release\\net8.0\\xasm2026-4.exe
+src\\bin\\Release\\net8.0\\xasm2026-4.exe
 ```
 
 Une copie pratique est maintenue ici :
 
 ```text
-C:\\Codex\\xasm2026-4\\bin\\xasm2026-4.exe
+bin\\xasm2026-4.exe
 ```
 
 ## 4. Ligne de commande
@@ -252,7 +259,7 @@ Les principaux blocs finalisés sont :
 - Encodage complet des mnémos SC62015 documentés.
 - Correction fine des prébytes, notamment la distinction entre colonnes `PY` et lignes `PX/BP+PX`.
 - Alignement de `REGISTER`, `VOGUE`, `TRDOS`, `UUCODE` et `SAMPLES`.
-- Générateur `.uu` aligné sur `C:\\Codex\\UUSELFX\\uuselfx.c` : lignes BASIC, payload, checksum historique et ligne `size`.
+- Générateur `.uu` aligné sur `uuselfx.c` (source de reference externe) : lignes BASIC, payload, checksum historique et ligne `size`.
 - Rapport d'erreur écrit dans `.err` et `.lst`.
 - Banc de couverture `coverage_all.asm`.
 
@@ -274,7 +281,7 @@ Les validations effectuées en fin de projet :
 ## 13. Commandes de validation recommandées
 
 ```powershell
-cd C:\\Codex\\xasm2026-4\\tests
+cd tests
 ..\\bin\\xasm2026-4.exe coverage_all.asm -O coverage_all.obj -L coverage_all.lst -E -S -TZ -C -W -H -I coverage_all.hex -M coverage_all.s19 -P coverage_all.map -D coverage_all.d -B coverage_all.uu -X coverage_all.txt -V -R
 ```
 

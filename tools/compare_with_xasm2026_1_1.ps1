@@ -1,11 +1,34 @@
+<#
+    Compare les sorties de l'assembleur de reference xasm2026-1 et du port C# candidat.
+
+    Les chemins par defaut sont deduits de l'emplacement du script, afin que le script
+    fonctionne dans n'importe quel checkout (ils pointaient auparavant vers C:\Codex\...).
+
+    L'executable de reference xasm2026-1 n'est PAS fourni dans ce depot : il faut le
+    designer via -ReferenceXasm, ou via la variable d'environnement XASM_REFERENCE_EXE.
+#>
 param(
-    [string]$OutDir = "C:\Codex\xasm2026-4\tests\_compare_with_xasm2026_1_1",
-    [string]$ReferenceXasm = "C:\Codex\xasm2026-1-1\build\xasm2026-1-1.exe",
-    [string]$CandidateXasm = "C:\Codex\xasm2026-4\src\bin\Release\net8.0\xasm2026-4.exe",
+    [string]$OutDir,
+    [string]$ReferenceXasm = $env:XASM_REFERENCE_EXE,
+    [string]$CandidateXasm,
     [switch]$IncludeVogue
 )
 
 $ErrorActionPreference = "Stop"
+
+$RepoRoot = Split-Path -Parent $PSScriptRoot
+if (-not $OutDir) { $OutDir = Join-Path $RepoRoot "tests\_compare_with_xasm2026_1_1" }
+if (-not $CandidateXasm) { $CandidateXasm = Join-Path $RepoRoot "src\bin\Release\net8.0\xasm2026-4.exe" }
+
+if (-not $ReferenceXasm) {
+    throw "Executable de reference introuvable : passez -ReferenceXasm <chemin> ou definissez XASM_REFERENCE_EXE. L'exe xasm2026-1 n'est pas fourni dans ce depot."
+}
+if (-not (Test-Path $ReferenceXasm)) {
+    throw "Executable de reference introuvable : $ReferenceXasm"
+}
+if (-not (Test-Path $CandidateXasm)) {
+    throw "Executable candidat introuvable : $CandidateXasm (compiler d'abord avec: dotnet build src\Xasm2026.Native.csproj -c Release)"
+}
 
 function Read-UInt24LE([byte[]]$Bytes, [int]$Offset) {
     return [int]$Bytes[$Offset] -bor ([int]$Bytes[$Offset + 1] -shl 8) -bor ([int]$Bytes[$Offset + 2] -shl 16)
@@ -210,24 +233,38 @@ if (-not (Test-Path $CandidateXasm)) {
     throw "XASM candidat introuvable : $CandidateXasm"
 }
 
-$sources = @(
-    "C:\Codex\xasm2026-4\Exemples\SAMPLES\SAMPLE1.ASM",
-    "C:\Codex\xasm2026-4\Exemples\SAMPLES\SAMPLE2.ASM",
-    "C:\Codex\xasm2026-4\Exemples\SAMPLES\SAMPLE3.ASM",
-    "C:\Codex\xasm2026-4\Exemples\SAMPLES\SAMPLE4.ASM",
-    "C:\Codex\xasm2026-4\Exemples\SAMPLES\SAMPLE5.ASM",
-    "C:\Codex\xasm2026-4\Exemples\REGISTER\REGISTER.ASM",
-    "C:\Codex\xasm2026-4\Exemples\TMAP\TMAP2020.asm",
-    "C:\Codex\xasm2026-4\Exemples\TRDOS\ex_tycom.asm",
-    "C:\Codex\xasm2026-4\Exemples\TRDOS\init.asm",
-    "C:\Codex\xasm2026-4\Exemples\TRDOS\path.asm",
-    "C:\Codex\xasm2026-4\Exemples\TRDOS\shell.asm",
-    "C:\Codex\xasm2026-4\Exemples\UUCODE\UUENCODE.ASM",
-    "C:\Codex\xasm2026-4\Exemples\UUCODE\UUDECODE.ASM"
+# Liste historique, relative au depot. Les exemples TRDOS et UUCODE ne font pas partie de
+# ce checkout : les entrees absentes sont ignorees avec un avertissement plutot que de
+# faire echouer la comparaison.
+$candidateSources = @(
+    "Exemples\SAMPLES\SAMPLE1.ASM",
+    "Exemples\SAMPLES\SAMPLE2.ASM",
+    "Exemples\SAMPLES\SAMPLE3.ASM",
+    "Exemples\SAMPLES\SAMPLE4.ASM",
+    "Exemples\SAMPLES\SAMPLE5.ASM",
+    "Exemples\REGISTER\REGISTER.ASM",
+    "Exemples\TMAP\TMAP2020.asm",
+    "Exemples\TRDOS\ex_tycom.asm",
+    "Exemples\TRDOS\init.asm",
+    "Exemples\TRDOS\path.asm",
+    "Exemples\TRDOS\shell.asm",
+    "Exemples\UUCODE\UUENCODE.ASM",
+    "Exemples\UUCODE\UUDECODE.ASM"
 )
 
 if ($IncludeVogue) {
-    $sources += "C:\Codex\xasm2026-4\Exemples\VOGUE\VOGUE.S"
+    $candidateSources += "Exemples\VOGUE\VOGUE.S"
+}
+
+$sources = @()
+foreach ($relative in $candidateSources) {
+    $full = Join-Path $RepoRoot $relative
+    if (Test-Path $full) { $sources += $full }
+    else { Write-Warning "Exemple absent de ce depot, ignore : $relative" }
+}
+
+if ($sources.Count -eq 0) {
+    throw "Aucun exemple a comparer sous $RepoRoot."
 }
 
 New-Item -ItemType Directory -Path $OutDir -Force | Out-Null

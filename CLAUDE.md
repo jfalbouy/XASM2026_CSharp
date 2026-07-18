@@ -112,10 +112,11 @@ reference assembler, byte for byte. The priority examples live in
 `.map`, `.d`, `.uu`, `.txt`) beside them.
 
 `tools/compare_with_xasm2026_1_1.ps1` runs both the reference and the candidate over a batch
-of examples and diffs `.obj` and `.uu` (with `.uu` decode verification). **Its default paths
-point at `C:\Codex\...` and an external reference exe — pass `-ReferenceXasm`, `-CandidateXasm`,
-and `-OutDir` to match this checkout, or adapt the `$sources` list.** The reference exe
-(`xasm2026-1`) is not in this repo.
+of examples and diffs `.obj` and `.uu` (with `.uu` decode verification). Its paths are derived
+from the script's own location, so it works in any checkout; examples listed but absent (the
+TRDOS/UUCODE ones) are skipped with a warning. The reference exe (`xasm2026-1`) is **not** in
+this repo — pass `-ReferenceXasm <path>` or set `XASM_REFERENCE_EXE`, otherwise the script
+stops with an explicit message.
 
 `tests/coverage_all.asm` (+ `coverage_all_include.asm`) exercises every directive/opcode form
 and is the target of the "all options" VS Code task and launch config.
