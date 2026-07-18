@@ -1,27 +1,32 @@
-namespace Xasm2026.Native.Expressions;
+﻿namespace Xasm2026.Native.Expressions;
 
 internal sealed class ExpressionEvaluator
 {
     private readonly IReadOnlyDictionary<string, long> _symbols;
     private readonly string? _localScope;
     private readonly IReadOnlySet<string>? _reservedZero;
+    private readonly long _locationCounter;
 
     /// <summary>
     /// Action : prepare un evaluateur d'expressions avec table des symboles et contexte local.
     /// Donnees d'entree : parametres de la signature (IReadOnlyDictionary<string, long> symbols, string? localScope = null,
-    ///   IReadOnlySet<string>? reservedZero = null) et etat courant necessaire.
+    ///   IReadOnlySet<string>? reservedZero = null, long locationCounter = 0) et etat courant necessaire.
     /// Donnees de sortie : instance initialisee.
     /// reservedZero : identifiants reserves (mnemoniques de registres) qui valent 0 dans une
     ///   expression d'adressage et ne doivent pas etre signales comme symboles indefinis.
+    /// locationCounter : valeur du compteur de localisation, rendue par l'operande "*".
+    ///   Pendant de la variable globale lc du C, lue au moment de l'evaluation.
     /// </summary>
     public ExpressionEvaluator(
         IReadOnlyDictionary<string, long> symbols,
         string? localScope = null,
-        IReadOnlySet<string>? reservedZero = null)
+        IReadOnlySet<string>? reservedZero = null,
+        long locationCounter = 0)
     {
         _symbols = symbols;
         _localScope = localScope;
         _reservedZero = reservedZero;
+        _locationCounter = locationCounter;
     }
 
     /// <summary>
@@ -31,7 +36,7 @@ internal sealed class ExpressionEvaluator
     /// </summary>
     public long Evaluate(string expression)
     {
-        var parser = new Parser(expression, _symbols, _localScope, _reservedZero);
+        var parser = new Parser(expression, _symbols, _localScope, _reservedZero, _locationCounter);
         var value = Regular(parser.ParseExpression());
         Undefined = parser.Undefined;
         return value;
@@ -59,6 +64,7 @@ internal sealed class ExpressionEvaluator
         private readonly IReadOnlyDictionary<string, long> _symbols;
         private readonly string? _localScope;
         private readonly IReadOnlySet<string>? _reservedZero;
+        private readonly long _locationCounter;
         private readonly List<string> _undefined = new();
         private int _position;
 
@@ -76,12 +82,14 @@ internal sealed class ExpressionEvaluator
             string text,
             IReadOnlyDictionary<string, long> symbols,
             string? localScope,
-            IReadOnlySet<string>? reservedZero)
+            IReadOnlySet<string>? reservedZero,
+            long locationCounter)
         {
             _text = text;
             _symbols = symbols;
             _localScope = localScope;
             _reservedZero = reservedZero;
+            _locationCounter = locationCounter;
         }
 
         /// <summary>
@@ -156,6 +164,15 @@ internal sealed class ExpressionEvaluator
             if (TryRead('-'))
             {
                 return -ParseTerm();
+            }
+
+            // eval.c : case '*' avec set_x == FALSE. En position de terme, "*" designe le
+            // compteur de localisation ; entre deux valeurs, c'est ParseProduct qui l'a deja
+            // consomme comme operateur de multiplication. Les deux emplois ne peuvent donc
+            // pas etre confondus.
+            if (TryRead('*'))
+            {
+                return _locationCounter;
             }
 
             if (_position >= _text.Length)
@@ -276,7 +293,14 @@ internal sealed class ExpressionEvaluator
         /// <summary>
         /// Action : convertit un jeton numerique en valeur entiere.
         /// Donnees d'entree : parametres de la signature (string token) et etat courant necessaire.
-        /// Donnees de sortie : valeur long calculee par la procedure.
+        /// Donnees de sortie : booleen de reussite et valeur convertie.
+        ///
+        /// Regle reprise telle quelle de eval.c : un nombre commence obligatoirement par un
+        /// chiffre ou par "$" (sinon c'est un nom de symbole), et c'est le **dernier
+        /// caractere** qui fixe la base : B=2, O=8, D=10, H=16. Sans suffixe reconnu, la base
+        /// est 10 et ce dernier caractere est un chiffre a part entiere. Le souligne "_" est
+        /// un separateur visuel ignore. Un chiffre superieur ou egal a la base est refuse
+        /// (err 23 du C) : le jeton n'est alors pas un nombre valide.
         /// </summary>
         private static bool TryParseNumber(string token, out long value)
         {
@@ -287,41 +311,78 @@ internal sealed class ExpressionEvaluator
                 return false;
             }
 
+            // "$FF00" est la notation hexadecimale prefixee : eval.c la reecrit en "0FF00H".
             if (token[0] == '$')
             {
-                var hex = token[1..];
-                if (hex.Length > 0 && IsHexToken(hex))
-                {
-                    value = Convert.ToInt64(hex, 16);
-                    return true;
-                }
+                return TryParseDigits(token[1..], 16, out value);
+            }
 
+            if (!char.IsAsciiDigit(token[0]))
+            {
                 return false;
             }
 
-            if (token.Length > 1 &&
-                (token[^1] is 'H' or 'h') &&
-                IsHexToken(token[..^1]))
+            var radix = char.ToUpperInvariant(token[^1]) switch
             {
-                value = Convert.ToInt64(token[..^1], 16);
-                return true;
-            }
+                'B' => 2,
+                'O' => 8,
+                'D' => 10,
+                'H' => 16,
+                _ => 0,
+            };
 
-            return long.TryParse(token, out value);
+            // Pas de suffixe : base 10, et le dernier caractere fait partie des chiffres.
+            return radix == 0
+                ? TryParseDigits(token, 10, out value)
+                : TryParseDigits(token[..^1], radix, out value);
         }
 
         /// <summary>
-        /// Action : detecte un jeton hexadecimal implicite.
-        /// Donnees d'entree : parametres de la signature (string token) et etat courant necessaire.
-        /// Donnees de sortie : booleen indiquant si le traitement a reussi ou si la condition est verifiee.
+        /// Action : accumule les chiffres d'un jeton dans la base donnee.
+        /// Donnees d'entree : chiffres sans suffixe, base attendue.
+        /// Donnees de sortie : booleen de reussite et valeur accumulee.
         /// </summary>
-        private static bool IsHexToken(string token)
+        private static bool TryParseDigits(string digits, int radix, out long value)
         {
-            return token.Length > 0 && token.All(c =>
-                c is >= '0' and <= '9' ||
-                c is >= 'a' and <= 'f' ||
-                c is >= 'A' and <= 'F');
+            value = 0;
+            var seen = false;
+            foreach (var c in digits)
+            {
+                if (c == '_')
+                {
+                    continue;
+                }
+
+                int digit;
+                if (char.IsAsciiDigit(c))
+                {
+                    digit = c - '0';
+                }
+                else if (c is >= 'A' and <= 'F')
+                {
+                    digit = c - 'A' + 10;
+                }
+                else if (c is >= 'a' and <= 'f')
+                {
+                    digit = c - 'a' + 10;
+                }
+                else
+                {
+                    return false;
+                }
+
+                if (digit >= radix)
+                {
+                    return false;
+                }
+
+                value = value * radix + digit;
+                seen = true;
+            }
+
+            return seen;
         }
+
 
         /// <summary>
         /// Action : consomme un caractere attendu si present.

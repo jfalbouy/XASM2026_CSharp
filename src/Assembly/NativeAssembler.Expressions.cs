@@ -22,7 +22,10 @@ internal sealed partial class NativeAssembler
 
     private long Eval(string expression, bool strict = true)
     {
-        var evaluator = new ExpressionEvaluator(_symbols.Values, _symbols.CurrentScope, ReservedRegisters);
+        // Le compteur de localisation est transmis a chaque evaluation : c'est la valeur
+        // rendue par l'operande "*", pendant de la globale lc du C lue au moment de l'eval.
+        var evaluator = new ExpressionEvaluator(
+            _symbols.Values, _symbols.CurrentScope, ReservedRegisters, _locationCounter);
         var value = evaluator.Evaluate(_symbols.NormalizeScopedExpression(expression));
 
         // En passe d'emission, un symbole encore non resolu ne peut plus l'etre : c'est une erreur,
