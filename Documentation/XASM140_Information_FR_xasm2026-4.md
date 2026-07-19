@@ -36,7 +36,7 @@ Les caractéristiques historiques restent au coeur du projet :
 | UUENCODE | Générateur `-B` aligné sur `uuselfx.c`, y compris le payload BASIC, le checksum et la ligne `size`. |
 | Diagnostics | Les erreurs fatales sont écrites dans `.err` et `.lst` quand `-E` et `-L` sont actifs. |
 | Tests | `coverage_all.asm` couvre plusieurs centaines de lignes d'instructions et directives. |
-| Régressions | `SAMPLES`, `REGISTER`, `VOGUE`, `TRDOS` et `UUCODE` validés. |
+| Régressions | `SAMPLES`, `REGISTER`, `TMAP2020` et `VOGUE` validés, octet à octet. |
 
 ## 4. Syntaxe du source
 
@@ -149,11 +149,10 @@ Cela facilite la correction séquentielle des erreurs source.
 
 | Ensemble | Résultat |
 |---|---|
-| `SAMPLE1` à `SAMPLE4` | `.OBJ` identiques à la référence. |
-| `REGISTER` | `.OBJ/.LST` identiques à XASM 1.40. |
-| `VOGUE` | `.OBJ/.LST` identiques à XASM 1.40. |
-| `TRDOS` | `.OBJ` identiques au moteur C. |
-| `UUCODE` | `.OBJ` identiques au moteur C. |
+| `SAMPLE1` à `SAMPLE5` | `.OBJ` identiques à la référence. |
+| `REGISTER` | `.OBJ` identique à la référence, 4 154 octets. |
+| `TMAP2020` | `.OBJ` identique à la référence, 1 744 octets. |
+| `VOGUE` | `.OBJ` identique à la référence, 14 433 octets. |
 | `coverage_all.asm` | Compilation toutes options, 399 lignes, 892 octets. |
 
 ## 11. Texte original anglais de XASM140 - Information.DOC

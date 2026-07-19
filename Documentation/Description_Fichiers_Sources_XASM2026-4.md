@@ -17,6 +17,7 @@ Le projet est organise en blocs fonctionnels :
 - `src/Outputs` : generation des differents formats de sortie.
 - `Reference/C` : source C historique conserve comme base de comparaison.
 - `Reference/CSharpWrapper` : ancien wrapper C# autour du moteur historique.
+- `tests/Xasm2026.Tests` : harnais xUnit de non-regression.
 
 ## Sources principales C#
 
@@ -71,6 +72,59 @@ Les procedures `Emit...` encodent les familles d'instructions : mouvements, comp
 
 Les procedures `Parse...`, `TryEmit...`, `Is...` et `Resolve...` sont des aides internes pour analyser les operandes, resoudre les symboles et choisir la bonne forme d'encodage.
 
+`NativeAssembler` est une **classe `partial`** repartie sur plusieurs fichiers par
+preoccupation. Ce decoupage a ete choisi precisement parce qu'il ne modifie aucun site
+d'appel, ce qui est determinant quand la moindre regression se mesure a l'octet pres.
+`NativeAssembler.cs` conserve la boucle des deux passes, l'aiguillage des directives et
+opcodes, et les encodeurs `Emit...`.
+
+### `src/Assembly/NativeAssembler.Preprocessor.cs`
+
+Preprocesseur : lecture des sources et resolution des `INCLUDE` avec detection des cycles,
+expansion des macros, `REPEAT`, `IRP` et `IRPC`, et traitement des conditionnelles.
+
+Le corps d'une macro y est **re-developpe** plutot que recopie tel quel, ce qui permet les
+conditionnelles internes, `EXITM`, les macros imbriquees et `REPEAT` dans un corps. Un
+garde-fou rejette une macro qui s'appellerait elle-meme.
+
+### `src/Assembly/NativeAssembler.Expressions.cs`
+
+Evaluation des expressions dans le contexte de l'assemblage : appel de l'evaluateur avec la
+table des symboles, la portee locale et le compteur de localisation, resolution des cibles de
+sauts relatifs, et substitution des arguments `@0`..`@9` d'un `INCLUDE`.
+
+C'est ici que les symboles indefinis et les divisions par zero deviennent des erreurs fatales,
+et uniquement en passe d'emission : en passe de resolution, une reference avant vaut encore
+zero et le controle produirait un faux positif.
+
+### `src/Assembly/NativeAssembler.Sections.cs`
+
+Gestion des `STRUCT`, des sections declarees par `SECTION`, et recopie de l'etat interne vers
+le resultat public de l'assemblage.
+
+### `src/Assembly/SymbolTable.cs`
+
+Table des symboles : valeurs, occurrences d'adresse, references croisees et regles de portee
+locale (prefixe `portee!etiquette`, reference parente `..!`).
+
+C'est la partie la plus subtile du portage, d'ou son extraction en type autonome, testable
+independamment du reste de l'assembleur. Pendant de `hash.c` et de la pile `l_stack` du C.
+
+### `src/Assembly/RegisterTable.cs`
+
+Tables de correspondance des registres SC62015 vers leurs identifiants et opcodes. Sans etat,
+donc importees par l'assembleur via `using static` : les sites d'appel restent non prefixes.
+
+### `src/Assembly/SourceRef.cs`
+
+Une ligne source accompagnee de son origine physique — fichier et numero de ligne — et des
+expressions d'arguments d'`INCLUDE` en vigueur pour elle.
+
+L'origine est portee **par la ligne elle-meme** et non par une liste parallele, parce que les
+corps de macro et les blocs `REPEAT` sont copies puis rejoues, ce qui detruirait toute
+correspondance positionnelle. C'est ce qui permet aux erreurs et avertissements de designer le
+fichier reellement fautif, y compris a travers un `INCLUDE`.
+
 ### `src/Assembly/SourceLine.cs`
 
 Analyse syntaxique d'une ligne assembleur.
@@ -102,6 +156,12 @@ Elle permet de conserver la relation entre l'adresse assemblee et la valeur prod
 Structure representant une ligne de listing.
 
 Elle associe une adresse, une liste d'octets emis et le texte source correspondant.
+
+### `src/Core/AssemblyWarning.cs`
+
+Avertissement non fatal : fichier, ligne, colonne et libelle historique repris de `mes.c`.
+Porte aussi le formatage unique utilise par la console, le `.lst` et le `.err`, afin que les
+trois destinations ne puissent pas diverger.
 
 ### `src/Core/SectionInfo.cs`
 
@@ -279,3 +339,36 @@ Configurations de lancement et de debogage.
 
 Parametres locaux de l'espace de travail Visual Studio Code.
 
+## Harnais de tests
+
+### `tests/Xasm2026.Tests/GoldenAssemblyTests.cs`
+
+Reassemble les quatre exemples de reference et compare les huit sorties octet a octet aux
+fichiers commites, soit 32 comparaisons exactes. C'est le garde-fou central du projet.
+
+### `tests/Xasm2026.Tests/BehaviorTests.cs`
+
+Comportements attendus des garde-fous : symbole indefini, inclusion cyclique, division par
+zero, etiquette dupliquee, avertissements, et position source des erreurs.
+
+### `tests/Xasm2026.Tests/ExpressionEvaluatorTests.cs`
+
+Bases numeriques, compteur de localisation et precedence des operateurs, y compris les deux
+precedences contre-intuitives heritees du C.
+
+### `tests/Xasm2026.Tests/SymbolTableTests.cs`
+
+Regles de portee locale : prefixage, imbrication et devidage des portees, resolution de `..!`.
+
+### `tests/Xasm2026.Tests/DirectiveTests.cs`
+
+Directives ajoutees en 2026-4, verifiees sur les octets reellement emis.
+
+### `tests/Xasm2026.Tests/SampleAssemblyTests.cs`
+
+Octets produits par les exemples `SAMPLE6` a `SAMPLE9`, qui illustrent ces memes directives.
+
+### `tests/Xasm2026.Tests/TestPaths.cs`
+
+Localise la racine du depot a partir de l'emplacement de l'assembly de test, sans dependre du
+repertoire courant.

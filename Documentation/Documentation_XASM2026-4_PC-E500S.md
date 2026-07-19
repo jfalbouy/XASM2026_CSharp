@@ -329,7 +329,7 @@ Les principaux blocs finalisés sont :
 - Port des expressions numériques et du compteur `*`.
 - Encodage complet des mnémos SC62015 documentés.
 - Correction fine des prébytes, notamment la distinction entre colonnes `PY` et lignes `PX/BP+PX`.
-- Alignement de `REGISTER`, `VOGUE`, `TRDOS`, `UUCODE` et `SAMPLES`.
+- Alignement de `SAMPLES`, `REGISTER`, `TMAP2020` et `VOGUE`.
 - Générateur `.uu` aligné sur `uuselfx.c` (source de reference externe) : lignes BASIC, payload, checksum historique et ligne `size`.
 - Rapport d'erreur écrit dans `.err` et `.lst`.
 - Banc de couverture `coverage_all.asm`.

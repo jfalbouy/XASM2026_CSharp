@@ -1,27 +1,60 @@
-# Tests de non-regression
+# Tests de non-régression
 
-Ce dossier est reserve aux comparaisons entre :
+Ce dossier regroupe le harnais automatisé et les fichiers de couverture du port C#
+`xasm2026-4`, dont la contrainte fondatrice est la reproduction **octet à octet** des sorties
+de la référence `xasm2026-1`.
 
-- la reference `xasm2026-1` ;
-- le port C# natif `xasm2026-4`.
+## Contenu
 
-## Principe
+| Chemin | Rôle |
+|---|---|
+| `Xasm2026.Tests/` | Harnais xUnit exécuté par `dotnet test` et par la CI. |
+| `coverage_all.asm` | Source exerçant chaque directive et forme d'opcode portée. |
+| `coverage_all_include.asm` | Fichier inclus par le précédent. |
+| `_compare_with_xasm2026_1_1/` | Sorties du script de comparaison. Régénérable, ignoré par git. |
 
-Pour chaque exemple, generer les sorties avec la reference, puis avec le port C#, et comparer :
+## Exécution
 
-```text
-obj, lst, hex, s19, map, d, uu, txt
+```powershell
+dotnet test .\tests\Xasm2026.Tests\Xasm2026.Tests.csproj -c Release
 ```
 
-## Exemples prioritaires
+## Ce que couvre le harnais
 
-```text
-SAMPLES/SAMPLE5.ASM
-VOGUE/VOGUE.S
-REGISTER/REGISTER.ASM
-TMAP/TMAP2020.asm
+| Suite | Objet |
+|---|---|
+| `GoldenAssemblyTests` | Réassemble `SAMPLE5`, `VOGUE`, `REGISTER` et `TMAP2020`, puis compare les **huit** sorties (`.obj`, `.hex`, `.s19`, `.txt`, `.lst`, `.map`, `.d`, `.uu`) octet à octet aux fichiers de référence — 32 comparaisons exactes. |
+| `BehaviorTests` | Garde-fous : symbole indéfini, inclusion cyclique, division par zéro, étiquette dupliquée, avertissements, positions source. |
+| `ExpressionEvaluatorTests` | Bases numériques, compteur de localisation, précédence des opérateurs. |
+| `SymbolTableTests` | Règles de portée locale : préfixage, imbrication, référence parente `..!`. |
+| `DirectiveTests` | Directives ajoutées en 2026-4 : `SET`, `IRP`/`IRPC`, `ALIGN`, `DZ`, `PHASE`, `EXITM`… |
+| `SampleAssemblyTests` | Octets produits par les exemples `SAMPLE6` à `SAMPLE9`. |
+
+### Point à connaître avant de toucher au harnais
+
+Les formats de présentation (`.lst`, `.map`, `.d`, `.uu`) embarquent le nom du fichier source
+et celui des sorties. Ils ne sont donc reproductibles qu'en rejouant **l'invocation historique
+exacte** : noms entièrement en minuscules (`sample5.asm` → `sample5.lst`) et option `-S`. Les
+noms en minuscules ne résolvent le fichier réel (`SAMPLE5.ASM`) que sur un système de fichiers
+insensible à la casse, ce qui explique que la CI tourne sur `windows-latest`.
+
+Le seul champ non déterministe de l'ensemble des sorties est la ligne
+`' Submitted jj/mm/aaaa` du `.uu`, que le harnais neutralise avant comparaison.
+
+## Comparaison directe avec le moteur C
+
+Au-delà des fichiers de référence, qui sont des instantanés figés, les deux assembleurs
+peuvent être confrontés l'un à l'autre :
+
+```powershell
+.\tools\compare_with_xasm2026_1_1.ps1 -ReferenceXasm .\Reference\C\xasm2026-1-2.exe -IncludeVogue
 ```
 
-## Etat actuel
+Chaque source est assemblée dans son propre dossier de travail, purgé au préalable de toute
+sortie, de sorte qu'un fichier absent signifie réellement « non produit par ce run ». La
+colonne `MissingOutputs` du rapport le signale explicitement.
 
-Le port C# natif ne produit pas encore l'assemblage complet. Les tests deviendront actifs lorsque les passes d'assemblage seront branchees.
+Dernier résultat (2026-07-19) : **code machine identique sur les huit sources**. Le `.uu`
+diffère par une ligne finale `size` et le bourrage du dernier bloc, choix délibéré de
+reproduire `uuselfx.c` documenté dans `PORTAGE.md` ; les deux fichiers décodent vers le même
+objet.
