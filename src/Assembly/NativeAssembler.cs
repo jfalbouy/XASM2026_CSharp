@@ -42,6 +42,10 @@ internal sealed partial class NativeAssembler
     // no_name_lbl du C, remis a zero **a chaque passe** pour que les deux passes fabriquent
     // exactement les memes noms, faute de quoi les adresses divergeraient.
     private int _anonymousScopeCounter;
+
+    // Decalage entre adresse logique et adresse physique, installe par PHASE.
+    // Nul en dehors d'un bloc PHASE / DEPHASE.
+    private long _phaseOffset;
     private readonly Stack<bool> _preStack = new();
 
     /// <summary>
@@ -135,6 +139,7 @@ internal sealed partial class NativeAssembler
         _currentSection = null;
         _preOn = false;
         _anonymousScopeCounter = 0;
+        _phaseOffset = 0;
         _symbols.ResetScopes();
         _preStack.Clear();
         if (!emit)
@@ -311,6 +316,58 @@ internal sealed partial class NativeAssembler
                 case "DB":
                 case "DM":
                     EmitData(line.OperandText, 1, emit, result);
+                    break;
+                case "DZ":
+                    // Chaine terminee par un zero : DM suivi du terminateur.
+                    EmitData(line.OperandText, 1, emit, result);
+                    Emit(0, emit, result);
+                    break;
+                case "PHASE":
+                {
+                    // Assemble a une adresse, execute a une autre : les etiquettes prennent
+                    // l'adresse logique, les octets restent a leur place dans l'image. Utile
+                    // pour du code recopie ailleurs avant execution, cas courant sur PC-E500S.
+                    var logical = Eval(line.OperandText);
+                    _phaseOffset += logical - _locationCounter;
+                    _locationCounter = logical;
+                    break;
+                }
+
+                case "DEPHASE":
+                    _locationCounter -= _phaseOffset;
+                    _phaseOffset = 0;
+                    break;
+                case "ALIGN":
+                    EmitAlignment(Eval(line.OperandText), emit, result);
+                    break;
+                case "EVEN":
+                    EmitAlignment(2, emit, result);
+                    break;
+                case "ASSERT":
+                {
+                    // Uniquement en passe d'emission : en passe de resolution une reference
+                    // avant vaut encore 0 et l'assertion echouerait a tort.
+                    var parts = SplitOperands(line.OperandText);
+                    if (_emitPass && Eval(parts[0]) == 0)
+                    {
+                        var message = parts.Length > 1
+                            ? UnquoteText(parts[1].Trim())
+                            : $"assertion non verifiee: {parts[0].Trim()}";
+                        throw new InvalidOperationException(message);
+                    }
+
+                    break;
+                }
+
+                case "ERROR":
+                    if (_emitPass)
+                    {
+                        throw new InvalidOperationException(UnquoteText(line.OperandText.Trim()));
+                    }
+
+                    break;
+                case "WARNING":
+                    AddWarning($"Warning: {UnquoteText(line.OperandText.Trim())}");
                     break;
                 case "PRE":
                     EmitPrebyte(line.OperandText, emit, result);
@@ -2518,6 +2575,30 @@ internal sealed partial class NativeAssembler
         }
     }
 
+    /// <summary>
+    /// Action : aligne le compteur de localisation sur un multiple donne.
+    /// Donnees d'entree : parametres de la signature (long boundary, bool emit, AssemblyResult result).
+    /// Donnees de sortie : aucune valeur retournee ; emission des octets de remplissage.
+    ///
+    /// L'image produite etant contigue, l'alignement doit **emettre** le remplissage et pas
+    /// seulement avancer le compteur, faute de quoi l'objet et les adresses divergeraient.
+    /// </summary>
+    private void EmitAlignment(long boundary, bool emit, AssemblyResult result)
+    {
+        if (boundary <= 1)
+        {
+            // Un alignement sur 0 ou 1 ne reserve rien : meme situation que DS 0.
+            AddWarning("Warning: No effective code");
+            return;
+        }
+
+        var padding = (boundary - _locationCounter % boundary) % boundary;
+        for (var i = 0; i < padding; i++)
+        {
+            Emit(0, emit, result);
+        }
+    }
+
     private void EmitStorage(string operandText, bool emit, AssemblyResult result)
     {
         var operands = SplitOperands(operandText);
@@ -2544,7 +2625,11 @@ internal sealed partial class NativeAssembler
     {
         if (emit)
         {
-            result.GeneratedBytes.Add(new GeneratedByte(_locationCounter, (byte)(value & 0xff)));
+            // Sous PHASE, le compteur porte l'adresse **logique** (celle ou le code
+            // s'executera) tandis que l'octet reste emis a sa place physique dans
+            // l'image : sans ce retrait, l'objet serait relogé et deviendrait troue.
+            result.GeneratedBytes.Add(
+                new GeneratedByte(_locationCounter - _phaseOffset, (byte)(value & 0xff)));
         }
 
         _locationCounter++;
@@ -2598,6 +2683,24 @@ internal sealed partial class NativeAssembler
     /// Donnees d'entree : parametres de la signature (string value) et etat courant necessaire.
     /// Donnees de sortie : collection calculee par la procedure.
     /// </summary>
+    /// <summary>
+    /// Action : retire les apostrophes ou guillemets encadrant un message de diagnostic.
+    /// Donnees d'entree : texte d'operande tel qu'ecrit dans le source.
+    /// Donnees de sortie : texte nu, utilisable dans un message d'erreur ou d'avertissement.
+    ///
+    /// Distinct de Unquote, qui produit les **octets** d'une chaine pour DB / DM.
+    /// </summary>
+    private static string UnquoteText(string value)
+    {
+        var text = value.Trim();
+        if (text.Length >= 2 && text[0] == text[^1] && (text[0] == '\'' || text[0] == '"'))
+        {
+            return text[1..^1];
+        }
+
+        return text;
+    }
+
     private static IEnumerable<byte> Unquote(string value)
     {
         var inner = value[1..^1];

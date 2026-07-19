@@ -97,10 +97,130 @@ public sealed class DirectiveTests
         AssertBytes(source, 0xCE);
     }
 
+    [Fact]
+    public void Align_and_even_pad_up_to_the_boundary()
+    {
+        AssertBytes(
+            "        DB  1,2,3\n" +
+            "        ALIGN 4\n" +
+            "        DB  0AAH\n" +
+            "        EVEN\n" +
+            "        DB  0BBH\n",
+            0x01, 0x02, 0x03, 0x00, 0xAA, 0x00, 0xBB);
+    }
+
+    /// <summary>
+    /// L'image etant contigue, l'alignement doit emettre le remplissage et pas seulement
+    /// avancer le compteur, sinon l'objet et les adresses divergeraient.
+    /// </summary>
+    [Fact]
+    public void Align_on_an_already_aligned_counter_emits_nothing()
+    {
+        AssertBytes("        DB  1,2,3,4\n        ALIGN 4\n        DB  0AAH\n",
+            0x01, 0x02, 0x03, 0x04, 0xAA);
+    }
+
+    [Fact]
+    public void Dz_appends_a_terminator()
+    {
+        AssertBytes("        DZ  'HI'\n", 0x48, 0x49, 0x00);
+    }
+
+    /// <summary>
+    /// PHASE assemble a une adresse et execute a une autre : les etiquettes prennent
+    /// l'adresse logique, mais les octets restent a leur place physique dans l'image.
+    /// </summary>
+    [Fact]
+    public void Phase_relocates_labels_but_not_the_image()
+    {
+        var result = Assemble(
+            "        DB  0AAH\n" +
+            "        PHASE 0B0000H\n" +
+            "ici:    NOP\n" +
+            "        DP  ici\n" +          // 0B0000, adresse logique
+            "        DEPHASE\n" +
+            "        DP  *\n");            // retour au physique
+
+        Assert.Equal(
+            new[] { 0xAA, 0x00, 0x00, 0x00, 0x0B, 0x05, 0xE0, 0x00 },
+            result.GeneratedBytes.Select(b => (int)b.Value).ToArray());
+
+        // L'image reste contigue a partir de l'ORG physique.
+        Assert.Equal(0xE000, result.GeneratedBytes[0].Address);
+        Assert.Equal(0xE007, result.GeneratedBytes[^1].Address);
+    }
+
+    [Theory]
+    [InlineData("        DB  LOW  0BE123H\n", 0x23)]
+    [InlineData("        DB  MID  0BE123H\n", 0xE1)]
+    [InlineData("        DB  HIGH 0BE123H\n", 0x0B)]
+    [InlineData("        DB  0F0H^0FFH\n", 0x0F)]
+    [InlineData("        DB  1<<4\n", 0x10)]
+    [InlineData("        DB  80H>>3\n", 0x10)]
+    [InlineData("        DB  ~0FFH&0FFH\n", 0x00)]
+    public void New_operators_evaluate(string source, int expected)
+    {
+        AssertBytes(source, expected);
+    }
+
+    /// <summary>
+    /// Les decalages lient moins fort que l'addition, comme en C : "1<<2+3" vaut "1<<5".
+    /// Et "&lt;" ne doit pas etre confondu avec le debut de "&lt;&lt;".
+    /// </summary>
+    [Theory]
+    [InlineData("        DB  1<<2+3\n", 0x20)]
+    [InlineData("        DB  3<5\n", 0x01)]
+    [InlineData("        DB  5<3\n", 0x00)]
+    [InlineData("        DB  4=4\n", 0x01)]
+    [InlineData("        DB  4<>4\n", 0x00)]
+    [InlineData("        DB  5>=5\n", 0x01)]
+    public void Comparison_and_shift_disambiguate(string source, int expected)
+    {
+        AssertBytes(source, expected);
+    }
+
+    /// <summary>
+    /// ERROR interrompt l'assemblage avec son message ; ASSERT ne le fait que si la
+    /// condition est fausse.
+    /// </summary>
+    [Fact]
+    public void Error_and_assert_stop_the_assembly()
+    {
+        var error = Assert.Throws<InvalidOperationException>(
+            () => Assemble("        ERROR 'table trop grande'\n"));
+        Assert.Contains("table trop grande", error.Message, StringComparison.Ordinal);
+
+        var assert = Assert.Throws<InvalidOperationException>(
+            () => Assemble("taille: EQU 300\n        ASSERT taille<256,'depasse 256'\n"));
+        Assert.Contains("depasse 256", assert.Message, StringComparison.Ordinal);
+
+        // Assertion verifiee : aucun arret.
+        var ok = Assemble("taille: EQU 100\n        ASSERT taille<256\n        DB 1\n");
+        Assert.Single(ok.GeneratedBytes);
+    }
+
+    [Fact]
+    public void Warning_directive_reports_without_being_fatal()
+    {
+        var result = Assemble("        WARNING 'code experimental'\n        DB 1\n");
+
+        Assert.Single(result.GeneratedBytes);
+        Assert.Contains(result.Warnings, w => w.Message.Contains("code experimental"));
+    }
+
     /// <summary>
     /// Assemble un fragment place apres un ORG et compare les octets emis.
     /// </summary>
     private static void AssertBytes(string body, params int[] expected)
+    {
+        var result = Assemble(body);
+        Assert.Equal(expected, result.GeneratedBytes.Select(b => (int)b.Value).ToArray());
+    }
+
+    /// <summary>
+    /// Assemble un fragment place apres un ORG dans un dossier temporaire.
+    /// </summary>
+    private static Xasm2026.Native.Core.AssemblyResult Assemble(string body)
     {
         var dir = Path.Combine(Path.GetTempPath(), "xasm_directives", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(dir);
@@ -110,9 +230,7 @@ public sealed class DirectiveTests
         {
             File.WriteAllText(Path.Combine(dir, "t.asm"), "        ORG 0E000H\n" + body + "        END\n");
             var options = CommandLineOptions.Parse(new[] { "t.asm" });
-            var result = new NativeAssembler(options).Assemble();
-
-            Assert.Equal(expected, result.GeneratedBytes.Select(b => (int)b.Value).ToArray());
+            return new NativeAssembler(options).Assemble();
         }
         finally
         {

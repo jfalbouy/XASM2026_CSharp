@@ -110,20 +110,68 @@ internal sealed class ExpressionEvaluator
         /// Donnees d'entree : aucune donnee directe ; utilise l'etat courant de l'objet ou de l'application.
         /// Donnees de sortie : valeur long calculee par la procedure.
         /// </summary>
-        public long ParseExpression() => ParseOr();
+        public long ParseExpression() => ParseComparison();
+
+        /// <summary>
+        /// Action : analyse les comparaisons, niveau de precedence le plus faible.
+        /// Donnees de sortie : 1 si la comparaison est vraie, 0 sinon.
+        ///
+        /// Ces operateurs n'existent pas dans le C historique (oprlevel_set s'arrete a "|") :
+        /// ils sont ajoutes sous le niveau le plus faible, de sorte que "a+1 = b*2" se lise
+        /// comme prevu sans parentheses. Le resultat 1/0 se combine avec IFEQ / IFNE.
+        /// </summary>
+        private long ParseComparison()
+        {
+            var value = ParseOr();
+            while (true)
+            {
+                SkipSpaces();
+
+                // Les formes a deux caracteres sont testees en premier, et "<" / ">" ne sont
+                // acceptes que s'ils ne sont pas le debut d'un decalage "<<" / ">>".
+                if (TryRead("<=")) { value = value <= ParseOr() ? 1 : 0; }
+                else if (TryRead(">=")) { value = value >= ParseOr() ? 1 : 0; }
+                else if (TryRead("<>")) { value = value != ParseOr() ? 1 : 0; }
+                else if (TryRead("==")) { value = value == ParseOr() ? 1 : 0; }
+                else if (Peek(0) == '<' && Peek(1) != '<') { _position++; value = value < ParseOr() ? 1 : 0; }
+                else if (Peek(0) == '>' && Peek(1) != '>') { _position++; value = value > ParseOr() ? 1 : 0; }
+                else if (Peek(0) == '=') { _position++; value = value == ParseOr() ? 1 : 0; }
+                else { return value; }
+            }
+        }
 
         /// <summary>
         /// Action : analyse le OU binaire, niveau de precedence le plus faible.
         /// </summary>
         private long ParseOr()
         {
-            var value = ParseAnd();
+            var value = ParseXor();
             while (true)
             {
                 SkipSpaces();
                 if (TryRead('|'))
                 {
-                    value |= ParseAnd();
+                    value |= ParseXor();
+                }
+                else
+                {
+                    return value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Action : analyse le OU exclusif, entre le OU et le ET comme en C.
+        /// </summary>
+        private long ParseXor()
+        {
+            var value = ParseAnd();
+            while (true)
+            {
+                SkipSpaces();
+                if (TryRead('^'))
+                {
+                    value ^= ParseAnd();
                 }
                 else
                 {
@@ -161,13 +209,13 @@ internal sealed class ExpressionEvaluator
         /// </summary>
         private long ParseModulo()
         {
-            var value = ParseAdditive();
+            var value = ParseShift();
             while (true)
             {
                 SkipSpaces();
                 if (TryRead('%'))
                 {
-                    var divisor = ParseAdditive();
+                    var divisor = ParseShift();
                     if (divisor == 0)
                     {
                         DividedByZero = true;
@@ -177,6 +225,33 @@ internal sealed class ExpressionEvaluator
                     {
                         value -= value / divisor * divisor;
                     }
+                }
+                else
+                {
+                    return value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Action : analyse les decalages binaires.
+        ///
+        /// Places entre le modulo et l'addition, ils lient donc moins fort que "+" : comme en
+        /// C, "1 << 2+3" vaut "1 << 5".
+        /// </summary>
+        private long ParseShift()
+        {
+            var value = ParseAdditive();
+            while (true)
+            {
+                SkipSpaces();
+                if (TryRead("<<"))
+                {
+                    value <<= (int)ParseAdditive();
+                }
+                else if (TryRead(">>"))
+                {
+                    value >>= (int)ParseAdditive();
                 }
                 else
                 {
@@ -265,6 +340,13 @@ internal sealed class ExpressionEvaluator
                 return -ParseTerm();
             }
 
+            // Complement binaire. Le repliage sur 20 bits est fait par Regular en fin
+            // d'evaluation : "~0" vaut donc 0FFFFFh.
+            if (TryRead('~'))
+            {
+                return ~ParseTerm();
+            }
+
             // eval.c : case '*' avec set_x == FALSE. En position de terme, "*" designe le
             // compteur de localisation ; entre deux valeurs, c'est ParseProduct qui l'a deja
             // consomme comme operateur de multiplication. Les deux emplois ne peuvent donc
@@ -288,6 +370,15 @@ internal sealed class ExpressionEvaluator
             if (string.IsNullOrWhiteSpace(token))
             {
                 return 0;
+            }
+
+            // Extraction d'octets, calquee sur xlow / xmid / xhigh de misc.c : une adresse
+            // 20 bits se decompose en trois octets, exactement comme l'emet DP.
+            switch (token.ToUpperInvariant())
+            {
+                case "LOW": return ParseTerm() % 256;
+                case "MID": return ParseTerm() / 256 % 256;
+                case "HIGH": return ParseTerm() / 65536 % 256;
             }
 
             var isGlobal = token.StartsWith('!');
@@ -378,7 +469,8 @@ internal sealed class ExpressionEvaluator
             while (_position < _text.Length)
             {
                 var c = _text[_position];
-                if (char.IsWhiteSpace(c) || c is '+' or '-' or '*' or '/' or '%' or '&' or '|' or ',' or ')')
+                if (char.IsWhiteSpace(c) || c is '+' or '-' or '*' or '/' or '%' or '&' or '|'
+                    or '^' or '~' or '<' or '>' or '=' or ',' or ')')
                 {
                     break;
                 }
@@ -488,6 +580,38 @@ internal sealed class ExpressionEvaluator
         /// Donnees d'entree : parametres de la signature (char expected) et etat courant necessaire.
         /// Donnees de sortie : booleen indiquant si le traitement a reussi ou si la condition est verifiee.
         /// </summary>
+        /// <summary>
+        /// Action : lit le caractere a la position courante decalee, sans consommer.
+        /// Donnees de sortie : le caractere, ou '\0' au-dela de la fin.
+        /// </summary>
+        private char Peek(int offset)
+        {
+            var index = _position + offset;
+            return index < _text.Length ? _text[index] : '\0';
+        }
+
+        /// <summary>
+        /// Action : consomme un operateur de plusieurs caracteres s'il est present.
+        /// </summary>
+        private bool TryRead(string expected)
+        {
+            if (_position + expected.Length > _text.Length)
+            {
+                return false;
+            }
+
+            for (var i = 0; i < expected.Length; i++)
+            {
+                if (_text[_position + i] != expected[i])
+                {
+                    return false;
+                }
+            }
+
+            _position += expected.Length;
+            return true;
+        }
+
         private bool TryRead(char expected)
         {
             if (_position < _text.Length && _text[_position] == expected)
