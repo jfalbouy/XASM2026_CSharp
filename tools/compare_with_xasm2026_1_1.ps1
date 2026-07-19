@@ -203,10 +203,12 @@ function Decode-BasicUuFile([string]$Path) {
     return $bytes.ToArray()
 }
 
-function Invoke-Xasm([string]$Exe, [string]$SourceFile, [string]$WorkDir) {
+function Invoke-Xasm([string]$Exe, [string]$SourceFile, [string]$WorkDir, [string]$LogPath) {
     Push-Location $WorkDir
     try {
-        & $Exe ([IO.Path]::GetFileName($SourceFile)) -O -L -B -I -M -P -D -X | Out-Null
+        # La sortie est conservee dans un journal plutot que jetee : sans elle, un echec
+        # d'assemblage ne laisse aucune trace exploitable.
+        & $Exe ([IO.Path]::GetFileName($SourceFile)) -O -L -B -I -M -P -D -X *> $LogPath
         return $LASTEXITCODE
     }
     finally {
@@ -214,14 +216,28 @@ function Invoke-Xasm([string]$Exe, [string]$SourceFile, [string]$WorkDir) {
     }
 }
 
-function Copy-ExampleFolder([string]$SourceFile, [string]$DestinationRoot) {
+# Extensions produites par l'assembleur. Les exemples embarquent leurs sorties de
+# reference commitees : elles sont retirees du dossier de travail, sinon une sortie non
+# regeneree par le run serait comparee a leur place et passerait pour identique.
+$script:OutputExtensions = @('.obj', '.lst', '.hex', '.s19', '.map', '.d', '.uu', '.txt', '.err')
+
+function New-WorkFolder([string]$SourceFile, [string]$DestinationRoot, [string]$Tag) {
     $sourceDir = Split-Path -Parent $SourceFile
-    $destination = Join-Path $DestinationRoot ([IO.Path]::GetFileName($sourceDir))
+
+    # Un dossier par **source** et non par exemple : plusieurs sources partagent le meme
+    # dossier d'origine (les cinq SAMPLE* dans SAMPLES), et se seraient ecrasees entre
+    # elles, ne laissant sur disque que la derniere execution.
+    $destination = Join-Path $DestinationRoot $Tag
     if (Test-Path $destination) {
         Remove-Item -Path $destination -Recurse -Force
     }
 
     Copy-Item -Path $sourceDir -Destination $destination -Recurse
+
+    Get-ChildItem -Path $destination -Recurse -File |
+        Where-Object { $script:OutputExtensions -contains $_.Extension.ToLowerInvariant() } |
+        Remove-Item -Force
+
     return Join-Path $destination ([IO.Path]::GetFileName($SourceFile))
 }
 
@@ -276,14 +292,37 @@ New-Item -ItemType Directory -Path $candidateRoot -Force | Out-Null
 $results = @()
 foreach ($source in $sources) {
     $name = [IO.Path]::GetFileNameWithoutExtension($source)
-    $referenceSource = Copy-ExampleFolder $source $referenceRoot
-    $candidateSource = Copy-ExampleFolder $source $candidateRoot
-    $referenceExit = Invoke-Xasm $ReferenceXasm $referenceSource (Split-Path -Parent $referenceSource)
-    $candidateExit = Invoke-Xasm $CandidateXasm $candidateSource (Split-Path -Parent $candidateSource)
-    $referenceObject = Join-Path (Split-Path -Parent $referenceSource) "$name.obj"
-    $candidateObject = Join-Path (Split-Path -Parent $candidateSource) "$name.obj"
-    $referenceUu = Join-Path (Split-Path -Parent $referenceSource) "$name.uu"
-    $candidateUu = Join-Path (Split-Path -Parent $candidateSource) "$name.uu"
+
+    # Identifiant unique par source : dossier d'exemple + nom du fichier.
+    $tag = "{0}_{1}" -f (Split-Path -Leaf (Split-Path -Parent $source)), $name
+
+    $referenceSource = New-WorkFolder $source $referenceRoot $tag
+    $candidateSource = New-WorkFolder $source $candidateRoot $tag
+    $referenceDir = Split-Path -Parent $referenceSource
+    $candidateDir = Split-Path -Parent $candidateSource
+
+    $referenceExit = Invoke-Xasm $ReferenceXasm $referenceSource $referenceDir (Join-Path $referenceDir "_xasm.log")
+    $candidateExit = Invoke-Xasm $CandidateXasm $candidateSource $candidateDir (Join-Path $candidateDir "_xasm.log")
+
+    $referenceObject = Join-Path $referenceDir "$name.obj"
+    $candidateObject = Join-Path $candidateDir "$name.obj"
+    $referenceUu = Join-Path $referenceDir "$name.uu"
+    $candidateUu = Join-Path $candidateDir "$name.uu"
+
+    # Le dossier de travail ayant ete purge de toute sortie, un fichier absent signifie
+    # reellement « non produit par ce run » et non « reste d'un exemple commite ».
+    $missing = @()
+    foreach ($expected in @(
+        @{ Path = $referenceObject; Label = 'reference .obj' },
+        @{ Path = $candidateObject; Label = 'candidat .obj' },
+        @{ Path = $referenceUu; Label = 'reference .uu' },
+        @{ Path = $candidateUu; Label = 'candidat .uu' })) {
+        if (-not (Test-Path $expected.Path)) { $missing += $expected.Label }
+    }
+
+    if ($missing.Count -gt 0) {
+        Write-Warning ("{0} : sortie non produite -> {1}" -f $name, ($missing -join ', '))
+    }
 
     $comparison = $null
     $uuComparison = $null
@@ -300,6 +339,8 @@ foreach ($source in $sources) {
 
     $results += [pscustomobject]@{
         Source = [IO.Path]::GetFileName($source)
+        WorkFolder = $tag
+        MissingOutputs = ($missing -join ', ')
         ReferenceExit = $referenceExit
         CandidateExit = $candidateExit
         Same = if ($comparison) { $comparison.Same } else { $false }

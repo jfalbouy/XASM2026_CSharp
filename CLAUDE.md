@@ -128,9 +128,22 @@ reference assembler, byte for byte. The priority examples live in
 `tools/compare_with_xasm2026_1_1.ps1` runs both the reference and the candidate over a batch
 of examples and diffs `.obj` and `.uu` (with `.uu` decode verification). Its paths are derived
 from the script's own location, so it works in any checkout; examples listed but absent (the
-TRDOS/UUCODE ones) are skipped with a warning. The reference exe (`xasm2026-1`) is **not** in
-this repo — pass `-ReferenceXasm <path>` or set `XASM_REFERENCE_EXE`, otherwise the script
-stops with an explicit message.
+TRDOS/UUCODE ones) are skipped with a warning. The reference exe now lives in
+`Reference/C/xasm2026-1-2.exe`; pass it with `-ReferenceXasm <path>` or set
+`XASM_REFERENCE_EXE`, otherwise the script stops with an explicit message.
+
+Two traps were fixed in it, both of which produced *misleading* rather than failing results:
+it copied each example folder **with its committed outputs**, so an output the run failed to
+regenerate was silently compared in place of a fresh one; and it keyed the work folder on the
+example directory, so the five `SAMPLE*` sources shared one folder and only the last run
+survived on disk. Work folders are now per source (`SAMPLES_SAMPLE1`, …), purged of every
+output extension before the run, and a `MissingOutputs` column plus a warning name any file the
+run did not actually produce. Its output directory is gitignored.
+
+The direct comparison against the C engine (2026-07-19) found the **machine code identical on
+all eight sources**. The `.uu` differs by a trailing `size` line and the last block's padding —
+that is the deliberate choice recorded in `PORTAGE.md` on 2026-06-04 to reproduce `uuselfx.c`
+and the DOSBox outputs, not a regression; both files decode to the same object.
 
 `tests/coverage_all.asm` (+ `coverage_all_include.asm`) exercises every directive/opcode form
 and is the target of the "all options" VS Code task and launch config.
