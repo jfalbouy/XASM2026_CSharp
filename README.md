@@ -461,6 +461,13 @@ funcname:
 loop:   ...          ; label local à ce bloc
         ENDL
 
+        MACRO  attendre
+        LOCAL                ; portée anonyme : une par expansion
+boucle: DEC    A
+        JRNZ   boucle        ; vise le "boucle" de CETTE expansion
+        ENDL
+        ENDM
+
         MACRO  emit_marker,value
         DB     value
         ENDM
@@ -479,7 +486,7 @@ w_b:    DS  2
 
 | Directive | Description |
 |---|---|
-| `LOCAL` / `ENDL` | Ouvre / ferme un bloc de portée locale |
+| `LOCAL` / `ENDL` | Ouvre / ferme un bloc de portée locale. **Sans étiquette**, la portée est anonyme et unique |
 | `SCOPE_ON` / `SCOPE_OFF` | Recherche dans les portées parentes |
 | `MACRO` / `ENDM` | Définition de macro |
 | `REPEAT n` / `ENDR` | Répétition d'un bloc |

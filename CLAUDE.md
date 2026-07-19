@@ -204,6 +204,16 @@ to understand current coverage and known-good vs. not-yet-ported instruction for
 file's internal `END` must **not** terminate the whole assembly — this is an intentional,
 previously-fixed behavior; preserve it.
 
+`LOCAL` opens a local scope. **Without a label it opens an *anonymous* scope** whose name is
+generated as `n%05X` from a per-pass counter (`genop.c` case 66, the C's `no_name_lbl`), and
+registered as an ordinary symbol at the current LC. This is what makes labels inside a MACRO
+body unique across expansions — each expansion enters its own scope. The counter **must** be
+reset at the start of every pass, otherwise the two passes would mint different scope names
+and addresses would diverge. Note the C never raises its err 20 ("No label before LOCAL"):
+a bare `LOCAL` is legitimate, and this was a porting omission, not a missing feature — before
+the fix, a forward reference inside a twice-expanded macro silently bound to the neighbouring
+expansion.
+
 `INCLUDE file[,arg0,…,arg9]` passes arguments, referenced as `@0`…`@9` inside the included
 file. Because includes are flattened *before* any pass, the symbol table is not yet populated
 when they are read, so `SourceRef.Args` carries the argument **expressions as text** and the

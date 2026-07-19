@@ -471,6 +471,108 @@ public sealed class BehaviorTests
         });
     }
 
+    /// <summary>
+    /// Un LOCAL sans etiquette ouvre une portee anonyme au nom genere (genop.c case 66,
+    /// pendant de no_name_lbl). C'est ce qui rend uniques les etiquettes du corps d'une
+    /// macro expansee plusieurs fois.
+    ///
+    /// Regression : sans ce mecanisme, une **reference avant** vers une etiquette du corps
+    /// resolvait vers l'expansion voisine, et les deux sauts se retrouvaient croises — un
+    /// binaire faux emis silencieusement.
+    /// </summary>
+    [Fact]
+    public void Bare_local_makes_macro_labels_unique_per_expansion()
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "m.asm"),
+                "        ORG 0E000H\n" +
+                "        MACRO  saut_avant\n" +
+                "        LOCAL\n" +
+                "        JP     fin\n" +
+                "        NOP\n" +
+                "fin:    NOP\n" +
+                "        ENDL\n" +
+                "        ENDM\n" +
+                "        saut_avant\n" +
+                "        saut_avant\n" +
+                "        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "m.asm" });
+            var result = new NativeAssembler(options).Assemble();
+
+            // Chaque expansion saute vers SON propre "fin" : 00E004 puis 00E009.
+            Assert.Equal(
+                new[] { 0x02, 0x04, 0xE0, 0x00, 0x00, 0x02, 0x09, 0xE0, 0x00, 0x00 },
+                result.GeneratedBytes.Select(b => (int)b.Value).ToArray());
+        });
+    }
+
+    /// <summary>
+    /// Les portees anonymes s'imbriquent : une reference depuis la portee externe ne doit pas
+    /// etre captee par l'etiquette de meme nom definie dans la portee interne.
+    /// </summary>
+    [Fact]
+    public void Anonymous_scopes_nest()
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "n.asm"),
+                "        ORG 0E000H\n" +
+                "        LOCAL\n" +
+                "        JP     cible\n" +
+                "        LOCAL\n" +
+                "cible:  NOP\n" +          // portee interne, en 00E003
+                "        ENDL\n" +
+                "cible:  NOP\n" +          // portee externe, en 00E004
+                "        ENDL\n" +
+                "        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "n.asm" });
+            var result = new NativeAssembler(options).Assemble();
+
+            Assert.Equal(
+                new[] { 0x02, 0x04, 0xE0, 0x00, 0x00 },
+                result.GeneratedBytes.Select(b => (int)b.Value).ToArray());
+        });
+    }
+
+    /// <summary>
+    /// Les noms de portee anonyme doivent etre identiques entre les deux passes, sinon les
+    /// adresses divergeraient. Le compteur repart donc a zero a chaque passe, comme
+    /// no_name_lbl dans le C. Deux assemblages successifs doivent aussi coincider.
+    /// </summary>
+    [Fact]
+    public void Anonymous_scope_numbering_is_stable_across_passes_and_runs()
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "s.asm"),
+                "        ORG 0E000H\n" +
+                "        MACRO  bloc\n" +
+                "        LOCAL\n" +
+                "cible:  NOP\n" +
+                "        JP     cible\n" +
+                "        ENDL\n" +
+                "        ENDM\n" +
+                "        bloc\n        bloc\n        bloc\n" +
+                "        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "s.asm" });
+            var first = new NativeAssembler(options).Assemble()
+                .GeneratedBytes.Select(b => b.Value).ToArray();
+            var second = new NativeAssembler(CommandLineOptions.Parse(new[] { "s.asm" })).Assemble()
+                .GeneratedBytes.Select(b => b.Value).ToArray();
+
+            Assert.Equal(first, second);
+
+            // Chaque bloc fait 4 octets (NOP + JP) et saute sur sa propre etiquette.
+            Assert.Equal(
+                new[] { 0x00, 0x02, 0x00, 0xE0, 0x00, 0x02, 0x04, 0xE0, 0x00, 0x02, 0x08, 0xE0 },
+                first.Select(b => (int)b).ToArray());
+        });
+    }
+
     private static void RunInTempDir(Action<string> body)
     {
         var dir = Path.Combine(Path.GetTempPath(), "xasm_behavior", Guid.NewGuid().ToString("N"));

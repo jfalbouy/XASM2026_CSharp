@@ -37,6 +37,11 @@ internal sealed partial class NativeAssembler
 
     // Colonne 1-base du fragment fautif dans la ligne courante, rapportee sous -V.
     private int _currentColumn;
+
+    // Numerotation des portees anonymes ouvertes par un LOCAL sans etiquette. Pendant de
+    // no_name_lbl du C, remis a zero **a chaque passe** pour que les deux passes fabriquent
+    // exactement les memes noms, faute de quoi les adresses divergeraient.
+    private int _anonymousScopeCounter;
     private readonly Stack<bool> _preStack = new();
 
     /// <summary>
@@ -129,6 +134,7 @@ internal sealed partial class NativeAssembler
         _currentStructSize = 0;
         _currentSection = null;
         _preOn = false;
+        _anonymousScopeCounter = 0;
         _symbols.ResetScopes();
         _preStack.Clear();
         if (!emit)
@@ -235,9 +241,27 @@ internal sealed partial class NativeAssembler
                 case "PRE_POP":
                     _preOn = _preStack.Count > 0 && _preStack.Pop();
                     break;
+                case "LOCAL":
+                {
+                    // genop.c case 66 : un LOCAL **sans etiquette** ouvre une portee anonyme
+                    // dont le nom est fabrique (n%05X) et enregistre comme un label ordinaire.
+                    // C'est ce mecanisme qui rend uniques les etiquettes du corps d'une macro
+                    // expansee plusieurs fois : chaque expansion ouvre sa propre portee.
+                    var rawScope = line.Label ?? $"n{++_anonymousScopeCounter:X5}";
+                    var scopeName = _symbols.NameForDefinition(rawScope, forceGlobal: false);
+                    if (line.Label is null)
+                    {
+                        // Pendant de make_label(x_label, lc) : la portee anonyme est aussi un
+                        // symbole, defini dans la portee englobante avant d'y entrer.
+                        _symbols[scopeName] = _locationCounter;
+                    }
+
+                    _symbols.EnterScope(scopeName);
+                    break;
+                }
+
                 case "SCOPE_ON":
                 case "SCOPE_OFF":
-                case "LOCAL":
                 case "MACRO":
                 case "ENDM":
                 case "DEF":
