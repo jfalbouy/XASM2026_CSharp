@@ -4,6 +4,7 @@ from datetime import date
 from pathlib import Path
 import os
 import re
+import sys
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -617,16 +618,41 @@ def markdown_to_docx(markdown: str, out_path: Path, title: str) -> None:
 
 
 def main() -> None:
+    """Produit les .docx a partir des .md de Documentation/.
+
+    Les fichiers Markdown sont **maintenus a la main** et font foi : ils sont versionnes et
+    relus. Le generateur ne fait donc, par defaut, que produire les .docx correspondants.
+
+    Auparavant il reconstruisait aussi les .md depuis un gabarit code en dur dans ce
+    fichier, ce qui ecrasait silencieusement toute modification apportee a la
+    documentation. Ce comportement reste accessible via --rebuild-markdown, pour le cas ou
+    l'on voudrait repartir du gabarit, mais il n'est plus le chemin par defaut.
+    """
+    rebuild_markdown = "--rebuild-markdown" in sys.argv
+
     DOC_DIR.mkdir(parents=True, exist_ok=True)
     xasm_doc_md = DOC_DIR / "Documentation_XASM2026-4_PC-E500S.md"
     xasm_doc_docx = DOC_DIR / "Documentation_XASM2026-4_PC-E500S.docx"
     info_md = DOC_DIR / "XASM140_Information_FR_xasm2026-4.md"
     info_docx = DOC_DIR / "XASM140_Information_FR_xasm2026-4.docx"
 
-    xasm_markdown = build_xasm2026_3_markdown()
-    info_markdown = build_xasm140_info_fr_markdown()
-    write(xasm_doc_md, xasm_markdown)
-    write(info_md, info_markdown)
+    if rebuild_markdown:
+        print("!! --rebuild-markdown : les .md vont etre ecrases par le gabarit interne.")
+        xasm_markdown = build_xasm2026_3_markdown()
+        info_markdown = build_xasm140_info_fr_markdown()
+        write(xasm_doc_md, xasm_markdown)
+        write(info_md, info_markdown)
+    else:
+        for source in (xasm_doc_md, info_md):
+            if not source.exists():
+                raise SystemExit(
+                    f"Markdown source introuvable : {source}\n"
+                    "Utiliser --rebuild-markdown pour le reconstruire depuis le gabarit."
+                )
+
+        xasm_markdown = read(xasm_doc_md)
+        info_markdown = read(info_md)
+
     markdown_to_docx(xasm_markdown, xasm_doc_docx, "Documentation XASM2026-4 pour Sharp PC-E500S")
     markdown_to_docx(info_markdown, info_docx, "XASM140 - Information, version française enrichie")
 
