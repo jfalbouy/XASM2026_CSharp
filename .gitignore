@@ -14,3 +14,6 @@ _verify_outputs/
 # Caches Python (outils de tools/)
 __pycache__/
 *.pyc
+
+# Sorties de comparaison avec l'assembleur de reference
+tests/_compare_with_xasm2026_1_1/

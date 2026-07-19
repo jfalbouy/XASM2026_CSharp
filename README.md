@@ -660,6 +660,7 @@ sorties attendues.
 | Projet | Source | Lignes | Code généré | Démontre |
 |---|---|---:|---:|---|
 | SAMPLES | `SAMPLE1`…`SAMPLE5.ASM` | 26–87 | 30 o (SAMPLE5) | `LOCAL`, macros, conditionnelles, `SECTION`, `REPEAT`, `STRUCT` |
+| SAMPLES | `SAMPLE6`…`SAMPLE9.ASM` | 60–80 | 20–31 o | Fonctionnalités **ajoutées en 2026-4** (voir ci-dessous) |
 | REGISTER | `REGISTER.ASM` | 922 | 4 154 o | Driver PC-E500S : appels BASIC, interruptions, copie de blocs |
 | TMAP | `TMAP2020.asm` | 875 | 1 744 o | E/S fichiers, affichage, énumération de périphériques |
 | VOGUE | `VOGUE.S` + `runtime.s` + `compile.s` | 4 496 | 14 433 o | Compilateur complet multi-fichiers |
@@ -668,6 +669,13 @@ sorties attendues.
 cd .\Exemples\VOGUE
 ..\..\bin\xasm2026-4.exe VOGUE.S -O vogue.obj -L vogue.lst -S -I -M -P -D -R
 ```
+
+`SAMPLE6` à `SAMPLE9` illustrent les ajouts de la version 2026-4 : génération de données
+(`SET`, `IRP`, `IRPC`), macros avancées (`LOCAL` anonyme, `EXITM`, imbrication), expressions
+(bases numériques, nouveaux opérateurs, `LOW`/`MID`/`HIGH`) et placement (`ALIGN`, `DZ`,
+`PHASE`, diagnostics). Ces directives étant absentes du moteur C, **ces quatre fichiers ne
+s'assemblent pas avec `xasm2026-1`** et sont exclus de la comparaison avec la référence ; leurs
+octets sont en revanche verrouillés par le harnais de tests.
 
 `tests/coverage_all.asm` (avec `coverage_all_include.asm`) exerce méthodiquement chaque
 forme de directive et d'opcode portée ; c'est le fichier à enrichir lors de l'ajout d'une

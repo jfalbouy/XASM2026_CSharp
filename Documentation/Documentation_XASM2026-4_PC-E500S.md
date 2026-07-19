@@ -26,7 +26,7 @@ Ce document décrit `xasm2026-4`, port C# natif de l'assembleur XASM pour CPU Sh
 | `src/Assembly/NativeAssembler.cs` | Lecture source, macros, conditions, labels, encodage SC62015. |
 | `src/Outputs/` | Générateurs `.obj`, `.lst`, `.hex`, `.s19`, `.map`, `.d`, `.uu`, `.txt`. |
 | `bin/` | Copie pratique de l'exécutable et des fichiers runtime. |
-| `Exemples/` | Sources et sorties de validation : `SAMPLES`, `REGISTER`, `VOGUE`, `TRDOS`, `UUCODE`. |
+| `Exemples/` | Sources et sorties de validation : `SAMPLES`, `REGISTER`, `TMAP`, `VOGUE`. |
 | `Reference/C/` | Sources C historiques utilisées comme référence de portage. |
 | `Reference/CSharpWrapper/` | Trace de l'étape `xasm2026-2`, wrapper autour du moteur C. |
 | `tests/` | Fichiers de couverture et tests de non-régression. |
@@ -82,8 +82,10 @@ xasm2026-4.exe coverage_all.asm -O coverage_all.obj -L coverage_all.lst -E -S -T
 | `-D[filename]` | Génère les dépendances, notamment les fichiers inclus. |
 | `-B[filename]` | Génère un BASIC auto-décodeur UUENCODE. |
 | `-X[filename]` | Génère un dump texte façon HxD. |
+| `-U` | Annexe la table des références croisées au listing (avec `-L`). |
 | `-V` | Active les diagnostics détaillés. |
 | `-R` | Affiche le rapport de taille par section. |
+| `-?` | Affiche l'aide. |
 
 ## 5. Syntaxe source
 
@@ -102,8 +104,47 @@ Règles principales :
 - Les labels sont insensibles à la casse.
 - Les commentaires commencent par `;`.
 - Les opérandes peuvent contenir des constantes, labels, expressions, caractères, chaînes et compteur de position.
-- Les constantes peuvent être décimales, binaires (`b`), octales (`o`), hexadécimales (`h` ou préfixe `$`).
-- Le compteur de position est `*`.
+- Les constantes peuvent être décimales (`d` ou sans suffixe), binaires (`b`), octales (`o`),
+  hexadécimales (`h` ou préfixe `$`). C'est le **dernier caractère** du jeton qui fixe la base,
+  conformément à `eval.c`. Le souligné `_` est un séparateur visuel ignoré : `1010_1010b`.
+- Un nombre commence obligatoirement par un chiffre ou par `$`, d'où l'exigence du zéro de
+  tête en hexadécimal : `0ffh` et non `ffh`.
+- Le compteur de position est `*`, en position de terme. Entre deux valeurs, `*` reste
+  l'opérateur de multiplication : `**2` vaut donc « compteur × 2 ».
+
+### 5.1 Opérateurs d'expression
+
+Du moins prioritaire au plus prioritaire :
+
+| Niveau | Opérateurs | Origine |
+|---|---|---|
+| 1 | `=` `<>` `<` `>` `<=` `>=` — rendent `1` ou `0` | ajouté en 2026-4 |
+| 3 | `\|` OU binaire | moteur C |
+| 3,5 | `^` OU exclusif | ajouté en 2026-4 |
+| 4 | `&` ET binaire | moteur C |
+| 5 | `%` modulo | moteur C |
+| 5,5 | `<<` `>>` décalages | ajouté en 2026-4 |
+| 6 | `+` `-` | moteur C |
+| 7 | `*` `/` | moteur C |
+
+Opérateurs unaires : `-` (négation) et `~` (complément, replié sur 20 bits).
+
+Attention à deux précédences contre-intuitives, toutes deux voulues :
+
+- le **modulo lie moins fort que l'addition** (niveau 5 contre 6 dans `oprlevel_set`
+  de `init.c`), donc `1+2%3` vaut `(1+2)%3` ;
+- les **décalages lient moins fort que l'addition**, comme en C, donc `1<<2+3` vaut `1<<5`.
+
+Extraction d'octets d'une adresse 20 bits, calquée sur `xlow` / `xmid` / `xhigh` de `misc.c` :
+
+| Opérateur | Résultat pour `0be123h` |
+|---|---|
+| `LOW x` | `23h` |
+| `MID x` | `e1h` |
+| `HIGH x` | `0bh` |
+
+Une division ou un modulo par zéro est une **erreur fatale** (code 2 du moteur C) et non un
+zéro silencieux.
 
 ## 6. Directives prises en charge
 
@@ -127,6 +168,83 @@ Règles principales :
 | `SECTION` | Marque les sections pour MAP et rapport `-R`. |
 | `PRE_ON`, `PRE_OFF` | Active/désactive les prébytes automatiques. |
 | `PRE_PUSH`, `PRE_POP` | Sauvegarde/restaure l'état `PRE_ON/PRE_OFF`. |
+| `PRE` | Émet un prébyte explicite (`21h`-`27h` ou `30h`-`37h`). |
+
+### 6.1 Directives ajoutées en 2026-4
+
+Ces directives n'existent pas dans le moteur C. Elles sont **purement additives** : un source
+qui ne les emploie pas produit exactement les mêmes octets qu'auparavant.
+
+| Directive | Rôle |
+|---|---|
+| `SET`, `=` | Définit un symbole **redéfinissable**, là où `EQU` vaut pour une constante. |
+| `IRP nom,v1,v2,…` | Rejoue un bloc une fois par valeur, fermé par `ENDR`. |
+| `IRPC nom,chaîne` | Rejoue un bloc une fois par caractère, fermé par `ENDR`. |
+| `EXITM` | Interrompt l'expansion de la macro englobante. |
+| `ALIGN n`, `EVEN` | Alignent le compteur en **émettant** le remplissage. |
+| `DZ` | Chaîne suivie d'un terminateur nul. |
+| `ASSERT expr[,message]` | Erreur fatale si l'expression est nulle. |
+| `ERROR message` | Erreur fatale inconditionnelle. |
+| `WARNING message` | Avertissement non fatal, visible avec `-W`. |
+| `TITLE 'texte'` | Titre en tête du listing. |
+| `LIST`, `NOLIST` | Reprennent/suspendent le listing sans changer le code émis. |
+| `PAGE` | Saut de page dans le listing. |
+| `PHASE adr`, `DEPHASE` | Assemblage déplacé : étiquettes logiques, octets à leur place physique. |
+
+**`SET` est ce qui rend `REPEAT` réellement génératif** : sans symbole redéfinissable, aucun
+compteur ne peut progresser d'une itération à l'autre.
+
+```asm
+n:      set  0
+        repeat 5
+        db   n              ; émet 0, 1, 2, 3, 4
+n:      set  n+1
+        endr
+```
+
+**`LOCAL` sans étiquette** ouvre une portée anonyme au nom généré. C'est le mécanisme qui rend
+uniques les étiquettes d'un corps de macro expansé plusieurs fois :
+
+```asm
+        macro  attendre
+        local                ; une portée par expansion
+boucle: dec    a
+        jrnz   boucle        ; vise le "boucle" de CETTE expansion
+        endl
+        endm
+```
+
+Sans lui, une référence avant vers une étiquette du corps se résolvait vers l'expansion
+voisine. Une étiquette d'adresse définie deux fois dans la **même** portée est désormais une
+erreur (code 13 du moteur C).
+
+Le corps d'une macro est **re-développé** : il peut contenir des conditionnelles, des `REPEAT`,
+`IRP`/`IRPC` et des appels d'autres macros. Une macro qui s'appelle elle-même est rejetée.
+
+`REPEAT`, `IRP` et `IRPC` partagent le terminateur `ENDR` et **s'imbriquent**.
+
+`INCLUDE` accepte jusqu'à dix arguments, référencés par `@0`…`@9` dans le fichier inclus :
+
+```asm
+        include sousprog.asm,100h,200h
+; dans sousprog.asm :  mv x,@0   ; = 100h
+```
+
+### 6.2 Exemples fournis
+
+Le dossier `Exemples/SAMPLES` contient deux familles de sources :
+
+| Fichier | Objet | Assemble avec `xasm2026-1` ? |
+|---|---|---|
+| `SAMPLE1` à `SAMPLE5` | Jeu historique : portées, macros, conditionnelles, `SECTION`, `REPEAT`, `STRUCT` | oui |
+| `SAMPLE6.ASM` | `SET`, `REPEAT` génératif, `IRP`, `IRPC`, imbrication | **non** |
+| `SAMPLE7.ASM` | Portée anonyme par `LOCAL` nu, `EXITM`, macros imbriquées | **non** |
+| `SAMPLE8.ASM` | Bases numériques, opérateurs, `LOW`/`MID`/`HIGH`, compteur `*` | **non** |
+| `SAMPLE9.ASM` | `ALIGN`/`EVEN`, `DZ`, `PRE`, `ASSERT`/`WARNING`, `PHASE`/`DEPHASE`, `NOLIST` | **non** |
+
+`SAMPLE6` à `SAMPLE9` emploient des directives absentes du moteur C : ils sont donc
+spécifiques à `xasm2026-4` et **ne sont pas** inclus dans la comparaison avec la référence.
+Les octets qu'ils produisent sont néanmoins verrouillés par le harnais de tests.
 
 ## 7. Prébytes et nomenclature mémoire interne
 
@@ -222,14 +340,36 @@ Les validations effectuées en fin de projet :
 
 | Groupe | Résultat |
 |---|---|
-| `SAMPLE1` à `SAMPLE4` | `.OBJ` identiques à la référence XASM 1.40. |
-| `REGISTER` | `.OBJ` et `.LST` identiques à la référence. |
-| `VOGUE` | `.OBJ` et `.LST` identiques à la référence. |
-| `TRDOS` | `.OBJ` identiques au moteur C `xasm2026-2`. |
-| `UUCODE` | `.OBJ` identiques au moteur C `xasm2026-2`. |
-| `coverage_all.asm` | Compilation complète toutes options, 399 lignes, 892 octets. |
-| HEX/S19 coverage | 892 octets utiles. |
+| `SAMPLE1` à `SAMPLE5` | `.OBJ` identiques à la référence. |
+| `REGISTER` | `.OBJ` identique à la référence (4 154 octets). |
+| `TMAP2020` | `.OBJ` identique à la référence (1 744 octets). |
+| `VOGUE` | `.OBJ` identique à la référence (14 433 octets). |
+| `coverage_all.asm` | Compilation complète toutes options, 892 octets. |
 | UU coverage | Ligne `size` identique à la taille réelle de l'objet. |
+
+### 12.1 Comparaison directe avec le moteur C
+
+Le 2026-07-19, les sorties de `xasm2026-4` ont été confrontées **directement** à celles de
+`xasm2026-1-2.exe` (conservé dans `Reference/C/`), dans des répertoires isolés et avec des
+arguments strictement identiques :
+
+> **Le code machine est identique sur les huit sources testées** — `SAMPLE1` à `SAMPLE5`,
+> `REGISTER`, `TMAP2020` et `VOGUE`.
+
+C'est une validation d'une autre nature que les fichiers de référence commités : ceux-ci sont
+des instantanés figés, tandis qu'ici les deux moteurs sont confrontés l'un à l'autre.
+
+Le `.uu` diffère par deux points : une ligne finale `size` que `xasm2026-4` émet et que le
+`-B` intégré au moteur C n'émet pas, et le bourrage du dernier bloc. Ce n'est pas une
+divergence involontaire : le générateur `.uu` de `xasm2026-4` reproduit **`uuselfx.c`** et les
+sorties DOSBox de référence, choix documenté au journal du 2026-06-04. Les deux fichiers
+décodent d'ailleurs vers exactement le même objet.
+
+### 12.2 Harnais automatisé
+
+`tests/Xasm2026.Tests` rejoue les quatre exemples de référence et compare les **huit** sorties
+octet à octet, soit 32 comparaisons exactes, auxquelles s'ajoutent les tests de comportement
+et les exemples de fonctionnalités. Voir `README.md` pour la commande.
 
 ## 13. Commandes de validation recommandées
 

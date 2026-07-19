@@ -1,0 +1,826 @@
+
+
+          The Absolute Cross Assembler  for ESR-L CPU
+
+
+      *******         XASM       [ Version 1.4 ]           ******
+
+
+
+
+[ 1 ]  Introduction
+
+    "XASM" is create by Narihito Kon, and it is introduced on the book
+  "Pockecom Library #2" from Kougaku-sha.
+
+    The CPU SC62015, is used in the SHARP's pocket computer PC-E500 series.
+  This assembler was made to use for the machine language program development
+  for PC-E500.  Way, SC62015 is the name of the LSI-chip, and originally this
+  CPU seems to be called "ESR-L CPU".
+    ESR-P CPU which is the upper version of ESR-L, is used in the SHARP's
+  organizer DB-Z series, PV-F1 and ZAURUS series. This assembler can be
+  applied for the software development of these organizers, too.
+    In addition, these machines described above are all Japanese models. The
+  foreign version is SHARP's Wizard OZ-8000 and OZ-9600 series. But Zaurus
+  ZR-5000 series have the other CPU and are not included.
+
+    To develop Ver 1.3 at this time, it is made from Ver 1.26 and 1.27j which
+  Kon released and posted to network.  Kako made some improvements, such as
+  the speeding-up by the hash algorithm, because it was very slow and was
+  originally written in Turbo-PASCAL but this has changed into the C language
+  by using a public domain software called T2C.
+
+
+
+[ 2 ] The features of XASM Ver1.4
+
+    The main features of this assembler is as follows.
+
+  -- It is equipped with "automatic pre-byte generation" that the assembler
+  automatically generates "pre-byte" which becomes necessary when the inner
+  RAM addresses, interpreting a source program. This can be made invalid to
+  take compatibility with the other assembler's source, too.
+  -- Because "local label" which is possible about nest can be used to 16
+  paragraphs by using the LOCAL, ENDL direction, to put the label name which
+  has a meaning is easy.
+  -- By using file-include direction "INCLUDE" with the argument, it is
+  possible to describe about the macro spread like source. Any paragraphs
+  can be the include of the file.
+  -- The listing file in case of the error occurrence can be used as the
+  tag file with the some screen editors.
+  -- Of the specification of the option it is possible to output five kinds
+  of objects.
+  -- The system which can be tested by being very simple and moreover
+  forwarding a generated object to Pockecom at high speed by using with
+  "Pocket-Link system" can be composed.
+  -- It assembles at high speed because it is managing a label by the hash.
+  -- The macro function is practicable by using the MACRO, ENDM direction.
+  -- The selective assembling is practicable by using the IFDEF direction.
+
+
+
+[ 3 ] The Syntax of the source program
+
+    The source program must be written according to the following form.
+
+ [ 3.1 ]  The specification of File
+    It consists of 1 line 1 statement and the last statement must have ended
+  in the END direction.
+
+ [ 3.2 ]  The specification of Statements
+    Each statement must be meeting the following syntactic figure.
+
+    -statement-
+        +--------------------->-----------------------+
+        |                                             |
+      --+->- [label] ->- ":" ->-+->- [instruction] ->-+->- [comment] --+--
+        |                       |                     |                |
+        +->- [space] ----->-----+----------->---------+------->--------+
+
+    -instruction-
+                          +------------->-----------+
+                          |                         |
+      -->-- [mnimonic] ->-+->-+->- [operand] ->-+->-+->-
+                              |                 |
+                              +---<---","---<---+
+
+    -mnimonic-
+      -->--+------->-------+->- mnimonic ->-+-------->------+->-
+           |               |                |               |
+           +->- [space] ->-+                +->- [space] ->-+
+
+    -operand-
+      -->--+------->-------+->- operand ->-+-------->------+->-
+           |               |               |               |
+           +->- [space] ->-+               +->- [space] ->-+
+
+    -space-
+      -->--+->- " " or TAB ->-+->-
+           |                  |
+           +---------<--------+
+
+    -comment-
+      -->- ";" ->-+---->----+->-
+                  |         |        ... ? is a one-character wild card
+                  +-<- ? -<-+
+
+ [ 3.3 ]  The specification of Labels
+    A-Z, a-z, 0-9, "_ (the under score)" can be used for the letter which
+  composes a label but a capital minuscule is processed as the identical one.
+  Also, 0-9 can not be used for the beginning letter.  The length of the label
+  is to a maximum of 16 letters. It becomes an error when crossing 16 letters.
+    The label of the reservation word and the identical name, too, can be made
+  and it is possible to refer, too, as the principle but depending on the
+  direction, there is one which can not be referred to, too. It is better to
+  avoid the use of the such label as much as possible. The re-definition of
+  the label cannot be made.
+
+ [ 3.4 ]  The specification of Operands
+    The figure, the letter fixed number, the label, the location counter, the
+  include argument can be used (the filename in the partial direction, too,)
+  for the operand and they can be calculated using the operator, too.
+  Numerical value is changed into the integer of 20 bits and only the number
+  of the bytes which the direction requires is referred to from the lower
+  digit.
+
+  ===  Numbers  ===
+    0-9, a-f, A-F can be used. But, at the head of the figure composition
+  letter, it is necessary to be 0-9 or "$" (only in case of the hexadecimal
+  value).
+    The default is a decimal number but can change a cardinal number by
+  putting a specific letter to the most end. But, in case of n-system, the
+  composition letter must not cross (n-1).
+    The relation between the letter of the most end and the cardinal number is
+    as follows.
+      B. The b------ binary
+      O, The o------ octal
+      D, the d------ decimal
+      H, the h------ hexadecimal
+    Also, to make it easy to see when the figure increases, "_ (the under
+  score)" can be inserted in the optional position. (Ex.) 0100_1100b------$4C
+
+  ===  Characters  ===
+    The letter code of the 1 letter which is the nearest "'" on the right out
+  of the letter in being surrounded at "' (single quart)" is handled as the
+  numerical value. Single quart itself can describe two single quarts by
+  writing them continuously by null code's writing "''".
+    (Ex.)  'ABCD'      ------$44 (The code of "D")
+            ''''       ------$27 (The code with single quart)
+            ' '        ------$20 (The code in the space)
+            ''         ------$00 (The null code)
+
+  ===  The location counter  ===
+    Location counter (LC) is "*", and is shown and the direction to be
+  assembling at present has the address which should be placed as the value.
+  Incidentally, the location counter and the multiplication symbol are using
+  the same "*" but the formula evaluation routine evaluates right even if it
+  confuses both because it is doing a context judgement.
+    (Ex.)  -1*-*+*      it is evaluated to "-1  *  -LC  +  LC".
+
+  ===  The include argument  ===
+    Only in the included file, the argument which is handed over in the
+  INCLUDE direction can be referred to by putting 0-9 figures behind
+  "@" (the at mark).
+    The 1st argument corresponds to "@0", and "@1", "@2",.. become the 2nd
+  argument, the 3rd argument,...
+    It causes an error when referring to the argument above the number the
+  file to be assembling at present was not included file and there was not
+  an argument in the INCLUDE direction and also which it was handed to.
+
+  ===  Operators  ===
+    Operators "|(OR)", "&(AND)", "%(Mod.)", "+(Add.)", "-(Sub.)", "*(Mul.)"and
+  "/(Div.)" can be used. The priority order is as follows.
+      "|"  <  "&"  <  "%"  <  "+", "-"  <  "*", "/"
+  It is the order which is. Also, the oddity of the priority order, and
+  moreover "(", ")" can be used but the correspondence of the right brackets
+  and the left brackets must come off.
+    In case of being behind the head or the operator of the formula, it means a
+  mark and "+", "-" are processed by the most priority.
+
+ [ 3.5 ]  The Directions
+    All the directions which ESR-L has can be assembled. A few direction like
+  "mv a,x" in the Sharp's direction table are prohibited, but because it is
+  possible to assemble such directions. By the fact, in the future when some
+  information of the design change of CPU and so on, please pay attention to
+  the information of the direction relation sufficiently.
+    PUSHS r and POPS r are developed in the equivalent MV direction.
+    The direction which can be used to control assembly is as follows.
+    The following description uses a form, as for [xxx] which is, xxx shows
+  the thing about which it is possible to omit, and as for [xxx]*, xxx shows
+  to be repeated more than 0 times.
+
+  === ORG ===
+  The form : ORG operand
+    -- It fixes an address at the head of the object which is developed.
+  The attention is necessary because illegal operand becomes an error in case
+  of the non-definition when assembled.  Also, when ORG is used more than
+  twice in a source programs, it is processed as follows by the value.
+    > It occurs error when trying to set to the address in the past.
+    > Warning (warning) occurs to rewrite the location counter compulsorily
+    when trying to set to the address in the future.
+
+  === END ===
+  The form : END
+    -- The end of the source program or the end of the include file is shown.
+  It becomes an error when the correspondence of LOCAL and ENDL doesn't come
+  off when this direction is assembled.
+
+  === EQU ====
+  The form : label : EQU operand
+    -- It substitutes a value for the label. It doesn't become an error if
+  operand is fixed in some form by assembly ending even if it is pending when
+  assembled. But, the label definition is circulating and the contradicting
+  label definition becomes an error.
+    (Ex.)
+      lable1: EQU label2
+      label2: EQU label1
+            -- It makes an error because label1 and label2 cannot be fixed.
+      label3: EQU label3+2
+            -- It makes an error in the definition which contradicts.
+   Also, it becomes an error when there is not label at the head, too.
+
+  === DB,DM ===
+  The form : DB(DM) operand [,operand ] *
+    -- Out of operand, it develops 1 byte of lower ranks. More than one
+  operand can be described by ","(the comma) separation. Also, the next
+  form is effective only in the operand of DB, DM.DW, DP.
+    The form : 'c---c'
+    The function : It develops the character string while surrounded in "'"
+  as the letter code of 1 byte.
+    "'" itself can describe two "'" by writing them continuously.
+        (Ex.)  'I don''t know'
+                spreaded to $49,$20,$64,$6F,$6E,$27,$74,$20,$6B,$6E,$6F,$77
+
+  === DW ===
+  The form : DW operand [ ,operand ] *
+    -- Out of operand, it develops 2bytes of lower byte in order of the lower
+  byte, the higher byte. Besides, as for being stuck, it follows DB, DM.
+
+  === DP ===
+  The form : DP operand [ ,operand ] *
+    -- It develops operand over 3bytes in order of the lower byte, the middle,
+  and the higher(4bits).
+  Out of 1 byte of higher byte, higher 4bits is always 0. Besides, as for
+  being stuck, it follows DB, DM.
+
+  === DS ===
+  The form : DS operand1 [ ,operand2 ]
+    -- It secures the number of the bytes which was shown in operand1. When
+  operand2, too, exists, it fills up a secured memory area with 1 byte of lower
+  ranks in operand2.
+
+  === PRE ===
+  The form : PRE operand
+    -- It thinks as prebyte itself about the value which is shown in operand
+    and it spreads out by 1 byte.
+  But, operand becomes an error if it is not from $21 to $27 from $30 to $37.
+    The warning occurs when using this direction when the prebyte automatic
+    generation function is effective.
+
+  === PRE_ON ===
+  The form : PRE_ON
+    -- It makes the automatic prebyte generation effective.
+    The default is in the condition of PRE_OFF.
+
+  === PRE_OFF ===
+  The form : PRE_OFF
+    -- It makes the automatic prebyte generation  ineffective.
+    Also, when using a compulsion prebyte when making an automatic generation
+  function OFF, too, a prebyte is generated.
+
+  === PRE_PUSH ===
+  The form : PRE_PUSH
+    -- In the present, it preserves whether the prebyte automatic generation
+  is effective or not. It id used when ON/OFF the automatic prebyte generation
+  temporarily in the include file and so on.
+
+  === PRE_POP ===
+  The form : PRE_POP
+    -- It returns the preserved condition of a prebyte automatic generation.
+
+  === LOCAL ===
+  The form : [label:] LOCAL
+    -- It makes "label" an entry label and it declares that between LOCAL and
+  ENDL is a local block. Nesting such as declaring a local block, too, are
+  possible in the local block. For details, refer to following "about the
+  hierarchic label".
+
+  === ENDL ===
+  The form : ENDL
+    -- It declares that the ---- local block ends. When the local block isn't
+  declarative earlier, it becomes an error.
+
+  === INCLUDE ===
+  The form : INCLUDE filename [ ,argument ] *
+    -- When this direction is assembled, it opens the file which was specified
+  by filename and it deals with the file for the assembly. It resumes assembly
+  from the sequel of the original file if the file ends. nestings such as using
+  INCLUDE direction are possible from the included file inside.
+  Also, when argument exists behind filename, they are handed to the included
+  file as the argument and they can be referred to as "@0"-"@9" in the 
+  included file. But, argument is permitted only in a maximum of 10.
+
+  === MACRO ===
+  The form : MACRO macroname [ ,argument ] *
+    -- It defines the macro of the name "macroname". Lines to ENDM are
+  registered.
+
+  === ENDM ===
+  The form : ENDM
+    -- It ends the macro definition.
+
+  === SCOPE_ON ===
+  The form : SCOPE_ON
+    -- The effective range of the label gets widely and becomes able to refer
+  to the label with the local block outside. For details, refer to following
+  "about the hierarchy making label".
+
+  === SCOPE_OFF ===
+  The form : SCOPE_OFF
+    -- The effective range of the label becomes narrow and it is possible to
+    be referred only in the block where there is it by it.
+
+  === DEF ===
+  The form : DEF item
+    -- It defines an item, which is used by IFDEF directives.
+
+  === UNDEF ===
+  The form : UNDEF item
+    -- It removes the defined item,
+
+  === IFDEF .. ELSE .. ENDIF ===
+  The form : IFDEF item
+    -- The case the item is defined, the lines between IFDEF and ELSE are
+  assembled.  The case the iterm is NOT defined, lines between ELSE and ENDIF
+  are assembled. ELSE lines are not required when you don't need reversed
+  condition.
+
+  === IFNDEF ===
+  The form : IFNDEF item
+    -- The case the item is NOT defined, the lines between IFDEF and ELSE are
+  assembled.  The case the iterm is defined, lines between ELSE and ENDIF
+  are assembled. It looks almost same as IFDEF directive.
+
+
+
+
+
+[ 4 ] The way of assembling
+
+    When assembling, type
+                           XASM filename[.ext]
+
+  When omitting filename, the simple guidance is displayed and returns to
+  the command shell. Also, when the extension of the source file name is
+  ".asm", it may omit an extension.
+    When [ PASS1 ], [ PASS2 ] and the present processing step are displayed and
+  assembly is normally ended when assembly is begun, the start address of the
+  object, and the end address, the object size are displayed and return to the
+  command level. Incidentally, in case as referred to before the label which
+  is defined in the EQU direction is defined, pass ([ EQU define ]) for the
+  label definition is included between [ PASS1 ] and [ PASS2 ].
+    When the error occurs on the assembly way, the kind of the line number, the
+  error which the file name and the error which the error occurred to on the
+  display occurred to is displayed. Also, when there is output specification of
+  listingfile, the same information is output by listingfile,
+  too.
+
+    XASM by the way merely  XASM filename Only of being only assembles.
+  It is and as the file, it outputs nothing. To make output an object file and
+  to output listingfile, the option which is it must be specified.
+
+    The option which is prepared by XASM is as follows.
+
+  === L ===
+  The form : L[filename]
+    -- It specifies to output a listing-file. When filename isn't specified,
+   it becomes the one of the source file which an extension ".LST" were
+   primarily added to.
+
+  === E ===
+  The form : E
+    -- It specifies to suppress an object part in the listing-file and to
+  leave only an error part. When the error seems to occur in the step of PASS2
+  and moreover in case of wanting to use listingfile as the tag file for some
+  text-editors, it will should specify this option, too, simultaneously with
+  the L option. Incidentally, when L option isn't specified, becomes invalid.
+
+  === O ===
+  The form : O[filename]
+    -- It specifies to output the object file. When filename isn't specified,
+  it becomes the one of the source file which an extension ".OBJ" were
+  primarily added to.
+
+  === S ===
+  The form : S
+    -- It specifies to add the label to have used for the most end of the
+  listing-file and a list with the value. But, it becomes invalid when L
+  option isn't specified.
+
+  === C ===
+  The form : C
+    -- It specifies to display the line number to be processing at present.
+  Whether or not it was assembling a long file and so on and where the
+  processing ended may should be specified when checking.
+
+  === T ===
+  The form : T[object type]
+    It specifies the format of the object file. object type The correspondence
+  of the format is as follows.
+
+    object type  The format
+        Z        It specifies the object of the ZSH form.
+        F        It specifies the object of the FTX form.
+        B        It specifies the object of the binary data form. The binary
+                  data form  object_size (3bytes) + start_address (3bytes) +
+                   It means the one which consists of object_body(n bytes).
+        H        It specifies the object of the hexadecimal form. The
+                  hexadecimal form is the one to have changed the data of the
+                  binary data form into the character of 2 bytes of 2 digits of
+                  hexadecimals and to have inserted a code of the starting a 
+                  new line every 64 letters.
+      other      The information which is necessary for IOCS of Pockecom to
+                  handle as the machine language file in front of the body of
+                  the object specifies the object of the type which added
+                  contained Hedda (16 bytes).
+    When not specifying an object type, other is automatically specified.
+
+  === W ===
+  The form : W
+    -- It specifies to generate warning.
+
+  === H ===
+  The form : H
+    -- It specifies so as not to use speeding-up by the hash method.
+
+    To use an option, type
+                     XASM filename -option [-option]*
+
+    It is OK if being. Capital minuscule either of option names are equally
+    handled.
+
+      (Ex.) A>XASM TEST -L -OTEST1.FTX  -S -TF -W
+            -- It makes listing-file by the name TEST.LST, and It makes an
+            object file by the name TEST1,FTX, it makes a symbol list, it
+            specifies and it specifies an object form to the FTX form to
+            generate a warning, too.
+
+
+
+[ 5 ] About the hierarchic label  - #1 -
+
+    I feel glad that a hierarchic directory is supported when moved from CP/M
+  to MS-DOS.  It had no choice but to place in the root directory completely,
+  and it is easy to sort because to made directories according to each related
+  item. The environment which the hierarchic directories provides is extremely
+  convenient.
+
+    By the way, think of the label management by the assembler.  It'll be hard
+  that "naming labels", when writing the source of the assembler.
+    In the branch instruction, labels are needed. At least one label must be
+  used to make a loop even if it is small one. Every time making a loop, label
+  naming is needed, "Ummm, label09 is already used, so the next label's name
+  will be label0a or so."   The wasteful effort is needed in the place to be
+  different from the original purpose.   Moreover, it doesn't find what mean
+  about label09 and label0a's meaning, without writing a comment.
+
+    Therefore, to solve a problem "naming labels", this time, experimentally,
+  it attempted to introduce a concept, "the hierarchic label".  It thinks that
+  it is possible to understand easily because the point of view resembles the
+  UNIX or MS-DOS's hierarchic directories structure well.
+
+    First, it is the one which lies to the subdirectory but in this assembler
+  system, this is called a Local Block. It uses "LOCAL" and "ENDL" direction,
+  to define a local block only in the pair.
+    For example, see the 2nd to 6th line of the following sample. If being in
+  this way, the interval from LOCAL to ENDL becomes the local block of the
+  name "ABC".
+    Also, the form like the 7th to 20th lines, is possible  because the local
+  block can be made in a local block. Because the local block is like a sub-
+  directory,  there may be a label of the identical name out of the block.
+  (i.e. The 2nd line and the 12nd line of the sample)
+  Therefore, it decides to call a label in the local block "a local label".
+
+    By the way, as for its not being able to be specified by the operand even
+  if a local block and a local label are made, there is no meaning. Therefore,
+  this time, it is a way of specifying a label but this is very akin to it of
+  UNIX and NS-DOS. The form is as follows.
+
+  (1) The label in the identical block needs only to be a label name (The 5th
+    line of the sample).
+  (2) When specifying a label in the local block in the block where there is.
+     [ block-name !] * label-name            (The 9th line of the sample)
+  (3) To specify a label out of the block where there is it,
+    ..! label-name                           (The 14th line of the sample)
+      Incidentally, it becomes the outside of one(=just the outside) in case
+    of being "..", but it becomes the outside of two in "..." and it becomes
+    condition, out of three,
+    in "....".
+  (4) When tracing in order from the block out of most,
+    ! [block-name !]*  label-name            (The 11th line of the sample)
+  (5) To specify a label in the block which is different from the block where
+      there is it relatively,
+      .[.] * ! [ block-name !] * label-name  (The 25th line of the sample)
+    Also, it may specify directly like (4).
+
+------------------------------------------------------------------------------
+  -SAMPLE.ASM-
+        org     $bf800                  ;1
+abc:    local                           ;2
+        mv      a,0                     ;3
+l1:     inc     a                       ;4
+        jrnz    l1                      ;5
+        endl                            ;6
+def:    local                           ;7
+        mv      a,0                     ;8
+        callf   abc!l2                  ;9
+l3:     add     ($10),a                 ;10
+        jpf     !ghi!abc!abc!l4         ;11
+abc:    local                           ;12
+        mv      a,0                     ;13
+        mv      x,..!l3                 ;14
+        add     ($10),a                 ;15
+l2:     retf                            ;16
+l5:     nop                             ;17
+        endl                            ;18
+        nop                             ;19
+        endl                            ;20
+ghi:    local                           ;21
+abc:    local                           ;22
+abc:    local                           ;23
+l4:     nop                             ;24
+        mv      x,....!def!abc!l5       ;25
+        endl                            ;26
+        endl                            ;27
+        endl                            ;28
+        end                             ;29
+
+  -SAMPLE.LST-
+0BF800 org $bf800
+0BF800 abc: local
+0BF800 08 00 mv a,0
+0BF802 6C 00 l1: inc a
+0BF804 1B 04 jrnz l1
+0BF806 endl
+0BF806 def: local
+0BF806 08 00 mv a,0
+0BF808 05 1A F8 0B callf abc!l2
+0BF80C 43 10 l3: add ($10),a
+0BF80E 03 1D F8 0B jpf !ghi!abc!abc!l4
+0BF812 abc: local
+0BF812 08 00 mv a,0
+0BF814 0C 0C F8 0B mv x,..!l3
+0BF818 43 10 add ($10),a
+0BF81A 07 l2: retf
+0BF81B 00 l5: nop
+0BF81C endl
+0BF81C 00 nop
+0BF81D endl
+0BF81D ghi: local
+0BF81D abc: local
+0BF81D abc: local
+0BF81D 00 l4: nop
+0BF81E 0C 1B F8 0B mv x,....!def!abc!l5
+0BF822 endl
+0BF822 endl
+0BF822 endl
+0BF822 end
+
+ - Symbols -
+
+0BF800 : ABC
+0BF802 : ABC ! L1
+0BF806 : DEF
+0BF80C : DEF ! L3
+0BF812 : DEF ! ABC
+0BF81A : DEF ! ABC ! L2
+0BF81B : DEF ! ABC ! L5
+0BF81D : GHI
+0BF81D : GHI ! ABC
+0BF81D : GHI ! ABC ! ABC
+0BF81D : GHI ! ABC ! ABC ! L4
+
+  No fatal error. Code: 0BF800h - 0BF821h [ 34 byte(s)]
+------------------------------------------------------------------------------
+    It has been written this source with dividing block names and label names,
+  but it doesn't distinguish between both inside. It intends to be a label and
+  it doesn't care about using a block name for an operand.
+
+    Things above mentioned are the outline and the usage of the hierarchic
+  label,  but there may be a point which it is difficult to use, because it
+  thinks and the day is still shallow. However, when making a library and
+  writing a source program by differentiating it in the function,  INCLUDE
+  direction will be used, because I thinks it is surely useful, utilize
+  effectively.
+
+
+
+[ 6 ] About the hierarchic label  - #2 -
+
+    XASM Ver1.3x extended a local block function substantially.
+  For example
+
+     scope_on
+l1:    nop
+     local  ;----------------------------
+l2:    nop  ;                           |
+       local ;----                      |
+l3:      nop ;   | Block 1 inside       |
+       endl  ;----                      |
+l4:    nop  ;                           | The block outside
+       local ;----                      |
+l5:      nop ;   | Block 2 inside       |
+       endl  ;----                      |
+       nop  ;                           |
+     endl   ;-----------------------------
+
+  When defining a local block, l1, l2, l4 can be referred to from the block
+  outside.
+  l1, l2, l3, l4 can be referred to from block 1 inside.
+  l1, l2, l4, l5 can be referred to from block 2 inside.
+    It seems like the scope of the C language.
+
+    It specified absolutely or it was necessary to make to do the being to have
+  seen !l1 about whether to specify relatively to do the being to have gone
+  back to the hierarchy when it was possible to refer only in the same block
+  it in the past and wanting to refer by all means and to have seen ..!l1. Its
+  therefore, in XASM Ver1.2x, the local block needed a name. It seems like the
+  hierarchic directory.
+
+    New XASM Ver1.3x can use the function of the conventional hierarchy label
+    specification, too, just as it is.
+  Then in scope_on, it becomes the label specification of the specification
+  like SCASM. Also, a conventional source list is accepted just as it is.
+  The number assembly becomes late because the reference range increases.
+
+
+
+[ 7 ] The list of the error and the warning
+
+    It emits an error or a warning when discovering an incomplete point in the
+  source code while assembling XASM. The list and the contents of the error &
+  warning message are hereinafter shown.
+
+ [ 7.1 ] The error about the source code
+
+  === Prebyte error ===
+    -- The specification of the prebyte is strange (mv (bp+py) , 0  or etc).
+  === Division by zero ===
+    -- It tried to divide by 0.
+  === Operator error ===
+    -- The symbol which isn't suitable or the operator which isn't expected
+    exists as the operator.
+  === Unevaluetable operand ===
+    -- It isn't possible to evaluate because the form with operand is strange.
+  === Bad internal RAM addressing ===
+    -- The expression or the way of the inner RAM of referring is strange.
+  === Bad external MEMORY addressing ===
+    -- The expression or the way of the memory of the outside of of referring
+    is strange.
+  === Undefined instruction ===
+    -- It tried to execute a combination with the direction where doesn't
+    exist and the operand which doesn't exist.
+  === Bad separator ===
+    -- It is using the symbol which isn't suitable as the end symbol or there
+    is not a necessary end symbol.
+  === Branch too far ===
+    -- The branch destination is too far and in the relative branch
+    instruction, it can not branch.
+  === Label format error ===
+    -- As the label, the form is strange.
+  === Label not found ===
+    -- The non-definition of the label was specified
+  === Duplicate label ===
+    -- It tried to define equal to or more than two labels of the identical
+    name in the identical block.
+  === "LOCAL" not closed ===
+    -- ENDL which corresponds to LOCAL doesn't exist.
+  ===  No label before EQU ===
+    -- The label doesn't exist in front of EQU in the identical statement.
+  === LOCAL nesting too deep ===
+    -- nest of LOCAL is too deep (To a maximum of 16 paragraphs).
+  === ENDL used without LOCAL ===
+    -- LOCAL which corresponds to ENDL doesn't exist.
+  === EOF comes before END ===
+    -- The file had ended before END came.
+  ===  ' unmatch ===
+    -- The correspondence relation of "'"(the single quart) is strange.
+  === Missing operand ===
+    -- The operand which needs doesn't exist.
+  === Missing operator ===
+    -- The operator which needs doesn't exist.
+  === Numeric format error ===
+    -- numerical value expression is strange.
+  === Missing numeric ===
+    -- The numerical value which needs doesn't exist.
+  === Too complex operand ===
+    -- The formula expression with operand is too complicated.
+  === Location counter wandered ===
+    -- The value of the location counter became unsettled.
+  === EQU undefinable(suspicious label is "xxxxxx") ===
+    -- It tried to give the label definition with which the label definition
+    is circulating or it contradicts.
+  === Too many arguments that the doubtful label is xxxxxx as the cause ===
+    -- There are too many numbers of the argument in LOCAL (A maximum of 10).
+  === Bad argument number ===
+    -- It tried to refer to the INCLUDE argument that isn't defined.
+  === PRE_PUSH nesting too deep ===
+    -- nest of PRE_PUSH/POP is too deep (To a maximum of 16 paragraphs).
+  === PRE_POP used without PRE_PUSH ===
+    -- PRE_PUSH which corresponds to PRE_POP doesn't exist.
+  === PRE_PUSH not closed ===
+    -- PRE_POP which corresponds to PRE_PUSH doesn't exist.
+  === Macro name error ===
+    -- The macro name is unsuitable.
+  === Dupulicate macro ===
+    -- It is defining the macro of already the same name.
+  === Too many lines in macro ===
+    -- The macro number of lines is too long (To a maximum of 32 lines).
+  === ENDM without MACRO ===
+    -- MACRO which corresponds to ENDM doesn't exist.
+  === Missing macro parameter ===
+    -- The macro parameter is lacking.
+  === Cannot use macro in macro ===
+    -- It tried to use a macro direction in the macro definition.
+  ===DEF symbol redefined
+    -- The same symbol already defined was specified by DEF.
+  ===Too many DEF symbols
+    -- The number of DEF symbols are exceeded.
+  ===UNDEF symbol not found
+    -- The non-definition of the symbol was specified by UNDEF.
+  ===ELSE without IFDEF
+    -- IFDEF which corresponds to ELSE doesn't exist.
+  ===ENDIF without IFDEF
+    -- IFDEF which corresponds to ENDIF doesn't exist.
+  ===IFDEF not closed
+    -- ENDIF which corresponds to IFDEF doesn't exist.
+
+
+ [ 7.2 ] The warning about the source code
+
+  === Warning: Location counter already set ===
+    -- The warning with the danger which is which causes contradiction in the
+    address of the object by re-defining location counter
+  === Warning: Used PRE while auto-prebyte is active ===
+    -- The warning to prebyte automatic generation function's not concerning
+    to be effective, too, and trying to generate a wasteful prebyte.
+  === Warning: No effective code ===
+    -- The warning to that the direction which doesn't give the object what
+    influence even if it assembles exists.
+  === Warning: LOCAL and ENDL not match in included file ===
+    -- The warning to being the incomplete structure that the local block
+    isn't closed in the included file when assuming the source code that was
+    made a library.
+  === Warning: INCLUDE argument isn't defined yet.
+    -- It used the label of the front reference for the parameter of INCLUDE.
+  === Warning: PRE_PUSH and PRE_POP not match ===
+    -- The warning to being the incomplete structure that PRE_PUSH/POP isn't
+    closed in the included file when assuming the source code that was made a
+   library
+
+
+
+[ 8 ] The attention in case of use
+
+  --  Because it isn't checking the use of the recursive INCLUDE direction,
+    the input/output error of "Too many open files " comes out when such a
+    source code is described and assembling it and it stops assembly.
+
+  --  Even if it meets in front of the front of the EQU direction,
+    ":"(the colon) behind the label can not be omitted. When whether or not
+    there were various  opinions about this, it thought but because it thought
+    that I didn't have to take a colon, it did to such a specification.
+
+  --  When re-setting the value of the location counter in the ORG direction,
+    there is possibility that the contradiction occurs among the operands of
+    the address and the jump direction which an object is put on and so on.
+    To do the having of the re-setting of a location counter beforehand only
+    when unavoidable on the convenience of the label definition is safer.
+    When vomiting some object after re-setting, it should use DS direction
+    instead of the ORG direction.
+      (Ex.)  ORG $BF000  -> DS $BF000-*
+    But, when the operand is a big number, the DS direction be careful because
+    the assembly very takes time.
+
+  --  It thinks of the direction of the branch and not having been held because
+    the assembler judges from the operand and the value of location counter in
+    the relative branch instruction and develops an appropriate direction
+    automatically.
+
+  --  Having sometimes stopped assembly by the assembler depending on the
+    direction, mistaking with the inner addressing by the RAM and emitting
+    "Undefined instruction " when putting the brackets which are unnecessary
+    when an operand is described Don't put unnecessary brackets.
+      (Ex.)
+        Mistake : ADD ($10) , ($20)  -- It becomes error.
+        Correct : ADD ($10) , $20    -- It is assembled normally.
+
+  --  While assembling, when there is a label which is defined by the EQU
+    direction in the future, one pass in the non-definition in the point and
+    also increases for the label definition and time is in it and taken for
+    the operand by ending of the assembly of the part. Therefore, the one
+    which used EQU direction before the label was referred to at the operand
+    is as wise as possible.
+      Of course, the case that the definition is circulating and the
+      contradicting definition become an error.
+
+  --  The letter fixed number is developed by 1 byte of 1 letters even if it
+    is in the DW, DP direction.
+
+
+
+[ 9 ] The Copyrights
+
+    This program is a free sofrware. Eiji Kako and Narihiro Kon holds the
+  copyrights. You may freely copy and redistribute with the conditions, which
+  are "no commercial use" and "no altering".
+
+    This software is supported by a web page(http://www.na.rim.or.jp/~kako).
+  Some practical sample codes are available on this site.
+
+    It thinks of the bug information and the result to have attempted to
+  compile by the C compiler of the other operating system and so on,
+  being glad when giving news there.
+
+    I was permitted improving and rewriting the source codes and the documents
+  by the author Narihito Kon. I thank him very much.
