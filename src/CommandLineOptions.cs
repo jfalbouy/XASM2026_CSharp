@@ -1,4 +1,4 @@
-namespace Xasm2026.Native;
+﻿namespace Xasm2026.Native;
 
 internal sealed class CommandLineOptions
 {
@@ -18,6 +18,9 @@ internal sealed class CommandLineOptions
     public bool SymbolListEnabled { get; private set; }
     public bool CountLinesEnabled { get; private set; }
     public bool WarningEnabled { get; private set; }
+
+    /// <summary>Annexe la table des references croisees au listing (-U).</summary>
+    public bool CrossReferenceEnabled { get; private set; }
     public bool HashDisabled { get; private set; }
     public bool IntelHexEnabled { get; private set; }
     public bool SRecordEnabled { get; private set; }
@@ -88,6 +91,9 @@ internal sealed class CommandLineOptions
                     break;
                 case 'W':
                     options.WarningEnabled = true;
+                    break;
+                case 'U':
+                    options.CrossReferenceEnabled = true;
                     break;
                 case 'H':
                     options.HashDisabled = true;

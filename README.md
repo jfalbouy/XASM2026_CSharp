@@ -237,6 +237,7 @@ source est repris avec la nouvelle extension.
 | `-D[fichier]` | Fichier de **dépendances Make** (`.d`) |
 | `-B[fichier]` | Programme **BASIC auto-décodable** (`.uu`) pour PC-E500S |
 | `-X[fichier]` | **Dump hexadécimal** style HxD (`.txt`) |
+| `-U` | Table des **références croisées** ajoutée au listing (avec `-L`) |
 | `-V` | Mode verbeux : ajoute la colonne aux diagnostics |
 | `-R` | Rapport de taille des sections |
 | `-?` | Affiche l'aide |
@@ -374,11 +375,28 @@ Les opérateurs portés, **du moins prioritaire au plus prioritaire** :
 
 | Niveau | Opérateurs |
 |---|---|
+| 1 | `=` `<>` `<` `>` `<=` `>=` — comparaisons, rendent `1` ou `0` |
 | 3 | `\|` — OU binaire |
+| 3,5 | `^` — OU exclusif |
 | 4 | `&` — ET binaire |
 | 5 | `%` — modulo |
+| 5,5 | `<<` `>>` — décalages |
 | 6 | `+` `-` |
 | 7 | `*` `/` |
+
+Opérateurs unaires : `-` (négation) et `~` (complément binaire, replié sur 20 bits).
+
+Extraction d'octets, calquée sur `xlow`/`xmid`/`xhigh` de `misc.c` :
+
+| Opérateur | Résultat pour `0BE123H` |
+|---|---|
+| `LOW  x` | `23h` |
+| `MID  x` | `E1h` |
+| `HIGH x` | `0Bh` |
+
+> Seuls `|`, `&`, `%`, `+`, `-`, `*`, `/` existent dans le moteur C. La précédence des
+> opérateurs ajoutés est une décision de conception : les décalages lient moins fort que
+> l'addition, comme en C, donc `1<<2+3` vaut `1<<5`.
 
 Les parenthèses forcent le regroupement. Une **division ou un modulo par zéro est une erreur
 fatale** (code 2 du moteur C) : l'assemblage s'arrête et aucun objet n'est écrit, plutôt que
@@ -451,6 +469,8 @@ Une référence `@n` au-delà des arguments reçus est une erreur explicite.
 | `DW expr[,…]` | Mots 16 bits |
 | `DP expr[,…]` | Pointeurs 20 bits |
 | `DS n[,val]` | Réserve `n` octets initialisés à `val` |
+| `DZ 'chaîne'` | Chaîne suivie d'un terminateur nul |
+| `ALIGN n` / `EVEN` | Aligne le compteur, en émettant le remplissage |
 | `PRE octet` | Émet un prebyte explicite (21h-27h ou 30h-37h) |
 
 ### Portées, macros, structures
@@ -490,7 +510,49 @@ w_b:    DS  2
 | `SCOPE_ON` / `SCOPE_OFF` | Recherche dans les portées parentes |
 | `MACRO` / `ENDM` | Définition de macro |
 | `REPEAT n` / `ENDR` | Répétition d'un bloc |
+| `IRP nom,v1,v2,…` / `ENDR` | Répétition, une fois par valeur |
+| `IRPC nom,chaîne` / `ENDR` | Répétition, une fois par caractère |
 | `STRUCT` / `ENDS` | Structure de données |
+
+`REPEAT`, `IRP` et `IRPC` partagent le terminateur `ENDR` et **s'imbriquent**.
+
+### Symboles redéfinissables
+
+| Directive | Description |
+|---|---|
+| `LABEL: EQU expr` | Constante — une valeur, définie une fois |
+| `LABEL: SET expr` (ou `=`) | Variable d'assemblage, **redéfinissable** |
+
+`SET` est ce qui rend `REPEAT` réellement génératif :
+
+```asm
+n:      SET 0
+        REPEAT 5
+        DB  n          ; émet 0, 1, 2, 3, 4
+n:      SET n+1
+        ENDR
+```
+
+### Diagnostics et mise en page
+
+| Directive | Description |
+|---|---|
+| `ASSERT expr[,message]` | Erreur fatale si l'expression est nulle |
+| `ERROR message` | Erreur fatale inconditionnelle |
+| `WARNING message` | Avertissement non fatal (visible avec `-W`) |
+| `TITLE 'texte'` | Titre en tête du listing |
+| `LIST` / `NOLIST` | Reprend / suspend le listing, sans changer le code émis |
+| `PAGE` | Saut de page dans le listing |
+
+### Assemblage déplacé
+
+| Directive | Description |
+|---|---|
+| `PHASE adresse` | Les étiquettes suivantes prennent l'adresse **logique** indiquée |
+| `DEPHASE` | Retour à l'adressage physique |
+
+Les octets restent à leur place physique dans l'image : `PHASE` sert au code assemblé à
+un endroit puis recopié ailleurs avant exécution, cas courant sur PC-E500S.
 
 ### Assemblage conditionnel
 

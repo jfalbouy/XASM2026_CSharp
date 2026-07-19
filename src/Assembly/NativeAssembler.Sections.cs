@@ -64,6 +64,11 @@ internal sealed partial class NativeAssembler
         {
             result.Symbols[symbol.Key] = symbol.Value;
         }
+
+        foreach (var reference in _symbols.References)
+        {
+            result.SymbolReferences[reference.Key] = reference.Value;
+        }
     }
 
     /// <summary>

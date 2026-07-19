@@ -39,6 +39,7 @@ internal sealed class ExpressionEvaluator
         var parser = new Parser(expression, _symbols, _localScope, _reservedZero, _locationCounter);
         var value = Regular(parser.ParseExpression());
         Undefined = parser.Undefined;
+        Referenced = parser.Referenced;
         DividedByZero = parser.DividedByZero;
         return value;
     }
@@ -48,6 +49,12 @@ internal sealed class ExpressionEvaluator
     /// ni des constantes numeriques valides. Vide lorsque l'expression est entierement resolue.
     /// </summary>
     public IReadOnlyCollection<string> Undefined { get; private set; } = Array.Empty<string>();
+
+    /// <summary>
+    /// Symboles effectivement resolus lors de la derniere evaluation. Alimente la table des
+    /// references croisees ; sans cela, seules les **definitions** seraient connues.
+    /// </summary>
+    public IReadOnlyCollection<string> Referenced { get; private set; } = Array.Empty<string>();
 
     /// <summary>
     /// Vrai si la derniere evaluation a rencontre une division ou un modulo par zero.
@@ -74,12 +81,16 @@ internal sealed class ExpressionEvaluator
         private readonly IReadOnlySet<string>? _reservedZero;
         private readonly long _locationCounter;
         private readonly List<string> _undefined = new();
+        private readonly List<string> _referenced = new();
         private int _position;
 
         /// <summary>
         /// Jetons non resolus (ni symbole connu, ni nombre valide) collectes durant l'analyse.
         /// </summary>
         public IReadOnlyCollection<string> Undefined => _undefined;
+
+        /// <summary>Symboles resolus au cours de l'analyse.</summary>
+        public IReadOnlyCollection<string> Referenced => _referenced;
 
         /// <summary>
         /// Vrai si une division ou un modulo par zero a ete rencontre pendant l'analyse.
@@ -391,11 +402,13 @@ internal sealed class ExpressionEvaluator
             token = token.TrimStart('!');
             if (!isGlobal && _localScope is not null && !token.Contains('!') && _symbols.TryGetValue($"{_localScope}!{token}", out var localValue))
             {
+                _referenced.Add($"{_localScope}!{token}");
                 return localValue;
             }
 
             if (_symbols.TryGetValue(token, out var qualifiedValue))
             {
+                _referenced.Add(token);
                 return qualifiedValue;
             }
 
@@ -405,6 +418,7 @@ internal sealed class ExpressionEvaluator
             }
             if (_symbols.TryGetValue(token, out var symbolValue))
             {
+                _referenced.Add(token);
                 return symbolValue;
             }
 

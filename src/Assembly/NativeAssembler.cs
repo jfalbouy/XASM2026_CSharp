@@ -46,6 +46,10 @@ internal sealed partial class NativeAssembler
     // Decalage entre adresse logique et adresse physique, installe par PHASE.
     // Nul en dehors d'un bloc PHASE / DEPHASE.
     private long _phaseOffset;
+
+    // Mise en page du listing : titre courant et suspension par NOLIST.
+    private string? _listingTitle;
+    private bool _listingSuspended;
     private readonly Stack<bool> _preStack = new();
 
     /// <summary>
@@ -140,11 +144,18 @@ internal sealed partial class NativeAssembler
         _preOn = false;
         _anonymousScopeCounter = 0;
         _phaseOffset = 0;
+        _listingTitle = null;
+        _listingSuspended = false;
         _symbols.ResetScopes();
         _preStack.Clear();
         if (!emit)
         {
             _symbols.ClearOccurrences();
+        }
+
+        if (emit)
+        {
+            _symbols.ClearReferences();
         }
         if (emit)
         {
@@ -336,6 +347,25 @@ internal sealed partial class NativeAssembler
                 case "DEPHASE":
                     _locationCounter -= _phaseOffset;
                     _phaseOffset = 0;
+                    break;
+                case "TITLE":
+                    // Titre repris en tete du listing. Sans effet sur le code produit.
+                    _listingTitle = UnquoteText(line.OperandText.Trim());
+                    break;
+                case "NOLIST":
+                    _listingSuspended = true;
+                    break;
+                case "LIST":
+                    _listingSuspended = false;
+                    break;
+                case "PAGE":
+                    // Saut de page : caractere de controle historique des listings imprimes.
+                    if (emit && !_listingSuspended)
+                    {
+                        result.ListingLines.Add(new ListingLine(
+                            _locationCounter, Array.Empty<byte>(), "\f", string.Empty, 0));
+                    }
+
                     break;
                 case "ALIGN":
                     EmitAlignment(Eval(line.OperandText), emit, result);
@@ -612,7 +642,8 @@ internal sealed partial class NativeAssembler
                     result.StartAddress = _startAddress;
                     result.EndAddress = _locationCounter;
                     result.SourceLineCount = _expandedLines.Count;
-                    CopySymbols(result);
+                    result.Title = _listingTitle;
+        CopySymbols(result);
                     CopySections(result);
                     CopyDependencies(result);
                     return result;
@@ -642,6 +673,7 @@ internal sealed partial class NativeAssembler
         result.StartAddress = _startAddress;
         result.EndAddress = _locationCounter;
         result.SourceLineCount = _expandedLines.Count;
+        result.Title = _listingTitle;
         CopySymbols(result);
         CopySections(result);
         CopyDependencies(result);
@@ -655,7 +687,7 @@ internal sealed partial class NativeAssembler
     /// </summary>
     private void AddListingLine(bool emit, AssemblyResult result, long address, int byteStart, string sourceText)
     {
-        if (!emit)
+        if (!emit || _listingSuspended)
         {
             return;
         }

@@ -1,4 +1,4 @@
-namespace Xasm2026.Native.Core;
+﻿namespace Xasm2026.Native.Core;
 
 /// <summary>
 /// Action : regroupe toutes les donnees produites par une compilation assembleur.
@@ -13,6 +13,12 @@ internal sealed class AssemblyResult
     public List<SectionInfo> Sections { get; } = [];
     public List<string> Dependencies { get; } = [];
     public List<AssemblyWarning> Warnings { get; } = [];
+
+    /// <summary>Table des references croisees : symbole -> emplacements "fichier:ligne".</summary>
+    public Dictionary<string, List<string>> SymbolReferences { get; } = new(StringComparer.OrdinalIgnoreCase);
+    /// <summary>Titre du listing, defini par la directive TITLE.</summary>
+    public string? Title { get; set; }
+
     public long StartAddress { get; set; }
     public long EndAddress { get; set; }
     public int SourceLineCount { get; set; }

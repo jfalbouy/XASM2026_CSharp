@@ -16,6 +16,14 @@ internal static class ListingWriter
     {
         using var writer = new StreamWriter(path, false);
 
+        // Titre pose par la directive TITLE. Absent par defaut, donc sans effet sur les
+        // listings de reference.
+        if (!string.IsNullOrEmpty(result.Title))
+        {
+            writer.WriteLine(result.Title);
+            writer.WriteLine();
+        }
+
         // Les avertissements sont intercales a la ligne fautive, comme le fait err_handle
         // dans le C. Sans -W ils sont totalement absents du listing, ce qui garantit
         // l'invariance des sorties de reference.
@@ -57,6 +65,22 @@ internal static class ListingWriter
             foreach (var symbol in result.Symbols.OrderBy(x => x.Key, StringComparer.OrdinalIgnoreCase))
             {
                 writer.WriteLine($"{symbol.Value:X6}h  {symbol.Key}");
+            }
+        }
+
+        if (options.CrossReferenceEnabled && result.SymbolReferences.Count > 0)
+        {
+            writer.WriteLine();
+            writer.WriteLine(" - Cross reference -");
+            writer.WriteLine();
+            foreach (var entry in result.SymbolReferences.OrderBy(x => x.Key, StringComparer.OrdinalIgnoreCase))
+            {
+                var value = result.Symbols.TryGetValue(entry.Key, out var v) ? $"{v:X6}h" : "      ";
+                writer.WriteLine($"{value}  {entry.Key}");
+                foreach (var place in entry.Value)
+                {
+                    writer.WriteLine($"          {place}");
+                }
             }
         }
 

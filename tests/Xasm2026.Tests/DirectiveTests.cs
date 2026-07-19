@@ -211,6 +211,51 @@ public sealed class DirectiveTests
     /// <summary>
     /// Assemble un fragment place apres un ORG et compare les octets emis.
     /// </summary>
+    /// <summary>
+    /// NOLIST retire les lignes du listing sans rien changer au code emis : les octets et
+    /// les adresses doivent rester identiques.
+    /// </summary>
+    [Fact]
+    public void Nolist_hides_listing_lines_but_still_emits_code()
+    {
+        var result = Assemble(
+            "        DB  1\n" +
+            "        NOLIST\n" +
+            "        DB  0FFH\n" +
+            "        LIST\n" +
+            "        DB  2\n");
+
+        Assert.Equal(new[] { 0x01, 0xFF, 0x02 }, result.GeneratedBytes.Select(b => (int)b.Value).ToArray());
+        Assert.DoesNotContain(result.ListingLines, l => l.SourceText.Contains("0FFH", StringComparison.Ordinal));
+        Assert.Contains(result.ListingLines, l => l.SourceText.Contains("DB  2", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Title_is_carried_to_the_result()
+    {
+        var result = Assemble("        TITLE 'Module de test'\n        DB 1\n");
+
+        Assert.Equal("Module de test", result.Title);
+    }
+
+    /// <summary>
+    /// La table des references croisees recense les **utilisations** d'un symbole, avec leur
+    /// ligne physique — a ne pas confondre avec les occurrences de definition, qui servent a
+    /// choisir la cible d'un saut relatif.
+    /// </summary>
+    [Fact]
+    public void Cross_reference_records_symbol_uses_with_their_lines()
+    {
+        var result = Assemble(
+            "base:   EQU 10H\n" +      // ligne 2 du fichier (ORG est en ligne 1)
+            "        DB  base\n" +     // ligne 3
+            "        DB  base+1\n" +   // ligne 4
+            "        DB  base*2\n");   // ligne 5
+
+        Assert.True(result.SymbolReferences.TryGetValue("base", out var places));
+        Assert.Equal(new[] { "t.asm:3", "t.asm:4", "t.asm:5" }, places);
+    }
+
     private static void AssertBytes(string body, params int[] expected)
     {
         var result = Assemble(body);

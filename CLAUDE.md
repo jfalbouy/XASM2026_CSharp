@@ -199,10 +199,26 @@ to understand current coverage and known-good vs. not-yet-ported instruction for
 
 ## Directives supported
 
-`ORG`, `END`, `EQU`, `SECTION`, `STRUCT`/`ENDS`, `REPEAT`/`ENDR`, `IFEQ`/`IFNE`/`IFGT`/`IFLT`
-(and other conditionals), `MACRO`, `INCLUDE`, `DB`/`DM`/`DW`/`DP`/`DS`, `PRE`. An INCLUDE'd
-file's internal `END` must **not** terminate the whole assembly — this is an intentional,
-previously-fixed behavior; preserve it.
+Historical set: `ORG`, `END`, `EQU`, `SECTION`, `STRUCT`/`ENDS`, `REPEAT`/`ENDR`,
+`IFEQ`/`IFNE`/`IFGT`/`IFLT` (and other conditionals), `MACRO`, `INCLUDE`,
+`DB`/`DM`/`DW`/`DP`/`DS`, `PRE`. An INCLUDE'd file's internal `END` must **not** terminate the
+whole assembly — this is an intentional, previously-fixed behavior; preserve it.
+
+Added beyond the C reference — all purely additive, so a source that doesn't use them emits
+identical bytes and the goldens are unaffected by construction:
+
+| Directive | Note |
+| --- | --- |
+| `SET` / `=` | Redefinable symbol. Evaluated **in source order** by the preprocessor, which is what lets a counter advance across `REPEAT` iterations |
+| `IRP` / `IRPC` | Repeat over a value list / over characters. Share `ENDR` with `REPEAT`, hence the depth-counting `CollectBlock` — before it, `REPEAT` itself could not nest |
+| `ALIGN` / `EVEN` | **Emits** the padding; the image is contiguous, so merely bumping the counter would desynchronise object and addresses |
+| `DZ` | String plus NUL. Escape sequences in `DM` are deliberately *not* added: they would silently reinterpret backslashes in existing sources |
+| `ASSERT` / `ERROR` / `WARNING` | `ASSERT` is checked on the emit pass only — a forward reference is still 0 during resolution and would fail spuriously |
+| `TITLE` / `LIST` / `NOLIST` / `PAGE` | Listing layout only; `NOLIST` never changes emitted bytes |
+| `PHASE` / `DEPHASE` | Labels take the logical address while bytes stay at their physical place, via `_phaseOffset` subtracted in `Emit` |
+
+New expression operators (`^ ~ << >> = <> < > <= >=`, and `LOW`/`MID`/`HIGH`) are documented
+in the evaluator section below.
 
 `LOCAL` opens a local scope. **Without a label it opens an *anonymous* scope** whose name is
 generated as `n%05X` from a per-pass counter (`genop.c` case 66, the C's `no_name_lbl`), and

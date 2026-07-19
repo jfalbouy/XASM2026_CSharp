@@ -47,6 +47,16 @@ internal sealed partial class NativeAssembler
             throw new InvalidOperationException($"Division by zero: {expression.Trim()}");
         }
 
+        // Table des references croisees : on n'enregistre qu'en passe d'emission, sans quoi
+        // chaque utilisation serait comptee deux fois.
+        if (_emitPass && _currentOrigin is not null)
+        {
+            foreach (var name in evaluator.Referenced)
+            {
+                _symbols.AddReference(name, _currentOrigin.File, _currentOrigin.Line);
+            }
+        }
+
         return value;
     }
 

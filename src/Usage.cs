@@ -53,6 +53,7 @@ internal static class Usage
         Console.WriteLine(" -D[filename] : Dependency file output (.d)");
         Console.WriteLine(" -B[filename] : BASIC uuencode self-decoder output (.uu)");
         Console.WriteLine(" -X[filename] : HxD-style text dump output (.txt)");
+        Console.WriteLine(" -U           : Cross reference of symbol uses (use with -L)");
         Console.WriteLine(" -V           : Verbose errors with column hint");
         Console.WriteLine(" -R           : Section size report");
         Console.WriteLine(" -?           : This help");

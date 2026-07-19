@@ -1,4 +1,4 @@
-namespace Xasm2026.Native.Assembly;
+﻿namespace Xasm2026.Native.Assembly;
 
 /// <summary>
 /// Action : table des symboles de l'assemblage, avec leurs valeurs, leurs occurrences
@@ -16,6 +16,7 @@ internal sealed class SymbolTable
     private readonly Dictionary<string, long> _values = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, List<long>> _occurrences = new(StringComparer.OrdinalIgnoreCase);
     private readonly Stack<string?> _scopeStack = new();
+    private readonly Dictionary<string, List<string>> _references = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>Portee locale courante, ou null hors de tout bloc LOCAL.</summary>
     public string? CurrentScope { get; private set; }
@@ -43,6 +44,30 @@ internal sealed class SymbolTable
     }
 
     public void ClearOccurrences() => _occurrences.Clear();
+
+    public void ClearReferences() => _references.Clear();
+
+    /// <summary>Utilisations enregistrees, par symbole, sous la forme "fichier:ligne".</summary>
+    public IReadOnlyDictionary<string, List<string>> References => _references;
+
+    /// <summary>
+    /// Action : enregistre l'emplacement d'une utilisation de symbole.
+    /// Donnees d'entree : nom du symbole et origine de la ligne qui le reference.
+    /// </summary>
+    public void AddReference(string symbolName, string file, int line)
+    {
+        if (!_references.TryGetValue(symbolName, out var places))
+        {
+            places = [];
+            _references[symbolName] = places;
+        }
+
+        var place = $"{file}:{line}";
+        if (places.Count == 0 || places[^1] != place)
+        {
+            places.Add(place);
+        }
+    }
 
     /// <summary>
     /// Action : ouvre une portee locale, en empilant la precedente.
