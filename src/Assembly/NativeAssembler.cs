@@ -181,7 +181,11 @@ internal sealed partial class NativeAssembler
 
             if (line.Label is not null)
             {
-                if (mnemonic == "EQU")
+                // SET (et sa forme "=") definit un symbole comme EQU, mais il est
+                // **redefinissable** : c'est ce qui permet de tenir un compteur dans un
+                // REPEAT ou une macro. EQU vaut pour une constante, SET pour une variable
+                // d'assemblage.
+                if (mnemonic is "EQU" or "SET" or "=")
                 {
                     var value = Eval(line.OperandText);
                     _symbols[_symbols.NameForDefinition(line.Label, forceGlobal: false)] = value;
@@ -227,6 +231,8 @@ internal sealed partial class NativeAssembler
 
                         break;
                 case "EQU":
+                case "SET":
+                case "=":
                 case "STRUCT":
                     break;
                 case "PRE_ON":
@@ -511,7 +517,13 @@ internal sealed partial class NativeAssembler
                 case "WAIT":
                     Emit(0xEF, emit, result);
                     break;
+                // La table de hachage du C enregistre le mnemonique sous la forme "TCP"
+                // (init.c), alors que son propre commentaire a l'encodage dit /* TCL */
+                // (genop.c case 56). Les deux graphies sont acceptees : "TCP" pour qu'un
+                // source ecrit pour xasm2026-1 assemble ici, "TCL" parce que ce port l'a
+                // toujours accepte. Meme opcode dans les deux cas.
                 case "TCL":
+                case "TCP":
                     Emit(0xCE, emit, result);
                     break;
                 case "HALT":

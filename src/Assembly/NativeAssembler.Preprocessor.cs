@@ -164,7 +164,10 @@ internal sealed partial class NativeAssembler
             var line = SourceLine.Parse(StripInternalMarker(origin.Text));
             var mnemonic = line.Mnemonic.ToUpperInvariant();
 
-            if (active && line.Label is not null && mnemonic == "EQU")
+            // SET est evalue ici comme EQU, mais **dans l'ordre du source** : c'est ce
+            // qui permet a un compteur de progresser d'une iteration de REPEAT a la
+            // suivante, le bloc etant re-developpe a chaque tour.
+            if (active && line.Label is not null && mnemonic is "EQU" or "SET" or "=")
             {
                 _symbols[line.Label] = Eval(line.OperandText);
             }
@@ -230,25 +233,43 @@ internal sealed partial class NativeAssembler
 
             if (mnemonic == "REPEAT")
             {
-            var count = (int)Eval(line.OperandText);
-            var block = new List<SourceRef>();
-            i++;
-                while (i < end)
-            {
-                var blockLine = SourceLine.Parse(StripInternalMarker(sourceLines[i].Text));
-                if (blockLine.Mnemonic.Equals("ENDR", StringComparison.OrdinalIgnoreCase))
+                var count = (int)Eval(line.OperandText);
+                var block = CollectBlock(sourceLines, ref i, end, RepeatOpeners, "ENDR");
+                for (var repeat = 0; repeat < count; repeat++)
                 {
-                    break;
-                }
-
-                block.Add(sourceLines[i]);
-                i++;
-            }
-
-            for (var repeat = 0; repeat < count; repeat++)
-            {
                     ExpandSourceBlock(block, 0, block.Count, output, expandMacroDefinitions: false);
                 }
+
+                continue;
+            }
+
+            // IRP nom,v1,v2,... : rejoue le bloc une fois par valeur, en substituant le nom.
+            // IRPC nom,chaine   : idem, une fois par caractere de la chaine.
+            if (mnemonic is "IRP" or "IRPC")
+            {
+                var header = SplitOperands(line.OperandText);
+                if (header.Length < 2)
+                {
+                    throw new InvalidOperationException(
+                        $"{mnemonic} attend un nom puis au moins une valeur: {origin.Text.Trim()}");
+                }
+
+                var parameter = new[] { header[0].Trim() };
+                var values = mnemonic == "IRP"
+                    ? header.Skip(1).Select(x => x.Trim()).ToArray()
+                    // Chaque caractere est injecte comme litteral entre apostrophes, afin que
+                    // "DB c" emette bien son code ASCII et non une reference a un symbole.
+                    : header[1].Trim().Trim('\'', '"').Select(c => $"'{c}'").ToArray();
+
+                var block = CollectBlock(sourceLines, ref i, end, RepeatOpeners, "ENDR");
+                foreach (var value in values)
+                {
+                    var substituted = block
+                        .Select(l => l with { Text = ExpandMacroLine(l.Text, parameter, new[] { value }) })
+                        .ToList();
+                    ExpandSourceBlock(substituted, 0, substituted.Count, output, expandMacroDefinitions: false);
+                }
+
                 continue;
             }
 
@@ -260,20 +281,7 @@ internal sealed partial class NativeAssembler
                     throw new InvalidOperationException($"MACRO sans nom: {origin.Text.Trim()}");
                 }
 
-                var body = new List<SourceRef>();
-                i++;
-                while (i < end)
-                {
-                    var blockLine = SourceLine.Parse(StripInternalMarker(sourceLines[i].Text));
-                    if (blockLine.Mnemonic.Equals("ENDM", StringComparison.OrdinalIgnoreCase))
-                    {
-                        break;
-                    }
-
-                    body.Add(sourceLines[i]);
-                    i++;
-                }
-
+                var body = CollectBlock(sourceLines, ref i, end, MacroOpeners, "ENDM");
                 if (expandMacroDefinitions)
                 {
                     _macros[header[0].Trim()] = new MacroDefinition(
@@ -303,6 +311,58 @@ internal sealed partial class NativeAssembler
 
             output.Add(sourceLines[i]);
         }
+    }
+
+    // Constructions qui ouvrent un bloc ferme par ENDR : leur imbrication doit etre comptee
+    // pour que le ENDR ramasse soit bien celui du bloc courant.
+    private static readonly IReadOnlySet<string> RepeatOpeners =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "REPEAT", "IRP", "IRPC" };
+
+    private static readonly IReadOnlySet<string> MacroOpeners =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "MACRO" };
+
+    /// <summary>
+    /// Action : collecte les lignes d'un bloc jusqu'a son terminateur, en tenant compte de
+    /// l'imbrication.
+    /// Donnees d'entree : lignes source, index de la ligne d'ouverture (avance en sortie),
+    /// borne du bloc englobant, mnemoniques ouvrants et mnemonique fermant.
+    /// Donnees de sortie : contenu du bloc, terminateur exclu.
+    ///
+    /// Le comptage de profondeur permet d'imbriquer REPEAT, IRP et IRPC, qui partagent tous
+    /// le meme terminateur ENDR. Sans lui, le premier ENDR rencontre fermerait le bloc
+    /// exterieur et le source serait developpe de travers.
+    /// </summary>
+    private static List<SourceRef> CollectBlock(
+        IReadOnlyList<SourceRef> sourceLines,
+        ref int index,
+        int end,
+        IReadOnlySet<string> openers,
+        string closer)
+    {
+        var block = new List<SourceRef>();
+        var depth = 1;
+        index++;
+        while (index < end)
+        {
+            var mnemonic = SourceLine.Parse(StripInternalMarker(sourceLines[index].Text)).Mnemonic;
+            if (openers.Contains(mnemonic))
+            {
+                depth++;
+            }
+            else if (mnemonic.Equals(closer, StringComparison.OrdinalIgnoreCase))
+            {
+                depth--;
+                if (depth == 0)
+                {
+                    break;
+                }
+            }
+
+            block.Add(sourceLines[index]);
+            index++;
+        }
+
+        return block;
     }
 
     /// <summary>
