@@ -329,6 +329,15 @@ internal sealed partial class NativeAssembler
                         $"recursion de macro detectee: {macro.Name}");
                 }
 
+                // Une etiquette posee sur l'appel doit designer le premier octet emis par
+                // l'expansion. Elle est donc reportee sur une ligne propre, placee avant le
+                // corps : le C la definit avant meme de chercher le mnemonique (xasm.c),
+                // alors qu'ici l'expansion a lieu au preprocesseur, ou elle serait perdue.
+                if (line.Label is not null)
+                {
+                    output.Add(origin with { Text = line.Label + ":" });
+                }
+
                 var args = SplitOperands(line.OperandText).Select(x => x.Trim()).ToArray();
 
                 // Les lignes issues d'une macro sont rattachees au **site d'appel** et non

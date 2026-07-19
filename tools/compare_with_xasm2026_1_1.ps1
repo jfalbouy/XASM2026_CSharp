@@ -30,6 +30,11 @@ if (-not (Test-Path $CandidateXasm)) {
     throw "Executable candidat introuvable : $CandidateXasm (compiler d'abord avec: dotnet build src\Xasm2026.Native.csproj -c Release)"
 }
 
+# Les assembleurs sont lances depuis le dossier de travail de chaque source : un chemin
+# relatif fourni en parametre n'y resoudrait plus. On le fige donc en absolu ici.
+$ReferenceXasm = (Resolve-Path $ReferenceXasm).Path
+$CandidateXasm = (Resolve-Path $CandidateXasm).Path
+
 function Read-UInt24LE([byte[]]$Bytes, [int]$Offset) {
     return [int]$Bytes[$Offset] -bor ([int]$Bytes[$Offset + 1] -shl 8) -bor ([int]$Bytes[$Offset + 2] -shl 16)
 }

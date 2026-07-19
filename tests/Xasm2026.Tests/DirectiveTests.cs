@@ -334,6 +334,51 @@ public sealed class DirectiveTests
         Assert.Contains("EXITM", ex.Message, StringComparison.Ordinal);
     }
 
+    /// <summary>
+    /// Une etiquette posee sur un appel de macro doit designer le premier octet emis par
+    /// l'expansion. Elle etait silencieusement perdue : l'expansion ayant lieu au
+    /// preprocesseur, l'etiquette de la ligne d'appel disparaissait avec elle, alors que le
+    /// C la definit avant meme de chercher le mnemonique.
+    ///
+    /// Defaut trouve en reecrivant REGISTER.ASM, ou "waitky:" etiquette un balayage clavier
+    /// devenu un appel de macro.
+    /// </summary>
+    [Fact]
+    public void Label_on_a_macro_call_is_kept()
+    {
+        AssertBytes(
+            "        MACRO  deuxoctets\n" +
+            "        DB     11H\n" +
+            "        DB     22H\n" +
+            "        ENDM\n" +
+            "cible:  deuxoctets\n" +
+            "        DP     cible\n",
+            0x11, 0x22, 0x00, 0xE0, 0x00);
+    }
+
+    /// <summary>
+    /// Un symbole dont le nom commence par les lettres d'un registre de base ne doit pas
+    /// etre confondu avec la forme d'adressage correspondante.
+    ///
+    /// "(bp_p)" etait pris pour une forme relative a BP, ce qui supprimait le prebyte
+    /// automatique : trois octets emis au lieu de quatre, donc un code faux, et sans le
+    /// moindre message. Defaut trouve en nommant une constante "bp_p" dans REGISTER2.ASM.
+    /// </summary>
+    [Fact]
+    public void Symbol_starting_like_a_base_register_is_not_an_indexed_form()
+    {
+        // Les trois ecritures designent la meme adresse et doivent produire les memes octets.
+        AssertBytes("        PRE_ON\n        MV  (0ECH),0H\n", 0x30, 0xCC, 0xEC, 0x00);
+        AssertBytes("port:   EQU 0ECH\n        PRE_ON\n        MV  (port),0H\n",
+            0x30, 0xCC, 0xEC, 0x00);
+        AssertBytes("bp_p:   EQU 0ECH\n        PRE_ON\n        MV  (bp_p),0H\n",
+            0x30, 0xCC, 0xEC, 0x00);
+
+        // La vraie forme relative a BP reste reconnue, et sans prebyte.
+        // Encodage confirme contre l'assembleur de reference xasm2026-1-2.
+        AssertBytes("        PRE_ON\n        MV  (BP+1),0H\n", 0xCC, 0x01, 0x00);
+    }
+
     private static void AssertBytes(string body, params int[] expected)
     {
         var result = Assemble(body);

@@ -845,7 +845,7 @@ internal sealed partial class NativeAssembler
         }
 
         if (IsInternalRamOperand(left) &&
-            !left[1..^1].TrimStart().StartsWith("BP", StringComparison.OrdinalIgnoreCase) &&
+            !IsBpRelative(left[1..^1]) &&
             !IsRegister(right))
         {
             var target = ParseInternalRamOperand(left);
@@ -947,7 +947,7 @@ internal sealed partial class NativeAssembler
             {
                 var baseExpression = right[2..close];
                 var offsetExpression = right[(close + 1)..^1];
-                if (!baseExpression.TrimStart().StartsWith("BP", StringComparison.OrdinalIgnoreCase))
+                if (!IsBpRelative(baseExpression))
                 {
                     Emit(0x22, emit, result);
                 }
@@ -955,7 +955,7 @@ internal sealed partial class NativeAssembler
                 Emit(0xF0, emit, result);
                 Emit(offsetExpression.TrimStart().StartsWith('-') ? 0xC0 : 0x80, emit, result);
                 Emit(InternalRamOffset(left, emit, result), emit, result);
-                Emit(baseExpression.TrimStart().StartsWith("BP", StringComparison.OrdinalIgnoreCase)
+                Emit(IsBpRelative(baseExpression)
                     ? InternalRamOffset($"({baseExpression})", emit, result)
                     : Eval(baseExpression), emit, result);
                 Emit(EvalDisplacement(offsetExpression), emit, result);
@@ -1334,13 +1334,13 @@ internal sealed partial class NativeAssembler
         if (left.StartsWith('(') && left.EndsWith(')') && right.StartsWith('(') && right.EndsWith(')'))
         {
             var leftInner = left[1..^1].Trim();
-            if (!leftInner.StartsWith("BP", StringComparison.OrdinalIgnoreCase))
+            if (!IsBpRelative(leftInner))
             {
                 Emit(0x30, emit, result);
             }
 
             Emit(0xC9, emit, result);
-            Emit(leftInner.StartsWith("BP", StringComparison.OrdinalIgnoreCase) ? InternalRamOffset(left, emit, result) : Eval(leftInner), emit, result);
+            Emit(IsBpRelative(leftInner) ? InternalRamOffset(left, emit, result) : Eval(leftInner), emit, result);
             Emit(InternalRamOffset(right, emit, result), emit, result);
             return;
         }
@@ -2386,6 +2386,28 @@ internal sealed partial class NativeAssembler
         }
 
         return ParseInternalRamAddress(trimmed[1..^1].Trim());
+    }
+
+    /// <summary>
+    /// Action : indique si un operande interne est relatif a BP.
+    /// Donnees d'entree : texte interieur des parentheses, deja debarrasse des espaces.
+    /// Donnees de sortie : vrai uniquement pour "BP", "BP+..." , "BP-..." et "BP+PX/PY".
+    ///
+    /// Un simple StartsWith("BP") ne suffit pas : il capturerait tout symbole dont le nom
+    /// commence par ces deux lettres, par exemple une constante "bp_p". L'operande serait
+    /// alors pris pour une forme relative a BP et le prebyte automatique saute, ce qui
+    /// produit un code faux sans le moindre message.
+    /// </summary>
+    private static bool IsBpRelative(string inner)
+    {
+        var text = inner.Trim();
+        if (!text.StartsWith("BP", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var rest = text[2..].TrimStart();
+        return rest.Length == 0 || rest[0] is '+' or '-';
     }
 
     /// <summary>
