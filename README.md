@@ -727,6 +727,10 @@ Et si le symbole n'est défini nulle part, son emploi via `@n` déclenche d'abor
 fatale** de symbole indéfini, plus utile qu'un avertissement. L'avertissement ne remonte donc
 que lorsque l'argument fautif n'est jamais utilisé dans le fichier inclus.
 
+Une **étiquette d'adresse définie deux fois dans la même portée** est une erreur (code 13
+du moteur C). Le contrôle respecte les portées : le même nom dans deux blocs `LOCAL`
+distincts reste valide, ce qui est l'idiome des macros.
+
 Les mnémoniques ou formes d'adressage non encore portés provoquent une erreur explicite
 (`opcode ou directive non encore portee: …`) plutôt qu'un encodage silencieusement faux.
 

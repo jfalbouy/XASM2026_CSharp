@@ -217,6 +217,13 @@ identical bytes and the goldens are unaffected by construction:
 | `TITLE` / `LIST` / `NOLIST` / `PAGE` | Listing layout only; `NOLIST` never changes emitted bytes |
 | `PHASE` / `DEPHASE` | Labels take the logical address while bytes stay at their physical place, via `_phaseOffset` subtracted in `Emit` |
 
+**Duplicate labels** are rejected (the C's err 13, `xasm.c`). The check runs on the
+**resolution pass only** — mirroring the C's `if (pass_sw == 1)` — because the emit pass
+legitimately redefines every label. It is scope-aware, so the same name in two `LOCAL`
+blocks is fine; what it catches is a labelled MACRO expanded twice without `LOCAL`, which
+used to emit wrong addresses in silence. `EQU` is exempt because the preprocessor
+pre-evaluates it before the passes, and `SET` is redefinable by design.
+
 New expression operators (`^ ~ << >> = <> < > <= >=`, and `LOW`/`MID`/`HIGH`) are documented
 in the evaluator section below.
 

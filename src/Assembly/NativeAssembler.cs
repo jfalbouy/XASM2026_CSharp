@@ -195,40 +195,52 @@ internal sealed partial class NativeAssembler
                 continue;
             }
 
-            if (line.Label is not null)
-            {
-                // SET (et sa forme "=") definit un symbole comme EQU, mais il est
-                // **redefinissable** : c'est ce qui permet de tenir un compteur dans un
-                // REPEAT ou une macro. EQU vaut pour une constante, SET pour une variable
-                // d'assemblage.
-                if (mnemonic is "EQU" or "SET" or "=")
-                {
-                    var value = Eval(line.OperandText);
-                    _symbols[_symbols.NameForDefinition(line.Label, forceGlobal: false)] = value;
-                    if (_currentStruct is not null && value + 1 > _currentStructSize)
-                    {
-                        _currentStructSize = value + 1;
-                    }
-                }
-                else if (mnemonic == "STRUCT")
-                {
-                    _symbols[line.Label] = _locationCounter;
-                    _currentStruct = line.Label;
-                    _currentStructSize = 0;
-                }
-                else
-                {
-                    var symbolName = _symbols.NameForDefinition(line.Label, forceGlobal: false);
-                    _symbols[symbolName] = _locationCounter;
-                    if (!emit)
-                    {
-                        _symbols.AddOccurrence(symbolName, _locationCounter);
-                    }
-                }
-            }
-
             try
             {
+                if (line.Label is not null)
+                {
+                    // SET (et sa forme "=") definit un symbole comme EQU, mais il est
+                    // **redefinissable** : c'est ce qui permet de tenir un compteur dans un
+                    // REPEAT ou une macro. EQU vaut pour une constante, SET pour une variable
+                    // d'assemblage.
+                    if (mnemonic is "EQU" or "SET" or "=")
+                    {
+                        var value = Eval(line.OperandText);
+                        _symbols[_symbols.NameForDefinition(line.Label, forceGlobal: false)] = value;
+                        if (_currentStruct is not null && value + 1 > _currentStructSize)
+                        {
+                            _currentStructSize = value + 1;
+                        }
+                    }
+                    else if (mnemonic == "STRUCT")
+                    {
+                        _symbols[line.Label] = _locationCounter;
+                        _currentStruct = line.Label;
+                        _currentStructSize = 0;
+                    }
+                    else
+                    {
+                        var symbolName = _symbols.NameForDefinition(line.Label, forceGlobal: false);
+
+                        // err 13 du C (xasm.c) : une etiquette d'adresse deja definie dans la
+                        // meme portee est une erreur. Le controle n'a lieu qu'en passe de
+                        // resolution, comme le "if (pass_sw == 1)" du C : la passe d'emission
+                        // redefinit legitimement toutes les etiquettes.
+                        // Cas typique attrape : une macro etiquetee expansee deux fois sans
+                        // LOCAL, qui produisait jusqu'ici des adresses fausses en silence.
+                        if (!emit && _symbols.Contains(symbolName))
+                        {
+                            throw new InvalidOperationException($"Duplicate label: {line.Label}");
+                        }
+
+                        _symbols[symbolName] = _locationCounter;
+                        if (!emit)
+                        {
+                            _symbols.AddOccurrence(symbolName, _locationCounter);
+                        }
+                    }
+                }
+
                 switch (mnemonic)
                 {
                     case "ORG":

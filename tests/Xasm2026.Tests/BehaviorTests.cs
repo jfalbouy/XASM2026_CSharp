@@ -573,6 +573,72 @@ public sealed class BehaviorTests
         });
     }
 
+    /// <summary>
+    /// err 13 du C : une etiquette d'adresse deja definie dans la meme portee est une erreur.
+    /// Le cas important est la macro etiquetee expansee deux fois sans LOCAL, qui produisait
+    /// jusqu'ici des adresses fausses en silence.
+    /// </summary>
+    [Theory]
+    [InlineData("ici:    NOP\nici:    NOP\n")]
+    [InlineData("        MACRO bloc\ncible:  NOP\n        ENDM\n        bloc\n        bloc\n")]
+    public void Duplicate_label_is_an_error(string body)
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "d.asm"), "        ORG 0E000H\n" + body + "        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "d.asm" });
+            var ex = Assert.Throws<InvalidOperationException>(() => new NativeAssembler(options).Assemble());
+
+            Assert.Contains("Duplicate label", ex.Message, StringComparison.Ordinal);
+            // Comme toute erreur fatale, elle doit porter sa position source.
+            Assert.Contains("ligne ", ex.Message, StringComparison.Ordinal);
+        });
+    }
+
+    /// <summary>
+    /// Le controle respecte les portees : un meme nom dans deux blocs LOCAL distincts n'est
+    /// pas un doublon. Sans cela, l'idiome des macros deviendrait inutilisable.
+    /// </summary>
+    [Theory]
+    [InlineData("        LOCAL\ncible:  NOP\n        ENDL\n        LOCAL\ncible:  NOP\n        ENDL\n")]
+    [InlineData("        MACRO bloc\n        LOCAL\ncible:  NOP\n        ENDL\n        ENDM\n        bloc\n        bloc\n")]
+    public void Same_name_in_distinct_scopes_is_not_a_duplicate(string body)
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "s.asm"), "        ORG 0E000H\n" + body + "        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "s.asm" });
+            var result = new NativeAssembler(options).Assemble();
+
+            Assert.Equal(2, result.GeneratedBytes.Count);
+        });
+    }
+
+    /// <summary>
+    /// Une erreur survenue dans la **definition** d'une etiquette porte elle aussi sa
+    /// position : le bloc de definition a ete place dans le meme try que le reste de la ligne.
+    /// </summary>
+    [Fact]
+    public void Error_in_a_label_definition_carries_its_location()
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "e.asm"),
+                "        ORG 0E000H\n" +
+                "x:      EQU INCONNU\n" +
+                "        DB  x\n" +
+                "        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "e.asm" });
+            var ex = Assert.Throws<InvalidOperationException>(() => new NativeAssembler(options).Assemble());
+
+            Assert.Contains("ligne 2", ex.Message, StringComparison.Ordinal);
+            Assert.Contains("INCONNU", ex.Message, StringComparison.Ordinal);
+        });
+    }
+
     private static void RunInTempDir(Action<string> body)
     {
         var dir = Path.Combine(Path.GetTempPath(), "xasm_behavior", Guid.NewGuid().ToString("N"));
