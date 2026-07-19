@@ -215,6 +215,7 @@ identical bytes and the goldens are unaffected by construction:
 | `DZ` | String plus NUL. Escape sequences in `DM` are deliberately *not* added: they would silently reinterpret backslashes in existing sources |
 | `ASSERT` / `ERROR` / `WARNING` | `ASSERT` is checked on the emit pass only — a forward reference is still 0 during resolution and would fail spuriously |
 | `TITLE` / `LIST` / `NOLIST` / `PAGE` | Listing layout only; `NOLIST` never changes emitted bytes |
+| `EXITM` | Ends the enclosing macro expansion; unwinds through `REPEAT`/`IRP` via `_exitMacroRequested` |
 | `PHASE` / `DEPHASE` | Labels take the logical address while bytes stay at their physical place, via `_phaseOffset` subtracted in `Emit` |
 
 **Duplicate labels** are rejected (the C's err 13, `xasm.c`). The check runs on the
@@ -223,6 +224,14 @@ legitimately redefines every label. It is scope-aware, so the same name in two `
 blocks is fine; what it catches is a labelled MACRO expanded twice without `LOCAL`, which
 used to emit wrong addresses in silence. `EQU` is exempt because the preprocessor
 pre-evaluates it before the passes, and `SET` is redefinable by design.
+
+Macro bodies are **re-expanded** through `ExpandSourceBlock` rather than copied verbatim.
+That is what makes `EXITM` meaningful — conditionals inside a body now resolve at
+expansion time instead of being deferred to the assembly pass — and it incidentally
+enables nested macros and `REPEAT` inside a macro, both impossible before (the C forbids
+nesting outright with its err 44). A cycle guard (`_macrosInExpansion`) rejects a macro
+that calls itself instead of expanding forever. None of the four golden examples uses
+`MACRO` at all, which is why this change carried no byte-exactness risk.
 
 New expression operators (`^ ~ << >> = <> < > <= >=`, and `LOW`/`MID`/`HIGH`) are documented
 in the evaluator section below.

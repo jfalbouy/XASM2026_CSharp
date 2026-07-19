@@ -135,6 +135,9 @@ internal sealed partial class NativeAssembler
     {
         _macros.Clear();
         _definedSymbols.Clear();
+        _macrosInExpansion.Clear();
+        _macroDepth = 0;
+        _exitMacroRequested = false;
         ExpandSourceBlock(sourceLines, 0, sourceLines.Count, _expandedLines, expandMacroDefinitions: true);
     }
 
@@ -157,6 +160,13 @@ internal sealed partial class NativeAssembler
             if (i < start || i >= end)
             {
                 continue;
+            }
+
+            // Une demande d'EXITM remonte a travers les blocs imbriques (REPEAT, IRP,
+            // conditionnelles) jusqu'a la macro qui l'englobe.
+            if (_exitMacroRequested)
+            {
+                return;
             }
 
             var origin = sourceLines[i];
@@ -231,11 +241,22 @@ internal sealed partial class NativeAssembler
                 continue;
             }
 
+            if (mnemonic == "EXITM")
+            {
+                if (_macroDepth == 0)
+                {
+                    throw new InvalidOperationException("EXITM hors d'une macro");
+                }
+
+                _exitMacroRequested = true;
+                return;
+            }
+
             if (mnemonic == "REPEAT")
             {
                 var count = (int)Eval(line.OperandText);
                 var block = CollectBlock(sourceLines, ref i, end, RepeatOpeners, "ENDR");
-                for (var repeat = 0; repeat < count; repeat++)
+                for (var repeat = 0; repeat < count && !_exitMacroRequested; repeat++)
                 {
                     ExpandSourceBlock(block, 0, block.Count, output, expandMacroDefinitions: false);
                 }
@@ -264,6 +285,11 @@ internal sealed partial class NativeAssembler
                 var block = CollectBlock(sourceLines, ref i, end, RepeatOpeners, "ENDR");
                 foreach (var value in values)
                 {
+                    if (_exitMacroRequested)
+                    {
+                        break;
+                    }
+
                     var substituted = block
                         .Select(l => l with { Text = ExpandMacroLine(l.Text, parameter, new[] { value }) })
                         .ToList();
@@ -294,18 +320,35 @@ internal sealed partial class NativeAssembler
 
             if (_macros.TryGetValue(mnemonic, out var macro))
             {
-                var args = SplitOperands(line.OperandText).Select(x => x.Trim()).ToArray();
-                foreach (var macroLine in macro.Body)
+                // Recursion interdite : sans ce garde-fou, une macro qui s'appelle elle-meme
+                // developperait a l'infini. Le C l'evite en interdisant toute macro dans une
+                // macro (err 44) ; on est plus permissif, en n'interdisant que le cycle.
+                if (!_macrosInExpansion.Add(macro.Name))
                 {
-                    // Les lignes issues d'une macro sont rattachees au **site d'appel** et non
-                    // au corps de la definition : c'est la ligne que l'utilisateur doit corriger,
-                    // et c'est aussi ce que suit le C, dont current_file->lines vaut la ligne
-                    // en cours de lecture au moment ou la macro est rejouee.
-                    output.Add(origin with
-                    {
-                        Text = ExpandMacroLine(macroLine.Text, macro.Arguments, args),
-                    });
+                    throw new InvalidOperationException(
+                        $"recursion de macro detectee: {macro.Name}");
                 }
+
+                var args = SplitOperands(line.OperandText).Select(x => x.Trim()).ToArray();
+
+                // Les lignes issues d'une macro sont rattachees au **site d'appel** et non
+                // au corps de la definition : c'est la ligne que l'utilisateur doit corriger,
+                // et c'est aussi ce que suit le C, dont current_file->lines vaut la ligne
+                // en cours de lecture au moment ou la macro est rejouee.
+                var expanded = macro.Body
+                    .Select(l => origin with { Text = ExpandMacroLine(l.Text, macro.Arguments, args) })
+                    .ToList();
+
+                // Le corps est **re-developpe** au lieu d'etre recopie tel quel : les
+                // conditionnelles, REPEAT, IRP et les appels de macro imbriques y sont donc
+                // resolus, et EXITM peut interrompre l'expansion.
+                _macroDepth++;
+                ExpandSourceBlock(expanded, 0, expanded.Count, output, expandMacroDefinitions: false);
+                _macroDepth--;
+                _macrosInExpansion.Remove(macro.Name);
+
+                // EXITM ne remonte pas au-dela de la macro qu'il interrompt.
+                _exitMacroRequested = false;
                 continue;
             }
 

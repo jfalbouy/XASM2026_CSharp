@@ -12,6 +12,12 @@ internal sealed partial class NativeAssembler
     private readonly SymbolTable _symbols = new();
     private readonly HashSet<string> _definedSymbols = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, MacroDefinition> _macros = new(StringComparer.OrdinalIgnoreCase);
+
+    // Etat de l'expansion des macros : cycle interdit, profondeur courante, et demande
+    // d'interruption posee par EXITM.
+    private readonly HashSet<string> _macrosInExpansion = new(StringComparer.OrdinalIgnoreCase);
+    private int _macroDepth;
+    private bool _exitMacroRequested;
     private readonly List<SourceRef> _expandedLines = [];
     private readonly List<string> _dependencies = [];
     private readonly HashSet<string> _includeStack = new(StringComparer.OrdinalIgnoreCase);

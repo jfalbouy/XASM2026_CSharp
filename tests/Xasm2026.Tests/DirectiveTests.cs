@@ -256,6 +256,84 @@ public sealed class DirectiveTests
         Assert.Equal(new[] { "t.asm:3", "t.asm:4", "t.asm:5" }, places);
     }
 
+    /// <summary>
+    /// EXITM interrompt l'expansion de la macro englobante. Il n'a de sens que parce que le
+    /// corps est desormais **re-developpe** : les conditionnelles y sont resolues au moment
+    /// de l'expansion, et non plus reportees a la passe d'assemblage.
+    /// </summary>
+    [Fact]
+    public void Exitm_stops_the_enclosing_macro()
+    {
+        AssertBytes(
+            "        MACRO  garde,drapeau\n" +
+            "        DB     0AAH\n" +
+            "        IFEQ   drapeau\n" +
+            "        EXITM\n" +
+            "        ENDIF\n" +
+            "        DB     0BBH\n" +
+            "        ENDM\n" +
+            "        garde  0\n" +      // sortie anticipee : AA seul
+            "        garde  1\n",       // corps complet : AA BB
+            0xAA, 0xAA, 0xBB);
+    }
+
+    /// <summary>
+    /// EXITM traverse un REPEAT pour sortir de la macro, et non seulement de la boucle.
+    /// </summary>
+    [Fact]
+    public void Exitm_unwinds_through_a_repeat()
+    {
+        AssertBytes(
+            "        MACRO  m\n" +
+            "        REPEAT 5\n" +
+            "        DB     7\n" +
+            "        EXITM\n" +
+            "        ENDR\n" +
+            "        DB     0FFH\n" +
+            "        ENDM\n" +
+            "        m\n",
+            0x07);
+    }
+
+    /// <summary>
+    /// L'expansion recursive debloque les macros imbriquees, que le C interdit (err 44),
+    /// ainsi que REPEAT a l'interieur d'un corps de macro.
+    /// </summary>
+    [Fact]
+    public void Macros_can_nest_and_contain_repeat()
+    {
+        AssertBytes(
+            "        MACRO  interne\n        DB 022H\n        ENDM\n" +
+            "        MACRO  externe\n        DB 011H\n        interne\n        DB 033H\n        ENDM\n" +
+            "        externe\n",
+            0x11, 0x22, 0x33);
+
+        AssertBytes(
+            "        MACRO  trois\n        REPEAT 3\n        DB 5\n        ENDR\n        ENDM\n" +
+            "        trois\n",
+            0x05, 0x05, 0x05);
+    }
+
+    /// <summary>
+    /// Une macro qui s'appelle elle-meme doit etre rejetee, et non developper a l'infini.
+    /// </summary>
+    [Fact]
+    public void Recursive_macro_is_rejected()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(
+            () => Assemble("        MACRO boucle\n        DB 1\n        boucle\n        ENDM\n        boucle\n"));
+
+        Assert.Contains("recursion de macro", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Exitm_outside_a_macro_is_an_error()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() => Assemble("        EXITM\n"));
+
+        Assert.Contains("EXITM", ex.Message, StringComparison.Ordinal);
+    }
+
     private static void AssertBytes(string body, params int[] expected)
     {
         var result = Assemble(body);

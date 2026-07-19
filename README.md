@@ -509,12 +509,26 @@ w_b:    DS  2
 | `LOCAL` / `ENDL` | Ouvre / ferme un bloc de portée locale. **Sans étiquette**, la portée est anonyme et unique |
 | `SCOPE_ON` / `SCOPE_OFF` | Recherche dans les portées parentes |
 | `MACRO` / `ENDM` | Définition de macro |
+| `EXITM` | Interrompt l'expansion de la macro englobante |
 | `REPEAT n` / `ENDR` | Répétition d'un bloc |
 | `IRP nom,v1,v2,…` / `ENDR` | Répétition, une fois par valeur |
 | `IRPC nom,chaîne` / `ENDR` | Répétition, une fois par caractère |
 | `STRUCT` / `ENDS` | Structure de données |
 
 `REPEAT`, `IRP` et `IRPC` partagent le terminateur `ENDR` et **s'imbriquent**.
+
+Le corps d'une macro est re-développé : il peut donc contenir des conditionnelles, des
+`REPEAT` et des appels d'autres macros. Une macro qui s'appelle elle-même est rejetée.
+
+```asm
+        MACRO  garde,drapeau
+        DB     0AAH
+        IFEQ   drapeau
+        EXITM              ; sortie anticipée
+        ENDIF
+        DB     0BBH
+        ENDM
+```
 
 ### Symboles redéfinissables
 
