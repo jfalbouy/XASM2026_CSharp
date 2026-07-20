@@ -7186,7 +7186,6 @@
 0BA58Eh  miditx!trans
 0BA598h  miditx!trans1
 0BA59Eh  miditx!trans2
-0000F4h  midi_term
 0BA1BBh  mod16
 0BA284h  mod20
 0BA307h  modify_int
@@ -7236,8 +7235,6 @@
 000034h  obj_pnt
 0BD061h  obj_start
 0BCA49h  obj_type2
-0000FBh  off
-000004h  on
 0BC52Eh  option
 0BC590h  option!exit
 0BC530h  option!l1

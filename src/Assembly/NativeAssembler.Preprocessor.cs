@@ -138,6 +138,11 @@ internal sealed partial class NativeAssembler
         _macrosInExpansion.Clear();
         _macroDepth = 0;
         _exitMacroRequested = false;
+
+        // Le preprocesseur ouvre et referme des portees LOCAL : il part donc d'un etat
+        // propre, comme le fait chaque passe.
+        _anonymousScopeCounter = 0;
+        _symbols.ResetScopes();
         ExpandSourceBlock(sourceLines, 0, sourceLines.Count, _expandedLines, expandMacroDefinitions: true);
     }
 
@@ -177,9 +182,26 @@ internal sealed partial class NativeAssembler
             // SET est evalue ici comme EQU, mais **dans l'ordre du source** : c'est ce
             // qui permet a un compteur de progresser d'une iteration de REPEAT a la
             // suivante, le bloc etant re-developpe a chaque tour.
+            // Le preprocesseur suit lui aussi les portees LOCAL. Sans cela, un EQU defini
+            // dans un bloc etait enregistre sous son **nom nu** alors que la passe
+            // d'assemblage l'enregistre sous son nom porte : le symbole existait deux fois,
+            // et la version nue fuyait dans l'espace global. Deux portees definissant le
+            // meme nom s'y ecrasaient mutuellement, et une reference faite hors de toute
+            // portee obtenait une valeur au lieu d'une erreur.
+            if (active && mnemonic == "LOCAL")
+            {
+                var portee = line.Label ?? $"n{++_anonymousScopeCounter:X5}";
+                _symbols.EnterScope(_symbols.NameForDefinition(portee, forceGlobal: false));
+            }
+            else if (active && mnemonic == "ENDL")
+            {
+                _symbols.ExitScope();
+            }
+
             if (active && line.Label is not null && mnemonic is "EQU" or "SET" or "=")
             {
-                _symbols[line.Label] = Eval(line.OperandText);
+                _symbols[_symbols.NameForDefinition(line.Label, forceGlobal: false)] =
+                    Eval(line.OperandText);
             }
 
             if (mnemonic is "IFDEF" or "IFNDEF")

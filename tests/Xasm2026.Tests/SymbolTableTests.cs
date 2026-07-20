@@ -1,3 +1,5 @@
+using System.IO;
+using Xasm2026.Native;
 using Xasm2026.Native.Assembly;
 using Xunit;
 
@@ -127,6 +129,52 @@ public sealed class SymbolTableTests
     public void Simple_symbol_names_are_recognized(string value, bool expected)
     {
         Assert.Equal(expected, SymbolTable.IsSimpleSymbolName(value));
+    }
+
+    /// <summary>
+    /// Un EQU defini dans un bloc LOCAL appartient a la portee, et ne doit **pas** fuiter
+    /// sous son nom nu dans l'espace global.
+    ///
+    /// Le preprocesseur enregistrait l'etiquette brute alors que la passe d'assemblage
+    /// enregistrait le nom porte : le symbole existait deux fois. Deux portees definissant
+    /// le meme nom s'ecrasaient alors mutuellement dans l'espace global, et une reference
+    /// faite hors de toute portee obtenait une valeur au lieu d'une erreur.
+    ///
+    /// Constate sur VOGUE, ou trois symboles (`midi_term`, `off`, `on`) apparaissaient en
+    /// trop par rapport a l'assembleur de reference.
+    /// </summary>
+    [Fact]
+    public void Equ_inside_a_local_block_does_not_leak_its_bare_name()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "xasm_scope", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        var previous = Directory.GetCurrentDirectory();
+        Directory.SetCurrentDirectory(dir);
+        try
+        {
+            File.WriteAllText(Path.Combine(dir, "s.asm"),
+                "        ORG 0E000H\n" +
+                "bloc:   LOCAL\n" +
+                "port:   EQU 0F4H\n" +
+                "        DB  port\n" +      // resolu dans la portee
+                "        ENDL\n" +
+                "        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "s.asm" });
+            var result = new NativeAssembler(options).Assemble();
+
+            // La valeur reste correctement resolue a l'interieur du bloc.
+            Assert.Equal(0xF4, result.GeneratedBytes.Single().Value);
+
+            // Le symbole n'existe que sous son nom porte.
+            Assert.Contains("bloc!port", result.Symbols.Keys);
+            Assert.DoesNotContain("port", result.Symbols.Keys);
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(previous);
+            try { Directory.Delete(dir, recursive: true); } catch { /* best-effort */ }
+        }
     }
 
     [Fact]

@@ -249,6 +249,15 @@ that calls itself instead of expanding forever. None of the four golden examples
 New expression operators (`^ ~ << >> = <> < > <= >=`, and `LOW`/`MID`/`HIGH`) are documented
 in the evaluator section below.
 
+The **preprocessor tracks `LOCAL` scopes too**: it pre-evaluates `EQU`/`SET` before the passes,
+and must register them under the *scoped* name. Registering the bare label instead let the
+symbol leak into the global namespace — it then existed twice, two scopes defining the same
+name overwrote each other there, and a reference made outside any scope silently got a value
+instead of an error. Caught on VOGUE, whose symbol table listed three entries (`midi_term`,
+`off`, `on`) that the reference assembler does not emit; the committed `.lst`/`.map` goldens
+had frozen that defect and were corrected after checking that our output then matched the
+reference's symbol list exactly.
+
 `LOCAL` opens a local scope. **Without a label it opens an *anonymous* scope** whose name is
 generated as `n%05X` from a per-pass counter (`genop.c` case 66, the C's `no_name_lbl`), and
 registered as an ordinary symbol at the current LC. This is what makes labels inside a MACRO
