@@ -123,7 +123,7 @@ internal sealed partial class NativeAssembler
     private long ResolveRelativeTarget(string operand)
     {
         operand = _symbols.NormalizeScopedExpression(operand);
-        if (SymbolTable.IsSimpleSymbolName(operand))
+        if (SymbolTable.IsSymbolPath(operand))
         {
             foreach (var symbolName in _symbols.RelativeCandidates(operand))
             {

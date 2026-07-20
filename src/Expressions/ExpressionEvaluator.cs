@@ -400,10 +400,28 @@ internal sealed class ExpressionEvaluator
             }
 
             token = token.TrimStart('!');
-            if (!isGlobal && _localScope is not null && !token.Contains('!') && _symbols.TryGetValue($"{_localScope}!{token}", out var localValue))
+            // Le prefixage vaut aussi pour un chemin **partiel** deja porte : ecrit depuis
+            // la portee "putline", "clrn2!l6" designe "putline!clrn2!l6". Exiger un nom
+            // sans "!" interdisait cette forme, pourtant acceptee par la reference.
+            if (!isGlobal && _localScope is not null)
             {
-                _referenced.Add($"{_localScope}!{token}");
-                return localValue;
+                // On remonte la chaine des portees englobantes avant d'essayer le nom
+                // global : depuis "putline!putlsb2", "putlsub" peut designer
+                // "putline!putlsub". Le prefixage vaut aussi pour un chemin partiel deja
+                // porte, "clrn2!l6" designant "putline!clrn2!l6".
+                var portee = _localScope;
+                while (!string.IsNullOrEmpty(portee))
+                {
+                    var candidat = $"{portee}!{token}";
+                    if (_symbols.TryGetValue(candidat, out var localValue))
+                    {
+                        _referenced.Add(candidat);
+                        return localValue;
+                    }
+
+                    var coupe = portee.LastIndexOf('!');
+                    portee = coupe > 0 ? portee[..coupe] : null;
+                }
             }
 
             if (_symbols.TryGetValue(token, out var qualifiedValue))

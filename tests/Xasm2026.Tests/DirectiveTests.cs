@@ -424,6 +424,14 @@ public sealed class DirectiveTests
     // CMP [adresse],immediat : l'opcode est 62h, les deux chiffres avaient ete transposes.
     [InlineData("a1:     EQU 0BF76CH\n        PRE_ON\n        CMP [a1],0\n",
         new[] { 0x62, 0x6C, 0xF7, 0x0B, 0x00 })]
+    // Saut vers l'adresse contenue dans un registre. Seul "jp x" etait reconnu : les trois
+    // autres formes tombaient dans le saut absolu et sautaient en silence vers l'adresse 0.
+    [InlineData("        JP X\n", new[] { 0x11, 0x04 })]
+    [InlineData("        JP Y\n", new[] { 0x11, 0x05 })]
+    [InlineData("        JP U\n", new[] { 0x11, 0x06 })]
+    [InlineData("        JP S\n", new[] { 0x11, 0x07 })]
+    // Un symbole reste un saut absolu : la forme registre ne doit pas capturer les etiquettes.
+    [InlineData("cible:  EQU 0BE000H\n        JP cible\n", new[] { 0x02, 0x00, 0xE0 })]
     public void Encodings_confirmed_against_the_reference_assembler(string source, int[] expected)
     {
         AssertBytesAt(0xBE000, source, expected);

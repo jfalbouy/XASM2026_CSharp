@@ -553,15 +553,25 @@ internal sealed partial class NativeAssembler
                     EmitAccumulatorUnary(line.OperandText, 0xEE, emit, result);
                     break;
                 case "JP":
-                    if (line.OperandText.Trim().Equals("X", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Saut vers l'adresse contenue dans un registre : 11h puis l'identifiant
+                    // du registre. Seul "jp x" etait reconnu, en dur ; "jp y", "jp u" et
+                    // "jp s" tombaient dans le saut absolu, ou le nom de registre etait
+                    // evalue comme un symbole valant zero — un saut vers l'adresse 0 emis
+                    // en silence. Verifie contre la reference : 11 04, 11 05, 11 06, 11 07.
+                    var cible = line.OperandText.Trim();
+                    if (cible.Length > 0 &&
+                        "X,Y,U,S".Split(',').Any(r => cible.Equals(r, StringComparison.OrdinalIgnoreCase)))
                     {
                         Emit(0x11, emit, result);
-                        Emit(0x04, emit, result);
+                        Emit(RegisterId(cible), emit, result);
                         break;
                     }
 
                     EmitAbsoluteJump(line.OperandText, 0x02, 2, emit, result);
                     break;
+                }
+
                 case "JPF":
                     EmitAbsoluteJump(line.OperandText, 0x03, 3, emit, result);
                     break;
@@ -1232,9 +1242,13 @@ internal sealed partial class NativeAssembler
                 return;
             }
 
+            // Le prebyte de l'operande interne precede l'opcode. Il n'etait pas emis du
+            // tout ici, l'operande etant lu par un simple Eval.
+            var pointerSource = ParseInternalRamOperand(right);
+            EmitPrebyte(pointerSource.PreId, 0, emit, result);
             Emit(0xDA, emit, result);
             Emit24(Eval(left[1..^1]), emit, result);
-            Emit(Eval(right[1..^1]), emit, result);
+            Emit(pointerSource.Value, emit, result);
             return;
         }
 
@@ -1360,9 +1374,13 @@ internal sealed partial class NativeAssembler
 
         if (left.StartsWith('[') && left.EndsWith(']') && right.StartsWith('(') && right.EndsWith(')'))
         {
+            // Meme regle : le prebyte precede l'opcode, alors qu'InternalRamOffset le
+            // produisait apres lui.
+            var wordSource = ParseInternalRamOperand(right);
+            EmitPrebyte(wordSource.PreId, 0, emit, result);
             Emit(0xD9, emit, result);
             Emit24(Eval(left[1..^1]), emit, result);
-            Emit(InternalRamOffset(right, emit, result), emit, result);
+            Emit(wordSource.Value, emit, result);
             return;
         }
 

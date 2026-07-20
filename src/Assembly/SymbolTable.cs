@@ -123,12 +123,32 @@ internal sealed class SymbolTable
     /// </summary>
     public IEnumerable<string> RelativeCandidates(string operand)
     {
-        if (CurrentScope is not null)
+        // On remonte la chaine des portees englobantes, de la plus proche a la plus
+        // lointaine, avant de tenter le nom global. Depuis "putline!putlsb2", le nom
+        // "putlsub" peut designer "putline!putlsb2!putlsub", puis "putline!putlsub",
+        // puis "putlsub" : n'essayer que la portee immediate laissait le cas median
+        // introuvable.
+        foreach (var portee in EnclosingScopes())
         {
-            yield return $"{CurrentScope}!{operand}";
+            yield return $"{portee}!{operand}";
         }
 
         yield return operand;
+    }
+
+    /// <summary>
+    /// Action : enumere la portee courante puis chacune de ses portees englobantes.
+    /// Donnees de sortie : "a!b!c", puis "a!b", puis "a" ; vide hors de toute portee.
+    /// </summary>
+    public IEnumerable<string> EnclosingScopes()
+    {
+        var portee = CurrentScope;
+        while (!string.IsNullOrEmpty(portee))
+        {
+            yield return portee;
+            var coupe = portee.LastIndexOf('!');
+            portee = coupe > 0 ? portee[..coupe] : null;
+        }
     }
 
     /// <summary>
@@ -203,6 +223,26 @@ internal sealed class SymbolTable
         }
 
         return result.ToString();
+    }
+
+    /// <summary>
+    /// Action : verifie qu'une chaine est un chemin de symbole, c'est-a-dire un nom simple
+    /// ou une suite de noms simples separes par "!".
+    /// Donnees de sortie : vrai pour "l6" comme pour "clrn2!l6".
+    ///
+    /// Un saut relatif peut viser un tel chemin partiel, resolu ensuite contre la portee
+    /// courante ; n'accepter que les noms simples excluait cette forme.
+    /// </summary>
+    public static bool IsSymbolPath(string value)
+    {
+        var text = value.Trim();
+        if (text.Length == 0)
+        {
+            return false;
+        }
+
+        var parties = text.Split('!');
+        return parties.Length > 0 && parties.All(IsSimpleSymbolName);
     }
 
     /// <summary>
