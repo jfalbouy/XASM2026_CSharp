@@ -139,6 +139,14 @@ internal sealed partial class NativeAssembler
                     .FirstOrDefault();
                 if (reachable is not null)
                 {
+                    // Cette resolution court-circuite l'evaluateur : sans cet enregistrement,
+                    // aucun saut relatif n'apparaitrait dans la table des references croisees,
+                    // qui declarerait alors mortes des etiquettes pourtant utilisees.
+                    if (_emitPass && _currentOrigin is not null)
+                    {
+                        _symbols.AddReference(symbolName, _currentOrigin.File, _currentOrigin.Line);
+                    }
+
                     return reachable.Address;
                 }
             }

@@ -65,9 +65,16 @@ internal sealed partial class NativeAssembler
             result.Symbols[symbol.Key] = symbol.Value;
         }
 
+        // La cle enregistree est la graphie rencontree au premier usage, qui peut differer
+        // de celle de la definition (la table est insensible a la casse). On republie sous
+        // le nom **defini**, sans quoi la table croisee et la liste des symboles ne se
+        // recoupent pas et un symbole parait absent de l'une ou de l'autre.
         foreach (var reference in _symbols.References)
         {
-            result.SymbolReferences[reference.Key] = reference.Value;
+            var canonique = result.Symbols.Keys
+                .FirstOrDefault(k => string.Equals(k, reference.Key, StringComparison.OrdinalIgnoreCase))
+                ?? reference.Key;
+            result.SymbolReferences[canonique] = reference.Value;
         }
     }
 
