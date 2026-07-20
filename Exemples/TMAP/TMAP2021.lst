@@ -1,0 +1,1154 @@
+000000                   	;===========================================================================
+000000                   	;	TMAP2021.ASM - carte memoire du PC-E500S
+000000                   	;	d'apres Tmap Version 1.05, (C)TORO 1994
+000000                   	;
+000000                   	;	Reecriture pour xasm2026-4. Le code machine emis est STRICTEMENT
+000000                   	;	IDENTIQUE a celui de TMAP2020.asm : rien n'a ete reordonne, aucune
+000000                   	;	instruction remplacee par une autre. Seules changent la lisibilite et
+000000                   	;	les verifications faites a l'assemblage.
+000000                   	;
+000000                   	;---------------------------------------------------------------------------
+000000                   	;	CE QUE FAIT CE PROGRAMME
+000000                   	;
+000000                   	;	Il dresse l'etat de la memoire de la machine et l'affiche, ou l'ecrit
+000000                   	;	dans un fichier si un nom lui est passe en argument. Trois inventaires
+000000                   	;	se succedent :
+000000                   	;
+000000                   	;	  1. version de la ROM ;
+000000                   	;	  2. contenu des slots fichiers S1:, S2: et S3:, avec pour chaque
+000000                   	;	     entree son adresse, son nom, ses attributs, sa taille ;
+000000                   	;	  3. peripheriques declares et vecteurs d'interruption installes.
+000000                   	;
+000000                   	;	Le resultat sort par FCS, ce qui permet indifferemment l'ecran ou un
+000000                   	;	fichier : le bit 0 de FLAG distingue les deux.
+000000                   	;
+000000                   	;---------------------------------------------------------------------------
+000000                   	;	POINTS A CONNAITRE AVANT DE MODIFIER
+000000                   	;
+000000                   	;	STRBUF est une etiquette NUE, placee en fin de programme : le tampon
+000000                   	;	d'expansion des chaines s'etend donc au-dela du dernier octet emis. La
+000000                   	;	memoire qui suit le programme est utilisee et ne doit pas etre supposee
+000000                   	;	libre.
+000000                   	;
+000000                   	;	Les lignes ";	PRE 30H" en commentaire sont des vestiges : le prebyte
+000000                   	;	etait autrefois ecrit a la main. PRE_ON etant actif, l'assembleur
+000000                   	;	l'emet desormais tout seul. Elles sont conservees car elles signalent
+000000                   	;	les endroits ou un prebyte est bel et bien produit.
+000000                   	;
+000000                   	;	VECTBL et BASTBL sont des listes TERMINEES PAR ZERO, parcourues en
+000000                   	;	boucle jusqu'a ce marqueur. Retirer le zero final ferait deborder le
+000000                   	;	parcours ; des verifications en fin de fichier en fixent la taille.
+000000                   	;===========================================================================
+000000                   	;
+0BE000                   		ORG     0BE000H
+0BE000                   	;
+0BE000                   		pre_on
+0BE000                   	;
+0BE000 7A CB E6 0B 01    		OR      [FLAG],1
+0BE005 94 06             		MV      X,[U]
+0BE007 90 24             		MV      A,[X++]
+0BE009 60 20             		CMP     A,' '
+0BE00B 18 14             		JRZ     OPT2
+0BE00D 60 22             		CMP     A,22H
+0BE00F 18 10             		JRZ     OPT2
+0BE011 12 08             		JR      OPT12
+0BE013                   	OPT1:
+0BE013 60 22             		CMP     A,22H
+0BE015 1A 02             		JRNZ    OPT11
+0BE017 6C 04             		INC     X
+0BE019 B4 06             	OPT11:  MV      [U],X
+0BE01B 0C 2A E5 0B       	OPT12:  MV      X,_SCRN
+0BE01F 12 22             		JR      OPT5
+0BE021                   	OPT2:
+0BE021 04 9E E3          		CALL    SKIPSPC
+0BE024 1D 13             		JRC     OPT1
+0BE026 04 AF E3          		CALL    SETFIL
+0BE029 16 97 E1          		JPC     ERROR
+0BE02C 72 CB E6 0B FE    		AND     [FLAG],0FEH
+0BE031                   	OPT3:
+0BE031 90 24             		MV      A,[X++]
+0BE033 60 22             		CMP     A,22H
+0BE035 18 06             		JRZ     OPT4
+0BE037 60 20             		CMP     A,' '
+0BE039 1F 0A             		JRNC    OPT3
+0BE03B 7C 04             		DEC     X
+0BE03D                   	OPT4:
+0BE03D B4 06             		MV      [U],X
+0BE03F 0C D0 E6 0B       		MV      X,STRBUF
+0BE043 09 00             	OPT5:   MV      IL,0
+0BE045 08 00             		MV      A,0
+0BE047 05 E4 FF 0F       		CALLF   FCS
+0BE04B 16 97 E1          		JPC     ERROR
+0BE04E                   	;	PRE 30H 
+0BE04E 30 D8 CC E6 0B D6 		MV      [HANDLE],(CX)
+0BE054                   	;
+0BE054 0D A1 E6 0B       		MV      Y,_TITLE
+0BE058 04 51 E4          		CALL    PRINT
+0BE05B                   	;ROM Version affichage ------------
+0BE05B 0D 5A E5 0B       		MV      Y,_ROMV
+0BE05F 04 46 E4          		CALL    CHPUTS
+0BE062 88 F0 FF 0F       		MV      A,[0FFFF0H]
+0BE066 04 AA E4          		CALL    BYTPUT
+0BE069 08 2E             		MV      A,'.'
+0BE06B B0 24             		MV      [X++],A
+0BE06D 88 F1 FF 0F       		MV      A,[0FFFF1H]
+0BE071 04 AA E4          		CALL    BYTPUT
+0BE074 04 62 E4          		CALL    SCRENL
+0BE077                   	;Afficher le statut du fichier ------
+0BE077 0D 67 E5 0B       		MV      Y,_FILE
+0BE07B 04 51 E4          		CALL    PRINT
+0BE07E                   	;
+0BE07E 8C DE FC 0B       		MV      X,[UWORK]
+0BE082 8D 15 FC 0B       		MV      Y,[0BFC09H+6+6] ;[S1:]
+0BE086 88 1A FC 0B       		MV      A,[0BFC09H+6+6+5]
+0BE08A                   	;	PRE 30H	
+0BE08A 30 DC DA B4 E5 0B 		MVP	(SI),_S1
+0BE090 04 B9 E1          		CALL    PFILE0
+0BE093                   	;
+0BE093                   	;Affichage de travaux variables
+0BE093 0C DE FC 0B       		MV	X,UWORK
+0BE097 09 14             		MV	IL,20
+0BE099                   	VW:
+0BE099 95 24             		MV	Y,[X++]
+0BE09B                   	;	PRE 30H	
+0BE09B 30 E2 04 DA       		MVP	(SI),[X]
+0BE09F                   	;	PRE 30H	
+0BE09F 30 D7 05 DA       		CMPP	(SI),Y
+0BE0A3 18 45             		JRZ	VW1			;Inutilise
+0BE0A5 29                		PUSHU	IL
+0BE0A6 2C                		PUSHU	X
+0BE0A7 2D                		PUSHU	Y
+0BE0A8 0C D0 E6 0B       		MV	X,STRBUF
+0BE0AC 04 9A E4          		CALL	ADRPUT			;Adresse de depart
+0BE0AF 08 2D             		MV      A,'-'
+0BE0B1 B0 24             		MV      [X++],A
+0BE0B3                   	;	PRE 30H	
+0BE0B3 30 85 DA          		MV	Y,(SI)
+0BE0B6 7C 05             		DEC	Y
+0BE0B8 04 9A E4          		CALL	ADRPUT			;Adresse de fin
+0BE0BB 08 5B             		MV	A,5bh
+0BE0BD 75                		MV	B,A
+0BE0BE 08 20             		MV	A,' '
+0BE0C0 B2 24             		MV	[X++],BA
+0BE0C2 95 86 03          		MV	Y,[U+3]
+0BE0C5 08 03             		MV	A,3
+0BE0C7 4D 50             		SUB	Y,A
+0BE0C9 04 9A E4          		CALL	ADRPUT
+0BE0CC 08 20             		MV	A,' '
+0BE0CE 75                		MV	B,A
+0BE0CF 08 5D             		MV	A,']'
+0BE0D1 B2 24             		MV	[X++],BA
+0BE0D3 08 20             		MV	A,' '
+0BE0D5 75                		MV	B,A
+0BE0D6 B2 24             		MV	[X++],BA
+0BE0D8 3D                		POPU	Y
+0BE0D9 2C                		PUSHU	X			;La taille
+0BE0DA                   	;	PRE 30H	
+0BE0DA 30 84 DA          		MV	X,(SI)
+0BE0DD 4D 45             		SUB	X,Y
+0BE0DF FD 54             		MV	Y,X
+0BE0E1 3C                		POPU	X
+0BE0E2 04 BD E4          		CALL	ZDECPUT
+0BE0E5 04 62 E4          		CALL	SCRENL
+0BE0E8 3C                		POPU	X
+0BE0E9 39                		POPU	IL
+0BE0EA 7C 01             	VW1:	DEC	IL
+0BE0EC 1B 55             		JRNZ	VW
+0BE0EE                   	;
+0BE0EE 8D 1A FD 0B       		MV      Y,[USRWRK]              ;Affichage de la zone utilisateur
+0BE0F2 0C 00 FC 0B       		MV      X,0BFC00H
+0BE0F6 4D 45             		SUB     X,Y
+0BE0F8 18 2D             		JRZ     NOUSR
+0BE0FA 2C                		PUSHU   X
+0BE0FB 0C D0 E6 0B       		MV      X,STRBUF
+0BE0FF 04 9A E4          		CALL    ADRPUT
+0BE102 0D 08 E6 0B       		MV      Y,_UFREE
+0BE106 04 46 E4          		CALL    CHPUTS
+0BE109 3D                		POPU    Y
+0BE10A 04 BD E4          		CALL	ZDECPUT
+0BE10D 08 20             		MV      A,' '
+0BE10F B0 24             		MV      [X++],A
+0BE111                   	;	PRE 30H 	
+0BE111 30 49 EC 06       		SUB     (0ECH),6
+0BE115 30 D2 00 1A FD 0B 		MVP     (0),[USRWRK]    ;BOTTOM
+0BE11B 30 DC 03 FF FB 0B 		MVP     (3),0BFBFFH     ;TOP
+0BE121 04 FF E2          		CALL    DVINFO
+0BE124 04 62 E4          		CALL    SCRENL
+0BE127                   	NOUSR:
+0BE127 8D 0F FC 0B       		MV      Y,[0BFC09H+6]   ;[S2:]
+0BE12B 88 14 FC 0B       		MV      A,[0BFC09H+6+5]
+0BE12F                   	;	PRE 30H		
+0BE12F 30 DC DA C6 E5 0B 		MVP	(SI),_S2
+0BE135 04 AA E1          		CALL    PFILE
+0BE138                   	;
+0BE138 8D 09 FC 0B       		MV      Y,[0BFC09H]     ;[S3:]
+0BE13C 88 0E FC 0B       		MV      A,[0BFC09H+5]
+0BE140                   	;	PRE 30H		
+0BE140 30 DC DA D8 E5 0B 		MVP	(SI),_S3
+0BE146 04 AA E1          		CALL    PFILE
+0BE149                   		                                ;Afficher l'etat du lien de l'appareil
+0BE149 0D 51 E6 0B       		MV      Y,_DEV
+0BE14D 04 51 E4          		CALL    PRINT
+0BE150 8D A2 FC 0B       		MV      Y,[IOCSH]
+0BE154                   	DLINK1:
+0BE154 2D                		PUSHU   Y
+0BE155 95 85 05          		MV      Y,[Y+5]
+0BE158 04 9A E4          		CALL    ADRPUT  ;ENTRY
+0BE15B 95 06             		MV      Y,[U]
+0BE15D 08 20             		MV      A,' '
+0BE15F B0 24             		MV      [X++],A
+0BE161 90 85 03          		MV      A,[Y+3]
+0BE164 04 AA E4          		CALL    BYTPUT  ;ID
+0BE167 08 20             		MV      A,' '
+0BE169 B0 24             		MV      [X++],A 
+0BE16B 90 85 04          		MV      A,[Y+4]
+0BE16E 04 AA E4          		CALL    BYTPUT  ;atr
+0BE171 08 20             		MV      A,' '
+0BE173 B0 24             		MV      [X++],A ;NAME
+0BE175 04 83 E3          		CALL    IOCSINFO
+0BE178 04 5A E4          		CALL    SCREND
+0BE17B 3D                		POPU    Y
+0BE17C 95 05             		MV      Y,[Y]
+0BE17E 6C 05             		INC     Y
+0BE180 18 04             		JRZ     DLINK2
+0BE182 7C 05             		DEC     Y
+0BE184 13 32             		JR      DLINK1
+0BE186                   	DLINK2:
+0BE186 04 62 E4          		CALL    SCRENL
+0BE189                   	;	PRE 30H 	
+0BE189 30 D0 D6 CC E6 0B 		MV      (CX),[HANDLE]
+0BE18F 09 02             		MV      IL,2
+0BE191 05 E4 FF 0F       		CALLF   FCS
+0BE195 9F                		RC
+0BE196 07                		RETF
+0BE197                   	;
+0BE197                   	ERROR:
+0BE197 0C 95 E6 0B       		MV      X,_FERR
+0BE19B 0D 0C 00 00       		MV      Y,_FERRE-_FERR
+0BE19F 09 0B             		MV      IL,0BH
+0BE1A1                   	;	PRE 30H 	
+0BE1A1 30 CC D6 00       		MV      (CX),0
+0BE1A5 05 E8 FF 0F       		CALLF   IOCS
+0BE1A9 07                		RETF
+0BE1AA                   	;
+0BE1AA                   	;
+0BE1AA                   	;FILE INFOMATION                        ;Affiche le statut du fichier ==
+0BE1AA                   	;
+0BE1AA                   	PFILE:
+0BE1AA 93 85 02          		MV      I,[Y+2]
+0BE1AD FD 43             	_197:	MV      X,I             ;etait encode a la main : DB 0FDH,43H
+0BE1AF                   	_197E:
+0BE1AF 09 0B             		MV      IL,11
+0BE1B1                   	FP00:
+0BE1B1 45 44             		ADD     X,X
+0BE1B3 7C 01             		DEC     IL
+0BE1B5 1B 06             		JRNZ    FP00
+0BE1B7 45 45             		ADD     X,Y
+0BE1B9                   	PFILE0:
+0BE1B9 7C 04             		DEC     X
+0BE1BB AC CD E6 0B       		MV      [TOPSLT],X
+0BE1BF 0C D0 E6 0B       		MV      X,STRBUF
+0BE1C3 60 00             		CMP     A,0
+0BE1C5 14 F0 E2          		JPZ     PFILEE                  ;Ca n'existe pas
+0BE1C8                   	;Fente d'affichage -------------
+0BE1C8 2D                		PUSHU	Y
+0BE1C9 04 9A E4          		CALL	ADRPUT			;Adresse de depart
+0BE1CC                   	;	PRE 30H		
+0BE1CC 30 85 DA          		MV	Y,(SI)			;Nom de l'emplacement
+0BE1CF 04 46 E4          		CALL    CHPUTS
+0BE1D2 95 06             		MV	Y,[U]
+0BE1D4 93 85 02          		MV      I,[Y+2]			;Taille de la fente
+0BE1D7 FD 53             	_218:	MV      Y,I             ;etait encode a la main : DB 0FDH,53H
+0BE1D9                   	_218E:
+0BE1D9 09 0B             		MV      IL,11
+0BE1DB                   	FP01:
+0BE1DB 45 55             		ADD     Y,Y
+0BE1DD 7C 01             		DEC     IL
+0BE1DF 1B 06             		JRNZ    FP01
+0BE1E1 04 BD E4          		CALL    ZDECPUT
+0BE1E4 04 62 E4          		CALL    SCRENL
+0BE1E7 3D                		POPU	Y
+0BE1E8 94 85 12          		MV      X,[Y+12H]
+0BE1EB 45 54             		ADD     Y,X
+0BE1ED                   	PFILE1:
+0BE1ED 0C D0 E6 0B       		MV      X,STRBUF                ;Afficher l'adresse de depart --------
+0BE1F1 04 9A E4          		CALL    ADRPUT
+0BE1F4 90 05             		MV      A,[Y]
+0BE1F6 60 FF             		CMP     A,0FFH
+0BE1F8 18 D1             		JRZ     PFILE3                  ;Bloc de fin
+0BE1FA 08 20             		MV      A,' '
+0BE1FC B0 24             		MV      [X++],A
+0BE1FE 2D                		PUSHU   Y
+0BE1FF 6C 05             		INC     Y
+0BE201                   	;
+0BE201 09 04             		MV      IL,4                    ;Transfert de nom de fichier ------------
+0BE203 92 25             	PFILE2: MV      BA,[Y++]
+0BE205 B2 24             		MV      [X++],BA
+0BE207 7C 01             		DEC     IL
+0BE209 1B 08             		JRNZ    PFILE2
+0BE20B 08 2E             		MV      A,'.'
+0BE20D B0 24             		MV      [X++],A
+0BE20F 92 25             		MV      BA,[Y++]
+0BE211 B2 24             		MV      [X++],BA
+0BE213 90 25             		MV      A,[Y++]
+0BE215 B0 24             		MV      [X++],A
+0BE217 08 20             		MV      A,' '
+0BE219 B0 24             		MV      [X++],A
+0BE21B                   	;
+0BE21B 90 25             		MV      A,[Y++]                 ;Affichage d'attribut ------------------
+0BE21D 04 AA E4          		CALL    BYTPUT
+0BE220 08 20             		MV      A,' '
+0BE222 B0 24             		MV      [X++],A
+0BE224                   	;
+0BE224 95 06             		MV      Y,[U]                   ;Indication de taille ----------------
+0BE226 95 85 16          		MV      Y,[Y+16H]
+0BE229 08 22             		MV      A,22H
+0BE22B 4D 50             		SUB     Y,A
+0BE22D 04 BD E4          		CALL    ZDECPUT
+0BE230 08 20             		MV      A,' '
+0BE232 B0 24             		MV      [X++],A
+0BE234                   		                                ;Traitement des notes ------------------
+0BE234 95 06             		MV      Y,[U]                   ;Dispositif / TSR
+0BE236 90 85 0C          		MV      A,[Y+12]
+0BE239 0D 1A E6 0B       		MV      Y,_ADEV
+0BE23D 64 04             		TEST    A,4
+0BE23F 1A B2             		JRNZ    PSMOV
+0BE241 0D 1F E6 0B       		MV      Y,_ATSR
+0BE245 64 08             		TEST    A,8
+0BE247 1A AA             		JRNZ    PSMOV
+0BE249                   	PFS:
+0BE249 95 06             		MV      Y,[U]                   ;Confirmer le fichier systeme
+0BE24B 92 85 22          		MV      BA,[Y+22H]
+0BE24E 0B FF 00          		MV      I,00FFH
+0BE251 4C 23             		SUB     BA,I
+0BE253 1A 2E             		JRNZ    PFS3
+0BE255 90 85 24          		MV      A,[Y+24H]
+0BE258 60 09             		CMP     A,9
+0BE25A 1E 27             		JRNC    PFS3
+0BE25C 0D 24 E6 0B       		MV      Y,_ASYS
+0BE260 45 50             		ADD     Y,A
+0BE262 E6                		ROL     A
+0BE263 E6                		ROL     A
+0BE264 45 50             		ADD     Y,A
+0BE266 09 05             		MV      IL,5
+0BE268                   	PFS1:
+0BE268 90 25             		MV      A,[Y++]
+0BE26A B0 24             		MV      [X++],A
+0BE26C 7C 01             		DEC     IL
+0BE26E 1B 08             		JRNZ    PFS1
+0BE270                   	;
+0BE270 95 06             		MV      Y,[U]                   ;BTEXT / BDATA ���H
+0BE272                   	;	PRE 30H 	
+0BE272 30 D7 05 CE       		CMPP    (DATBAS),Y
+0BE276 18 06             		JRZ     PFS2
+0BE278                   	;	PRE 30H 	
+0BE278 30 D7 05 CB       		CMPP    (TXTBAS),Y
+0BE27C 1A 05             		JRNZ    PFS3
+0BE27E 7A D5 E6 0B 2A    	PFS2:   OR      [STRBUF+5],'*'
+0BE283                   	PFS3:	                                ;Lien de peripherique
+0BE283                   	;	PRE 30H 	
+0BE283 30 49 EC 06       		SUB     (0ECH),6
+0BE287 95 06             		MV      Y,[U]
+0BE289 30 A5 00          		MV      (0),Y ;BOTTOM
+0BE28C 2C                		PUSHU   X
+0BE28D 94 85 16          		MV      X,[Y+16H]
+0BE290 45 54             		ADD     Y,X
+0BE292 3C                		POPU    X
+0BE293 30 A5 03          		MV      (3),Y ;TOP
+0BE296 04 FF E2          		CALL    DVINFO
+0BE299                   	;
+0BE299 95 06             		MV      Y,[U]                   ;Quand il y a une zone libre ----
+0BE29B 94 85 16          		MV      X,[Y+16H]
+0BE29E 95 85 11          		MV      Y,[Y+11H]
+0BE2A1 4D 54             		SUB     Y,X
+0BE2A3 18 1E             		JRZ     PFI1
+0BE2A5 2D                		PUSHU   Y
+0BE2A6 95 86 03          		MV      Y,[U+3]
+0BE2A9 94 85 16          		MV      X,[Y+16H]
+0BE2AC 45 54             		ADD     Y,X
+0BE2AE 0C D0 E6 0B       		MV      X,STRBUF
+0BE2B2 04 9A E4          		CALL    ADRPUT
+0BE2B5 0D F6 E5 0B       		MV      Y,_IFREE
+0BE2B9 04 46 E4          		CALL    CHPUTS
+0BE2BC 3D                		POPU    Y
+0BE2BD 04 BD E4          		CALL    ZDECPUT
+0BE2C0 04 62 E4          		CALL    SCRENL
+0BE2C3                   	PFI1:
+0BE2C3 3D                		POPU    Y
+0BE2C4 94 85 11          		MV      X,[Y+11H]
+0BE2C7 45 54             		ADD     Y,X
+0BE2C9 13 DE             		JR      PFILE1
+0BE2CB                   	PFILE3:
+0BE2CB 08 2D             		MV      A,'-'
+0BE2CD B0 24             		MV      [X++],A
+0BE2CF 2D                		PUSHU   Y
+0BE2D0 8D CD E6 0B       		MV      Y,[TOPSLT]
+0BE2D4 04 9A E4          		CALL    ADRPUT
+0BE2D7 0D EA E5 0B       		MV      Y,_FFREE
+0BE2DB 04 46 E4          		CALL    CHPUTS
+0BE2DE 8D CD E6 0B       		MV      Y,[TOPSLT]
+0BE2E2 2C                		PUSHU   X
+0BE2E3 94 86 03          		MV      X,[U+3]
+0BE2E6 4D 54             		SUB     Y,X
+0BE2E8 3C                		POPU    X
+0BE2E9 04 BD E4          		CALL    ZDECPUT
+0BE2EC 3D                		POPU    Y
+0BE2ED 04 62 E4          		CALL    SCRENL
+0BE2F0                   	PFILEE:
+0BE2F0 02 62 E4          		JP      SCRENL
+0BE2F3                   	PSMOV:
+0BE2F3 09 05             		MV      IL,5
+0BE2F5                   	PFMOV1:
+0BE2F5 90 25             		MV      A,[Y++]
+0BE2F7 B0 24             		MV      [X++],A
+0BE2F9 7C 01             		DEC     IL
+0BE2FB 1B 08             		JRNZ    PFMOV1
+0BE2FD 13 B6             		JR      PFS
+0BE2FF                   	;
+0BE2FF                   	;
+0BE2FF                   	;Devide & vector information ====  Affichage de la relation appareil / vecteur
+0BE2FF                   	DVINFO:
+0BE2FF 8D A2 FC 0B       		MV      Y,[IOCSH] ;DEVICE
+0BE303 6C 05             		INC     Y
+0BE305 7C 05             	DV1:    DEC     Y
+0BE307 2D                		PUSHU   Y
+0BE308 95 85 05          		MV      Y,[Y+5]
+0BE30B 30 D7 05 03       		CMPP    (3),Y
+0BE30F 1C 09             		JRC     DV2
+0BE311 30 D7 05 00       		CMPP    (0),Y
+0BE315 1E 03             		JRNC    DV2
+0BE317 04 83 E3          		CALL    IOCSINFO
+0BE31A 3D                	DV2:    POPU    Y
+0BE31B 95 05             		MV      Y,[Y]
+0BE31D 6C 05             		INC     Y
+0BE31F 1B 1C             		JRNZ    DV1
+0BE321                   	;
+0BE321 0D 31 E5 0B       		MV      Y,VECTBL ;VECTOR
+0BE325 2D                	DV3:    PUSHU   Y
+0BE326 95 05             		MV      Y,[Y]
+0BE328 6C 05             		INC     Y
+0BE32A 7C 05             		DEC     Y
+0BE32C 18 20             		JRZ     DV5
+0BE32E 95 05             		MV      Y,[Y]
+0BE330 30 D7 05 03       		CMPP    (3),Y
+0BE334 1C 11             		JRC     DV4
+0BE336 30 D7 05 00       		CMPP    (0),Y
+0BE33A 1E 0B             		JRNC    DV4
+0BE33C 95 06             		MV      Y,[U]
+0BE33E 95 05             		MV      Y,[Y]
+0BE340 04 9A E4          		CALL    ADRPUT
+0BE343 08 20             		MV      A,' '
+0BE345 B0 24             		MV      [X++],A
+0BE347 3D                	DV4:    POPU    Y
+0BE348 08 03             		MV      A,3
+0BE34A 45 50             		ADD     Y,A
+0BE34C 13 29             		JR      DV3
+0BE34E 3D                	DV5:    POPU    Y
+0BE34F                   	;
+0BE34F 0D 55 E5 0B       		MV      Y,BASTBL ;BAS V
+0BE353 12 21             		JR      DV8
+0BE355 2D                	DV6:    	PUSHU   Y
+0BE356                   	;	PRE 30H 	
+0BE356 30 85 D1          		MV      Y,(BASWRK)
+0BE359 45 50             		ADD     Y,A
+0BE35B 95 05             		MV      Y,[Y]
+0BE35D 30 D7 05 03       		CMPP    (3),Y
+0BE361 1C 12             		JRC     DV7
+0BE363 30 D7 05 00       		CMPP    (0),Y
+0BE367 1E 0C             		JRNC    DV7
+0BE369 0B 42 00          		MV      I,'+B'
+0BE36C B3 24             		MV      [X++],I
+0BE36E 04 AA E4          		CALL    BYTPUT
+0BE371 08 20             		MV      A,' '
+0BE373 B0 24             		MV      [X++],A
+0BE375 3D                	DV7:    POPU    Y
+0BE376 90 25             	DV8:    MV      A,[Y++]
+0BE378 60 00             		CMP     A,0
+0BE37A 1B 27             		JRNZ    DV6
+0BE37C                   	;	PRE 30H 	
+0BE37C 30 47 EC 06       		PMDF    (0ECH),6
+0BE380 02 5A E4          		JP      SCREND
+0BE383                   	;
+0BE383                   	;Store IOCS information ===== IOCS Nom du peripherique de stockage ======
+0BE383                   	;
+0BE383                   	IOCSINFO:
+0BE383 95 06             		MV      Y,[U]
+0BE385 08 08             		MV      A,8
+0BE387 45 50             		ADD     Y,A
+0BE389 12 0C             		JR      IINFO2
+0BE38B                   	IINFO1:
+0BE38B 90 25             		MV      A,[Y++]
+0BE38D B0 24             		MV      [X++],A
+0BE38F 60 3A             		CMP     A,':'
+0BE391 1B 08             		JRNZ    IINFO1
+0BE393 08 20             		MV      A,' '
+0BE395 B0 24             		MV      [X++],A
+0BE397                   	IINFO2:
+0BE397 90 05             		MV      A,[Y]
+0BE399 60 00             		CMP     A,0
+0BE39B 1B 12             		JRNZ    IINFO1
+0BE39D 06                		RET
+0BE39E                   	;
+0BE39E                   	;
+0BE39E                   	;Skip space =============== Ignorer les espaces ==============
+0BE39E                   	;IN     X:POINTER
+0BE39E                   	;OUT    X:POINTER
+0BE39E                   	;       C:Error
+0BE39E                   	;REG    A
+0BE39E                   	;
+0BE39E                   	SKIPSPC:
+0BE39E 90 24             		MV      A,[X++]
+0BE3A0 60 22             		CMP     A,22H
+0BE3A2 18 07             		JRZ     SKIPS1
+0BE3A4 60 20             		CMP     A,' '
+0BE3A6 19 0A             		JRZ     SKIPSPC
+0BE3A8 7C 04             		DEC     X
+0BE3AA 06                		RET
+0BE3AB                   	SKIPS1:
+0BE3AB 7C 04             		DEC     X
+0BE3AD 97                		SC
+0BE3AE 06                		RET
+0BE3AF                   	;
+0BE3AF                   	;
+0BE3AF                   	;Set filename ========== Reglage du nom de fichier ==========
+0BE3AF                   	;IN     X:POINTER
+0BE3AF                   	;OUT    [STRBUF]:STRINGS
+0BE3AF                   	;       C:Error
+0BE3AF                   	;REG    BA I X Y
+0BE3AF                   	;
+0BE3AF                   	SETFIL:
+0BE3AF 0D D0 E6 0B       		MV      Y,STRBUF ;iniwork Initialiser la zone de stockage
+0BE3B3 08 20             		MV      A,' '
+0BE3B5 75                		MV		B,A
+0BE3B6 09 09             		MV      IL,9
+0BE3B8                   	SF1:
+0BE3B8 B2 25             		MV      [Y++],BA
+0BE3BA 7C 01             		DEC     IL
+0BE3BC 1B 06             		JRNZ    SF1
+0BE3BE B1 05             		MV      [Y],IL
+0BE3C0 08 2E             		MV      A,'.'
+0BE3C2 B0 C5 04          		MV      [Y-04H],A
+0BE3C5 0D D0 E6 0B       		MV      Y,STRBUF
+0BE3C9 2C                		PUSHU   X                       ;Parametrage du nom de lecteur ------------
+0BE3CA                   	SF2:
+0BE3CA 90 24             		MV      A,[X++]
+0BE3CC 60 21             		CMP     A,' '+1
+0BE3CE 1C 63             		JRC     SF11
+0BE3D0 60 22             		CMP     A,22H
+0BE3D2 18 5F             		JRZ     SF11
+0BE3D4 60 3A             		CMP     A,':'
+0BE3D6 1B 0E             		JRNZ    SF2
+0BE3D8 3C                		POPU    X
+0BE3D9 09 07             		MV      IL,7
+0BE3DB                   	SF3:
+0BE3DB 90 24             		MV      A,[X++]                 ;Transfert de nom de lecteur
+0BE3DD 7C 01             		DEC     IL
+0BE3DF 18 63             		JRZ     SF13    ;ERROR!
+0BE3E1 B0 25             		MV      [Y++],A
+0BE3E3 60 3A             		CMP     A,':'
+0BE3E5 1B 0C             		JRNZ    SF3
+0BE3E7 7C 01             		DEC     IL
+0BE3E9 45 51             		ADD     Y,IL
+0BE3EB                   	SF4:
+0BE3EB 09 08             		MV      IL,8                    ;Reglage du nom de fichier ------------
+0BE3ED                   	SF5:
+0BE3ED 90 24             		MV      A,[X++]
+0BE3EF 60 21             		CMP     A,' '+1
+0BE3F1 1C 3C             		JRC     SF10
+0BE3F3 60 22             		CMP     A,22H
+0BE3F5 18 38             		JRZ     SF10
+0BE3F7 60 2E             		CMP     A,'.'
+0BE3F9 18 14             		JRZ     SF7
+0BE3FB B0 25             		MV      [Y++],A
+0BE3FD 7C 01             		DEC     IL
+0BE3FF 1B 14             		JRNZ    SF5
+0BE401                   	SF6:
+0BE401 90 24             		MV      A,[X++]                 ;Traitement lorsque le nom du fichier est long
+0BE403 60 21             		CMP     A,' '+1
+0BE405 1C 28             		JRC     SF10
+0BE407 60 22             		CMP     A,22H
+0BE409 18 24             		JRZ     SF10
+0BE40B 60 2E             		CMP     A,'.'
+0BE40D 1B 0E             		JRNZ    SF6
+0BE40F                   	SF7:
+0BE40F 45 51             		ADD     Y,IL
+0BE411 6C 05             		INC     Y
+0BE413 09 03             		MV      IL,3                    ;Reglage de l'extension ----------------
+0BE415                   	SF8:
+0BE415 90 24             		MV      A,[X++]
+0BE417 60 21             		CMP     A,' '+1
+0BE419 18 14             		JRZ     SF10
+0BE41B 60 22             		CMP     A,22H
+0BE41D 18 10             		JRZ     SF10
+0BE41F B0 25             		MV      [Y++],A
+0BE421 7C 01             		DEC     IL
+0BE423 1B 10             		JRNZ    SF8
+0BE425                   	SF9:
+0BE425 90 24             		MV      A,[X++]
+0BE427 60 21             		CMP     A,' '+1
+0BE429 1C 04             		JRC     SF10
+0BE42B 60 22             		CMP     A,22H
+0BE42D 1B 0A             		JRNZ    SF9
+0BE42F                   	SF10:
+0BE42F 7C 04             		DEC     X
+0BE431 9F                		RC
+0BE432 06                		RET
+0BE433                   	SF11:
+0BE433 0C 7D FC 0B       		MV      X,DEFDRV                ;Nom du lecteur par defaut 
+0BE437 08 03             		MV      A,3
+0BE439                   	SF12:
+0BE439 93 24             		MV      I,[X++]
+0BE43B B3 25             		MV      [Y++],I
+0BE43D 7C 00             		DEC     A
+0BE43F 1B 08             		JRNZ    SF12
+0BE441 3C                		POPU    X
+0BE442 13 59             		JR      SF4
+0BE444                   	SF13:
+0BE444 97                		SC
+0BE445 06                		RET
+0BE446                   	;
+0BE446                   	;
+0BE446                   	;Store strings ==================       ;Stocker la chaine ASCII ========
+0BE446                   	;IN     X:String buffer
+0BE446                   	;       Y:Bottom of strings
+0BE446                   	;OUT    X:String buffer(inc)
+0BE446                   	;REG    A
+0BE446                   	;
+0BE446                   	CHPUTS:
+0BE446 90 25             		MV      A,[Y++]
+0BE448 B0 24             		MV      [X++],A
+0BE44A 60 00             		CMP     A,00H
+0BE44C 1B 08             		JRNZ    CHPUTS
+0BE44E 7C 04             		DEC     X
+0BE450 06                		RET
+0BE451                   	;
+0BE451                   	;
+0BE451                   	;Store & print strings(add CR+LF)       ;Affichage de la chaine de caracteres (avec saut de ligne) ====
+0BE451                   	;IN     Y:Bottom of strings
+0BE451                   	;OUT    X:Bottom of string buffer
+0BE451                   	;REG    A I (CX)
+0BE451                   	;
+0BE451                   	PRINT:
+0BE451 0C D0 E6 0B       		MV      X,STRBUF
+0BE455 04 46 E4          		CALL    CHPUTS
+0BE458 12 08             		JR      SCRENL
+0BE45A                   	;
+0BE45A                   	;
+0BE45A                   	;Print stock strings(Del spc)====       ;Affichage de chaine avec espace vide supprime en fin de ligne =
+0BE45A                   	;IN     X:End of strings
+0BE45A                   	;OUT    X:Bottom of string buffer
+0BE45A                   	;REG    A I (CX)
+0BE45A                   	;
+0BE45A                   	SCREND:
+0BE45A 90 34             		MV      A,[--X]
+0BE45C 60 20             		CMP     A,' '
+0BE45E 19 06             		JRZ     SCREND
+0BE460 6C 04             		INC     X
+0BE462                   	;
+0BE462                   	;
+0BE462                   	;Print stock strings(Add CR+LF)==       ;Affichage de chaines de caracteres enregistrees avec saut de ligne =====
+0BE462                   	;IN     X:End of strings
+0BE462                   	;OUT    X:Bottom of string buffer
+0BE462                   	;REG    A I (CX)
+0BE462                   	;
+0BE462                   	SCRENL:
+0BE462 0B 0D 0A          		MV      I,0A0DH
+0BE465 B3 24             		MV      [X++],I
+0BE467                   	;
+0BE467                   	;
+0BE467                   	;Print stock strings ============       ;afficher la chaine de caracteres stockee
+0BE467                   	;IN     X:End of strings
+0BE467                   	;OUT    X:Bottom of string buffer
+0BE467                   	;REG    A (CX)
+0BE467                   	;
+0BE467                   	SCREEN:
+0BE467 2D                		PUSHU   Y
+0BE468 2B                		PUSHU   I
+0BE469 FD 54             		MV      Y,X
+0BE46B 0C D0 E6 0B       		MV      X,STRBUF
+0BE46F 4D 54             		SUB     Y,X
+0BE471                   	;	PRE 30H 	
+0BE471 30 D0 D6 CC E6 0B 		MV      (CX),[HANDLE]
+0BE477 09 04             		MV      IL,4
+0BE479 05 E4 FF 0F       		CALLF   FCS
+0BE47D 66 CB E6 0B 01    		TEST    [FLAG],1
+0BE482 18 0F             		JRZ     SCREN1
+0BE484 88 9E FC 0B       		MV      A,[HEIGHT]             
+0BE488 89 28 FC 0B       		MV      IL,[SCRNY]
+0BE48C 4E 01             		SUB     A,IL
+0BE48E 1A 03             		JRNZ    SCREN1
+0BE490 04 02 E5          		CALL    KEYIN
+0BE493                   	SCREN1:
+0BE493 0C D0 E6 0B       		MV      X,STRBUF
+0BE497 3B                		POPU    I
+0BE498 3D                		POPU    Y
+0BE499 06                		RET
+0BE49A                   	;
+0BE49A                   	;
+0BE49A                   	;Store number(00000 - FFFFF) ====       ;Y : Stockage hexadecimal ============
+0BE49A                   	;IN     X:String buffer
+0BE49A                   	;       Y:Data
+0BE49A                   	;OUT    X:String buffer(inc)
+0BE49A                   	;REG    BA
+0BE49A                   	;
+0BE49A                   	ADRPUT:
+0BE49A 2D                		PUSHU   Y
+0BE49B 90 86 02          		MV      A,[U+2]
+0BE49E 04 B0 E4          		CALL    HEXPUT
+0BE4A1 90 86 01          		MV      A,[U+1]
+0BE4A4 04 AA E4          		CALL    BYTPUT
+0BE4A7 90 06             		MV      A,[U]
+0BE4A9 3D                		POPU    Y
+0BE4AA                   	;
+0BE4AA                   	;
+0BE4AA                   	;Store number(00 - FF) ==========       ;A : Stockage hexadecimal ============
+0BE4AA                   	;IN     X:String buffer
+0BE4AA                   	;       A:Data
+0BE4AA                   	;OUT    X:String buffer(inc)
+0BE4AA                   	;REG    BA
+0BE4AA                   	;
+0BE4AA                   	BYTPUT:
+0BE4AA 75                		MV      B,A
+0BE4AB EE                		SWAP    A
+0BE4AC 04 B0 E4          		CALL    HEXPUT
+0BE4AF 74                		MV      A,B
+0BE4B0                   	;
+0BE4B0                   	;
+0BE4B0                   	;Store number(0 - F) ============       ;A : Memoire hexadecimale a un chiffre ========
+0BE4B0                   	;IN     X:String buffer
+0BE4B0                   	;       A:Data
+0BE4B0                   	;OUT    X:String buffer(inc)
+0BE4B0                   	;REG    A
+0BE4B0                   	;
+0BE4B0                   	HEXPUT:
+0BE4B0 70 0F             		AND     A,0FH
+0BE4B2 60 0A             		CMP     A,10
+0BE4B4 1C 02             		JRC     HEXPU1
+0BE4B6 40 07             		ADD     A,7
+0BE4B8                   	HEXPU1:
+0BE4B8 40 30             		ADD     A,'0'
+0BE4BA B0 24             		MV      [X++],A
+0BE4BC 06                		RET
+0BE4BD                   	;
+0BE4BD                   	;
+0BE4BD                   	;Store number(     0 - 999999) ==       ;Y Memoriser dans la suppression zero en decimal
+0BE4BD                   	;IN     X:String buffer
+0BE4BD                   	;       Y:Data
+0BE4BD                   	;OUT    X:String buffer(inc)
+0BE4BD                   	;REG    A I
+0BE4BD                   	;
+0BE4BD                   	ZDECPUT:
+0BE4BD 04 D8 E4          		CALL    DECPUT
+0BE4C0 2C                		PUSHU   X
+0BE4C1 09 05             		MV      IL,5
+0BE4C3 4D 41             		SUB     X,IL
+0BE4C5 7C 04             		DEC     X
+0BE4C7                   	ZDECP1:
+0BE4C7 90 24             		MV      A,[X++]
+0BE4C9 60 30             		CMP     A,'0'
+0BE4CB 1A 09             		JRNZ    ZDECP2
+0BE4CD 08 20             		MV      A,' '
+0BE4CF B0 C4 01          		MV      [X-1],A
+0BE4D2 7C 01             		DEC     IL
+0BE4D4 1B 0F             		JRNZ    ZDECP1
+0BE4D6 3C                	ZDECP2: POPU    X
+0BE4D7 06                		RET
+0BE4D8                   	;
+0BE4D8                   	;
+0BE4D8                   	;Store number(000000 - 999999) ==       ;Y stocker en decimal ==========
+0BE4D8                   	;IN     X:String buffer
+0BE4D8                   	;       Y:Data
+0BE4D8                   	;OUT    X:String buffer(inc)
+0BE4D8                   	;REG    A
+0BE4D8                   	;
+0BE4D8                   	DECPUT:
+0BE4D8 2C                		PUSHU   X
+0BE4D9 0C 18 E5 0B       		MV      X,_DECPU+3
+0BE4DD 12 19             		JR      DECPU4
+0BE4DF                   	DECPU1:
+0BE4DF 08 30             		MV      A,'0'
+0BE4E1 12 02             		JR      DECPU3
+0BE4E3                   	DECPU2:
+0BE4E3 6C 00             		INC     A
+0BE4E5                   	DECPU3:
+0BE4E5 4D 54             		SUB     Y,X
+0BE4E7 1F 06             		JRNC    DECPU2
+0BE4E9 45 54             		ADD     Y,X
+0BE4EB 94 86 03          		MV      X,[U+3]
+0BE4EE B0 24             		MV      [X++],A
+0BE4F0 B4 86 03          		MV      [U+3],X
+0BE4F3 3C                		POPU    X
+0BE4F4 08 03             		MV      A,3
+0BE4F6 45 40             		ADD     X,A
+0BE4F8                   	DECPU4:
+0BE4F8 2C                		PUSHU   X
+0BE4F9 94 34             		MV      X,[--X]
+0BE4FB 6C 04             		INC     X
+0BE4FD 1B 20             		JRNZ    DECPU1
+0BE4FF 3C                		POPU    X
+0BE500 3C                		POPU    X
+0BE501 06                		RET
+0BE502                   	;
+0BE502                   	;
+0BE502                   	;Key input routine ==============================
+0BE502                   	;IN     none
+0BE502                   	;OUT    BA:Key code
+0BE502                   	;REG    none
+0BE502                   	;
+0BE502                   	KEYIN:
+0BE502 08 80             		MV      A,80H
+0BE504 2B                		PUSHU   I
+0BE505 2C                		PUSHU   X
+0BE506 2D                		PUSHU   Y
+0BE507                   	;	PRE 30H 	
+0BE507 30 CC D6 01       		MV      (CX),1
+0BE50B 09 43             		MV      IL,43H
+0BE50D 05 E8 FF 0F       		CALLF   IOCS
+0BE511 3D                		POPU    Y
+0BE512 3C                		POPU    X
+0BE513 3B                		POPU    I
+0BE514 06                		RET
+0BE515                   	;
+0BE515 9F 86 01 0F 27 00 	_DECPU: DP      99999,9999,999,99,9,0,0FFFFFH
+0BE51B E7 03 00 63 00 00 	
+0BE521 09 00 00 00 00 00 	
+0BE527 FF FF 0F          	
+0BE52A                   	;
+0BE52A 53 43 52 4E 3A 20 	_SCRN: DB      'SCRN: ', 0
+0BE530 00                	
+0BE531                   	;
+0BE531 57 FC 0B C6 FC 0B 	VECTBL:	DP      MENUV,FASTV,SLOWV,KEYV,ONV,SIOSV,SIORV,EXV,IRV,0BFC41H,0BFCC3H,0
+0BE537 C9 FC 0B CC FC 0B 	
+0BE53D CF FC 0B D2 FC 0B 	
+0BE543 D5 FC 0B DB FC 0B 	
+0BE549 C9 FC 0B 41 FC 0B 	
+0BE54F C3 FC 0B 00 00 00 	
+0BE555                   	VECTBLE:                                ;fin de table, terminateur compris
+0BE555                   	;
+0BE555 02 05 08 0B 00    	BASTBL:	DB      2,5,8,0BH,0
+0BE55A                   	BASTBLE:                                ;fin de table, terminateur compris
+0BE55A                   	;
+0BE55A 52 4F 4D 20 76 65 	_ROMV:	DB      'ROM version:', 0
+0BE560 72 73 69 6F 6E 3A 	
+0BE566 00                	
+0BE567                   	;
+0BE567 0D 0A 61 64 64 73 	_FILE:	DB      13,10, 'adds  file name    atr size  memo', 13,10, '----- ------------ -- ------ ----------', 0
+0BE56D 20 20 66 69 6C 65 	
+0BE573 20 6E 61 6D 65 20 	
+0BE579 20 20 20 61 74 72 	
+0BE57F 20 73 69 7A 65 20 	
+0BE585 20 6D 65 6D 6F 0D 	
+0BE58B 0A 2D 2D 2D 2D 2D 	
+0BE591 20 2D 2D 2D 2D 2D 	
+0BE597 2D 2D 2D 2D 2D 2D 	
+0BE59D 2D 20 2D 2D 20 2D 	
+0BE5A3 2D 2D 2D 2D 2D 20 	
+0BE5A9 2D 2D 2D 2D 2D 2D 	
+0BE5AF 2D 2D 2D 2D 00    	
+0BE5B4                   	;
+0BE5B4 20 3D 3D 3D 20 53 	_S1:		DB      ' === S1: ==== == ', 0
+0BE5BA 31 3A 20 3D 3D 3D 	
+0BE5C0 3D 20 3D 3D 20 00 	
+0BE5C6                   	;
+0BE5C6 20 3D 3D 3D 20 53 	_S2:		DB      ' === S2: ==== == ', 0
+0BE5CC 32 3A 20 3D 3D 3D 	
+0BE5D2 3D 20 3D 3D 20 00 	
+0BE5D8                   	;
+0BE5D8 20 3D 3D 3D 20 53 	_S3:		DB      ' === S3: ==== == ', 0
+0BE5DE 33 3A 20 3D 3D 3D 	
+0BE5E4 3D 20 3D 3D 20 00 	
+0BE5EA                   	;
+0BE5EA 20 20 20 20 3C 66 	_FFREE:	DB      '    <free> ', 0
+0BE5F0 72 65 65 3E 20 00 	
+0BE5F6                   	;
+0BE5F6 20 28 66 72 65 65 	_IFREE:	DB      ' (free)          ', 0
+0BE5FC 29 20 20 20 20 20 	
+0BE602 20 20 20 20 20 00 	
+0BE608                   	;
+0BE608 2D 42 46 42 46 46 	_UFREE:	DB      '-BFBFF <usr free>', 0
+0BE60E 20 3C 75 73 72 20 	
+0BE614 66 72 65 65 3E 00 	
+0BE61A                   	;
+0BE61A 3C 64 65 76 3E    	_ADEV:  DB      '<dev>'
+0BE61F 3C 74 73 72 3E    	_ATSR:  DB      '<tsr>'
+0BE624 3C 62 61 73 3E 3C 	_ASYS:  DB      '<bas><dat><fnc><???><AER><???><bin><dsk><txt>'
+0BE62A 64 61 74 3E 3C 66 	
+0BE630 6E 63 3E 3C 3F 3F 	
+0BE636 3F 3E 3C 41 45 52 	
+0BE63C 3E 3C 3F 3F 3F 3E 	
+0BE642 3C 62 69 6E 3E 3C 	
+0BE648 64 73 6B 3E 3C 74 	
+0BE64E 78 74 3E          	
+0BE651                   	;
+0BE651 0D 0A 65 6E 74 72 	_DEV:	DB      13,10, 'entry ID atr device name', 13,10, '----- -- -- ---------------------------', 0
+0BE657 79 20 49 44 20 61 	
+0BE65D 74 72 20 64 65 76 	
+0BE663 69 63 65 20 6E 61 	
+0BE669 6D 65 0D 0A 2D 2D 	
+0BE66F 2D 2D 2D 20 2D 2D 	
+0BE675 20 2D 2D 20 2D 2D 	
+0BE67B 2D 2D 2D 2D 2D 2D 	
+0BE681 2D 2D 2D 2D 2D 2D 	
+0BE687 2D 2D 2D 2D 2D 2D 	
+0BE68D 2D 2D 2D 2D 2D 2D 	
+0BE693 2D 00             	
+0BE695                   	;
+0BE695 46 69 6C 65 20 65 	_FERR:	DB      'File error.', 10
+0BE69B 72 72 6F 72 2E 0A 	
+0BE6A1                   	_FERRE:
+0BE6A1                   	;
+0BE6A1 54 6D 61 70 20 56 	_TITLE:	DB      'Tmap Version 1.05          (C)TORO 1994', 13,10,0
+0BE6A7 65 72 73 69 6F 6E 	
+0BE6AD 20 31 2E 30 35 20 	
+0BE6B3 20 20 20 20 20 20 	
+0BE6B9 20 20 20 28 43 29 	
+0BE6BF 54 4F 52 4F 20 31 	
+0BE6C5 39 39 34 0D 0A 00 	
+0BE6CB                   	;
+0BE6CB 00                	FLAG:   DB      0                       ;b0:affiche a l'ecran
+0BE6CC 00                	HANDLE: DB      0                       ;File handle
+0BE6CD 00 00 00          	TOPSLT: DP      0                       ;Adresse maximale de la fente
+0BE6D0                   	STRBUF:                                 ;Tampon de developpement de chaine
+0BE6D0                   	;
+0BE6D0                   	;LABELS -------------------------
+0BE6D0                   	;
+0BE6D0                   	;Inner RAM label & port                 
+0BE6D0                   	TXTBAS:  EQU 0CBH                        ;TEXT.BAS 
+0BE6D0                   	DATBAS:  EQU 0CEH                        ;DATA.BAS
+0BE6D0                   	BASWRK:  EQU 0D1H                        ;BASIC zone de travail
+0BE6D0                   	BX:      EQU 0D4H                        ;Registre logique
+0BE6D0                   	CX:      EQU 0D6H                        ;Registre logique
+0BE6D0                   	DX:      EQU 0D8H                        ;Registre logique
+0BE6D0                   	SI:      EQU 0DAH                        ;Registre logique
+0BE6D0                   	DI:      EQU 0DDH                        ;Registre logique
+0BE6D0                   	IOCSW:   EQU 0E6H                        ;IOCS
+0BE6D0                   	;BP:      EQU 0ECH                       ;
+0BE6D0                   	PX:      EQU 0EDH                        ;Registre de designation relatif auxiliaire RAM interne
+0BE6D0                   	PY:      EQU 0EEH                        ;Registre de designation relatif auxiliaire RAM interne
+0BE6D0                   	KO:      EQU 0F0H                        ;Specification de la ligne de clavier
+0BE6D0                   	KI:      EQU 0F2H                        ;Sortie clavier
+0BE6D0                   	EO:      EQU 0F3H                        ;Sortie de port
+0BE6D0                   	EI:      EQU 0F5H                        ;Entree de port
+0BE6D0                   	IMR:     EQU 0FBH                        ;Interruption activee
+0BE6D0                   	SCR:     EQU 0FDH                        ;Systeme de controle OUT
+0BE6D0                   	SSR:     EQU 0FFH                        ;Controle du systeme IN
+0BE6D0                   	;
+0BE6D0                   	;Zone de travail du systeme
+0BE6D0                   	SCRNX:   EQU 0BFC27H                     ;position colonne du curseur
+0BE6D0                   	SCRNY:   EQU 0BFC28H                     ;position linge du curseur
+0BE6D0                   	MENUV:   EQU 0BFC57H                     ;MAIN MENU vecteur
+0BE6D0                   	DEFDRV:  EQU 0BFC7DH                     ;Nom actuel du lecteur
+0BE6D0                   	DOTSOP:  EQU 0BFC96H                     ;Mode dessin
+0BE6D0                   	CSRX:    EQU 0BFC9BH                     ;Curseur x
+0BE6D0                   	CSRY:    EQU 0BFC9CH                     ;Curseur y
+0BE6D0                   	WIDTH:   EQU 0BFC9DH                     ;Largeur de l'ecran
+0BE6D0                   	HEIGHT:  EQU 0BFC9EH                     ;Nombre de lignes d'ecran
+0BE6D0                   	LCDMOD:  EQU 0BFCA1H                     ;Flip flag
+0BE6D0                   	IOCSH:   EQU 0BFCA2H                     ;IOCS
+0BE6D0                   	FASTV:   EQU 0BFCC6H                     ;16ms Vecteur de minuterie
+0BE6D0                   	SLOWV:   EQU 0BFCC9H                     ;0.5s Vecteur de minuterie
+0BE6D0                   	KEYV:    EQU 0BFCCCH                     ;Vecteur d'entree cle
+0BE6D0                   	ONV:     EQU 0BFCCFH                     ;ON Vecteur d'entree cle
+0BE6D0                   	SIOSV:   EQU 0BFCD2H                     ;SIO Vecteur de transmission
+0BE6D0                   	SIORV:   EQU 0BFCD5H                     ;SIO Recevoir un vecteur
+0BE6D0                   	EXV:     EQU 0BFCDBH                     ;Vecteur etendu {BATT]
+0BE6D0                   	IRV:     EQU 0BFCC9H                     ;Vecteur d'interruption douce
+0BE6D0                   	UWORK:   EQU 0BFCDEH                     ;pile utilisateur
+0BE6D0                   	SWORK:   EQU 0BFCE1H                     ;pile systeme
+0BE6D0                   	HISBUF:  EQU 0BFCF6H ;History buff       ;Historique tampon
+0BE6D0                   	SCCBUF:  EQU 0BFCF9H ;SCC buffer         ;SCC PLAY tampon
+0BE6D0                   	USRWRK:  EQU 0BFD1AH                     ;zone de travail de l'utilisateur
+0BE6D0                   	;
+0BE6D0                   	;SYSTEM ENTRY
+0BE6D0                   	FCS:     EQU 0FFFE4H                     ;FCS
+0BE6D0                   	IOCS:    EQU 0FFFE8H                     ;IOCS
+0BE6D0                   	;
+0BE6D0                   	;Source sonore liee
+0BE6D0                   	SCCB:    EQU 19000H ;BANK SELECT MEGA ROM Changement de banque
+0BE6D0                   	SCCW:    EQU 19800H ;WAVE TABLE (32*4)
+0BE6D0                   	SCCT:    EQU 19880H ;TONE TABLE (2*5)
+0BE6D0                   	SCCV:    EQU 1988AH ;VOLUME TABLE (1*5)
+0BE6D0                   	SCCM:    EQU 1988FH ;MIX FLAG(5bits)
+0BE6D0                   	;
+0BE6D0                   	_COMPO: EQU 0FFFFFH ;For COMPO
+0BE6D0                   	;
+0BE6D0                   	;---------------------------------------------------------------------------
+0BE6D0                   	;	VERIFICATIONS A L'ASSEMBLAGE
+0BE6D0                   	;
+0BE6D0                   	;	Elles n'emettent aucun octet : elles interrompent l'assemblage si une
+0BE6D0                   	;	hypothese du programme cesse d'etre vraie.
+0BE6D0                   	;---------------------------------------------------------------------------
+0BE6D0                   	;
+0BE6D0                   	; Les deux instructions autrefois ecrites en octets bruts doivent continuer a
+0BE6D0                   	; tenir sur deux octets, faute de quoi tout ce qui suit serait decale.
+0BE6D0                   		ASSERT	_197E-_197 = 2,'MV X,I doit tenir sur 2 octets'
+0BE6D0                   		ASSERT	_218E-_218 = 2,'MV Y,I doit tenir sur 2 octets'
+0BE6D0                   	;
+0BE6D0                   	; VECTBL est parcourue jusqu'a son entree nulle : 11 vecteurs plus le
+0BE6D0                   	; terminateur, sur 3 octets chacun.
+0BE6D0                   		ASSERT	VECTBLE-VECTBL = 12*3,'VECTBL : nombre d entrees inattendu'
+0BE6D0                   	;
+0BE6D0                   	; BASTBL est parcourue de meme : 4 valeurs plus le terminateur, un octet chacune.
+0BE6D0                   		ASSERT	BASTBLE-BASTBL = 5,'BASTBL : nombre d entrees inattendu'
+0BE6D0                   	
+0BE6D0                   		pre_off
+0BE6D0                   		end
+
+ - Symbols -
+
+0BE49Ah  ADRPUT
+0BE555h  BASTBL
+0BE55Ah  BASTBLE
+0000D1h  BASWRK
+0000D4h  BX
+0BE4AAh  BYTPUT
+0BE446h  CHPUTS
+0BFC9Bh  CSRX
+0BFC9Ch  CSRY
+0000D6h  CX
+0000CEh  DATBAS
+0BE4DFh  DECPU1
+0BE4E3h  DECPU2
+0BE4E5h  DECPU3
+0BE4F8h  DECPU4
+0BE4D8h  DECPUT
+0BFC7Dh  DEFDRV
+0000DDh  DI
+0BE154h  DLINK1
+0BE186h  DLINK2
+0BFC96h  DOTSOP
+0BE305h  DV1
+0BE31Ah  DV2
+0BE325h  DV3
+0BE347h  DV4
+0BE34Eh  DV5
+0BE355h  DV6
+0BE375h  DV7
+0BE376h  DV8
+0BE2FFh  DVINFO
+0000D8h  DX
+0000F5h  EI
+0000F3h  EO
+0BE197h  ERROR
+0BFCDBh  EXV
+0BFCC6h  FASTV
+0FFFE4h  FCS
+0BE6CBh  FLAG
+0BE1B1h  FP00
+0BE1DBh  FP01
+0BE6CCh  HANDLE
+0BFC9Eh  HEIGHT
+0BE4B8h  HEXPU1
+0BE4B0h  HEXPUT
+0BFCF6h  HISBUF
+0BE38Bh  IINFO1
+0BE397h  IINFO2
+0000FBh  IMR
+0FFFE8h  IOCS
+0BFCA2h  IOCSH
+0BE383h  IOCSINFO
+0000E6h  IOCSW
+0BFCC9h  IRV
+0BE502h  KEYIN
+0BFCCCh  KEYV
+0000F2h  KI
+0000F0h  KO
+0BFCA1h  LCDMOD
+0BFC57h  MENUV
+0BE127h  NOUSR
+0BFCCFh  ONV
+0BE013h  OPT1
+0BE019h  OPT11
+0BE01Bh  OPT12
+0BE021h  OPT2
+0BE031h  OPT3
+0BE03Dh  OPT4
+0BE043h  OPT5
+0BE2C3h  PFI1
+0BE1AAh  PFILE
+0BE1B9h  PFILE0
+0BE1EDh  PFILE1
+0BE203h  PFILE2
+0BE2CBh  PFILE3
+0BE2F0h  PFILEE
+0BE2F5h  PFMOV1
+0BE249h  PFS
+0BE268h  PFS1
+0BE27Eh  PFS2
+0BE283h  PFS3
+0BE451h  PRINT
+0BE2F3h  PSMOV
+0000EDh  PX
+0000EEh  PY
+019000h  SCCB
+0BFCF9h  SCCBUF
+01988Fh  SCCM
+019880h  SCCT
+01988Ah  SCCV
+019800h  SCCW
+0000FDh  SCR
+0BE467h  SCREEN
+0BE493h  SCREN1
+0BE45Ah  SCREND
+0BE462h  SCRENL
+0BFC27h  SCRNX
+0BFC28h  SCRNY
+0BE3AFh  SETFIL
+0BE3B8h  SF1
+0BE42Fh  SF10
+0BE433h  SF11
+0BE439h  SF12
+0BE444h  SF13
+0BE3CAh  SF2
+0BE3DBh  SF3
+0BE3EBh  SF4
+0BE3EDh  SF5
+0BE401h  SF6
+0BE40Fh  SF7
+0BE415h  SF8
+0BE425h  SF9
+0000DAh  SI
+0BFCD5h  SIORV
+0BFCD2h  SIOSV
+0BE3ABh  SKIPS1
+0BE39Eh  SKIPSPC
+0BFCC9h  SLOWV
+0000FFh  SSR
+0BE6D0h  STRBUF
+0BFCE1h  SWORK
+0BE6CDh  TOPSLT
+0000CBh  TXTBAS
+0BFD1Ah  USRWRK
+0BFCDEh  UWORK
+0BE531h  VECTBL
+0BE555h  VECTBLE
+0BE099h  VW
+0BE0EAh  VW1
+0BFC9Dh  WIDTH
+0BE4C7h  ZDECP1
+0BE4D6h  ZDECP2
+0BE4BDh  ZDECPUT
+0BE1ADh  _197
+0BE1AFh  _197E
+0BE1D7h  _218
+0BE1D9h  _218E
+0BE61Ah  _ADEV
+0BE624h  _ASYS
+0BE61Fh  _ATSR
+0FFFFFh  _COMPO
+0BE515h  _DECPU
+0BE651h  _DEV
+0BE695h  _FERR
+0BE6A1h  _FERRE
+0BE5EAh  _FFREE
+0BE567h  _FILE
+0BE5F6h  _IFREE
+0BE55Ah  _ROMV
+0BE5B4h  _S1
+0BE5C6h  _S2
+0BE5D8h  _S3
+0BE52Ah  _SCRN
+0BE6A1h  _TITLE
+0BE608h  _UFREE
+
+  No fatal error.  Code: 0BE000h - 0BE6CFh [     1744 byte(s)]

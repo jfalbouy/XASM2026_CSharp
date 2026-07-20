@@ -663,6 +663,8 @@ sorties attendues.
 | SAMPLES | `SAMPLE6`…`SAMPLE9.ASM` | 60–80 | 20–31 o | Fonctionnalités **ajoutées en 2026-4** (voir ci-dessous) |
 | REGISTER | `REGISTER.ASM` | 922 | 4 154 o | Driver PC-E500S : appels BASIC, interruptions, copie de blocs |
 | TMAP | `TMAP2020.asm` | 875 | 1 744 o | E/S fichiers, affichage, énumération de périphériques |
+| REGISTER | `REGISTER2.ASM` | 972 | 4 154 o | Réécriture lisible de `REGISTER.ASM`, **octets identiques** |
+| TMAP | `TMAP2021.asm` | 936 | 1 744 o | Réécriture lisible de `TMAP2020.asm`, **octets identiques** |
 | VOGUE | `VOGUE.S` + `runtime.s` + `compile.s` | 4 496 | 14 433 o | Compilateur complet multi-fichiers |
 
 ```powershell

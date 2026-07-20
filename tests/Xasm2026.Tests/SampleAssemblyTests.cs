@@ -15,6 +15,23 @@ namespace Xasm2026.Tests;
 [Collection("assembler")]
 public sealed class SampleAssemblyTests
 {
+    /// <summary>
+    /// Les reecritures livrees a l'utilisateur (`REGISTER2`, `TMAP2021`) doivent rester
+    /// **octet pour octet** identiques a leur original : elles tournent sur du materiel reel,
+    /// et c'est cette egalite qui garantit qu'elles s'y comportent pareil.
+    /// </summary>
+    [Theory]
+    [InlineData("REGISTER", "REGISTER.ASM", "REGISTER2.ASM")]
+    [InlineData("TMAP", "TMAP2020.asm", "TMAP2021.asm")]
+    public void Rewritten_example_is_byte_identical_to_its_original(
+        string dossier, string original, string reecriture)
+    {
+        var attendu = AssembleFrom(dossier, original).GeneratedBytes.Select(b => b.Value).ToArray();
+        var obtenu = AssembleFrom(dossier, reecriture).GeneratedBytes.Select(b => b.Value).ToArray();
+
+        Assert.Equal(attendu, obtenu);
+    }
+
     [Theory]
     [InlineData("SAMPLE6.ASM", 29)]
     [InlineData("SAMPLE7.ASM", 20)]
@@ -85,9 +102,12 @@ public sealed class SampleAssemblyTests
         Assert.Contains(result.Warnings, w => w.Message.Contains("experimental"));
     }
 
-    private static Xasm2026.Native.Core.AssemblyResult AssembleSample(string sourceFile)
+    private static Xasm2026.Native.Core.AssemblyResult AssembleSample(string sourceFile) =>
+        AssembleFrom("SAMPLES", sourceFile);
+
+    private static Xasm2026.Native.Core.AssemblyResult AssembleFrom(string dossier, string sourceFile)
     {
-        var samples = Path.Combine(TestPaths.ExamplesDir, "SAMPLES");
+        var samples = Path.Combine(TestPaths.ExamplesDir, dossier);
         var work = Path.Combine(Path.GetTempPath(), "xasm_samples", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(work);
         File.Copy(Path.Combine(samples, sourceFile), Path.Combine(work, sourceFile));
