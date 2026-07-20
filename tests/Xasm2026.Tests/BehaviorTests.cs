@@ -68,6 +68,45 @@ public sealed class BehaviorTests
     }
 
     /// <summary>
+    /// IFEQ/IFNE/IFGT/IFLT ne comparent pas deux valeurs : enter_numeric_if (modern.c) lit
+    /// un unique operande et le teste contre zero. Un second operande est donc ignore en
+    /// silence, ce qui produit un binaire faux mais parfaitement assemblable. On avertit,
+    /// sans changer le comportement, qui reste celui du C.
+    /// </summary>
+    [Fact]
+    public void Numeric_conditionals_warn_about_a_silently_ignored_second_operand()
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "cond.asm"),
+                "media_type: EQU 2\n" +
+                "        ORG 0E000H\n" +
+                "        IFEQ media_type,0\n" +  // le ",0" est ignore : teste media_type == 0
+                "        DB  11H\n" +
+                "        ENDIF\n" +
+                "        IFEQ (media_type)-(2)\n" + // forme correcte : aucun avertissement
+                "        DB  22H\n" +
+                "        ENDIF\n" +
+                "        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "cond.asm" });
+            var result = new NativeAssembler(options).Assemble();
+
+            // La semantique est inchangee : seule la forme correcte est prise.
+            Assert.Equal(new[] { 0x22 }, result.GeneratedBytes.Select(b => (int)b.Value).ToArray());
+
+            var suspectes = result.Warnings
+                .Where(w => w.Message.Contains("extra operand ignored"))
+                .ToList();
+            Assert.Single(suspectes);
+            Assert.Equal(
+                "Warning: IFEQ tests one value against zero, extra operand ignored",
+                suspectes[0].Message);
+            Assert.Equal(3, suspectes[0].Line);
+        });
+    }
+
+    /// <summary>
     /// Les quatre avertissements portes depuis mes.c sont detectes, avec leur libelle
     /// historique, et n'empechent pas l'assemblage d'aboutir.
     /// </summary>

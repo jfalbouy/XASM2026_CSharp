@@ -214,6 +214,22 @@ internal sealed partial class NativeAssembler
 
             if (mnemonic is "IFEQ" or "IFNE" or "IFGT" or "IFLT")
             {
+                // Ces directives ne comparent pas deux valeurs : enter_numeric_if (modern.c)
+                // lit un unique operande et le teste contre zero. "IFEQ x,0" s'assemble donc
+                // sans erreur en ignorant le ",0" en silence, et produit un binaire faux mais
+                // valide — piege rencontre en portant les sources A62 du pilote SmartMedia, ou
+                // "IFEQ media_type,0" decalait le code de 21 octets. Le comportement reste
+                // celui du C ; on se contente d'avertir, et seulement si le bloc englobant est
+                // actif, pour ne pas signaler du code que l'on est justement en train d'ecarter.
+                if (active && SplitOperands(line.OperandText).Length > 1)
+                {
+                    _warnings.Add(new AssemblyWarning(
+                        origin.File,
+                        origin.Line,
+                        ColumnOf(origin.Text, line),
+                        $"Warning: {mnemonic} tests one value against zero, extra operand ignored"));
+                }
+
                 conditions.Push(active);
                 var value = Eval(line.OperandText);
                 active = active && mnemonic switch

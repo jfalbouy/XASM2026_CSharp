@@ -747,6 +747,9 @@ internal sealed partial class NativeAssembler
             case "IFNE":
             case "IFGT":
             case "IFLT":
+                // L'avertissement sur un operande surnumeraire n'est pas emis ici : le
+                // preprocesseur consomme ces directives avant l'assemblage, y compris dans
+                // les corps de macro et les REPEAT, et c'est donc lui qui le porte.
                 conditions.Push(active);
                 // Non-strict : une conditionnelle peut tester un symbole absent (traite comme 0),
                 // y compris dans un bloc parent inactif. On ne veut pas d'erreur "symbole indefini" ici.
