@@ -844,8 +844,12 @@ internal sealed partial class NativeAssembler
             return;
         }
 
+        // Les formes relatives a BP sont traitees plus loin, sauf lorsqu'elles lisent une
+        // adresse memoire simple : "mv (bp+7),[etiquette]" appartient bien a cette famille
+        // et n'etait prise en charge nulle part, l'operande droit finissant evalue comme un
+        // symbole nomme "[etiquette]".
         if (IsInternalRamOperand(left) &&
-            !IsBpRelative(left[1..^1]) &&
+            (!IsBpRelative(left[1..^1]) || IsPlainMemoryOperand(right)) &&
             !IsRegister(right))
         {
             var target = ParseInternalRamOperand(left);
@@ -1273,9 +1277,13 @@ internal sealed partial class NativeAssembler
             var inner = right[1..^1].Trim();
             if (TryEmitIndexedSuffix(inner, emit, result, out var suffix))
             {
+                // Le prebyte precede l'opcode. InternalRamOffset l'emet au moment de son
+                // appel : il faut donc le resoudre AVANT d'emettre l'opcode, sans quoi le
+                // prebyte se retrouverait derriere lui et l'instruction serait mal encodee.
+                var offset = InternalRamOffset(left, emit, result);
                 Emit(0xE1, emit, result);
                 EmitSuffix(suffix, emit, result);
-                Emit(InternalRamOffset(left, emit, result), emit, result);
+                Emit(offset, emit, result);
                 return;
             }
         }
@@ -1324,8 +1332,11 @@ internal sealed partial class NativeAssembler
             var inner = right[1..^1].Trim();
             if (!IsIndexExpression(inner))
             {
+                // Meme raison : le prebyte, emis par InternalRamOffset, doit preceder
+                // l'opcode.
+                var offset = InternalRamOffset(left, emit, result);
                 Emit(0xD1, emit, result);
-                Emit(InternalRamOffset(left, emit, result), emit, result);
+                Emit(offset, emit, result);
                 Emit24(Eval(inner), emit, result);
                 return;
             }
@@ -1333,15 +1344,17 @@ internal sealed partial class NativeAssembler
 
         if (left.StartsWith('(') && left.EndsWith(')') && right.StartsWith('(') && right.EndsWith(')'))
         {
-            var leftInner = left[1..^1].Trim();
-            if (!IsBpRelative(leftInner))
-            {
-                Emit(0x30, emit, result);
-            }
-
+            // Le prebyte se deduit des DEUX operandes et precede l'opcode. On resout donc
+            // les deux adresses sans rien emettre, puis on emet prebyte, opcode et offsets
+            // dans cet ordre. Emettre un 30h fixe, puis laisser InternalRamOffset produire
+            // le prebyte du second operande apres l'opcode, donnait a la fois la mauvaise
+            // valeur et le mauvais ordre.
+            var leftAddress = ParseInternalRamOperand(left);
+            var rightAddress = ParseInternalRamOperand(right);
+            EmitPrebyte(leftAddress.PreId, rightAddress.PreId, emit, result);
             Emit(0xC9, emit, result);
-            Emit(IsBpRelative(leftInner) ? InternalRamOffset(left, emit, result) : Eval(leftInner), emit, result);
-            Emit(InternalRamOffset(right, emit, result), emit, result);
+            Emit(leftAddress.Value, emit, result);
+            Emit(rightAddress.Value, emit, result);
             return;
         }
 
@@ -1493,6 +1506,18 @@ internal sealed partial class NativeAssembler
             return;
         }
 
+        // Echange entre deux registres d'adresse : prefixe 0EDh puis un octet portant les
+        // deux identifiants, celui de gauche dans le quartet haut. Verifie contre
+        // l'assembleur de reference : ex x,y -> ED 45, ex x,u -> ED 46, ex ba,i -> ED 23.
+        if (operands.Length == 2 &&
+            IsRegister(operands[0]) &&
+            IsRegister(operands[1]))
+        {
+            Emit(0xED, emit, result);
+            Emit((RegisterId(operands[0]) << 4) | RegisterId(operands[1]), emit, result);
+            return;
+        }
+
         throw new NotSupportedException($"EX form not ported yet: {operandText}");
     }
 
@@ -1526,6 +1551,27 @@ internal sealed partial class NativeAssembler
     }
 
     /// <summary>
+    /// Action : rend l'identifiant de prebyte de la base d'un adressage indirect [(base)+n].
+    /// Donnees d'entree : l'expression d'index, crochets exclus.
+    /// Donnees de sortie : l'identifiant, ou -1 si la base n'est pas un pointeur interne.
+    ///
+    /// Ce prebyte precede l'opcode. La regle, relevee sur l'assembleur de reference, est
+    /// celle de la colonne "(BP+n)" de la table des prebytes : base simple (n) -> 30h,
+    /// base relative a BP -> aucun, base relative a PX -> 34h, base PY -> refusee.
+    /// </summary>
+    private int IndexedBasePrebyteId(string indexExpression)
+    {
+        var expr = indexExpression.Trim();
+        if (!expr.StartsWith('('))
+        {
+            return -1;
+        }
+
+        var close = expr.IndexOf(')');
+        return close > 1 ? ParseInternalRamAddress(expr[1..close]).PreId : -1;
+    }
+
+    /// <summary>
     /// Action : essaie d'encoder un stockage via adressage indexe.
     /// Donnees d'entree : parametres de la signature (string indexExpression, string source, bool emit, AssemblyResult result) et etat courant necessaire.
     /// Donnees de sortie : booleen indiquant si le traitement a reussi ou si la condition est verifiee.
@@ -1553,6 +1599,16 @@ internal sealed partial class NativeAssembler
         if (opcode < 0)
         {
             return false;
+        }
+
+        // Le prebyte de la base precede l'opcode.
+        if (internalBase)
+        {
+            var basePreId = IndexedBasePrebyteId(indexExpression);
+            if (basePreId >= 0)
+            {
+                EmitPrebyte(basePreId, 0, emit, result);
+            }
         }
 
         Emit(opcode, emit, result);
@@ -1588,6 +1644,16 @@ internal sealed partial class NativeAssembler
         if (opcode < 0)
         {
             return false;
+        }
+
+        // Le prebyte de la base precede l'opcode.
+        if (internalBase)
+        {
+            var basePreId = IndexedBasePrebyteId(indexExpression);
+            if (basePreId >= 0)
+            {
+                EmitPrebyte(basePreId, 0, emit, result);
+            }
         }
 
         Emit(opcode, emit, result);
@@ -2264,7 +2330,10 @@ internal sealed partial class NativeAssembler
 
         if (left.StartsWith('[') && left.EndsWith(']') && !IsRegister(right))
         {
-            Emit(0x26, emit, result);
+            // 62h et non 26h : les deux chiffres avaient ete transposes. Le reste de la
+            // famille etait correct (TEST 66h, AND 72h, OR 7Ah, XOR 6Ah), ce qui rendait
+            // l'erreur d'autant plus discrete. Verifie contre l'assembleur de reference.
+            Emit(0x62, emit, result);
             Emit24(Eval(left[1..^1]), emit, result);
             Emit(Eval(right), emit, result);
             return;
@@ -2398,6 +2467,23 @@ internal sealed partial class NativeAssembler
     /// alors pris pour une forme relative a BP et le prebyte automatique saute, ce qui
     /// produit un code faux sans le moindre message.
     /// </summary>
+    /// <summary>
+    /// Action : reconnait un operande de memoire externe simple, de la forme [expression].
+    /// Donnees de sortie : faux pour les formes indexees ([x++], [y-2]) et pour l'indirection
+    /// via un pointeur en RAM interne ([(20h)+1]), qui ont chacune leur propre encodage.
+    /// </summary>
+    private static bool IsPlainMemoryOperand(string operand)
+    {
+        var text = operand.Trim();
+        if (!text.StartsWith('[') || !text.EndsWith(']'))
+        {
+            return false;
+        }
+
+        var inner = text[1..^1].Trim();
+        return inner.Length > 0 && !inner.StartsWith('(') && !IsIndexExpression(inner);
+    }
+
     private static bool IsBpRelative(string inner)
     {
         var text = inner.Trim();

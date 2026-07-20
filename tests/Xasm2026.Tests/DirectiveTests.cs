@@ -379,6 +379,62 @@ public sealed class DirectiveTests
         AssertBytes("        PRE_ON\n        MV  (BP+1),0H\n", 0xCC, 0x01, 0x00);
     }
 
+    /// <summary>
+    /// Le prebyte precede l'opcode. Sur les formes MVW (n),[...] il se retrouvait derriere
+    /// lui, car InternalRamOffset emet le prebyte au moment de son appel et cet appel avait
+    /// lieu apres l'emission de l'opcode. Les octets etaient les bons, dans le mauvais ordre.
+    ///
+    /// Defaut trouve en assemblant ISHD.ASM et ISHE.ASM, deux programmes que les quatre
+    /// exemples de reference n'avaient jamais mis en defaut. Encodages confirmes contre
+    /// l'assembleur de reference xasm2026-1-2.
+    /// </summary>
+    [Fact]
+    public void Prebyte_precedes_the_opcode_on_mvw_from_memory()
+    {
+        // MVW (n),[adresse absolue] : prebyte, opcode, offset interne, adresse 24 bits.
+        AssertBytesAt(0xBC000,
+            "cible:  EQU 0BD3A6H\n        PRE_ON\n        MVW (0),[cible]\n",
+            0x30, 0xD1, 0x00, 0xA6, 0xD3, 0x0B);
+
+        // MVW (n),[y++] : prebyte, opcode, suffixe d'indexation, offset interne.
+        AssertBytesAt(0xBC000,
+            "        PRE_ON\n        MVW (0),[y++]\n",
+            0x30, 0xE1, 0x25, 0x00);
+    }
+
+    /// <summary>
+    /// Encodages ramenes de l'assembleur de reference, sur des formes que les quatre
+    /// exemples historiques n'exercaient pas. Chacun correspond a un defaut trouve en
+    /// assemblant ISHD, ISHE, PLINK, tycom et PANO.
+    /// </summary>
+    [Theory]
+    // Echange entre registres d'adresse : prefixe 0EDh puis les deux identifiants.
+    [InlineData("        EX  X,U\n", new[] { 0xED, 0x46 })]
+    [InlineData("        EX  BA,I\n", new[] { 0xED, 0x23 })]
+    // MV (bp+n),[adresse] : pas de prebyte, l'operande gauche etant relatif a BP.
+    [InlineData("w:      EQU 0BFC9DH\n        PRE_ON\n        MV (bp+7),[w]\n",
+        new[] { 0xD0, 0x07, 0x9D, 0xFC, 0x0B })]
+    // Indirection par pointeur en RAM interne : le prebyte de la base precede l'opcode.
+    [InlineData("        PRE_ON\n        MV A,[(20H)+1]\n", new[] { 0x30, 0x98, 0x80, 0x20, 0x01 })]
+    [InlineData("        PRE_ON\n        MV A,[(px+3)+1]\n", new[] { 0x34, 0x98, 0x80, 0x03, 0x01 })]
+    [InlineData("        PRE_ON\n        MV A,[(bp+3)+1]\n", new[] { 0x98, 0x80, 0x03, 0x01 })]
+    // MVW (n),(n) : le prebyte se deduit des deux operandes et precede l'opcode.
+    [InlineData("        PRE_ON\n        MVW (bp+2),(0D4H)\n", new[] { 0x22, 0xC9, 0x02, 0xD4 })]
+    [InlineData("        PRE_ON\n        MVW (10H),(20H)\n", new[] { 0x32, 0xC9, 0x10, 0x20 })]
+    // CMP [adresse],immediat : l'opcode est 62h, les deux chiffres avaient ete transposes.
+    [InlineData("a1:     EQU 0BF76CH\n        PRE_ON\n        CMP [a1],0\n",
+        new[] { 0x62, 0x6C, 0xF7, 0x0B, 0x00 })]
+    public void Encodings_confirmed_against_the_reference_assembler(string source, int[] expected)
+    {
+        AssertBytesAt(0xBE000, source, expected);
+    }
+
+    private static void AssertBytesAt(long origine, string body, params int[] expected)
+    {
+        var result = Assemble(body, origine);
+        Assert.Equal(expected, result.GeneratedBytes.Select(b => (int)b.Value).ToArray());
+    }
+
     private static void AssertBytes(string body, params int[] expected)
     {
         var result = Assemble(body);
@@ -388,7 +444,9 @@ public sealed class DirectiveTests
     /// <summary>
     /// Assemble un fragment place apres un ORG dans un dossier temporaire.
     /// </summary>
-    private static Xasm2026.Native.Core.AssemblyResult Assemble(string body)
+    private static Xasm2026.Native.Core.AssemblyResult Assemble(string body) => Assemble(body, 0xE000);
+
+    private static Xasm2026.Native.Core.AssemblyResult Assemble(string body, long origine)
     {
         var dir = Path.Combine(Path.GetTempPath(), "xasm_directives", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(dir);
