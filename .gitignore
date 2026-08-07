@@ -17,3 +17,6 @@ __pycache__/
 
 # Sorties de comparaison avec l'assembleur de reference
 tests/_compare_with_xasm2026_1_1/
+
+# Publication autonome (exe self-contained ~65 Mo, non versionne)
+dist/
