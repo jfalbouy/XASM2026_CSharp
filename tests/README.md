@@ -11,6 +11,8 @@ de la référence `xasm2026-1`.
 | `Xasm2026.Tests/` | Harnais xUnit exécuté par `dotnet test` et par la CI. |
 | `coverage_all.asm` | Source exerçant chaque directive et forme d'opcode portée. |
 | `coverage_all_include.asm` | Fichier inclus par le précédent. |
+| `postbyte_families.asm` | Couverture systématique des familles à post-octet (104 instructions) — voir `postbyte_families.README.md`. |
+| `postbyte_families.expected.txt` | Octets attendus pour le fichier ci-dessus, produits par le moteur de référence. |
 | `_compare_with_xasm2026_1_1/` | Sorties du script de comparaison. Régénérable, ignoré par git. |
 
 ## Exécution
@@ -29,6 +31,13 @@ dotnet test .\tests\Xasm2026.Tests\Xasm2026.Tests.csproj -c Release
 | `SymbolTableTests` | Règles de portée locale : préfixage, imbrication, référence parente `..!`. |
 | `DirectiveTests` | Directives ajoutées en 2026-4 : `SET`, `IRP`/`IRPC`, `ALIGN`, `DZ`, `PHASE`, `EXITM`… |
 | `SampleAssemblyTests` | Octets produits par les exemples `SAMPLE6` à `SAMPLE9`. |
+| `PostbyteFamiliesTests` | Les 104 formes à post-octet de `postbyte_families.expected.txt`, plus les 2 formes que Sharp ne définit pas (refus attendu) — 106 cas pilotés par les données. |
+
+> ✅ **`postbyte_families` est branché sur `dotnet test`** (`PostbyteFamiliesTests`). Il a révélé
+> sept défauts d'encodage des familles à post-octet, tous corrigés le 2026-08-07 : les **20
+> divergences sur 104** sont retombées à **zéro**, et les deux formes invalides (`MVL` sur `[r3]`
+> sans post-incrémentation) sont désormais rejetées. Le détail — les sept défauts, leur méthode
+> et leur correctif — est dans `postbyte_families.README.md`.
 
 ### Point à connaître avant de toucher au harnais
 

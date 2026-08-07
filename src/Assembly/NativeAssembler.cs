@@ -905,10 +905,14 @@ internal sealed partial class NativeAssembler
                         var baseAddress = ParseInternalRamOperand($"({baseExpression})");
                         EmitPrebyte(target.PreId, baseAddress.PreId, emit, result);
                         Emit(0xF0, emit, result);
-                        Emit(offsetExpression.TrimStart().StartsWith('-') ? 0xC0 : 0x80, emit, result);
+                        Emit(PointerSubByte(offsetExpression), emit, result);
                         Emit(target.Value, emit, result);
                         Emit(baseAddress.Value, emit, result);
-                        Emit(EvalDisplacement(offsetExpression), emit, result);
+                        if (HasPointerOffset(offsetExpression))
+                        {
+                            Emit(EvalDisplacement(offsetExpression), emit, result);
+                        }
+
                         return;
                     }
                 }
@@ -1026,10 +1030,14 @@ internal sealed partial class NativeAssembler
                 var sourceAddress = ParseInternalRamOperand(right);
                 EmitPrebyte(baseAddress.PreId, sourceAddress.PreId, emit, result);
                 Emit(0xF8, emit, result);
-                Emit(offsetExpression.TrimStart().StartsWith('-') ? 0xC0 : 0x80, emit, result);
+                Emit(PointerSubByte(offsetExpression), emit, result);
                 Emit(baseAddress.Value, emit, result);
                 Emit(sourceAddress.Value, emit, result);
-                Emit(EvalDisplacement(offsetExpression), emit, result);
+                if (HasPointerOffset(offsetExpression))
+                {
+                    Emit(EvalDisplacement(offsetExpression), emit, result);
+                }
+
                 return;
             }
         }
@@ -1166,10 +1174,14 @@ internal sealed partial class NativeAssembler
                 var baseExpression = right[2..close];
                 var offsetExpression = right[(close + 1)..^1];
                 Emit(0xF2, emit, result);
-                Emit(offsetExpression.TrimStart().StartsWith('-') ? 0xC0 : 0x80, emit, result);
+                Emit(PointerSubByte(offsetExpression), emit, result);
                 Emit(Eval(left[1..^1]), emit, result);
                 Emit(Eval(baseExpression), emit, result);
-                Emit(EvalDisplacement(offsetExpression), emit, result);
+                if (HasPointerOffset(offsetExpression))
+                {
+                    Emit(EvalDisplacement(offsetExpression), emit, result);
+                }
+
                 return;
             }
         }
@@ -1289,7 +1301,42 @@ internal sealed partial class NativeAssembler
 
         var left = operands[0].Trim();
         var right = operands[1].Trim();
-        if (left.StartsWith('(') && left.EndsWith(')') && right.StartsWith('[') && right.EndsWith(']'))
+
+        // (n) <- [(m)±offset] : indirection par pointeur *memoire*, famille F1. Cette forme
+        // n'existait pas ici : elle tombait dans la branche registre E1 ci-dessous, ou la
+        // base (m) etait prise pour un registre indexe. Elle doit etre testee AVANT E1, comme
+        // le font les autres methodes (D5). Le champ interne precede la base ; sous-octet et
+        // octet de deplacement suivent la regle de PointerSubByte.
+        if (left.StartsWith('(') && left.EndsWith(')') && right.StartsWith("[(") && right.EndsWith(']'))
+        {
+            var close = right.IndexOf(")", StringComparison.Ordinal);
+            if (close > 2)
+            {
+                var baseExpression = right[2..close];
+                var offsetExpression = right[(close + 1)..^1];
+                var target = ParseInternalRamOperand(left);
+                var baseAddress = ParseInternalRamOperand($"({baseExpression})");
+                EmitPrebyte(target.PreId, baseAddress.PreId, emit, result);
+                Emit(0xF1, emit, result);
+                Emit(PointerSubByte(offsetExpression), emit, result);
+                Emit(target.Value, emit, result);
+                Emit(baseAddress.Value, emit, result);
+                if (HasPointerOffset(offsetExpression))
+                {
+                    Emit(EvalDisplacement(offsetExpression), emit, result);
+                }
+
+                return;
+            }
+        }
+
+        // (n) <- [r3] / [r3±n] : indirection par pointeur *registre*, famille E1. Le garde
+        // exclut [(m)], deja capte plus haut (TryEmitIndexedSuffix accepterait sinon la base
+        // memoire comme un index). Ordre des champs : post-octet, puis l'emplacement RAM
+        // interne, puis l'offset du pointeur — motif partage avec E0/E8 (D1). L'ancien code
+        // emettait l'emplacement APRES l'offset, d'ou une inversion selon le bit 0 de l'opcode.
+        if (left.StartsWith('(') && left.EndsWith(')') && right.StartsWith('[') && right.EndsWith(']') &&
+            !right[1..^1].TrimStart().StartsWith('('))
         {
             var inner = right[1..^1].Trim();
             if (TryEmitIndexedSuffix(inner, emit, result, out var suffix))
@@ -1299,8 +1346,21 @@ internal sealed partial class NativeAssembler
                 // prebyte se retrouverait derriere lui et l'instruction serait mal encodee.
                 var offset = InternalRamOffset(left, emit, result);
                 Emit(0xE1, emit, result);
-                EmitSuffix(suffix, emit, result);
-                Emit(offset, emit, result);
+                if (suffix.Length > 1 && (suffix[0] is >= 0x80 and <= 0x87 or >= 0xC0 and <= 0xC7))
+                {
+                    Emit(suffix[0], emit, result);
+                    Emit(offset, emit, result);
+                    for (var i = 1; i < suffix.Length; i++)
+                    {
+                        Emit(suffix[i], emit, result);
+                    }
+                }
+                else
+                {
+                    EmitSuffix(suffix, emit, result);
+                    Emit(offset, emit, result);
+                }
+
                 return;
             }
         }
@@ -1313,22 +1373,42 @@ internal sealed partial class NativeAssembler
                 var baseExpression = left[2..close];
                 var offsetExpression = left[(close + 1)..^1];
                 Emit(0xF9, emit, result);
-                Emit(offsetExpression.TrimStart().StartsWith('-') ? 0xC0 : 0x80, emit, result);
+                Emit(PointerSubByte(offsetExpression), emit, result);
                 Emit(InternalRamOffset($"({baseExpression})", emit, result), emit, result);
                 Emit(InternalRamOffset(right, emit, result), emit, result);
-                Emit(EvalDisplacement(offsetExpression), emit, result);
+                if (HasPointerOffset(offsetExpression))
+                {
+                    Emit(EvalDisplacement(offsetExpression), emit, result);
+                }
+
                 return;
             }
         }
 
-        if (left.StartsWith('[') && left.EndsWith(']') && right.StartsWith('(') && right.EndsWith(')'))
+        // [r3] / [r3±n] <- (n) : symetrique de E1, meme correction d'ordre des champs (D1).
+        // Le garde exclut [(m)], capte par la branche F9 ci-dessus.
+        if (left.StartsWith('[') && left.EndsWith(']') && right.StartsWith('(') && right.EndsWith(')') &&
+            !left[1..^1].TrimStart().StartsWith('('))
         {
             var inner = left[1..^1].Trim();
             if (TryEmitIndexedSuffix(inner, emit, result, out var suffix))
             {
                 Emit(0xE9, emit, result);
-                EmitSuffix(suffix, emit, result);
-                Emit(InternalRamOffset(right, emit, result), emit, result);
+                if (suffix.Length > 1 && (suffix[0] is >= 0x80 and <= 0x87 or >= 0xC0 and <= 0xC7))
+                {
+                    Emit(suffix[0], emit, result);
+                    Emit(InternalRamOffset(right, emit, result), emit, result);
+                    for (var i = 1; i < suffix.Length; i++)
+                    {
+                        Emit(suffix[i], emit, result);
+                    }
+                }
+                else
+                {
+                    EmitSuffix(suffix, emit, result);
+                    Emit(InternalRamOffset(right, emit, result), emit, result);
+                }
+
                 return;
             }
         }
@@ -1439,12 +1519,22 @@ internal sealed partial class NativeAssembler
             {
                 var baseExpression = left[2..close];
                 var offsetExpression = left[(close + 1)..^1];
-                Emit(0x22, emit, result);
+                // Aligne sur le sibling F8 de EmitMove : prebyte calcule des deux operandes
+                // et emis AVANT l'opcode. Le 0x22 code en dur etait un prebyte parasite (D7),
+                // le 0x80 code en dur perdait le signe de [(m)-n] (D6), et le deplacement
+                // etait emis meme sans offset (D4).
+                var baseAddress = ParseInternalRamOperand($"({baseExpression})");
+                var sourceAddress = ParseInternalRamOperand(right);
+                EmitPrebyte(baseAddress.PreId, sourceAddress.PreId, emit, result);
                 Emit(0xFB, emit, result);
-                Emit(0x80, emit, result);
-                Emit(InternalRamOffset($"({baseExpression})", emit, result), emit, result);
-                Emit(Eval(right[1..^1]), emit, result);
-                Emit(EvalDisplacement(offsetExpression), emit, result);
+                Emit(PointerSubByte(offsetExpression), emit, result);
+                Emit(baseAddress.Value, emit, result);
+                Emit(sourceAddress.Value, emit, result);
+                if (HasPointerOffset(offsetExpression))
+                {
+                    Emit(EvalDisplacement(offsetExpression), emit, result);
+                }
+
                 return;
             }
         }
@@ -1456,24 +1546,30 @@ internal sealed partial class NativeAssembler
             {
                 var baseExpression = right[2..close];
                 var offsetExpression = right[(close + 1)..^1];
-                var leftOffset = InternalRamOffset(left, emit, result);
+                var target = ParseInternalRamOperand(left);
+                var baseAddress = ParseInternalRamOperand($"({baseExpression})");
+                EmitPrebyte(target.PreId, baseAddress.PreId, emit, result);
                 Emit(0xF3, emit, result);
-                Emit(0x80, emit, result);
-                Emit(leftOffset, emit, result);
-                Emit(InternalRamOffset($"({baseExpression})", emit, result), emit, result);
-                Emit(EvalDisplacement(offsetExpression), emit, result);
+                Emit(PointerSubByte(offsetExpression), emit, result);
+                Emit(target.Value, emit, result);
+                Emit(baseAddress.Value, emit, result);
+                if (HasPointerOffset(offsetExpression))
+                {
+                    Emit(EvalDisplacement(offsetExpression), emit, result);
+                }
+
                 return;
             }
         }
 
-        if (left.StartsWith('(') && left.EndsWith(')') && right.StartsWith('[') && right.EndsWith(']'))
+        // Le garde exclut [(m)], deja capte par la branche F3 memoire ci-dessus.
+        if (left.StartsWith('(') && left.EndsWith(')') && right.StartsWith('[') && right.EndsWith(']') &&
+            !right[1..^1].TrimStart().StartsWith('('))
         {
             var inner = right[1..^1].Trim();
             if (TryEmitIndexedSuffix(inner, emit, result, out var suffix))
             {
-                Emit(0xE3, emit, result);
-                EmitSuffix(suffix, emit, result);
-                Emit(InternalRamOffset(left, emit, result), emit, result);
+                EmitMoveLongIndexed(suffix, InternalRamOffset(left, emit, result), emit, result, operandText);
                 return;
             }
 
@@ -1483,14 +1579,15 @@ internal sealed partial class NativeAssembler
             return;
         }
 
-        if (left.StartsWith('[') && left.EndsWith(']') && right.StartsWith('(') && right.EndsWith(')'))
+        // Idem cote destination : le garde exclut [(m)], capte par la branche FB memoire.
+        if (left.StartsWith('[') && left.EndsWith(']') && right.StartsWith('(') && right.EndsWith(')') &&
+            !left[1..^1].TrimStart().StartsWith('('))
         {
             var inner = left[1..^1].Trim();
             if (TryEmitIndexedSuffix(inner, emit, result, out var suffix))
             {
-                Emit(0xEB, emit, result);
-                EmitSuffix(suffix, emit, result);
-                Emit(InternalRamOffset(right, emit, result), emit, result);
+                EmitMoveLongIndexed(suffix, InternalRamOffset(right, emit, result), emit, result, operandText,
+                    plainOpcode: 0xEB, offsetOpcode: 0x5E);
                 return;
             }
 
@@ -1501,6 +1598,48 @@ internal sealed partial class NativeAssembler
         }
 
         throw new NotSupportedException($"MVL form not ported yet: {operandText}");
+    }
+
+    /// <summary>
+    /// Action : emet le corps d'une forme MVL indexee par registre.
+    /// Donnees d'entree : le suffixe d'indexation, l'emplacement RAM interne deja resolu,
+    /// et les opcodes a employer selon le mode.
+    /// Donnees de sortie : aucune valeur retournee ; effets sur le flux d'octets.
+    ///
+    /// MVL se distingue des autres MV sur les pointeurs registre :
+    /// - la forme sans post-incrementation ([r3] seul, sous-octet 0x0x) n'existe pas : le
+    ///   moteur de reference la refuse (Undefined instruction). On leve donc une erreur (D3) ;
+    /// - la forme a offset ([r3±n], sous-octet 0x8x/0xCx) a ses propres opcodes 56/5E, alors
+    ///   que E3/EB sont reserves a [r3++]/[--r3] (D2). L'emplacement RAM interne suit le
+    ///   post-octet, l'offset du pointeur vient ensuite — meme ordre que les autres familles.
+    /// </summary>
+    private void EmitMoveLongIndexed(
+        int[] suffix, int internalOffset, bool emit, AssemblyResult result, string operandText,
+        int plainOpcode = 0xE3, int offsetOpcode = 0x56)
+    {
+        var mode = suffix[0] & 0xF0;
+        if (mode == 0x00)
+        {
+            throw new NotSupportedException(
+                $"MVL n'accepte pas [r3] sans post-incrementation: {operandText}");
+        }
+
+        if (mode is 0x80 or 0xC0)
+        {
+            Emit(offsetOpcode, emit, result);
+            Emit(suffix[0], emit, result);
+            Emit(internalOffset, emit, result);
+            for (var i = 1; i < suffix.Length; i++)
+            {
+                Emit(suffix[i], emit, result);
+            }
+
+            return;
+        }
+
+        Emit(plainOpcode, emit, result);
+        EmitSuffix(suffix, emit, result);
+        Emit(internalOffset, emit, result);
     }
 
     /// <summary>
@@ -2825,6 +2964,33 @@ internal sealed partial class NativeAssembler
         Emit(value >> 8, emit, result);
         Emit(value >> 16, emit, result);
     }
+
+    /// <summary>
+    /// Action : calcule le sous-octet d'un pointeur memoire [(base)±offset].
+    /// Donnees d'entree : l'expression d'offset situee apres la parenthese fermante.
+    /// Donnees de sortie : 00 quand il n'y a pas d'offset, 80 pour un offset positif,
+    /// C0 pour un offset negatif (le bit de signe).
+    ///
+    /// Sharp specifie le sous-octet position par position (ESR-L, pp. 73-88) : les bits
+    /// ecrits a 0 sont *specifies*, pas indifferents. Un mode sans offset s'ecrit donc
+    /// 00000000, sans octet de deplacement — et non 10000000 suivi d'un zero. Plusieurs
+    /// sites codaient 0x80 en dur, ce qui ajoutait un octet parasite sur [(n)] et, plus
+    /// grave, perdait le signe de [(n)-n] (qui s'assemblait comme [(n)+n]). Voir
+    /// tests/postbyte_families.
+    /// </summary>
+    private static int PointerSubByte(string offsetExpression) =>
+        offsetExpression.Trim().Length == 0
+            ? 0x00
+            : offsetExpression.TrimStart().StartsWith('-') ? 0xC0 : 0x80;
+
+    /// <summary>
+    /// Action : indique si un pointeur memoire porte un octet de deplacement.
+    /// Donnees d'entree : l'expression d'offset situee apres la parenthese fermante.
+    /// Donnees de sortie : vrai des qu'un offset est present ; l'octet de deplacement ne
+    /// doit etre emis que dans ce cas (voir <see cref="PointerSubByte"/>).
+    /// </summary>
+    private static bool HasPointerOffset(string offsetExpression) =>
+        offsetExpression.Trim().Length != 0;
 
     /// <summary>
     /// Action : separe les operandes en respectant parentheses, crochets et chaines.

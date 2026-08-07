@@ -14,6 +14,8 @@ internal static class TestPaths
 
     public static string ExamplesDir => Path.Combine(RepoRoot, "Exemples");
 
+    public static string TestsDir => Path.Combine(RepoRoot, "tests");
+
     private static string FindRepoRoot()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);

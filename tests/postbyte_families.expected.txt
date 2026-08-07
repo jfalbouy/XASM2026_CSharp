@@ -1,0 +1,118 @@
+# Octets attendus pour postbyte_families.asm
+#
+# Produits par le moteur de reference C xasm2026-1-2, verifies contre la table de
+# commandes du manuel ESR-L de Sharp (pp. 73-88) et redecodes sans ecart par le
+# desassembleur SC62015Disassembler.
+#
+# Format : <instruction><TAB><octets attendus, en hexa>
+
+mv (022h),[y]	e0 05 22
+mv [y],(022h)	e8 05 22
+mv (022h),[y++]	e0 25 22
+mv [y++],(022h)	e8 25 22
+mv (022h),[--y]	e0 35 22
+mv [--y],(022h)	e8 35 22
+mv (022h),[y+011h]	e0 85 22 11
+mv [y+011h],(022h)	e8 85 22 11
+mv (022h),[y-011h]	e0 c5 22 11
+mv [y-011h],(022h)	e8 c5 22 11
+mvw (022h),[y]	e1 05 22
+mvw [y],(022h)	e9 05 22
+mvw (022h),[y++]	e1 25 22
+mvw [y++],(022h)	e9 25 22
+mvw (022h),[--y]	e1 35 22
+mvw [--y],(022h)	e9 35 22
+mvw (022h),[y+011h]	e1 85 22 11
+mvw [y+011h],(022h)	e9 85 22 11
+mvw (022h),[y-011h]	e1 c5 22 11
+mvw [y-011h],(022h)	e9 c5 22 11
+mvp (022h),[y]	e2 05 22
+mvp [y],(022h)	ea 05 22
+mvp (022h),[y++]	e2 25 22
+mvp [y++],(022h)	ea 25 22
+mvp (022h),[--y]	e2 35 22
+mvp [--y],(022h)	ea 35 22
+mvp (022h),[y+011h]	e2 85 22 11
+mvp [y+011h],(022h)	ea 85 22 11
+mvp (022h),[y-011h]	e2 c5 22 11
+mvp [y-011h],(022h)	ea c5 22 11
+mvl (022h),[y++]	e3 25 22
+mvl [y++],(022h)	eb 25 22
+mvl (022h),[--y]	e3 35 22
+mvl [--y],(022h)	eb 35 22
+mvl (022h),[y+011h]	56 85 22 11
+mvl [y+011h],(022h)	5e 85 22 11
+mvl (022h),[y-011h]	56 c5 22 11
+mvl [y-011h],(022h)	5e c5 22 11
+mv (022h),[(033h)]	f0 00 22 33
+mv [(033h)],(022h)	f8 00 33 22
+mv (022h),[(033h)+044h]	f0 80 22 33 44
+mv [(033h)+044h],(022h)	f8 80 33 22 44
+mv (022h),[(033h)-044h]	f0 c0 22 33 44
+mv [(033h)-044h],(022h)	f8 c0 33 22 44
+mvw (022h),[(033h)]	f1 00 22 33
+mvw [(033h)],(022h)	f9 00 33 22
+mvw (022h),[(033h)+044h]	f1 80 22 33 44
+mvw [(033h)+044h],(022h)	f9 80 33 22 44
+mvw (022h),[(033h)-044h]	f1 c0 22 33 44
+mvw [(033h)-044h],(022h)	f9 c0 33 22 44
+mvp (022h),[(033h)]	f2 00 22 33
+mvp [(033h)],(022h)	fa 00 33 22
+mvp (022h),[(033h)+044h]	f2 80 22 33 44
+mvp [(033h)+044h],(022h)	fa 80 33 22 44
+mvp (022h),[(033h)-044h]	f2 c0 22 33 44
+mvp [(033h)-044h],(022h)	fa c0 33 22 44
+mvl (022h),[(033h)]	f3 00 22 33
+mvl [(033h)],(022h)	fb 00 33 22
+mvl (022h),[(033h)+044h]	f3 80 22 33 44
+mvl [(033h)+044h],(022h)	fb 80 33 22 44
+mvl (022h),[(033h)-044h]	f3 c0 22 33 44
+mvl [(033h)-044h],(022h)	fb c0 33 22 44
+mv a,[y]	90 05
+mv [y],a	b0 05
+mv a,[y++]	90 25
+mv [y++],a	b0 25
+mv a,[--y]	90 35
+mv [--y],a	b0 35
+mv a,[y+011h]	90 85 11
+mv [y+011h],a	b0 85 11
+mv a,[y-011h]	90 c5 11
+mv [y-011h],a	b0 c5 11
+mv a,[(033h)]	98 00 33
+mv [(033h)],a	b8 00 33
+mv a,[(033h)+044h]	98 80 33 44
+mv [(033h)+044h],a	b8 80 33 44
+mv ba,[y]	92 05
+mv [y],ba	b2 05
+mv ba,[y++]	92 25
+mv [y++],ba	b2 25
+mv ba,[--y]	92 35
+mv [--y],ba	b2 35
+mv ba,[y+011h]	92 85 11
+mv [y+011h],ba	b2 85 11
+mv ba,[y-011h]	92 c5 11
+mv [y-011h],ba	b2 c5 11
+mv ba,[(033h)]	9a 00 33
+mv [(033h)],ba	ba 00 33
+mv ba,[(033h)+044h]	9a 80 33 44
+mv [(033h)+044h],ba	ba 80 33 44
+mv x,[y]	94 05
+mv [y],x	b4 05
+mv x,[y++]	94 25
+mv [y++],x	b4 25
+mv x,[--y]	94 35
+mv [--y],x	b4 35
+mv x,[y+011h]	94 85 11
+mv [y+011h],x	b4 85 11
+mv x,[y-011h]	94 c5 11
+mv [y-011h],x	b4 c5 11
+mv x,[(033h)]	9c 00 33
+mv [(033h)],x	bc 00 33
+mv x,[(033h)+044h]	9c 80 33 44
+mv [(033h)+044h],x	bc 80 33 44
+
+# --- Formes que le moteur de reference REFUSE (Undefined instruction) ---
+# E3 et EB sont definis pour [r3++] seulement : la post-incrementation fait partie
+# de l'instruction. Un assembleur conforme doit rejeter ces deux lignes.
+mvl (022h),[y]	(refus attendu)
+mvl [y],(022h)	(refus attendu)
