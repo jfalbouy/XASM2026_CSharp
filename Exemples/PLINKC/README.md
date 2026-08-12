@@ -58,3 +58,33 @@ désassemblage `PLINKC-BF000.asm`, qui code cette table en `db` explicite.
 cd .\Exemples\PLINKC
 ..\..\bin\xasm2026-4.exe plinkc.native.asm -O plinkc.native.obj -L plinkc.native.lst
 ```
+
+## Exécution sur matériel — `PLINKC-BF000.uu`
+
+`PLINKC-BF000.uu` est l'auto-décodeur BASIC de l'objet **complet** (1554 o), **validé sur un
+PC-E500S réel** : le driver s'installe en `S1:` sous le nom `PLINK   SYS`.
+
+Il est produit depuis le désassemblage, avec le nom d'objet `PLINKC.SYS` :
+
+```powershell
+..\..\bin\xasm2026-4.exe PLINKC-BF000.asm -O PLINKC.SYS -B PLINKC-BF000.uu
+```
+
+Deux points appris en le portant sur le Sharp :
+
+- **Il faut l'objet complet, pas le code seul.** Un `.uu` issu de `plinkc.native.asm`
+  (`size 1491`, sans la table de relocation) s'installe mais **se corrompt à l'exécution** :
+  l'installateur relit une table de relocation terminée par `$FF` pour corriger ses adresses
+  absolues, et sans elle il applique des corrections erronées — le nom affiché devient
+  « PaWNK » au lieu de « PLINK ». `PLINKC-BF000.uu` (`size 1554`) contient la table et
+  fonctionne.
+
+- **Le nom de fichier du `.uu` doit tenir sur 8 caractères** (complétés par des espaces), suivi
+  de l'extension. Il est dérivé du nom d'objet `-O` : d'où `-O PLINKC.SYS`, qui donne
+  `FNAME$="PLINKC  .SYS"`. Un nom d'objet plus long (`PLINKC-BF000.obj`) serait tronqué à
+  `PLINKC-B`.
+
+Note : au premier `CALL &BF000`, l'installateur peut déclencher son propre `reset` volontaire
+(étiquette `bomb`, quand `linkbas` ne retrouve pas les pointeurs `BTEXT$`/`BDATA$` de BASIC).
+C'est le comportement du driver d'origine — l'enregistrement IOCS a lieu avant, donc le driver
+reste installé après le reset.
