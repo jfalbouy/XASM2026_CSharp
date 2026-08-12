@@ -25,7 +25,7 @@ internal sealed partial class NativeAssembler
         // Le compteur de localisation est transmis a chaque evaluation : c'est la valeur
         // rendue par l'operande "*", pendant de la globale lc du C lue au moment de l'eval.
         var evaluator = new ExpressionEvaluator(
-            _symbols.Values, _symbols.CurrentScope, ReservedRegisters, _locationCounter);
+            _symbols.Values, _symbols.CurrentScope, ReservedRegisters, _locationCounter, _subCounter);
         var prepared = SubstituteArguments(expression, _currentOrigin?.Args);
         var value = evaluator.Evaluate(_symbols.NormalizeScopedExpression(prepared));
 

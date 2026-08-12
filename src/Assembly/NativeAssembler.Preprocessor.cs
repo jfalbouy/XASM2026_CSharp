@@ -144,6 +144,141 @@ internal sealed partial class NativeAssembler
         _anonymousScopeCounter = 0;
         _symbols.ResetScopes();
         ExpandSourceBlock(sourceLines, 0, sourceLines.Count, _expandedLines, expandMacroDefinitions: true);
+        RewriteStructuredBlocks(_expandedLines);
+    }
+
+    /// <summary>
+    /// Action : transforme les blocs structures { } et leurs cibles continue/break en
+    /// etiquettes synthetiques, sur la liste deja aplatie.
+    /// Donnees d'entree : la liste des lignes developpees (modifiee sur place).
+    /// Donnees de sortie : aucune ; { et } deviennent des etiquettes, continue/break des
+    /// references vers, respectivement, le debut et la fin du bloc englobant le plus proche.
+    ///
+    /// Un bloc s'ecrit :
+    ///     {
+    ///         ...            ; continue  -> reboucle au debut du bloc
+    ///         jrnz continue
+    ///         jrz  break     ; break     -> sort juste apres la }
+    ///     }
+    /// continue et break ne sont PAS des etiquettes : ce sont des cibles reservees, resolues
+    /// par la structure du bloc. La substitution n'a lieu qu'a l'interieur d'un bloc, si bien
+    /// qu'une source qui definit une vraie etiquette "continue:" ou "break:" hors de tout bloc
+    /// (SAMPLE2, COMPILE.S) n'est pas affectee — et aucune source du corpus n'emploie { }, donc
+    /// cette reecriture est un no-op sur tous les goldens. Purement additif.
+    ///
+    /// La transformation a lieu une seule fois sur la liste aplatie, avant les deux passes :
+    /// les etiquettes synthetiques sont donc identiques d'une passe a l'autre, sans compteur
+    /// a reinitialiser. Elles recoivent leur adresse comme une etiquette ordinaire, et les
+    /// sauts relatifs vers elles passent par la resolution habituelle.
+    /// </summary>
+    private static void RewriteStructuredBlocks(List<SourceRef> lines)
+    {
+        // Rien a faire si aucune accolade ouvrante isolee : evite tout parcours inutile sur
+        // les sources qui n'emploient pas la construction (c'est-a-dire tout le corpus).
+        if (!lines.Any(l => CodePart(l.Text).Trim() == "{"))
+        {
+            return;
+        }
+
+        var blocs = new Stack<(string Top, string End)>();
+        var compteur = 0;
+        for (var i = 0; i < lines.Count; i++)
+        {
+            var origine = lines[i];
+            var code = CodePart(origine.Text).Trim();
+            if (code == "{")
+            {
+                compteur++;
+                var top = $"_blk{compteur:D5}_t";
+                var end = $"_blk{compteur:D5}_e";
+                blocs.Push((top, end));
+                lines[i] = origine with { Text = top + ":" };
+            }
+            else if (code == "}")
+            {
+                if (blocs.Count == 0)
+                {
+                    throw new InvalidOperationException(
+                        $"'}}' sans '{{' correspondant, {Origine(origine)}");
+                }
+
+                var (_, end) = blocs.Pop();
+                lines[i] = origine with { Text = end + ":" };
+            }
+            else if (blocs.Count > 0)
+            {
+                var (top, end) = blocs.Peek();
+                var remplace = SubstituteBlockTargets(origine.Text, top, end);
+                if (!ReferenceEquals(remplace, origine.Text))
+                {
+                    lines[i] = origine with { Text = remplace };
+                }
+            }
+        }
+
+        // Ouverture et fermeture doivent s'equilibrer : un bloc reste ouvert signale une
+        // '}' manquante. On le refuse plutot que de laisser le bloc engloutir la suite du
+        // fichier (et rendre continue/break ambigus au-dela de sa portee voulue).
+        if (blocs.Count > 0)
+        {
+            var restant = blocs.Peek();
+            throw new InvalidOperationException(
+                $"bloc '{{' non ferme (manque '}}') pour {restant.Top}");
+        }
+    }
+
+    /// <summary>Origine lisible d'une ligne, pour les messages d'erreur.</summary>
+    private static string Origine(SourceRef ligne) =>
+        $"ligne {ligne.Line} ({ligne.File})";
+
+    /// <summary>
+    /// Action : remplace, dans la portion code d'une ligne, les mots continue/break par les
+    /// etiquettes de debut et de fin du bloc englobant. Ne touche ni la portion commentaire
+    /// ni les autres identificateurs.
+    /// </summary>
+    private static string SubstituteBlockTargets(string text, string top, string end)
+    {
+        var coupe = CommentIndex(text);
+        var code = coupe < 0 ? text : text[..coupe];
+        var commentaire = coupe < 0 ? string.Empty : text[coupe..];
+        var nouveau = System.Text.RegularExpressions.Regex.Replace(
+            code,
+            @"\bcontinue\b",
+            top);
+        nouveau = System.Text.RegularExpressions.Regex.Replace(
+            nouveau,
+            @"\bbreak\b",
+            end);
+        return ReferenceEquals(nouveau, code) || nouveau == code ? text : nouveau + commentaire;
+    }
+
+    /// <summary>Renvoie la portion de la ligne situee avant tout commentaire ';'.</summary>
+    private static string CodePart(string text)
+    {
+        var i = CommentIndex(text);
+        return i < 0 ? text : text[..i];
+    }
+
+    /// <summary>
+    /// Position du ';' de commentaire, ou -1. Un ';' entre apostrophes (chaine) est ignore,
+    /// pour ne pas confondre un caractere de donnee avec un debut de commentaire.
+    /// </summary>
+    private static int CommentIndex(string text)
+    {
+        var quoted = false;
+        for (var i = 0; i < text.Length; i++)
+        {
+            if (text[i] == '\'')
+            {
+                quoted = !quoted;
+            }
+            else if (text[i] == ';' && !quoted)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     /// <summary>

@@ -6,6 +6,7 @@ internal sealed class ExpressionEvaluator
     private readonly string? _localScope;
     private readonly IReadOnlySet<string>? _reservedZero;
     private readonly long _locationCounter;
+    private readonly long _subCounter;
 
     /// <summary>
     /// Action : prepare un evaluateur d'expressions avec table des symboles et contexte local.
@@ -21,12 +22,14 @@ internal sealed class ExpressionEvaluator
         IReadOnlyDictionary<string, long> symbols,
         string? localScope = null,
         IReadOnlySet<string>? reservedZero = null,
-        long locationCounter = 0)
+        long locationCounter = 0,
+        long subCounter = 0)
     {
         _symbols = symbols;
         _localScope = localScope;
         _reservedZero = reservedZero;
         _locationCounter = locationCounter;
+        _subCounter = subCounter;
     }
 
     /// <summary>
@@ -36,7 +39,7 @@ internal sealed class ExpressionEvaluator
     /// </summary>
     public long Evaluate(string expression)
     {
-        var parser = new Parser(expression, _symbols, _localScope, _reservedZero, _locationCounter);
+        var parser = new Parser(expression, _symbols, _localScope, _reservedZero, _locationCounter, _subCounter);
         var value = Regular(parser.ParseExpression());
         Undefined = parser.Undefined;
         Referenced = parser.Referenced;
@@ -80,6 +83,7 @@ internal sealed class ExpressionEvaluator
         private readonly string? _localScope;
         private readonly IReadOnlySet<string>? _reservedZero;
         private readonly long _locationCounter;
+        private readonly long _subCounter;
         private readonly List<string> _undefined = new();
         private readonly List<string> _referenced = new();
         private int _position;
@@ -107,13 +111,15 @@ internal sealed class ExpressionEvaluator
             IReadOnlyDictionary<string, long> symbols,
             string? localScope,
             IReadOnlySet<string>? reservedZero,
-            long locationCounter)
+            long locationCounter,
+            long subCounter)
         {
             _text = text;
             _symbols = symbols;
             _localScope = localScope;
             _reservedZero = reservedZero;
             _locationCounter = locationCounter;
+            _subCounter = subCounter;
         }
 
         /// <summary>
@@ -365,6 +371,16 @@ internal sealed class ExpressionEvaluator
             if (TryRead('*'))
             {
                 return _locationCounter;
+            }
+
+            // Comme "*" pour le compteur principal : en position de terme, "%" designe le
+            // compteur secondaire (SUBORG) — la taille du cadre de travail courant. Entre
+            // deux valeurs, "%" reste l'operateur modulo, deja consomme par ParseModulo
+            // avant que ParseTerm ne le voie. Les deux emplois sont donc distingues par la
+            // position, exactement comme "*". Repris du dialecte A62 (byte/word/pntr).
+            if (TryRead('%'))
+            {
+                return _subCounter;
             }
 
             if (_position >= _text.Length)

@@ -28,6 +28,7 @@ internal sealed partial class NativeAssembler
     // les doublons, l'assemblage etant execute deux fois.
     private readonly List<AssemblyWarning> _warnings = [];
     private long _locationCounter;
+    private long _subCounter;
     private long _startAddress;
     private bool _originSet;
     private string? _currentStruct;
@@ -142,6 +143,7 @@ internal sealed partial class NativeAssembler
     {
         _emitPass = emit;
         _locationCounter = 0;
+        _subCounter = 0;
         _startAddress = 0;
         _originSet = false;
         _currentStruct = null;
@@ -428,6 +430,20 @@ internal sealed partial class NativeAssembler
                     break;
                 case "DS":
                     EmitStorage(line.OperandText, emit, result);
+                    break;
+                case "SUBORG":
+                    // Positionne le compteur secondaire (zone de travail). "*" y vaut le
+                    // compteur principal courant. N'emet rien et ne touche pas le LC principal.
+                    _subCounter = Eval(line.OperandText);
+                    break;
+                case "BYTE":
+                    DeclareFields(line.OperandText, 1);
+                    break;
+                case "WORD":
+                    DeclareFields(line.OperandText, 2);
+                    break;
+                case "PNTR":
+                    DeclareFields(line.OperandText, 3);
                     break;
                 case "NOP":
                     Emit(0, emit, result);
@@ -2931,6 +2947,49 @@ internal sealed partial class NativeAssembler
         for (var i = 0; i < count; i++)
         {
             Emit(fill, emit, result);
+        }
+    }
+
+    /// <summary>
+    /// Action : declare une suite de champs dans le compteur secondaire (SUBORG).
+    /// Donnees d'entree : la liste des noms de champs (chacun eventuellement suivi de
+    /// [taille] pour un tableau), et la taille en octets d'un element (1 = byte, 2 = word,
+    /// 3 = pntr).
+    /// Donnees de sortie : chaque nom devient un symbole a l'adresse courante du compteur
+    /// secondaire, qui avance ensuite de element * nombre d'elements. N'emet aucun octet et
+    /// ne touche pas le compteur principal.
+    ///
+    /// Pendant du couple SUBORG/byte-word-pntr du dialecte A62 : une zone de travail dont on
+    /// nomme les champs a des offsets successifs, sans reserver d'octets dans l'objet. Les
+    /// symboles sont poses sur les deux passes (comme une etiquette ordinaire) ; le controle
+    /// de doublon reste celui des etiquettes, sur la passe de resolution.
+    /// </summary>
+    private void DeclareFields(string operandText, int elementSize)
+    {
+        foreach (var champ in SplitOperands(operandText))
+        {
+            var texte = champ.Trim();
+            var nombre = 1L;
+            var crochet = texte.IndexOf('[');
+            if (crochet >= 0 && texte.EndsWith(']'))
+            {
+                nombre = Eval(texte[(crochet + 1)..^1]);
+                texte = texte[..crochet].Trim();
+            }
+
+            if (texte.Length == 0)
+            {
+                continue;
+            }
+
+            var nom = _symbols.NameForDefinition(texte, forceGlobal: false);
+            _symbols[nom] = _subCounter;
+            if (!_emitPass)
+            {
+                _symbols.AddOccurrence(nom, _subCounter);
+            }
+
+            _subCounter += elementSize * nombre;
         }
     }
 

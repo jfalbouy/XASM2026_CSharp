@@ -181,7 +181,9 @@ Flow: `Program.Main` → `CommandLineOptions.Parse` → `NativeAssembler.Assembl
   break: the **trailing character sets the radix** (`B`=2, `O`=8, `D`=10, `H`=16, none=10, `_`
   ignored, and a number must start with a digit or `$`), and **`*` in term position is the
   location counter** while `*` between two values stays multiplication — the port distinguishes
-  them by parser position, which is the equivalent of the C's `set_x` flag. The location counter
+  them by parser position, which is the equivalent of the C's `set_x` flag. **`%` follows the
+  exact same rule for the secondary (`SUBORG`) counter**: in term position it is the frame size,
+  between two values it is modulo. The location counter
   is passed in per evaluation, mirroring the C reading its global `lc` at eval time.
   Division/modulo by zero is **not** thrown by the evaluator: it returns 0 and raises the
   `DividedByZero` flag, and `NativeAssembler.Eval` turns that into the C's fatal err 2 —
@@ -230,6 +232,8 @@ identical bytes and the goldens are unaffected by construction:
 | `TITLE` / `LIST` / `NOLIST` / `PAGE` | Listing layout only; `NOLIST` never changes emitted bytes |
 | `EXITM` | Ends the enclosing macro expansion; unwinds through `REPEAT`/`IRP` via `_exitMacroRequested` |
 | `PHASE` / `DEPHASE` | Labels take the logical address while bytes stay at their physical place, via `_phaseOffset` subtracted in `Emit` |
+| `{` / `}` blocks | Structured loops from the A62 dialect. `continue` targets the block start, `break` the exit. Reserved **only inside a block**, so a real `continue:`/`break:` label outside one (SAMPLE2, COMPILE.S) is untouched. Rewritten to synthetic labels once on the flattened list (`RewriteStructuredBlocks`); blocks must balance or it's a fatal error |
+| `SUBORG` + `BYTE` / `WORD` / `PNTR` | A62 work-area declaration: names fields at successive offsets in a **secondary counter** (`_subCounter`), 1/2/3 bytes each, arrays via `name[size]`. Emits nothing and never touches the main LC. `SUBORG *` bases the frame on the current LC. The counter is read back by `%` in term position (see the evaluator). Used to port the PLINKC driver |
 
 **Duplicate labels** are rejected (the C's err 13, `xasm.c`). The check runs on the
 **resolution pass only** — mirroring the C's `if (pass_sw == 1)` — because the emit pass
