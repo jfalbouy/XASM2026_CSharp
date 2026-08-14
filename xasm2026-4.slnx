@@ -2,4 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/Xasm2026.Native.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Xasm2026.Tests/Xasm2026.Tests.csproj" />
+  </Folder>
 </Solution>
