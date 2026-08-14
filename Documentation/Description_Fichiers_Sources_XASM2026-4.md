@@ -68,7 +68,7 @@ Ce fichier assure la majorite du travail :
 - generation des octets, lignes de listing, sections et dependances ;
 - validation des prebytes et des operandes de memoire interne.
 
-Les procedures `Emit...` encodent les familles d'instructions : mouvements, comparaisons, operations logiques, arithmetiques, sauts, pile, donnees et stockage.
+Les procedures `Emit...` encodent les familles d'instructions : mouvements, comparaisons, operations logiques, arithmetiques, sauts, pile, donnees et stockage. Les familles a post-octet (MV/MVW/MVP/MVL) sont verrouillees par le jeu d'essai `postbyte_families`. La zone de travail A62 est geree par `SUBORG` et `DeclareFields` (`BYTE`/`WORD`/`PNTR`), qui nomment des champs dans un compteur secondaire sans emettre d'octet.
 
 Les procedures `Parse...`, `TryEmit...`, `Is...` et `Resolve...` sont des aides internes pour analyser les operandes, resoudre les symboles et choisir la bonne forme d'encodage.
 
@@ -81,11 +81,17 @@ opcodes, et les encodeurs `Emit...`.
 ### `src/Assembly/NativeAssembler.Preprocessor.cs`
 
 Preprocesseur : lecture des sources et resolution des `INCLUDE` avec detection des cycles,
-expansion des macros, `REPEAT`, `IRP` et `IRPC`, et traitement des conditionnelles.
+expansion des macros, `REPEAT`, `IRP` et `IRPC`, et traitement des conditionnelles. Les
+`INCLUDE` se resolvent relativement au dossier du fichier qui les contient, a chaque niveau.
 
 Le corps d'une macro y est **re-developpe** plutot que recopie tel quel, ce qui permet les
 conditionnelles internes, `EXITM`, les macros imbriquees et `REPEAT` dans un corps. Un
 garde-fou rejette une macro qui s'appellerait elle-meme.
+
+`RewriteStructuredBlocks` traite les blocs structures `{ }` du dialecte A62 sur la liste
+aplatie : chaque `{`/`}` devient une etiquette synthetique et les cibles reservees
+`continue`/`break` sont resolues vers le debut et la sortie du bloc englobant. Les blocs
+doivent s'equilibrer, sinon c'est une erreur fatale.
 
 ### `src/Assembly/NativeAssembler.Expressions.cs`
 
@@ -372,3 +378,32 @@ Octets produits par les exemples `SAMPLE6` a `SAMPLE9`, qui illustrent ces memes
 
 Localise la racine du depot a partir de l'emplacement de l'assembly de test, sans dependre du
 repertoire courant.
+
+### `tests/Xasm2026.Tests/PostbyteFamiliesTests.cs`
+
+Rejoue les 104 formes a post-octet de `tests/postbyte_families.expected.txt` (MV/MVW/MVP/MVL,
+indirection registre et memoire) plus les 2 formes que Sharp ne definit pas, comparees octet a
+octet aux valeurs du manuel ESR-L et du moteur C.
+
+### `tests/Xasm2026.Tests/StructuredBlocksAndFieldsTests.cs`
+
+Verrouille les blocs structures `{ }` (cibles `continue`/`break`, imbrication, equilibrage) et
+la zone de travail `SUBORG` avec `BYTE`/`WORD`/`PNTR` et l'operande `%`.
+
+### `tests/Xasm2026.Tests/SystemIncludeTests.cs`
+
+Assemble `Exemples/INCLUDE/example.asm` et verifie que `pce500.inc` resout ses symboles aux
+bonnes valeurs.
+
+## Includes et outils
+
+### `Exemples/INCLUDE/pce500.inc`
+
+Fichier d'inclusion des constantes systeme du PC-E500S (276 `EQU` : registres RAM interne,
+adresses et vecteurs, codes FCS/IOCS, numeros de device). Genere, non edite a la main.
+
+### `tools/generate_pce500_inc.py`
+
+Genere `pce500.inc` a partir des tables du desassembleur `SC62015Disassembler`
+(`Data/InternalRAMNames.json`, `SystemAddresses.json`, `FCSFunctions.json`), pour garantir un
+vocabulaire de noms coherent entre les deux outils.

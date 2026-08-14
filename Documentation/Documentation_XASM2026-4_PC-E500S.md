@@ -111,6 +111,9 @@ Règles principales :
   tête en hexadécimal : `0ffh` et non `ffh`.
 - Le compteur de position est `*`, en position de terme. Entre deux valeurs, `*` reste
   l'opérateur de multiplication : `**2` vaut donc « compteur × 2 ».
+- Le symbole `%` suit la même règle pour le **compteur secondaire** de `SUBORG` (voir 6.1.1) :
+  en position de terme il rend la taille du cadre de travail, entre deux valeurs il reste le
+  modulo.
 
 ### 5.1 Opérateurs d'expression
 
@@ -190,6 +193,9 @@ qui ne les emploie pas produit exactement les mêmes octets qu'auparavant.
 | `LIST`, `NOLIST` | Reprennent/suspendent le listing sans changer le code émis. |
 | `PAGE` | Saut de page dans le listing. |
 | `PHASE adr`, `DEPHASE` | Assemblage déplacé : étiquettes logiques, octets à leur place physique. |
+| `{` … `}` | Blocs structurés (dialecte A62) : cibles `continue` (début) et `break` (sortie). |
+| `SUBORG expr` | Positionne un **compteur secondaire** (zone de travail) ; `*` = compteur principal. |
+| `BYTE`, `WORD`, `PNTR` | Nomment des champs de 1/2/3 octets dans ce compteur, sans rien émettre. |
 
 **`SET` est ce qui rend `REPEAT` réellement génératif** : sans symbole redéfinissable, aucun
 compteur ne peut progresser d'une itération à l'autre.
@@ -230,6 +236,37 @@ Le corps d'une macro est **re-développé** : il peut contenir des conditionnell
 ; dans sousprog.asm :  mv x,@0   ; = 100h
 ```
 
+Les `INCLUDE` se résolvent **relativement au dossier du fichier qui les contient**, à chaque
+niveau d'imbrication : l'assembleur peut être lancé depuis n'importe quel répertoire.
+
+### 6.1.1 Blocs structurés et zone de travail (dialecte A62)
+
+Ces ajouts servent à porter les drivers écrits pour l'assembleur A62 / Kon (`ssfdc120`,
+`PLINKC`). Les **blocs `{ }`** sont des boucles structurées ; `continue` vise le début du bloc,
+`break` la sortie. Ce sont des cibles réservées **à l'intérieur d'un bloc seulement** — hors
+d'un `{ }`, `continue`/`break` restent de simples étiquettes. Les blocs doivent s'équilibrer.
+
+```asm
+        mv   il,5
+        {
+        dec  il
+        jrnz continue      ; reboucle au début du bloc
+        jr   break         ; sort du bloc
+        }
+```
+
+`SUBORG` ouvre une **zone de travail** dont `BYTE`/`WORD`/`PNTR` nomment les champs à offsets
+successifs (1/2/3 octets ; tableaux via `nom[taille]`), dans un compteur secondaire qui n'émet
+aucun octet. `SUBORG *` base le cadre sur le compteur courant, et `%` en position de terme rend
+la taille du cadre — même distinction par la position que `*` pour le compteur principal.
+
+```asm
+        suborg 0
+        byte   flag, mode           ; flag=0, mode=1
+        word   compteur             ; compteur=2
+        pntr   tete                 ; tete=4  (pointeur 3 octets) ; ici "%" vaut 7
+```
+
 ### 6.2 Exemples fournis
 
 Le dossier `Exemples/SAMPLES` contient deux familles de sources :
@@ -245,6 +282,13 @@ Le dossier `Exemples/SAMPLES` contient deux familles de sources :
 `SAMPLE6` à `SAMPLE9` emploient des directives absentes du moteur C : ils sont donc
 spécifiques à `xasm2026-4` et **ne sont pas** inclus dans la comparaison avec la référence.
 Les octets qu'ils produisent sont néanmoins verrouillés par le harnais de tests.
+
+D'autres dossiers d'`Exemples/` contiennent des **portages du dialecte A62 / Kon** : `ssfdc120`
+(driver SmartMedia) et `PLINKC` (Pocket Link Cache, même famille que `REGISTER`). Leur code
+machine est reproduit à l'octet près contre les binaires d'époque ; seule la table de
+relocation propre à A62 n'est pas régénérée. `Exemples/INCLUDE/pce500.inc` fournit les 276
+constantes système du PC-E500S en un seul `include`, généré depuis les tables du désassembleur
+`SC62015Disassembler` pour un vocabulaire de noms cohérent entre les deux outils.
 
 ## 7. Prébytes et nomenclature mémoire interne
 
@@ -333,6 +377,21 @@ Les principaux blocs finalisés sont :
 - Générateur `.uu` aligné sur `uuselfx.c` (source de reference externe) : lignes BASIC, payload, checksum historique et ligne `size`.
 - Rapport d'erreur écrit dans `.err` et `.lst`.
 - Banc de couverture `coverage_all.asm`.
+
+Travaux ajoutés depuis (2026-07 à 2026-08), détaillés dans `PORTAGE.md` :
+
+- Confrontation directe au moteur C sur **treize sources réelles** (ISH, PANO122, PLINK104,
+  TYDOS, UUENCODE, trdos033), toutes reproduites octet à octet. Elle a mis au jour, puis fait
+  corriger, plusieurs défauts d'encodage — dont **sept défauts des familles à post-octet**
+  (MV/MVW/MVP/MVL), verrouillés par le jeu d'essai `postbyte_families`, et quatre défauts
+  silencieux (dont `jp y`/`u`/`s` qui sautaient à l'adresse 0).
+- **Septième avertissement** : opérande surnuméraire d'`IFEQ`/`IFNE`/`IFGT`/`IFLT`, qui ne
+  comparent pas deux valeurs mais testent un opérande contre zéro.
+- **Blocs structurés `{ }`** (`continue`/`break`) et **zone de travail `SUBORG`** avec
+  `BYTE`/`WORD`/`PNTR` et l'opérande `%`, pour porter les drivers du dialecte A62 (`ssfdc120`,
+  `PLINKC`, ce dernier validé sur matériel réel).
+- **`Exemples/INCLUDE/pce500.inc`** : 276 constantes système générées depuis les tables du
+  désassembleur, pour un vocabulaire de noms partagé.
 
 ## 12. Validation et non-régression
 
