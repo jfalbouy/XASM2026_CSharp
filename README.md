@@ -198,8 +198,9 @@ xasm2026-4 sourcefile[.ext] [options]
 
 Si le fichier source n'a pas d'extension, `.asm` est ajoutée automatiquement.
 
-> **Important** : lancer l'assembleur depuis le répertoire du fichier source, afin que les
-> directives `INCLUDE` se résolvent correctement.
+> Les directives `INCLUDE` se résolvent **relativement au dossier du fichier qui les contient**,
+> à chaque niveau d'imbrication — l'assembleur peut donc être lancé depuis n'importe quel
+> répertoire, contrairement au moteur C qui résolvait relativement au répertoire courant.
 
 ### Exemples rapides
 
@@ -425,6 +426,11 @@ Les deux emplois ne peuvent pas être confondus : `*` en **position de terme** v
 compteur, `*` **entre deux valeurs** est l'opérateur de multiplication — c'est la règle du
 drapeau `set_x` de `eval.c`. L'écriture `**2` est donc valide et vaut « compteur × 2 ».
 
+Le symbole `%` suit **exactement la même règle** pour le **compteur secondaire** de `SUBORG`
+(voir les directives) : en position de terme il rend la taille du cadre de travail courant,
+entre deux valeurs il reste l'opérateur modulo. `%` seul et `a % b` sont donc distingués par
+la position, comme `*`.
+
 ### Symboles locaux
 
 Un label défini dans un bloc `LOCAL` est préfixé par la portée courante
@@ -530,6 +536,44 @@ Le corps d'une macro est re-développé : il peut donc contenir des conditionnel
         ENDM
 ```
 
+### Blocs structurés et zone de travail (dialecte A62)
+
+Ajouts pour porter les drivers écrits pour l'assembleur A62 / Kon (SmartMedia `ssfdc120`,
+Pocket Link Cache `PLINKC`).
+
+Les **blocs `{ }`** sont des boucles structurées : `continue` vise le début du bloc, `break`
+la sortie juste après la `}`. Ce sont des cibles **réservées à l'intérieur d'un bloc
+seulement** — hors d'un `{ }`, `continue`/`break` restent de simples étiquettes. Les blocs
+doivent s'équilibrer, sinon c'est une erreur fatale.
+
+```asm
+        MV   IL,5
+        {
+        DEC  IL
+        JRNZ continue      ; reboucle au début du bloc
+        JR   break         ; sort du bloc
+        }
+```
+
+`SUBORG` ouvre une **zone de travail** : `BYTE` / `WORD` / `PNTR` y nomment des champs à
+offsets successifs (1, 2, 3 octets ; tableaux via `nom[taille]`), dans un **compteur
+secondaire** qui n'émet aucun octet et ne touche pas le compteur principal. `SUBORG *` base
+le cadre sur le compteur courant, et `%` (en position de terme) rend la taille du cadre.
+
+```asm
+        SUBORG 0
+        BYTE   flag, mode           ; flag=0, mode=1
+        WORD   compteur             ; compteur=2
+        PNTR   tete, courant        ; tete=4, courant=7  (pointeurs 3 octets)
+                                    ; ici "%" vaut 10
+```
+
+| Directive | Description |
+|---|---|
+| `{` / `}` | Bloc structuré ; cibles `continue` (début) et `break` (sortie) |
+| `SUBORG expr` | Positionne le compteur secondaire (`*` = compteur principal courant) |
+| `BYTE` / `WORD` / `PNTR` noms | Champs de 1 / 2 / 3 octets ; tableaux via `nom[taille]` ; n'émettent rien |
+
 ### Symboles redéfinissables
 
 | Directive | Description |
@@ -600,6 +644,13 @@ Les **six** avertissements non fatals du moteur C sont portés :
 | 34 | `Warning: INCLUDE argument isn't defined yet` | Argument d'`INCLUDE` non résoluble |
 | 38 | `Warning: PRE_PUSH and PRE_POP not match` | Déséquilibre `PRE_PUSH`/`PRE_POP` dans un `INCLUDE` |
 
+Un **septième** avertissement, ajouté en 2026-4, signale un opérande surnuméraire sur les
+conditionnelles numériques : `IFEQ`/`IFNE`/`IFGT`/`IFLT` ne comparent pas deux valeurs, elles
+testent un unique opérande contre zéro (`enter_numeric_if` de `modern.c`). Écrire `IFEQ x,0`
+assemble donc en **ignorant le `,0` en silence** — piège rencontré en portant les sources A62,
+où `IFEQ media_type,0` décalait le code. Le comportement reste celui du C ; on se contente
+d'avertir.
+
 Comme dans le C, un avertissement ne rend **jamais** l'assemblage fatal et reste **muet sans
 `-W`**. Sous `-W`, il est affiché sur la console, ajouté au `.err`, et **intercalé dans le
 listing juste après la ligne fautive** :
@@ -666,6 +717,17 @@ sorties attendues.
 | REGISTER | `REGISTER2.ASM` | 972 | 4 154 o | Réécriture lisible de `REGISTER.ASM`, **octets identiques** |
 | TMAP | `TMAP2021.asm` | 936 | 1 744 o | Réécriture lisible de `TMAP2020.asm`, **octets identiques** |
 | VOGUE | `VOGUE.S` + `runtime.s` + `compile.s` | 4 496 | 14 433 o | Compilateur complet multi-fichiers |
+| ssfdc120 | `ssfdc2/4/16.asm` | — | — | Driver SmartMedia porté du **dialecte A62** ; code identique aux `.DVF` d'époque |
+| PLINKC | `plinkc.native.asm` | 811 | 1 475 o | Driver Pocket Link Cache porté d'A62 : blocs `{ }`, `SUBORG`, `%` |
+| INCLUDE | `pce500.inc` | — | — | 276 constantes système prêtes à `include` (voir ci-dessous) |
+
+Au-delà des projets de référence comparés octet à octet au moteur C, `Exemples/` contient des
+**portages du dialecte A62 / Kon** (`ssfdc120`, `PLINKC`), validés contre les binaires d'époque —
+leur code machine est reproduit à l'octet près, seule la table de relocation propre à A62 n'étant
+pas régénérée. `Exemples/INCLUDE/pce500.inc` fournit les constantes système du PC-E500S en un seul
+`include` (registres RAM interne, adresses et vecteurs, codes FCS/IOCS, numéros de device) ; il est
+**généré depuis les tables du désassembleur** `SC62015Disassembler` pour garantir un vocabulaire de
+noms cohérent entre les deux outils (`tools/generate_pce500_inc.py`).
 
 ```powershell
 cd .\Exemples\VOGUE
@@ -701,6 +763,14 @@ dotnet test .\tests\Xasm2026.Tests\Xasm2026.Tests.csproj -c Release
   avertissements, numéros de ligne physiques, intercalage dans le listing.
 - **`SymbolTableTests`** couvre les règles de portée locale, la partie la plus subtile du
   portage.
+- **`PostbyteFamiliesTests`** rejoue les 104 formes à post-octet (MV/MVW/MVP/MVL) plus 2
+  formes que Sharp ne définit pas, comparées aux octets du manuel ESR-L et du moteur C.
+- **`StructuredBlocksAndFieldsTests`** verrouille les blocs `{ }` et `SUBORG`/`BYTE`/`WORD`/`PNTR`.
+- **`SystemIncludeTests`** assemble `Exemples/INCLUDE/example.asm` et vérifie que `pce500.inc`
+  résout ses symboles aux bonnes valeurs.
+
+L'ensemble compte **268 tests**. `tests/postbyte_families.README.md` détaille le jeu d'essai
+systématique des familles à post-octet et les sept défauts d'encodage qu'il a permis de corriger.
 
 Les formats de présentation n'étant reproductibles qu'avec l'invocation d'origine, le
 harnais rejoue celle-ci exactement : **noms de fichiers entièrement en minuscules**
@@ -711,6 +781,11 @@ comparaison.
 **windows-latest** — les noms en minuscules ne résolvent les fichiers réels que sur un
 système de fichiers insensible à la casse, et les formats texte y évitent toute dérive de
 fins de ligne.
+
+Au-delà des quatre golden, la comparaison directe au moteur C couvre **treize sources réelles**
+(dossiers `ISH`, `PANO122`, `PLINK104`, `TYDOS`, `UUENCODE`, `trdos033`), toutes reproduites
+**octet à octet** — c'est cette confrontation qui a mis au jour les sept défauts d'encodage des
+familles à post-octet, depuis corrigés.
 
 `tools/compare_with_xasm2026_1_1.ps1` compare directement les sorties de la référence et du
 candidat. L'exécutable `xasm2026-1` n'étant pas fourni dans ce dépôt, il faut le désigner :
