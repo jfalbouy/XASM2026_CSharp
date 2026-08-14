@@ -20,3 +20,6 @@ tests/_compare_with_xasm2026_1_1/
 
 # Publication autonome (exe self-contained ~65 Mo, non versionne)
 dist/
+
+# Sorties du test de coherence round-trip (regenerable)
+tests/_roundtrip_coherence/

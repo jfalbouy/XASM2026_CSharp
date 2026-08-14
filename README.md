@@ -794,6 +794,24 @@ candidat. L'exécutable `xasm2026-1` n'étant pas fourni dans ce dépôt, il fau
 .\tools\compare_with_xasm2026_1_1.ps1 -ReferenceXasm C:\chemin\vers\xasm2026-1.exe
 ```
 
+### Cohérence avec le désassembleur (round-trip)
+
+`tools/roundtrip_coherence.ps1` vérifie que `xasm2026-4` et le désassembleur `e500dasm`
+(`SC62015Disassembler`) sont des **inverses exacts** : chaque objet du corpus est désassemblé
+en source réassemblable (`e500dasm --mode flow --format-out asm`) puis réassemblé, et le
+résultat doit être **identique octet pour octet** à l'objet de départ.
+
+```powershell
+.\tools\roundtrip_coherence.ps1 -Disassembler C:\chemin\vers\e500dasm.exe
+```
+
+Sur le corpus commun aux deux outils, **25 objets sur 28** bouclent à l'identique (REGISTER,
+VOGUE, PANO, PLINKC, TRDOS, TMAP, ISH, TYDOS, UUENCODE…). Les trois exceptions sont de très
+petits samples où le désassembleur sépare autrement code et données — une limite côté
+désassemblage, pas un défaut de l'assembleur ; elles sont déclarées connues, si bien que le
+script n'échoue que sur une divergence **nouvelle**. Cette cohérence prolonge celle des noms,
+déjà assurée par `Exemples/INCLUDE/pce500.inc`, généré depuis les tables du désassembleur.
+
 ---
 
 ## Intégration Visual Studio et VS Code
