@@ -19,11 +19,12 @@ param(
     [string]$CandidateXasm,
     [string]$SamplesDir,
     [string]$OutDir,
-    # Divergences attendues, cote desassembleur : de tres petits samples ou code et
-    # donnees s'entrelacent, que l'heuristique flow separe autrement (limite fondamentale
-    # de tout desassemblage, pas un defaut de l'assembleur). Le script n'echoue que sur une
-    # divergence HORS de cette liste, ce qui en fait une garde contre les regressions.
-    [string[]]$KnownDivergences = @("sample2.obj", "sample5.obj", "sample5_v14.obj")
+    # Divergences tolerees (le script n'echoue que sur une divergence HORS de cette liste).
+    # Vide depuis e500dasm v1.60.0, qui a ferme les trois derniers ecarts du corpus
+    # (sample2/sample5/sample5_v14) : la forme d'ADD/SUB a largeur explicite est desormais
+    # rendue quand l'opcode contredit la regle du premier operande (46 40 -> "addb x,a"), et
+    # un post-octet d'indexation non specifie retombe en "db". Le corpus boucle donc 28/28.
+    [string[]]$KnownDivergences = @()
 )
 
 $ErrorActionPreference = "Stop"

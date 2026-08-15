@@ -805,12 +805,13 @@ résultat doit être **identique octet pour octet** à l'objet de départ.
 .\tools\roundtrip_coherence.ps1 -Disassembler C:\chemin\vers\e500dasm.exe
 ```
 
-Sur le corpus commun aux deux outils, **25 objets sur 28** bouclent à l'identique (REGISTER,
-VOGUE, PANO, PLINKC, TRDOS, TMAP, ISH, TYDOS, UUENCODE…). Les trois exceptions sont de très
-petits samples où le désassembleur sépare autrement code et données — une limite côté
-désassemblage, pas un défaut de l'assembleur ; elles sont déclarées connues, si bien que le
-script n'échoue que sur une divergence **nouvelle**. Cette cohérence prolonge celle des noms,
-déjà assurée par `Exemples/INCLUDE/pce500.inc`, généré depuis les tables du désassembleur.
+Sur le corpus commun aux deux outils, **les 28 objets bouclent à l'identique** (REGISTER,
+VOGUE, PANO, PLINKC, MASSE, TRDOS, TMAP, ISH, TYDOS, UUENCODE…) avec `e500dasm` **v1.60.0**.
+Trois écarts subsistaient jusque-là sur de très petits samples ; ils ont été fermés côté
+désassembleur après confrontation (formes `ADD`/`SUB` à largeur explicite rendues fidèlement,
+et post-octet d'indexation non spécifié retombant en `db`). Le script échoue désormais sur
+**toute** divergence. Cette cohérence prolonge celle des noms, déjà assurée par
+`Exemples/INCLUDE/pce500.inc`, généré depuis les tables du désassembleur.
 
 ---
 
