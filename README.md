@@ -873,4 +873,5 @@ Sharp PC-E500 / PC-E500S.
 - [`PORTAGE.md`](PORTAGE.md) — journal daté du portage, module par module
 - [`xasm2026-4.md`](xasm2026-4.md) — note de cadrage du portage
 - [`Documentation/Documentation_XASM2026-4_PC-E500S.md`](Documentation/Documentation_XASM2026-4_PC-E500S.md) — documentation complète, jeu d'instructions en annexe
+- [`Documentation/Modele_Pilotes_Resident_PC-E500S.md`](Documentation/Modele_Pilotes_Resident_PC-E500S.md) — architecture d'installation d'un pilote résident, d'après REGISTER / PLINKC / SSFDC
 - [`Reference/C/`](Reference/C/) — sources C d'origine, autorité en cas de doute d'encodage
