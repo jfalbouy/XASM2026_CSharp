@@ -1,0 +1,707 @@
+000000                   	;
+000000                   	;		uudecode    for TY-DOS (PC-E500/1480U)   Ver 1.1
+000000                   	;			Programmed by  E. Kako (JM2WGN)
+000000                   	;
+000000                   	;			Original   is  UNIX(TM)
+000000                   	;
+000000                   	;		USAGE : uudecode filename
+000000                   	;
+000000                   	CR:	equ	0dh
+000000                   	LF:	equ	0ah
+000000                   	F_CALL:	equ	0fffe4h
+000000                   	CR_DRV:	equ	0bfc7dh
+000000                   	;
+0BE000                   		org	0be000h
+0BE000                   		pre_on
+0BE000                   	;
+0BE000 3C                		popu	x		;get cmdlin adrs
+0BE001 30 80 EC          		mv	a,(0ech)
+0BE004 A8 90 E5 0B       		mv	[base],a	;BP save
+0BE008                   	;
+0BE008 08 00             		mv	a,0
+0BE00A A8 91 E5 0B       		mv	[mode],a
+0BE00E 2C                		pushu	x
+0BE00F 0C A5 E4 0B       		mv	x,msg1		;(title message)
+0BE013 04 7D E4          		call	write
+0BE016                   	;
+0BE016 3C                		popu	x
+0BE017 0D 94 E5 0B       		mv	y,fname
+0BE01B 04 73 E2          		call	arg		;argument check
+0BE01E 1C 02             		jrc	no_arg
+0BE020 12 0B             		jr	start
+0BE022                   	;
+0BE022 2C                	no_arg:	pushu	x		;cmdlin_btm save
+0BE023 0C BF E4 0B       		mv	x,msg2		;(help message)
+0BE027 04 7D E4          		call	write
+0BE02A 02 53 E2          		jp	exit
+0BE02D                   	;
+0BE02D 2C                	start:	pushu	x		;cmdlin_btm save
+0BE02E 09 0B             		mv	il,0bh
+0BE030 0C 94 E5 0B       		mv	x,fname
+0BE034 0D D3 E5 0B       		mv	y,finfo
+0BE038 08 00             		mv	a,0
+0BE03A 05 E4 FF 0F       		callf	F_CALL		;file_iocs_12
+0BE03E 1E 28             		jrnc	l_0
+0BE040                   	;
+0BE040 0C 94 E5 0B       		mv	x,fname
+0BE044 90 24             		mv	a,[x++]
+0BE046 60 43             		cmp	a,'C'
+0BE048 1A 14             		jrnz	f_n_f
+0BE04A 90 24             		mv	a,[x++]
+0BE04C 60 4F             		cmp	a,'O'
+0BE04E 1A 0E             		jrnz	f_n_f
+0BE050 90 24             		mv	a,[x++]
+0BE052 60 4D             		cmp	a,'M'
+0BE054 1A 08             		jrnz	f_n_f
+0BE056 90 24             		mv	a,[x++]
+0BE058 60 3A             		cmp	a,':'
+0BE05A 1A 02             		jrnz	f_n_f
+0BE05C 12 0A             		jr	l_0
+0BE05E                   	f_n_f:
+0BE05E 0C D9 E4 0B       		mv	x,msg3		;(file not found)
+0BE062 04 7D E4          		call	write
+0BE065 02 53 E2          		jp	exit
+0BE068                   	;
+0BE068 0C 94 E5 0B       	l_0:	mv	x,fname		;fopen 'fname' for input as handle0
+0BE06C 09 01             		mv	il,1
+0BE06E 08 01             		mv	a,1
+0BE070 05 E4 FF 0F       		callf	F_CALL		;file_iocs_1
+0BE074 30 80 D6          		mv	a,(0d6h)
+0BE077 A8 92 E5 0B       		mv	[handl0],a
+0BE07B                   	;
+0BE07B 08 01             		mv	a,1
+0BE07D A8 91 E5 0B       		mv	[mode],a	;file_open flag
+0BE081                   	;
+0BE081                   	;
+0BE081                   	l_1:
+0BE081 04 C9 E3          		call	get_line
+0BE084 1E 0A             		jrnc	l_2
+0BE086                   	;
+0BE086 0C EB E4 0B       		mv	x,msg4		;(no begin line)
+0BE08A 04 7D E4          		call	write
+0BE08D 02 53 E2          		jp	exit
+0BE090                   	;
+0BE090                   	l_2:
+0BE090 0C E0 E5 0B       		mv	x,line_buf
+0BE094 90 24             		mv	a,[x++]
+0BE096 60 62             		cmp	a,'b'		;check == "begin "
+0BE098 1A 26             		jrnz	l_4
+0BE09A 90 24             		mv	a,[x++]
+0BE09C 60 65             		cmp	a,'e'
+0BE09E 1A 20             		jrnz	l_4
+0BE0A0 90 24             		mv	a,[x++]
+0BE0A2 60 67             		cmp	a,'g'
+0BE0A4 1A 1A             		jrnz	l_4
+0BE0A6 90 24             		mv	a,[x++]
+0BE0A8 60 69             		cmp	a,'i'
+0BE0AA 1A 14             		jrnz	l_4
+0BE0AC 90 24             		mv	a,[x++]
+0BE0AE 60 6E             		cmp	a,'n'
+0BE0B0 1A 0E             		jrnz	l_4
+0BE0B2 90 24             		mv	a,[x++]
+0BE0B4 60 20             		cmp	a,' '
+0BE0B6 1A 08             		jrnz	l_4
+0BE0B8                   	;
+0BE0B8 90 24             	l_3:	mv	a,[x++]		;check == "644"  ... file attr
+0BE0BA 60 20             		cmp	a,' '
+0BE0BC 1B 06             		jrnz	l_3
+0BE0BE                   	;
+0BE0BE 12 02             		jr	l_5
+0BE0C0                   	;
+0BE0C0 13 41             	l_4:	jr	l_1
+0BE0C2                   	;
+0BE0C2                   	;
+0BE0C2                   	;
+0BE0C2                   	l_5:
+0BE0C2 0D 94 E5 0B       		mv	y,fname
+0BE0C6 04 73 E2          		call	arg
+0BE0C9 1E 0D             		jrnc	l_6
+0BE0CB                   	;
+0BE0CB 0C FC E4 0B       		mv	x,msg5		;(illegal filename)
+0BE0CF 04 7D E4          		call	write
+0BE0D2 0C 98 E4 0B       		mv	x,def_file
+0BE0D6 13 16             		jr	l_5
+0BE0D8                   	;
+0BE0D8                   	l_6:
+0BE0D8 0C 94 E5 0B       		mv	x,fname
+0BE0DC 04 52 E4          		call	uppercase
+0BE0DF                   	;
+0BE0DF 0C 94 E5 0B       		mv	x,fname
+0BE0E3 0D BE E5 0B       		mv	y,file1
+0BE0E7 09 15             		mv	il,21
+0BE0E9 90 24             	l_7:	mv	a,[x++]
+0BE0EB B0 25             		mv	[y++],a
+0BE0ED 7C 01             		dec	il
+0BE0EF 1B 08             		jrnz	l_7
+0BE0F1                   	;
+0BE0F1 0C 94 E5 0B       		mv	x,fname
+0BE0F5 0D A9 E5 0B       		mv	y,fname2
+0BE0F9 09 12             		mv	il,18
+0BE0FB 90 24             	l_8:	mv	a,[x++]
+0BE0FD 60 20             		cmp	a,' '
+0BE0FF 18 02             		jrz	l_9
+0BE101 B0 25             		mv	[y++],a
+0BE103 7C 01             	l_9:	dec	il
+0BE105 1B 0C             		jrnz	l_8
+0BE107 08 00             		mv	a,0
+0BE109 B0 25             		mv	[y++],a
+0BE10B                   	;
+0BE10B 04 67 E4          		call	dispname
+0BE10E                   	;
+0BE10E 09 0B             		mv	il,0bh		;file exist check
+0BE110 0C BE E5 0B       		mv	x,file1
+0BE114 0D D3 E5 0B       		mv	y,finfo
+0BE118 08 00             		mv	a,0
+0BE11A 05 E4 FF 0F       		callf	F_CALL		;file_iocs_12
+0BE11E 1C 0A             		jrc	l_10
+0BE120                   	;
+0BE120 0C 0D E5 0B       		mv	x,msg6		;(already exist)
+0BE124 04 7D E4          		call	write
+0BE127 02 53 E2          		jp	exit
+0BE12A                   	;
+0BE12A                   	l_10:
+0BE12A 0C BE E5 0B       		mv	x,file1		;fcreate 'file1' for input as handle1
+0BE12E 09 00             		mv	il,0
+0BE130 08 00             		mv	a,0
+0BE132 05 E4 FF 0F       		callf	F_CALL		;file_iocs_1
+0BE136 30 80 D6          		mv	a,(0d6h)
+0BE139 A8 93 E5 0B       		mv	[handl1],a
+0BE13D 1E 0A             		jrnc	loop
+0BE13F                   	;
+0BE13F 0C 1E E5 0B       		mv	x,msg7		;(can't create)
+0BE143 04 7D E4          		call	write
+0BE146 02 53 E2          		jp	exit
+0BE149                   	;
+0BE149                   	loop:
+0BE149 04 C9 E3          		call	get_line
+0BE14C 1E 0A             		jrnc	lbl1
+0BE14E                   	;
+0BE14E 0C 34 E5 0B       		mv	x,msg8		;(short file)
+0BE152 04 7D E4          		call	write
+0BE155 02 46 E2          		jp	exit0
+0BE158                   	;
+0BE158                   	lbl1:
+0BE158 0C E0 E5 0B       		mv	x,line_buf
+0BE15C 90 24             		mv	a,[x++]		;
+0BE15E 48 20             		sub	a,20h		;uudecode a char
+0BE160 70 3F             		and	a,3fh		;
+0BE162 60 00             		cmp	a,0
+0BE164 18 B5             		jrz	e_of_sq		;end of seq.
+0BE166                   	;
+0BE166 30 CC 04 00       		mv	(4),0		;checksum == 0 (init)
+0BE16A                   	;
+0BE16A FD 10             		mv	il,a		;size of line
+0BE16C 30 A0 05          		mv	(5),a
+0BE16F 0D 30 E6 0B       		mv	y,out_buf
+0BE173                   	;
+0BE173                   	lbl2:
+0BE173 90 24             		mv	a,[x++]
+0BE175 48 20             		sub	a,20h		;dec No.1
+0BE177 70 3F             		and	a,3fh
+0BE179 E6                		rol	a
+0BE17A E6                		rol	a
+0BE17B 30 A0 00          		mv	(0),a
+0BE17E 90 24             		mv	a,[x++]
+0BE180 48 20             		sub	a,20h		;dec No.2
+0BE182 70 3F             		and	a,3fh
+0BE184 EE                		swap	a
+0BE185 30 A0 01          		mv	(1),a
+0BE188 90 24             		mv	a,[x++]
+0BE18A 48 20             		sub	a,20h		;dec No.3
+0BE18C 70 3F             		and	a,3fh
+0BE18E E4                		ror	a
+0BE18F E4                		ror	a
+0BE190 30 A0 02          		mv	(2),a
+0BE193 90 24             		mv	a,[x++]
+0BE195 48 20             		sub	a,20h		;dec No.4
+0BE197 70 3F             		and	a,3fh
+0BE199 30 A0 03          		mv	(3),a
+0BE19C                   	;
+0BE19C 30 80 01          		mv	a,(1)
+0BE19F 70 03             		and	a,03h
+0BE1A1 30 7F 00          		or	a,(0)		;out No.1
+0BE1A4 30 43 04          		add	(4),a
+0BE1A7 B0 25             		mv	[y++],a
+0BE1A9 30 80 02          		mv	a,(2)
+0BE1AC 70 0F             		and	a,0fh
+0BE1AE 30 71 01 F0       		and	(1),0f0h
+0BE1B2 30 7F 01          		or	a,(1)		;out No.2
+0BE1B5 30 43 04          		add	(4),a
+0BE1B8 B0 25             	 	mv	[y++],a
+0BE1BA 30 80 02          		mv	a,(2)
+0BE1BD 70 C0             		and	a,0c0h
+0BE1BF 30 7F 03          		or	a,(3)		;out No.3
+0BE1C2 30 43 04          		add	(4),a
+0BE1C5 B0 25             		mv	[y++],a
+0BE1C7 7C 01             		dec	il
+0BE1C9 18 0A             		jrz	lbl3
+0BE1CB 7C 01             		dec	il
+0BE1CD 18 06             		jrz	lbl3
+0BE1CF 7C 01             		dec	il
+0BE1D1 18 02             		jrz	lbl3
+0BE1D3                   	;
+0BE1D3 13 62             		jr	lbl2
+0BE1D5                   	;
+0BE1D5                   	lbl3:
+0BE1D5 30 71 04 3F       		and	(4),3fh
+0BE1D9 90 24             		mv	a,[x++]
+0BE1DB 48 20             		sub	a,20h
+0BE1DD 1C 11             		jrc	lbl4
+0BE1DF 70 3F             		and	a,3fh
+0BE1E1 30 63 04          		cmp	(4),a
+0BE1E4 18 0A             		jrz	lbl4
+0BE1E6                   	;
+0BE1E6 0C 55 E5 0B       		mv	x,msg10		;(checksum error)
+0BE1EA 04 7D E4          		call	write
+0BE1ED 02 46 E2          		jp	exit0
+0BE1F0                   	;
+0BE1F0                   	lbl4:
+0BE1F0 08 00             		mv	a,0
+0BE1F2 B0 25             		mv	[y++],a
+0BE1F4                   	;
+0BE1F4 0C 30 E6 0B       		mv	x,out_buf
+0BE1F8 30 CD 06 00 00    		mvw	(6),0
+0BE1FD 30 85 05          		mv	y,(5)		;write-size
+0BE200 88 93 E5 0B       		mv	a,[handl1]
+0BE204 30 A0 D6          		mv	(0d6h),a
+0BE207 09 04             		mv	il,4		;fwrite block
+0BE209 05 E4 FF 0F       		callf	F_CALL
+0BE20D 1E 0A             		jrnc	lbl4a
+0BE20F                   	;
+0BE20F 0C 6A E5 0B       		mv	x,msg11
+0BE213 04 7D E4          		call	write
+0BE216 02 46 E2          		jp	exit0
+0BE219                   	lbl4a:
+0BE219                   	;
+0BE219 13 D2             		jr	loop
+0BE21B                   	;
+0BE21B                   	e_of_sq:
+0BE21B 04 C9 E3          		call	get_line
+0BE21E 1E 0A             		jrnc	lbl6
+0BE220                   	;
+0BE220                   	lbl5:
+0BE220 0C 46 E5 0B       		mv	x,msg9		;(no end)
+0BE224 04 7D E4          		call	write
+0BE227 02 46 E2          		jp	exit0
+0BE22A                   	lbl6:
+0BE22A                   	;
+0BE22A 0C E0 E5 0B       		mv	x,line_buf	;check == "end"
+0BE22E 90 24             		mv	a,[x++]
+0BE230 60 65             		cmp	a,'e'
+0BE232 1B 14             		jrnz	lbl5
+0BE234 90 24             		mv	a,[x++]
+0BE236 60 6E             		cmp	a,'n'
+0BE238 1B 1A             		jrnz	lbl5
+0BE23A 90 24             		mv	a,[x++]
+0BE23C 60 64             		cmp	a,'d'
+0BE23E 1B 20             		jrnz	lbl5
+0BE240                   	;
+0BE240 04 C9 E3          		call	get_line	;size (dummy)
+0BE243 04 C9 E3          		call	get_line	;eof (dummy)
+0BE246                   	;
+0BE246                   	exit0:
+0BE246 88 93 E5 0B       		mv	a,[handl1]
+0BE24A 30 A0 D6          		mv	(0d6h),a
+0BE24D 09 02             		mv	il,2
+0BE24F 05 E4 FF 0F       		callf	F_CALL		;file_iocs_2
+0BE253                   	;
+0BE253 88 91 E5 0B       	exit:	mv	a,[mode]
+0BE257 60 00             		cmp	a,0
+0BE259 18 0D             		jrz	exit1
+0BE25B 88 92 E5 0B       		mv	a,[handl0]	;close file 'fname'
+0BE25F 30 A0 D6          		mv	(0d6h),a
+0BE262 09 02             		mv	il,2
+0BE264 05 E4 FF 0F       		callf	F_CALL		;file_iocs_2
+0BE268                   	;
+0BE268 88 90 E5 0B       	exit1:	mv	a,[base]
+0BE26C 30 A0 EC          		mv	(0ech),a	;BP restore
+0BE26F 08 00             		mv	a,0
+0BE271 9F                		rc			;reset CF
+0BE272 07                		retf
+0BE273                   	;
+0BE273                   	;
+0BE273                   	;
+0BE273                   	;
+0BE273                   	;
+0BE273                   	;
+0BE273                   	;
+0BE273 0D 94 E5 0B       	arg:	mv	y,fname		;analyze argument characters
+0BE277 30 CC 00 12       		mv	(0),18
+0BE27B 08 20             		mv	a,' '
+0BE27D B0 25             	arg0:	mv	[y++],a		;fill space
+0BE27F 30 7D 00          		dec	(0)
+0BE282 1B 07             		jrnz	arg0
+0BE284 08 00             		mv	a,0
+0BE286 B0 25             		mv	[y++],a
+0BE288 0D 94 E5 0B       		mv	y,fname
+0BE28C 30 CC 00 00       	arg1:	mv	(0),0
+0BE290 90 24             		mv	a,[x++]		;skip space codes
+0BE292 60 00             		cmp	a,0
+0BE294 18 1E             		jrz	arg1a
+0BE296 60 0D             		cmp	a,CR
+0BE298 18 1A             		jrz	arg1a
+0BE29A 60 1A             		cmp	a,01ah
+0BE29C 18 16             		jrz	arg1a
+0BE29E 60 FF             		cmp	a,0ffh
+0BE2A0 18 12             		jrz	arg1a
+0BE2A2 60 3C             		cmp	a,'<'
+0BE2A4 18 0E             		jrz	arg1a
+0BE2A6 60 3E             		cmp	a,'>'
+0BE2A8 18 0A             		jrz	arg1a
+0BE2AA 60 22             		cmp	a,'"'
+0BE2AC 19 22             		jrz	arg1
+0BE2AE 60 20             		cmp	a,' '
+0BE2B0 19 26             		jrz	arg1
+0BE2B2 12 1D             		jr	arg2a
+0BE2B4 02 AB E3          	arg1a:	jp	argerr
+0BE2B7 90 24             	arg2:	mv	a,[x++]		;search drive or filename
+0BE2B9 60 00             		cmp	a,0
+0BE2BB 18 6A             		jrz	arg4z
+0BE2BD 60 0D             		cmp	a,CR
+0BE2BF 18 66             		jrz	arg4z
+0BE2C1 60 1A             		cmp	a,01ah
+0BE2C3 18 62             		jrz	arg4z
+0BE2C5 60 FF             		cmp	a,0ffh
+0BE2C7 18 5E             		jrz	arg4z
+0BE2C9 60 20             		cmp	a,' '
+0BE2CB 18 5A             		jrz	arg4z
+0BE2CD 60 22             		cmp	a,'"'		;closing quote ends the drive/name (UUDEC2)
+0BE2CF 18 56             		jrz	arg4z
+0BE2D1 60 3A             	arg2a:	cmp	a,':'
+0BE2D3 18 11             		jrz	arg2c
+0BE2D5 60 2E             		cmp	a,'.'
+0BE2D7 18 50             		jrz	arg4
+0BE2D9 B0 25             		mv	[y++],a
+0BE2DB 30 6D 00          		inc	(0)
+0BE2DE 30 61 00 09       		cmp	(0),9
+0BE2E2 1B 2D             		jrnz	arg2
+0BE2E4 12 C5             		jr	argerr
+0BE2E6 B0 25             	arg2c:	mv	[y++],a		;found drive
+0BE2E8 30 61 00 00       		cmp	(0),0
+0BE2EC 18 BD             		jrz	argerr
+0BE2EE 30 61 00 06       		cmp	(0),6
+0BE2F2 1E B7             		jrnc	argerr
+0BE2F4 0D 9A E5 0B       		mv	y,fname+6
+0BE2F8 30 CC 00 00       	arg3:	mv	(0),0
+0BE2FC 90 24             		mv	a,[x++]		;search filename
+0BE2FE 60 00             		cmp	a,0
+0BE300 18 6F             		jrz	arg5z
+0BE302 60 0D             		cmp	a,CR
+0BE304 18 6B             		jrz	arg5z
+0BE306 60 1A             		cmp	a,01ah
+0BE308 18 67             		jrz	arg5z
+0BE30A 60 FF             		cmp	a,0ffh
+0BE30C 18 63             		jrz	arg5z
+0BE30E 60 20             		cmp	a,' '
+0BE310 18 5F             		jrz	arg5z
+0BE312 60 22             		cmp	a,'"'		;closing quote ends the filename (UUDEC2)
+0BE314 18 5B             		jrz	arg5z
+0BE316 60 2E             		cmp	a,'.'
+0BE318 18 59             		jrz	arg5
+0BE31A B0 25             		mv	[y++],a
+0BE31C 30 6D 00          		inc	(0)
+0BE31F 30 61 00 09       		cmp	(0),9
+0BE323 1B 2D             		jrnz	arg3
+0BE325 12 84             		jr	argerr
+0BE327 7C 04             	arg4z:	dec	x
+0BE329 30 61 00 00       	arg4:	cmp	(0),0		;found filename without drive
+0BE32D 18 7C             		jrz	argerr
+0BE32F 08 00             		mv	a,0
+0BE331 28                		pushu	a
+0BE332 90 35             	arg4a:	mv	a,[--y]
+0BE334 28                		pushu	a		;string copy drive to filename
+0BE335 30 7D 00          		dec	(0)
+0BE338 30 61 00 00       		cmp	(0),0
+0BE33C 1B 0C             		jrnz	arg4a
+0BE33E 0D 94 E5 0B       		mv	y,fname
+0BE342 30 CC 00 06       		mv	(0),6
+0BE346 08 20             		mv	a,' '
+0BE348 B0 25             	arg4b:	mv	[y++],a
+0BE34A 30 7D 00          		dec	(0)
+0BE34D 1B 07             		jrnz	arg4b
+0BE34F 38                	arg4c:	popu	a
+0BE350 60 00             		cmp	a,0
+0BE352 18 04             		jrz	arg4d
+0BE354 B0 25             		mv	[y++],a
+0BE356 13 09             		jr	arg4c
+0BE358 2C                	arg4d:	pushu	x		;store default drive
+0BE359 0C 7D FC 0B       		mv	x,CR_DRV
+0BE35D 0D 94 E5 0B       		mv	y,fname
+0BE361 30 CC 00 06       		mv	(0),6
+0BE365 90 24             	arg4e:	mv	a,[x++]
+0BE367 B0 25             		mv	[y++],a
+0BE369 30 7D 00          		dec	(0)
+0BE36C 1B 09             		jrnz	arg4e
+0BE36E 3C                		popu	x
+0BE36F 12 02             		jr	arg5
+0BE371 7C 04             	arg5z:	dec	x
+0BE373 08 2E             	arg5:	mv	a,'.'
+0BE375 0D A2 E5 0B       		mv	y,fname+14
+0BE379 B0 25             		mv	[y++],a
+0BE37B 30 CC 00 00       		mv	(0),0
+0BE37F 90 24             	arg6:	mv	a,[x++]		;search extention
+0BE381 60 00             		cmp	a,0
+0BE383 18 21             		jrz	arg_ok
+0BE385 60 0D             		cmp	a,CR
+0BE387 18 1D             		jrz	arg_ok
+0BE389 60 1A             		cmp	a,01ah
+0BE38B 18 19             		jrz	arg_ok
+0BE38D 60 FF             		cmp	a,0ffh
+0BE38F 18 15             		jrz	arg_ok
+0BE391 60 20             		cmp	a,' '
+0BE393 18 11             		jrz	arg_ok
+0BE395 60 22             		cmp	a,'"'		;closing quote ends the extension (UUDEC2)
+0BE397 18 0D             		jrz	arg_ok
+0BE399 B0 25             		mv	[y++],a
+0BE39B 30 6D 00          		inc	(0)
+0BE39E 30 61 00 04       		cmp	(0),4
+0BE3A2 1B 25             		jrnz	arg6
+0BE3A4 12 05             		jr	argerr
+0BE3A6 04 B0 E3          	arg_ok:	call	argskp
+0BE3A9 9F                		rc
+0BE3AA 06                		ret
+0BE3AB 04 B0 E3          	argerr:	call	argskp		;no argument or illegal one
+0BE3AE 97                		sc
+0BE3AF 06                		ret
+0BE3B0 7C 04             	argskp:	dec	x
+0BE3B2 90 24             	argsk1:	mv	a,[x++]
+0BE3B4 60 00             		cmp	a,0
+0BE3B6 18 0E             		jrz	argsk2
+0BE3B8 60 0D             		cmp	a,CR
+0BE3BA 18 0A             		jrz	argsk2
+0BE3BC 60 1A             		cmp	a,01ah
+0BE3BE 18 06             		jrz	argsk2
+0BE3C0 60 FF             		cmp	a,0ffh
+0BE3C2 18 02             		jrz	argsk2
+0BE3C4 13 14             		jr	argsk1
+0BE3C6 7C 04             	argsk2:	dec	x
+0BE3C8 06                		ret
+0BE3C9                   	;
+0BE3C9                   	;
+0BE3C9                   	;
+0BE3C9                   	;
+0BE3C9                   	get_line:			;get 1 line
+0BE3C9 0C E0 E5 0B       	st0:	mv	x,line_buf
+0BE3CD 09 00             		mv	il,0
+0BE3CF AB DE E5 0B       		mv	[line_buf_ptr],i
+0BE3D3                   	;
+0BE3D3 04 42 E4          	st1:	call	f_read		;skip CR/LF code
+0BE3D6 1C 5C             		jrc	f_err
+0BE3D8 60 1A             		cmp	a,01ah
+0BE3DA 18 5E             		jrz	f_eof
+0BE3DC DD                		ex	a,b
+0BE3DD 60 00             		cmp	a,0
+0BE3DF 18 59             		jrz	f_eof
+0BE3E1 DD                		ex	a,b
+0BE3E2 60 0D             		cmp	a,CR
+0BE3E4 19 13             		jrz	st1
+0BE3E6 60 0A             		cmp	a,LF
+0BE3E8 19 17             		jrz	st1
+0BE3EA                   	;
+0BE3EA FD 10             	st2:	mv	il,a		;store data
+0BE3EC 8A DE E5 0B       		mv	ba,[line_buf_ptr]
+0BE3F0 6C 02             		inc	ba
+0BE3F2 60 50             		cmp	a,80
+0BE3F4 18 25             		jrz	st3
+0BE3F6 AA DE E5 0B       		mv	[line_buf_ptr],ba
+0BE3FA B1 24             		mv	[x++],il
+0BE3FC                   	;
+0BE3FC 04 42 E4          		call	f_read
+0BE3FF 1C 33             		jrc	f_err
+0BE401 60 1A             		cmp	a,01ah
+0BE403 18 35             		jrz	f_eof
+0BE405 DD                		ex	a,b
+0BE406 60 00             		cmp	a,0
+0BE408 18 30             		jrz	f_eof
+0BE40A DD                		ex	a,b
+0BE40B 60 0D             		cmp	a,CR
+0BE40D 18 06             		jrz	st4
+0BE40F 60 0A             		cmp	a,LF
+0BE411 18 02             		jrz	st4
+0BE413 13 2B             		jr	st2
+0BE415 08 00             	st4:	mv	a,0
+0BE417 B0 24             		mv	[x++],a
+0BE419 9F                		rc
+0BE41A 06                		ret
+0BE41B                   	;
+0BE41B 04 42 E4          	st3:	call	f_read		;skip CR/LF code
+0BE41E 1C 14             		jrc	f_err
+0BE420 60 1A             		cmp	a,01ah
+0BE422 18 16             		jrz	f_eof
+0BE424 DD                		ex	a,b
+0BE425 60 00             		cmp	a,0
+0BE427 18 11             		jrz	f_eof
+0BE429 DD                		ex	a,b
+0BE42A 60 0D             		cmp	a,CR
+0BE42C 18 04             		jrz	st5
+0BE42E 60 0A             		cmp	a,LF
+0BE430 18 00             		jrz	st5
+0BE432 13 6B             	st5:	jr	st0
+0BE434                   	;
+0BE434 08 00             	f_err:	mv	a,0
+0BE436 B0 24             		mv	[x++],a
+0BE438 97                		sc
+0BE439 06                		ret
+0BE43A                   	;
+0BE43A 08 00             	f_eof:	mv	a,0
+0BE43C B0 24             		mv	[x++],a
+0BE43E 08 01             		mv	a,1
+0BE440 97                		sc
+0BE441 06                		ret
+0BE442                   	;
+0BE442 88 92 E5 0B       	f_read:	mv	a,[handl0]	;read from 'fname'
+0BE446 30 A0 D6          		mv	(0d6h),a
+0BE449 09 05             		mv	il,5
+0BE44B 08 00             		mv	a,0
+0BE44D 05 E4 FF 0F       		callf	F_CALL		;file_iocs_5
+0BE451 06                		ret
+0BE452                   	;
+0BE452                   	;
+0BE452                   	uppercase:
+0BE452 09 12             		mv	il,18
+0BE454 90 04             	uc1:	mv	a,[x]
+0BE456 60 61             		cmp	a,'a'
+0BE458 1C 06             		jrc	uc2
+0BE45A 60 7B             		cmp	a,'z'+1
+0BE45C 1E 02             		jrnc	uc2
+0BE45E 48 20             		sub	a,20h
+0BE460 B0 24             	uc2:	mv	[x++],a
+0BE462 7C 01             		dec	il
+0BE464 1B 12             		jrnz	uc1
+0BE466 06                		ret
+0BE467                   	;
+0BE467                   	;
+0BE467                   	dispname:
+0BE467 0C 7F E5 0B       		mv	x,msg20
+0BE46B 04 7D E4          		call	write
+0BE46E 0C A9 E5 0B       		mv	x,fname2
+0BE472 04 7D E4          		call	write
+0BE475 0C 8C E5 0B       		mv	x,msg21
+0BE479 04 7D E4          		call	write
+0BE47C 06                	 	ret
+0BE47D                   	;
+0BE47D                   	;
+0BE47D 30 CC D6 00       	write:	mv	(0d6h),0
+0BE481 2C                		pushu	x		;display message
+0BE482 0D 00 00 00       		mv	y,0
+0BE486 90 24             	wrt1:	mv	a,[x++]
+0BE488 6C 05             		inc	y
+0BE48A 60 00             		cmp	a,0
+0BE48C 1B 08             		jrnz	wrt1
+0BE48E 7C 05             		dec	y
+0BE490 3C                		popu	x
+0BE491 09 04             		mv	il,4
+0BE493 05 E4 FF 0F       		callf	F_CALL		;file_iocs_4
+0BE497 06                		ret
+0BE498                   	;
+0BE498                   	;
+0BE498                   	def_file:
+0BE498 75 75 64 65 63 6F 		db	'uudecode.$$$',0	;if BAD_FILENAME then  this is used.
+0BE49E 64 65 2E 24 24 24 	
+0BE4A4 00                	
+0BE4A5                   	;
+0BE4A5 75 75 64 65 63 6F 	msg1:	db	'uudecode V1.1 by E.Kako',CR,LF,0
+0BE4AB 64 65 20 56 31 2E 	
+0BE4B1 31 20 62 79 20 45 	
+0BE4B7 2E 4B 61 6B 6F 0D 	
+0BE4BD 0A 00             	
+0BE4BF 55 53 41 47 45 20 	msg2:	db	'USAGE : uudecode infile',CR,LF,0
+0BE4C5 3A 20 75 75 64 65 	
+0BE4CB 63 6F 64 65 20 69 	
+0BE4D1 6E 66 69 6C 65 0D 	
+0BE4D7 0A 00             	
+0BE4D9 46 69 6C 65 20 6E 	msg3:	db	'File not found.',CR,LF,0
+0BE4DF 6F 74 20 66 6F 75 	
+0BE4E5 6E 64 2E 0D 0A 00 	
+0BE4EB 4E 6F 20 62 65 67 	msg4:	db	'No begin line.',CR,LF,0
+0BE4F1 69 6E 20 6C 69 6E 	
+0BE4F7 65 2E 0D 0A 00    	
+0BE4FC 42 61 64 20 66 69 	msg5:	db	'Bad filename !',CR,LF,0
+0BE502 6C 65 6E 61 6D 65 	
+0BE508 20 21 0D 0A 00    	
+0BE50D 41 6C 72 65 61 64 	msg6:	db	'Already exist.',CR,LF,0
+0BE513 79 20 65 78 69 73 	
+0BE519 74 2E 0D 0A 00    	
+0BE51E 46 69 6C 65 20 63 	msg7:	db	'File cannot create.',CR,LF,0
+0BE524 61 6E 6E 6F 74 20 	
+0BE52A 63 72 65 61 74 65 	
+0BE530 2E 0D 0A 00       	
+0BE534 54 6F 6F 20 73 68 	msg8:	db	'Too short file.',CR,LF,0
+0BE53A 6F 72 74 20 66 69 	
+0BE540 6C 65 2E 0D 0A 00 	
+0BE546 4E 6F 20 65 6E 64 	msg9:	db	'No end line.',CR,LF,0
+0BE54C 20 6C 69 6E 65 2E 	
+0BE552 0D 0A 00          	
+0BE555 43 68 65 63 6B 73 	msg10:	db	'Checksum mismatch.',CR,LF,0
+0BE55B 75 6D 20 6D 69 73 	
+0BE561 6D 61 74 63 68 2E 	
+0BE567 0D 0A 00          	
+0BE56A 44 69 73 6B 20 6F 	msg11:	db	'Disk output error.',CR,LF,0
+0BE570 75 74 70 75 74 20 	
+0BE576 65 72 72 6F 72 2E 	
+0BE57C 0D 0A 00          	
+0BE57F                   	;
+0BE57F 66 69 6C 65 6E 61 	msg20:	db	'filename = ',27h,0
+0BE585 6D 65 20 3D 20 27 	
+0BE58B 00                	
+0BE58C 27 0D 0A 00       	msg21:	db	27h,CR,LF,0
+0BE590                   	;
+0BE590 00                	base:	db	0
+0BE591                   	;
+0BE591 00                	mode:	db	0
+0BE592 00                	handl0:	db	0
+0BE593 00                	handl1:	db	0
+0BE594 00 00 00 00 00 00 	fname:	ds	21,0
+0BE59A 00 00 00 00 00 00 	
+0BE5A0 00 00 00 00 00 00 	
+0BE5A6 00 00 00          	
+0BE5A9 00 00 00 00 00 00 	fname2:	ds	21,0
+0BE5AF 00 00 00 00 00 00 	
+0BE5B5 00 00 00 00 00 00 	
+0BE5BB 00 00 00          	
+0BE5BE 00 00 00 00 00 00 	file1:	ds	21,0
+0BE5C4 00 00 00 00 00 00 	
+0BE5CA 00 00 00 00 00 00 	
+0BE5D0 00 00 00          	
+0BE5D3 00 00 00 00 00 00 	finfo:	ds	8,0
+0BE5D9 00 00             	
+0BE5DB 00 00 00          	size:	dp	0
+0BE5DE                   	;
+0BE5DE                   	line_buf_ptr:
+0BE5DE 00 00             		dw	0
+0BE5E0                   	line_buf:
+0BE5E0 00 00 00 00 00 00 		ds	80,0
+0BE5E6 00 00 00 00 00 00 	
+0BE5EC 00 00 00 00 00 00 	
+0BE5F2 00 00 00 00 00 00 	
+0BE5F8 00 00 00 00 00 00 	
+0BE5FE 00 00 00 00 00 00 	
+0BE604 00 00 00 00 00 00 	
+0BE60A 00 00 00 00 00 00 	
+0BE610 00 00 00 00 00 00 	
+0BE616 00 00 00 00 00 00 	
+0BE61C 00 00 00 00 00 00 	
+0BE622 00 00 00 00 00 00 	
+0BE628 00 00 00 00 00 00 	
+0BE62E 00 00             	
+0BE630                   	;
+0BE630                   	out_buf:
+0BE630 00 00 00 00 00 00 		ds	80,0
+0BE636 00 00 00 00 00 00 	
+0BE63C 00 00 00 00 00 00 	
+0BE642 00 00 00 00 00 00 	
+0BE648 00 00 00 00 00 00 	
+0BE64E 00 00 00 00 00 00 	
+0BE654 00 00 00 00 00 00 	
+0BE65A 00 00 00 00 00 00 	
+0BE660 00 00 00 00 00 00 	
+0BE666 00 00 00 00 00 00 	
+0BE66C 00 00 00 00 00 00 	
+0BE672 00 00 00 00 00 00 	
+0BE678 00 00 00 00 00 00 	
+0BE67E 00 00             	
+0BE680                   	;
+0BE680                   		pre_off
+0BE680                   		end
+
+  No fatal error.  Code: 0BE000h - 0BE67Fh [     1664 byte(s)]
