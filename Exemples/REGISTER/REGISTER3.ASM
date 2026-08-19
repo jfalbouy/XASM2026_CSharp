@@ -97,6 +97,28 @@ blk_id:	equ	0fbh		;identifiant de bloc de fichier
 ;       DEVICE-DRIVER INSTALLER  (modele du template : ajout en fin)
 ;-----------------------------------------------------------
 start:
+;  (0) lire l'argument de CALL : "-u" (ou "-U") lance la desinstallation,
+;      sinon on installe. La ligne de commande est en tete de la pile U.
+	popu	x
+	pushu	x
+sc_arg:	mv	a,[x++]
+	cmp	a,0
+	jrz	sc_install
+	cmp	a,0dh
+	jrz	sc_install
+	cmp	a,'-'
+	jrnz	sc_arg
+	mv	a,[x]
+	cmp	a,'u'
+	jrz	sc_uninst
+	cmp	a,'U'
+	jrz	sc_uninst
+	jr	sc_arg
+sc_uninst:
+	popu	x
+	jp	uninstall
+sc_install:
+	popu	x
 ;  (1) banniere
 	mv	x,msg0
 	mv	y,btm0-msg0
@@ -245,6 +267,92 @@ msg2:	db	'Error: already exist.',13,10
 btm2:
 msg3:	db	'Error: not enough memory.',13,10
 btm3:
+
+;-----------------------------------------------------------
+;       DESINSTALLATEUR  (CALL &BE000 -u)
+;
+;  Defait ce que l'installation a fait : delie le device de la chaine et
+;  restaure le vecteur clavier depuis la copie sauvegardee dans le pilote.
+;  Verifie d'abord etre au SOMMET de la pile de hooks (le vecteur clavier
+;  pointe-t-il encore vers NOTRE handler ?) : sinon un pilote a ete charge
+;  ensuite et le retrait casserait sa chaine -> refus propre.
+;-----------------------------------------------------------
+uninstall:
+	mv	x,msg_un
+	mv	y,btm_un-msg_un
+	mv	(cl),0
+	mv	il,4
+	callf	fcs_call
+;  chercher notre device dans la chaine, en gardant le predecesseur
+	mv	y,d_link		; y = emplacement du pointeur vers l'en-tete courant
+un_find:
+	mv	x,[y]
+	inc	x
+	jrz	un_notfound		; -1 : fin de chaine, non trouve
+	dec	x
+	mv	(10),x			; (10) = en-tete courant
+	mv	(13),y			; (13) = predecesseur (emplacement du pointeur)
+	mv	il,8
+	add	x,il			; x = en-tete + 8 = nom de device
+	mv	y,drv_str
+	mv	il,4
+	callf	stricmp
+	mv	x,(10)
+	mv	y,(13)
+	jrz	un_found
+	mv	y,x			; avancer : predecesseur = en-tete courant
+	jr	un_find
+un_found:
+;  x = notre en-tete ; (13) = predecesseur
+;  securite : le vecteur clavier pointe-t-il encore vers NOTRE int_entry ?
+	mv	ba,int_entry-iocs_header
+	add	x,ba			; x = notre int_entry (dans la copie)
+	mv	y,[keyvct]
+	sub	y,x
+	jrnz	un_notsafe		; non -> un autre pilote a hooke apres nous
+;  restaurer le vecteur clavier depuis la copie (save_vct)
+	mv	x,(10)
+	mv	ba,save_vct-iocs_header
+	add	x,ba			; x = save_vct (dans la copie)
+	mv	x,[x]			; x = vecteur clavier d'origine
+	mv	[keyvct],x
+;  delier de la chaine : [predecesseur] = notre lien suivant
+	mv	x,(10)
+	mv	x,[x]			; x = notre lien suivant (3 premiers octets de l'en-tete)
+	mv	y,(13)
+	mv	[y],x
+;  succes
+	mv	x,msg_ok
+	mv	y,btm_ok-msg_ok
+	mv	(cl),0
+	mv	il,4
+	callf	fcs_call
+	rc
+	retf
+un_notsafe:
+	mv	x,msg_ns
+	mv	y,btm_ns-msg_ns
+	jr	un_err
+un_notfound:
+	mv	x,msg_nf
+	mv	y,btm_nf-msg_nf
+un_err:
+	mv	(cl),0
+	mv	il,4
+	callf	fcs_call
+	sc
+	retf
+
+msg_un:	db	'Uninstalling RG3:',13,10
+btm_un:
+msg_ok:	db	'Uninstalled.',13,10
+btm_ok:
+msg_ns:	db	'Cannot: hooked by another.',13,10
+btm_ns:
+msg_nf:	db	'RG3: not installed.',13,10
+btm_nf:
+drv_str:	db	'RG3:'
+
 block_top:
 	db	blk_id,'REGIST3 SYS'		;block name
 	db	25h				;block attr
