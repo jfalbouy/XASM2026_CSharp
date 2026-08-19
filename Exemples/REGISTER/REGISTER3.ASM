@@ -97,8 +97,13 @@ blk_id:	equ	0fbh		;identifiant de bloc de fichier
 ;       DEVICE-DRIVER INSTALLER  (modele du template : ajout en fin)
 ;-----------------------------------------------------------
 start:
-;  (0) lire l'argument de CALL : "-u" (ou "-U") lance la desinstallation,
-;      sinon on installe. La ligne de commande est en tete de la pile U.
+;  (0) lire l'argument de CALL : la chaine "-u" (ou "-U") lance la
+;      desinstallation, sinon on installe. L'argument doit etre entre
+;      GUILLEMETS (syntaxe BASIC), comme pour UUENCODE :
+;          CALL &BE000          -> installe
+;          CALL &BE000 "-u"     -> desinstalle
+;      La ligne de commande (avec ses guillemets) est en tete de la pile U ;
+;      le scan saute le guillemet ouvrant et cherche "-u".
 	popu	x
 	pushu	x
 sc_arg:	mv	a,[x++]

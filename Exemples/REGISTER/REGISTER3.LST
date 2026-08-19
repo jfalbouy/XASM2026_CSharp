@@ -88,8 +88,13 @@
 0BE000                   	;       DEVICE-DRIVER INSTALLER  (modele du template : ajout en fin)
 0BE000                   	;-----------------------------------------------------------
 0BE000                   	start:
-0BE000                   	;  (0) lire l'argument de CALL : "-u" (ou "-U") lance la desinstallation,
-0BE000                   	;      sinon on installe. La ligne de commande est en tete de la pile U.
+0BE000                   	;  (0) lire l'argument de CALL : la chaine "-u" (ou "-U") lance la
+0BE000                   	;      desinstallation, sinon on installe. L'argument doit etre entre
+0BE000                   	;      GUILLEMETS (syntaxe BASIC), comme pour UUENCODE :
+0BE000                   	;          CALL &BE000          -> installe
+0BE000                   	;          CALL &BE000 "-u"     -> desinstalle
+0BE000                   	;      La ligne de commande (avec ses guillemets) est en tete de la pile U ;
+0BE000                   	;      le scan saute le guillemet ouvrant et cherche "-u".
 0BE000 3C                		popu	x
 0BE001 2C                		pushu	x
 0BE002 90 24             	sc_arg:	mv	a,[x++]
