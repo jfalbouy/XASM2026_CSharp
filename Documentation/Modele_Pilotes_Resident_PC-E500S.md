@@ -194,4 +194,10 @@ ne le voyait qu'à l'exécution). Le pilote minimal s'installe et apparaît sous
 > échec, ou dans le modèle ajout-en-fin, il corromprait BASIC (bascule en mode TEXT). Le modèle
 > ajout-en-fin l'évite entièrement.
 
+**Validation sur un vrai pilote** : `Exemples/REGISTER/REGISTER3.ASM` reprend le corps
+« affichage des registres » de REGISTER2 (hook clavier SHIFT+CTRL, device `RG3:`, 63 sites de
+relocation) mais l'installe **selon le modèle du template** (ajout-en-fin, `pre_on`, sans
+recalage BASIC). Testé sur émulateur : il s'installe (`REGIST3.SYS`), et SHIFT+CTRL affiche bien
+les registres. Le modèle est donc éprouvé de bout en bout, pas seulement sur le pilote minimal.
+
 La routine de désinstallation (§5) reste à ajouter.
