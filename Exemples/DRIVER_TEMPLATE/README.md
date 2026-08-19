@@ -11,6 +11,7 @@ Voir `Documentation/Modele_Pilotes_Resident_PC-E500S.md` pour l'architecture d'e
 | --- | --- |
 | `driver_template.asm` | le squelette, assemblable tel quel (pilote minimal : un stub qui renvoie « commande non gérée ») |
 | `driver_template.obj` / `.lst` | l'objet et le listing produits |
+| `driver_template.uu` | auto-décodeur BASIC pour l'émulateur (nom Sharp `DRVTMPL .OBJ`) |
 
 ## Ce que fournit le template
 
