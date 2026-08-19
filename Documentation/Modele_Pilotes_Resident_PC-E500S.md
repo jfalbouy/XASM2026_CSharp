@@ -180,3 +180,9 @@ réduirait un nouveau pilote à l'écriture de ses seules **fonctions**. Il four
 
 C'est l'esprit de `Exemples/INCLUDE/pce500.inc` — mutualiser ce qui est invariant — appliqué
 cette fois à la **structure** d'un pilote, et non plus aux seules constantes.
+
+**Réalisé** : `Exemples/DRIVER_TEMPLATE/` fournit ce squelette — les deux en-têtes, l'installateur
+en 8 étapes (généralisé depuis REGISTER2, sans le hook clavier), et la discipline de relocation
+`reldp`/`relref` avec l'assertion de complétude qui rend un oubli détectable **à l'assemblage**
+(là où REGISTER2 ne le voyait qu'à l'exécution). La routine de désinstallation (§5) reste à
+ajouter.
