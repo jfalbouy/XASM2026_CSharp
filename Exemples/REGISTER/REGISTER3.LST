@@ -134,9 +134,9 @@
 0BE041 05 E4 FF 0F       		callf	fcs_call
 0BE045                   	;  sauver le vecteur clavier et IMR (le pilote les restaure)
 0BE045 8C CC FC 0B       		mv	x,[keyvct]
-0BE049 AC 7B E7 0B       		mv	[save_vct],x
+0BE049 AC 8C E7 0B       		mv	[save_vct],x
 0BE04D 30 80 FB          		mv	a,(imr_p)
-0BE050 A8 7E E7 0B       		mv	[save_imr],a
+0BE050 A8 8F E7 0B       		mv	[save_imr],a
 0BE054                   	;  (2) compacter S1: (regrouper l'espace libre en fin de zone)
 0BE054 30 CC D6 06       		mv	(cl),6
 0BE058 30 CC D7 00       		mv	(ch),0
@@ -149,7 +149,7 @@
 0BE06C 90 04             	walk:	mv	a,[x]
 0BE06E 60 FB             		cmp	a,blk_id
 0BE070 1A 15             		jrnz	walk_end
-0BE072 0D E0 E2 0B       		mv	y,block_top
+0BE072 0D F1 E2 0B       		mv	y,block_top
 0BE076 09 0C             		mv	il,12
 0BE078 2C                		pushu	x
 0BE079 05 54 E1 0B       		callf	stricmp
@@ -171,7 +171,7 @@
 0BE09F                   	;  (5) sauver le handler device #11 d'origine (pour le chainage de 'RG3:')
 0BE09F 0C A2 FC 0B       		mv	x,d_link
 0BE0A3 08 00             		mv	a,0
-0BE0A5 A8 0F E3 0B       		mv	[iocs_found],a
+0BE0A5 A8 20 E3 0B       		mv	[iocs_found],a
 0BE0A9 FD 54             	srch:	mv	y,x
 0BE0AB 94 04             		mv	x,[x]
 0BE0AD 6C 04             		inc	x
@@ -181,26 +181,26 @@
 0BE0B6 60 0B             		cmp	a,11
 0BE0B8 1B 11             		jrnz	srch
 0BE0BA 94 84 05          		mv	x,[x+5]
-0BE0BD AC 10 E3 0B       		mv	[iocs_eleven],x
+0BE0BD AC 21 E3 0B       		mv	[iocs_eleven],x
 0BE0C1 08 01             		mv	a,1
-0BE0C3 A8 0F E3 0B       		mv	[iocs_found],a
+0BE0C3 A8 20 E3 0B       		mv	[iocs_found],a
 0BE0C7                   	srch_end:
 0BE0C7                   	;  (6) chainer le nouveau device en tete de la liste IOCS
 0BE0C7 8C A2 FC 0B       		mv	x,[d_link]
-0BE0CB AC 02 E3 0B       		mv	[header],x
+0BE0CB AC 13 E3 0B       		mv	[header],x
 0BE0CF 30 84 0A          		mv	x,(10)
 0BE0D2 09 22             		mv	il,iocs_header-block_top
 0BE0D4 45 41             		add	x,il
 0BE0D6 AC A2 FC 0B       		mv	[d_link],x
 0BE0DA                   	;  (7) relocation (mecanisme de REGISTER : site pN, l'installateur lit [pN+1])
-0BE0DA 0C B5 EF 0B       		mv	x,modify_table
+0BE0DA 0C C6 EF 0B       		mv	x,modify_table
 0BE0DE 95 24             	init_3:	mv	y,[x++]
 0BE0E0 6C 05             		inc	y
 0BE0E2 18 15             		jrz	modify_end
 0BE0E4 2C                		pushu	x
 0BE0E5 94 05             		mv	x,[y]
 0BE0E7 2D                		pushu	y
-0BE0E8 0D E0 E2 0B       		mv	y,block_top
+0BE0E8 0D F1 E2 0B       		mv	y,block_top
 0BE0EC 4D 45             		sub	x,y
 0BE0EE 30 85 0A          		mv	y,(10)
 0BE0F1 45 45             		add	x,y
@@ -212,7 +212,7 @@
 0BE0F9                   	;  (8) copier le pilote en fin de chaine, puis ecrire le terminateur $ff
 0BE0F9 0B D5 0C          		mv	i,block_bottom-block_top
 0BE0FC 30 85 0A          		mv	y,(10)
-0BE0FF 0C E0 E2 0B       		mv	x,block_top
+0BE0FF 0C F1 E2 0B       		mv	x,block_top
 0BE103 90 24             	init_5:	mv	a,[x++]
 0BE105 B0 25             		mv	[y++],a
 0BE107 7C 03             		dec	i
@@ -296,7 +296,7 @@
 0BE1C3                   	;  ensuite et le retrait casserait sa chaine -> refus propre.
 0BE1C3                   	;-----------------------------------------------------------
 0BE1C3                   	uninstall:
-0BE1C3 0C 66 E2 0B       		mv	x,msg_un
+0BE1C3 0C 58 E2 0B       		mv	x,msg_un
 0BE1C7 0D 13 00 00       		mv	y,btm_un-msg_un
 0BE1CB 30 CC D6 00       		mv	(cl),0
 0BE1CF 09 04             		mv	il,4
@@ -306,13 +306,13 @@
 0BE1D9                   	un_find:
 0BE1D9 94 05             		mv	x,[y]
 0BE1DB 6C 04             		inc	x
-0BE1DD 18 73             		jrz	un_notfound		; -1 : fin de chaine, non trouve
+0BE1DD 18 65             		jrz	un_notfound		; -1 : fin de chaine, non trouve
 0BE1DF 7C 04             		dec	x
 0BE1E1 30 A4 0A          		mv	(10),x			; (10) = en-tete courant
 0BE1E4 30 A5 0D          		mv	(13),y			; (13) = predecesseur (emplacement du pointeur)
 0BE1E7 09 08             		mv	il,8
 0BE1E9 45 41             		add	x,il			; x = en-tete + 8 = nom de device
-0BE1EB 0D DC E2 0B       		mv	y,drv_str
+0BE1EB 0D ED E2 0B       		mv	y,drv_str
 0BE1EF 09 04             		mv	il,4
 0BE1F1 05 54 E1 0B       		callf	stricmp
 0BE1F5 30 84 0A          		mv	x,(10)
@@ -327,7 +327,7 @@
 0BE204 45 42             		add	x,ba			; x = notre int_entry (dans la copie)
 0BE206 8D CC FC 0B       		mv	y,[keyvct]
 0BE20A 4D 54             		sub	y,x
-0BE20C 1A 3A             		jrnz	un_notsafe		; non -> un autre pilote a hooke apres nous
+0BE20C 1A 2C             		jrnz	un_notsafe		; non -> un autre pilote a hooke apres nous
 0BE20E                   	;  restaurer le vecteur clavier depuis la copie (save_vct)
 0BE20E 30 84 0A          		mv	x,(10)
 0BE211 0A 79 04          		mv	ba,save_vct-iocs_header
@@ -339,1079 +339,1083 @@
 0BE21F 94 04             		mv	x,[x]			; x = notre lien suivant (3 premiers octets de l'en-tete)
 0BE221 30 85 0D          		mv	y,(13)
 0BE224 B4 05             		mv	[y],x
-0BE226                   	;  rendre le bloc supprimable par KILL : effacer les bits Device+Protect de
-0BE226                   	;  l'attribut du bloc (offset 0Ch). Le pilote n'etant plus dans la chaine des
-0BE226                   	;  devices, il redevient un simple fichier que l'utilisateur retire par
-0BE226                   	;  KILL "S1:REGIST3.SYS" ; la ROM libere alors la memoire (recompactage).
-0BE226 30 84 0A          		mv	x,(10)			; en-tete IOCS = block_top + 22h
-0BE229 0A 16 00          		mv	ba,022h-0ch		; distance en-tete -> octet d'attribut du bloc
-0BE22C 4D 42             		sub	x,ba
-0BE22E 90 04             		mv	a,[x]
-0BE230 70 F3             		and	a,0f3h			; ~0Ch : oter Device & Protect
-0BE232 B0 04             		mv	[x],a
-0BE234                   	;  succes
-0BE234 0C 79 E2 0B       		mv	x,msg_ok
-0BE238 0D 32 00 00       		mv	y,btm_ok-msg_ok
-0BE23C 30 CC D6 00       		mv	(cl),0
-0BE240 09 04             		mv	il,4
-0BE242 05 E4 FF 0F       		callf	fcs_call
-0BE246 9F                		rc
-0BE247 07                		retf
-0BE248                   	un_notsafe:
-0BE248 0C AB E2 0B       		mv	x,msg_ns
-0BE24C 0D 1C 00 00       		mv	y,btm_ns-msg_ns
-0BE250 12 08             		jr	un_err
-0BE252                   	un_notfound:
-0BE252 0C C7 E2 0B       		mv	x,msg_nf
-0BE256 0D 15 00 00       		mv	y,btm_nf-msg_nf
-0BE25A                   	un_err:
-0BE25A 30 CC D6 00       		mv	(cl),0
-0BE25E 09 04             		mv	il,4
-0BE260 05 E4 FF 0F       		callf	fcs_call
-0BE264 97                		sc
-0BE265 07                		retf
-0BE266                   	
-0BE266 55 6E 69 6E 73 74 	msg_un:	db	'Uninstalling RG3:',13,10
-0BE26C 61 6C 6C 69 6E 67 	
-0BE272 20 52 47 33 3A 0D 	
-0BE278 0A                	
-0BE279                   	btm_un:
-0BE279 55 6E 69 6E 73 74 	msg_ok:	db	'Uninstalled.',13,10
-0BE27F 61 6C 6C 65 64 2E 	
-0BE285 0D 0A             	
-0BE287 4B 49 4C 4C 20 22 		db	'KILL "S1:REGIST3.SYS" to free mem.',13,10
-0BE28D 53 31 3A 52 45 47 	
-0BE293 49 53 54 33 2E 53 	
-0BE299 59 53 22 20 74 6F 	
-0BE29F 20 66 72 65 65 20 	
-0BE2A5 6D 65 6D 2E 0D 0A 	
-0BE2AB                   	btm_ok:
-0BE2AB 43 61 6E 6E 6F 74 	msg_ns:	db	'Cannot: hooked by another.',13,10
-0BE2B1 3A 20 68 6F 6F 6B 	
-0BE2B7 65 64 20 62 79 20 	
-0BE2BD 61 6E 6F 74 68 65 	
-0BE2C3 72 2E 0D 0A       	
-0BE2C7                   	btm_ns:
-0BE2C7 52 47 33 3A 20 6E 	msg_nf:	db	'RG3: not installed.',13,10
-0BE2CD 6F 74 20 69 6E 73 	
-0BE2D3 74 61 6C 6C 65 64 	
-0BE2D9 2E 0D 0A          	
-0BE2DC                   	btm_nf:
-0BE2DC 52 47 33 3A       	drv_str:	db	'RG3:'
-0BE2E0                   	
-0BE2E0                   	block_top:
-0BE2E0 FB 52 45 47 49 53 		db	blk_id,'REGIST3 SYS'		;block name
-0BE2E6 54 33 20 53 59 53 	
-0BE2EC 25                		db	25h				;block attr
-0BE2ED 00 00 00 00       		dw	0,0				;date,time
-0BE2F1 D5 0C 00          		dp	block_bottom - block_top	;block size
-0BE2F4 00 00             		dw	0
-0BE2F6 D5 0C 00          		dp	block_bottom - block_top	;file size
-0BE2F9 D5 0C 00          		dp	block_bottom - block_top	;block size
-0BE2FC 00 00 00 00 00 00 		dp	0,0
-0BE302                   	;
-0BE302                   	iocs_header:
-0BE302 00 00 00          	header:	dp	0
-0BE305 0B                	number:	db	11
-0BE306 63                	attr:	db	063h
-0BE307 13 E3 0B          	adrs:	dp	iocs_entry
-0BE30A 52 47 33 3A 00    		db	'RG3:',0
-0BE30F                   	;
-0BE30F                   	iocs_found:
-0BE30F 00                		db	0		;flag of following icos.11 adress effective
-0BE310                   	iocs_eleven:
-0BE310 00 00 00          		dp	0		;original  iocs No.11 adress
+0BE226                   	;  Le pilote n'est plus dans la chaine des devices, mais son bloc reste en
+0BE226                   	;  memoire avec l'attribut 'Protected' du systeme de fichiers (que KILL refuse).
+0BE226                   	;  Le flag Protected de BASIC n'est PAS le bit 0Ch teste par REGISTER (verifie
+0BE226                   	;  sur emulateur : effacer 0Ch ne suffit pas). On laisse donc l'utilisateur
+0BE226                   	;  lever la protection puis liberer, via les commandes BASIC affichees ci-apres
+0BE226                   	;  (la ROM met alors proprement a jour le repertoire et recompacte) :
+0BE226                   	;      SET  "S1:REGIST3.SYS"," "   (oter la protection)
+0BE226                   	;      KILL "S1:REGIST3.SYS"       (liberer la memoire)
+0BE226                   	;  succes
+0BE226 0C 6B E2 0B       		mv	x,msg_ok
+0BE22A 0D 51 00 00       		mv	y,btm_ok-msg_ok
+0BE22E 30 CC D6 00       		mv	(cl),0
+0BE232 09 04             		mv	il,4
+0BE234 05 E4 FF 0F       		callf	fcs_call
+0BE238 9F                		rc
+0BE239 07                		retf
+0BE23A                   	un_notsafe:
+0BE23A 0C BC E2 0B       		mv	x,msg_ns
+0BE23E 0D 1C 00 00       		mv	y,btm_ns-msg_ns
+0BE242 12 08             		jr	un_err
+0BE244                   	un_notfound:
+0BE244 0C D8 E2 0B       		mv	x,msg_nf
+0BE248 0D 15 00 00       		mv	y,btm_nf-msg_nf
+0BE24C                   	un_err:
+0BE24C 30 CC D6 00       		mv	(cl),0
+0BE250 09 04             		mv	il,4
+0BE252 05 E4 FF 0F       		callf	fcs_call
+0BE256 97                		sc
+0BE257 07                		retf
+0BE258                   	
+0BE258 55 6E 69 6E 73 74 	msg_un:	db	'Uninstalling RG3:',13,10
+0BE25E 61 6C 6C 69 6E 67 	
+0BE264 20 52 47 33 3A 0D 	
+0BE26A 0A                	
+0BE26B                   	btm_un:
+0BE26B 55 6E 69 6E 73 74 	msg_ok:	db	'Uninstalled. To free memory :',13,10
+0BE271 61 6C 6C 65 64 2E 	
+0BE277 20 54 6F 20 66 72 	
+0BE27D 65 65 20 6D 65 6D 	
+0BE283 6F 72 79 20 3A 0D 	
+0BE289 0A                	
+0BE28A 53 45 54 20 20 22 		db	'SET  "S1:REGIST3.SYS"," "',13,10
+0BE290 53 31 3A 52 45 47 	
+0BE296 49 53 54 33 2E 53 	
+0BE29C 59 53 22 2C 22 20 	
+0BE2A2 22 0D 0A          	
+0BE2A5 4B 49 4C 4C 20 22 		db	'KILL "S1:REGIST3.SYS"',13,10
+0BE2AB 53 31 3A 52 45 47 	
+0BE2B1 49 53 54 33 2E 53 	
+0BE2B7 59 53 22 0D 0A    	
+0BE2BC                   	btm_ok:
+0BE2BC 43 61 6E 6E 6F 74 	msg_ns:	db	'Cannot: hooked by another.',13,10
+0BE2C2 3A 20 68 6F 6F 6B 	
+0BE2C8 65 64 20 62 79 20 	
+0BE2CE 61 6E 6F 74 68 65 	
+0BE2D4 72 2E 0D 0A       	
+0BE2D8                   	btm_ns:
+0BE2D8 52 47 33 3A 20 6E 	msg_nf:	db	'RG3: not installed.',13,10
+0BE2DE 6F 74 20 69 6E 73 	
+0BE2E4 74 61 6C 6C 65 64 	
+0BE2EA 2E 0D 0A          	
+0BE2ED                   	btm_nf:
+0BE2ED 52 47 33 3A       	drv_str:	db	'RG3:'
+0BE2F1                   	
+0BE2F1                   	block_top:
+0BE2F1 FB 52 45 47 49 53 		db	blk_id,'REGIST3 SYS'		;block name
+0BE2F7 54 33 20 53 59 53 	
+0BE2FD 25                		db	25h				;block attr
+0BE2FE 00 00 00 00       		dw	0,0				;date,time
+0BE302 D5 0C 00          		dp	block_bottom - block_top	;block size
+0BE305 00 00             		dw	0
+0BE307 D5 0C 00          		dp	block_bottom - block_top	;file size
+0BE30A D5 0C 00          		dp	block_bottom - block_top	;block size
+0BE30D 00 00 00 00 00 00 		dp	0,0
 0BE313                   	;
-0BE313                   	;
-0BE313                   	iocs_entry:
-0BE313 28                		pushu	a
-0BE314 FD 01             		mv	a,il
-0BE316 60 40             		cmp	a,40h
-0BE318 18 1D             		jrz	iocs_40h
-0BE31A 38                		popu	a
-0BE31B                   	;
-0BE31B                   	org_iocs_call:
-0BE31B 28                		pushu	a
-0BE31C 88 0F E3 0B       	p0:	mv	a,[iocs_found]
-0BE320 60 00             		cmp	a,0
-0BE322 38                		popu	a
-0BE323 18 10             		jrz	no_org_iocs
-0BE325 2C                		pushu	x
-0BE326 0C 34 E3 0B       	p1:	mv	x,return_adrs
-0BE32A B4 37             		pushs	x
-0BE32C 8C 10 E3 0B       	p2:	mv	x,[iocs_eleven]
-0BE330 B4 37             		pushs	x
-0BE332 3C                		popu	x
-0BE333 07                		retf
-0BE334                   	return_adrs:
-0BE334 07                		retf
-0BE335                   	;
-0BE335                   	no_org_iocs:
-0BE335 9F                		rc
-0BE336 07                		retf
-0BE337                   	;
-0BE337                   	iocs_40h:
-0BE337 38                		popu	a
-0BE338 8C CC FC 0B       		mv	x,[keyvct]
-0BE33C 0D 54 E3 0B       	p3:	mv	y,int_entry
-0BE340 4D 45             		sub	x,y
-0BE342 18 0E             		jrz	iocs40a
-0BE344 2F                		pushu	imr
-0BE345 0C 54 E3 0B       	p4:	mv	x,int_entry
-0BE349 AC CC FC 0B       		mv	[keyvct],x
-0BE34D 38                		popu	a
-0BE34E 78 04             		or	a,keym
-0BE350 28                		pushu	a
-0BE351 3F                		popu	imr
-0BE352 9F                	iocs40a:rc
-0BE353 07                		retf
-0BE354                   	;
-0BE354                   	;
-0BE354                   	int_entry:
-0BE354 30 CC F0 01       		mv	(ko_lo),01h		;strove for key matrix
-0BE358 30 71 F1 F8       		and	(ko_hi),$f8
-0BE35C 00                		nop
-0BE35D 30 80 F2          		mv	a,(ki_in)
-0BE360 70 C0             		and	a,0c0h
-0BE362 68 C0             		xor	a,0c0h			;key data check (SHIFT+CTRL)
-0BE364 18 1F             		jrz	begin
-0BE366 30 CC F0 00       		mv	(ko_lo),0
-0BE36A 30 71 F1 F8       		and	(ko_hi),$f8
-0BE36E                   	;
-0BE36E 2C                		pushu	x
-0BE36F 28                		pushu	a
-0BE370 88 7E E7 0B       	p5:	mv	a,[save_imr]
-0BE374 70 04             		and	a,keym
-0BE376 1A 04             		jrnz	jump_org_int
-0BE378 38                		popu	a
-0BE379 3C                		popu	x
-0BE37A 9F                		rc
-0BE37B 07                		retf
-0BE37C                   	;
-0BE37C                   	jump_org_int:
-0BE37C 8C 7B E7 0B       	p6:	mv	x,[save_vct]
-0BE380 B4 37             		pushs	x
-0BE382 38                		popu	a
-0BE383 3C                		popu	x
-0BE384 07                		retf
-0BE385                   	;
-0BE385                   	;
-0BE385                   	begin:
-0BE385 2F                		pushu	imr
-0BE386 30 E8 36 EC       		mv	[--u],(bp_p)		;BP save
-0BE38A 30 CC EC 00       		mv	(bp_p),0h		;BP=0
-0BE38E                   	;
-0BE38E                   		pre_off
-0BE38E                   	;
-0BE38E EA 36 00          		mvp	[--u],(0)
-0BE391 EA 36 03          		mvp	[--u],(3)
-0BE394 EA 36 06          		mvp	[--u],(6)
-0BE397                   	;
-0BE397 05 55 E6 0B       	p7:	callf	save_vram		;VRAM save
-0BE39B                   	;
-0BE39B 05 83 E5 0B       	p8:	callf	get_regs
+0BE313                   	iocs_header:
+0BE313 00 00 00          	header:	dp	0
+0BE316 0B                	number:	db	11
+0BE317 63                	attr:	db	063h
+0BE318 24 E3 0B          	adrs:	dp	iocs_entry
+0BE31B 52 47 33 3A 00    		db	'RG3:',0
+0BE320                   	;
+0BE320                   	iocs_found:
+0BE320 00                		db	0		;flag of following icos.11 adress effective
+0BE321                   	iocs_eleven:
+0BE321 00 00 00          		dp	0		;original  iocs No.11 adress
+0BE324                   	;
+0BE324                   	;
+0BE324                   	iocs_entry:
+0BE324 28                		pushu	a
+0BE325 FD 01             		mv	a,il
+0BE327 60 40             		cmp	a,40h
+0BE329 18 1D             		jrz	iocs_40h
+0BE32B 38                		popu	a
+0BE32C                   	;
+0BE32C                   	org_iocs_call:
+0BE32C 28                		pushu	a
+0BE32D 88 20 E3 0B       	p0:	mv	a,[iocs_found]
+0BE331 60 00             		cmp	a,0
+0BE333 38                		popu	a
+0BE334 18 10             		jrz	no_org_iocs
+0BE336 2C                		pushu	x
+0BE337 0C 45 E3 0B       	p1:	mv	x,return_adrs
+0BE33B B4 37             		pushs	x
+0BE33D 8C 21 E3 0B       	p2:	mv	x,[iocs_eleven]
+0BE341 B4 37             		pushs	x
+0BE343 3C                		popu	x
+0BE344 07                		retf
+0BE345                   	return_adrs:
+0BE345 07                		retf
+0BE346                   	;
+0BE346                   	no_org_iocs:
+0BE346 9F                		rc
+0BE347 07                		retf
+0BE348                   	;
+0BE348                   	iocs_40h:
+0BE348 38                		popu	a
+0BE349 8C CC FC 0B       		mv	x,[keyvct]
+0BE34D 0D 65 E3 0B       	p3:	mv	y,int_entry
+0BE351 4D 45             		sub	x,y
+0BE353 18 0E             		jrz	iocs40a
+0BE355 2F                		pushu	imr
+0BE356 0C 65 E3 0B       	p4:	mv	x,int_entry
+0BE35A AC CC FC 0B       		mv	[keyvct],x
+0BE35E 38                		popu	a
+0BE35F 78 04             		or	a,keym
+0BE361 28                		pushu	a
+0BE362 3F                		popu	imr
+0BE363 9F                	iocs40a:rc
+0BE364 07                		retf
+0BE365                   	;
+0BE365                   	;
+0BE365                   	int_entry:
+0BE365 30 CC F0 01       		mv	(ko_lo),01h		;strove for key matrix
+0BE369 30 71 F1 F8       		and	(ko_hi),$f8
+0BE36D 00                		nop
+0BE36E 30 80 F2          		mv	a,(ki_in)
+0BE371 70 C0             		and	a,0c0h
+0BE373 68 C0             		xor	a,0c0h			;key data check (SHIFT+CTRL)
+0BE375 18 1F             		jrz	begin
+0BE377 30 CC F0 00       		mv	(ko_lo),0
+0BE37B 30 71 F1 F8       		and	(ko_hi),$f8
+0BE37F                   	;
+0BE37F 2C                		pushu	x
+0BE380 28                		pushu	a
+0BE381 88 8F E7 0B       	p5:	mv	a,[save_imr]
+0BE385 70 04             		and	a,keym
+0BE387 1A 04             		jrnz	jump_org_int
+0BE389 38                		popu	a
+0BE38A 3C                		popu	x
+0BE38B 9F                		rc
+0BE38C 07                		retf
+0BE38D                   	;
+0BE38D                   	jump_org_int:
+0BE38D 8C 8C E7 0B       	p6:	mv	x,[save_vct]
+0BE391 B4 37             		pushs	x
+0BE393 38                		popu	a
+0BE394 3C                		popu	x
+0BE395 07                		retf
+0BE396                   	;
+0BE396                   	;
+0BE396                   	begin:
+0BE396 2F                		pushu	imr
+0BE397 30 E8 36 EC       		mv	[--u],(bp_p)		;BP save
+0BE39B 30 CC EC 00       		mv	(bp_p),0h		;BP=0
 0BE39F                   	;
-0BE39F 05 FD E3 0B       	p9:	callf	disp_regs
-0BE3A3                   	;
-0BE3A3                   	waitky:
-0BE3A3 CC F0 02          		mv	(ko_lo),02h
-0BE3A6 71 F1 F8          		and	(ko_hi),$f8
-0BE3A9 00                		nop
-0BE3AA 80 F2             		mv	a,(ki_in)
-0BE3AC 60 04             		cmp	a,04h
-0BE3AE 18 3B             		jrz	disp_s			;[S] key
-0BE3B0 CC F0 08          		mv	(ko_lo),08h
-0BE3B3 71 F1 F8          		and	(ko_hi),$f8
-0BE3B6 00                		nop
-0BE3B7 80 F2             		mv	a,(ki_in)
-0BE3B9 60 02             		cmp	a,02h
-0BE3BB 18 34             		jrz	disp_u			;[U] key
-0BE3BD CC F0 04          		mv	(ko_lo),04h
-0BE3C0 71 F1 F8          		and	(ko_hi),$f8
-0BE3C3 00                		nop
-0BE3C4 80 F2             		mv	a,(ki_in)
-0BE3C6 60 01             		cmp	a,01h
-0BE3C8 18 2D             		jrz	disp_r			;[R] key
-0BE3CA CC F0 01          		mv	(ko_lo),01h
-0BE3CD 71 F1 F8          		and	(ko_hi),$f8
-0BE3D0 00                		nop
-0BE3D1 80 F2             		mv	a,(ki_in)
-0BE3D3 70 C0             		and	a,0c0h
-0BE3D5 68 C0             		xor	a,0c0h
-0BE3D7 19 36             		jrz	waitky
-0BE3D9                   	;
-0BE3D9 05 5E E6 0B       	p10:	callf	restore_vram		;VRAM restore
-0BE3DD                   	;
-0BE3DD E2 26 06          		mvp	(6),[u++]
-0BE3E0 E2 26 03          		mvp	(3),[u++]
-0BE3E3 E2 26 00          		mvp	(0),[u++]
-0BE3E6 E0 26 EC          		mv	(bp_p),[u++]		;restore BP
-0BE3E9 3F                		popu	imr
-0BE3EA 07                		retf
-0BE3EB                   	;
-0BE3EB                   	disp_s:
-0BE3EB 05 CE E5 0B       	p11:	callf	s_rgstr
-0BE3EF 13 4E             		jr	waitky
-0BE3F1                   	;
-0BE3F1                   	disp_u:
-0BE3F1 05 16 E6 0B       	p12:	callf	u_rgstr
-0BE3F5 13 54             		jr	waitky
-0BE3F7                   	;
-0BE3F7                   	disp_r:
-0BE3F7 05 FD E3 0B       	p13:	callf	disp_regs
-0BE3FB 13 5A             		jr	waitky
-0BE3FD                   	;
-0BE3FD                   	;
-0BE3FD                   	disp_regs:
-0BE3FD 05 2A E6 0B       	p14:	callf	clrscrn
-0BE401                   	;
-0BE401 0C 7F E7 0B       	p15:	mv	x,stacks
-0BE405 0D 95 E7 0B       	p16:	mv	y,chars
-0BE409                   	;
-0BE409 08 50             		mv	a,'P'			;'PS:PC=xxxxxx '
-0BE40B B0 25             		mv	[y++],a
-0BE40D 08 53             		mv	a,'S'
-0BE40F B0 25             		mv	[y++],a
-0BE411 08 3A             		mv	a,':'
-0BE413 B0 25             		mv	[y++],a
-0BE415 08 50             		mv	a,'P'
-0BE417 B0 25             		mv	[y++],a
-0BE419 08 43             		mv	a,'C'
-0BE41B B0 25             		mv	[y++],a
-0BE41D 08 3D             		mv	a,'='
-0BE41F B0 25             		mv	[y++],a
-0BE421 90 84 04          		mv	a,[x+4]
-0BE424 05 39 E6 0B       	p17:	callf	hexwrite
-0BE428 90 84 03          		mv	a,[x+3]
-0BE42B 05 39 E6 0B       	p18:	callf	hexwrite
-0BE42F 90 84 02          		mv	a,[x+2]
-0BE432 05 39 E6 0B       	p19:	callf	hexwrite
-0BE436 08 20             		mv	a,' '
-0BE438 B0 25             		mv	[y++],a
-0BE43A                   	;
-0BE43A 08 53             		mv	a,'S'			;'S=xxxxxx '
-0BE43C B0 25             		mv	[y++],a
-0BE43E 08 3D             		mv	a,'='
-0BE440 B0 25             		mv	[y++],a
-0BE442 90 84 07          		mv	a,[x+7]
-0BE445 05 39 E6 0B       	p20:	callf	hexwrite
-0BE449 90 84 06          		mv	a,[x+6]
-0BE44C 05 39 E6 0B       	p21:	callf	hexwrite
-0BE450 90 84 05          		mv	a,[x+5]
-0BE453 05 39 E6 0B       	p22:	callf	hexwrite
-0BE457 08 20             		mv	a,' '
-0BE459 B0 25             		mv	[y++],a
-0BE45B                   	;
-0BE45B 08 55             		mv	a,'U'			;'U=xxxxxx'
-0BE45D B0 25             		mv	[y++],a
-0BE45F 08 3D             		mv	a,'='
-0BE461 B0 25             		mv	[y++],a
-0BE463 90 84 15          		mv	a,[x+21]
-0BE466 05 39 E6 0B       	p23:	callf	hexwrite
-0BE46A 90 84 14          		mv	a,[x+20]
-0BE46D 05 39 E6 0B       	p24:	callf	hexwrite
-0BE471 90 84 13          		mv	a,[x+19]
-0BE474 05 39 E6 0B       	p25:	callf	hexwrite
-0BE478                   	;
-0BE478 0D BD E7 0B       	p26:	mv	y,chars+40
-0BE47C                   	;
-0BE47C 08 58             		mv	a,'X'			;'X=xxxxxx '
-0BE47E B0 25             		mv	[y++],a
-0BE480 08 3D             		mv	a,'='
-0BE482 B0 25             		mv	[y++],a
-0BE484 90 84 0E          		mv	a,[x+14]
-0BE487 05 39 E6 0B       	p27:	callf	hexwrite
-0BE48B 90 84 0D          		mv	a,[x+13]
-0BE48E 05 39 E6 0B       	p28:	callf	hexwrite
-0BE492 90 84 0C          		mv	a,[x+12]
-0BE495 05 39 E6 0B       	p29:	callf	hexwrite
-0BE499 08 20             		mv	a,' '
-0BE49B B0 25             		mv	[y++],a
-0BE49D                   	;
-0BE49D 08 59             		mv	a,'Y'			;'Y=xxxxxx '
-0BE49F B0 25             		mv	[y++],a
-0BE4A1 08 3D             		mv	a,'='
-0BE4A3 B0 25             		mv	[y++],a
-0BE4A5 90 84 0B          		mv	a,[x+11]
-0BE4A8 05 39 E6 0B       	p30:	callf	hexwrite
-0BE4AC 90 84 0A          		mv	a,[x+10]
-0BE4AF 05 39 E6 0B       	p31:	callf	hexwrite
-0BE4B3 90 84 09          		mv	a,[x+9]
-0BE4B6 05 39 E6 0B       	p32:	callf	hexwrite
-0BE4BA 08 20             		mv	a,' '
-0BE4BC B0 25             		mv	[y++],a
-0BE4BE                   	;
-0BE4BE 08 49             		mv	a,'I'			;'I=xxxx '
-0BE4C0 B0 25             		mv	[y++],a
-0BE4C2 08 3D             		mv	a,'='
-0BE4C4 B0 25             		mv	[y++],a
-0BE4C6 90 84 10          		mv	a,[x+16]
-0BE4C9 05 39 E6 0B       	p33:	callf	hexwrite
-0BE4CD 90 84 0F          		mv	a,[x+15]
-0BE4D0 05 39 E6 0B       	p34:	callf	hexwrite
-0BE4D4 08 20             		mv	a,' '
-0BE4D6 B0 25             		mv	[y++],a
-0BE4D8                   	;
-0BE4D8 08 42             		mv	a,'B'			;'BA=xxxx'
-0BE4DA B0 25             		mv	[y++],a
-0BE4DC 08 41             		mv	a,'A'
-0BE4DE B0 25             		mv	[y++],a
-0BE4E0 08 3D             		mv	a,'='
-0BE4E2 B0 25             		mv	[y++],a
-0BE4E4 90 84 12          		mv	a,[x+18]
-0BE4E7 05 39 E6 0B       	p35:	callf	hexwrite
-0BE4EB 90 84 11          		mv	a,[x+17]
-0BE4EE 05 39 E6 0B       	p36:	callf	hexwrite
-0BE4F2                   	;
-0BE4F2 0D E5 E7 0B       	p37:	mv	y,chars+80
-0BE4F6                   	;
-0BE4F6 08 46             		mv	a,'F'			;'FLAGS=xx '
-0BE4F8 B0 25             		mv	[y++],a
-0BE4FA 08 4C             		mv	a,'L'
-0BE4FC B0 25             		mv	[y++],a
-0BE4FE 08 41             		mv	a,'A'
-0BE500 B0 25             		mv	[y++],a
-0BE502 08 47             		mv	a,'G'
-0BE504 B0 25             		mv	[y++],a
-0BE506 08 53             		mv	a,'S'
-0BE508 B0 25             		mv	[y++],a
-0BE50A 08 3D             		mv	a,'='
-0BE50C B0 25             		mv	[y++],a
-0BE50E 90 84 01          		mv	a,[x+1]
-0BE511 05 39 E6 0B       	p38:	callf	hexwrite
-0BE515 08 20             		mv	a,' '
-0BE517 B0 25             		mv	[y++],a
-0BE519                   	;
-0BE519 08 42             		mv	a,'B'			;'BP=xx '
-0BE51B B0 25             		mv	[y++],a
-0BE51D 08 50             		mv	a,'P'
-0BE51F B0 25             		mv	[y++],a
-0BE521 08 3D             		mv	a,'='
-0BE523 B0 25             		mv	[y++],a
-0BE525 90 84 08          		mv	a,[x+8]
-0BE528 05 39 E6 0B       	p39:	callf	hexwrite
-0BE52C 08 20             		mv	a,' '
-0BE52E B0 25             		mv	[y++],a
-0BE530                   	;
-0BE530 08 49             		mv	a,'I'			;'IMR=xx'
-0BE532 B0 25             		mv	[y++],a
-0BE534 08 4D             		mv	a,'M'
-0BE536 B0 25             		mv	[y++],a
-0BE538 08 52             		mv	a,'R'
-0BE53A B0 25             		mv	[y++],a
-0BE53C 08 3D             		mv	a,'='
-0BE53E B0 25             		mv	[y++],a
-0BE540 90 04             		mv	a,[x]
-0BE542 05 39 E6 0B       	p40:	callf	hexwrite
-0BE546                   	;
-0BE546 05 4B E5 0B       	p41:	callf	mk_scrn
-0BE54A 07                		retf
-0BE54B                   	;
-0BE54B                   	mk_scrn:
-0BE54B 0C 95 E7 0B       	p42:	mv	x,chars
-0BE54F 0D 35 E8 0B       	p43:	mv	y,VRAM
-0BE553 09 A0             		mv	il,160
-0BE555                   	;
-0BE555 0A 00 00          	d0:	mv	ba,0
-0BE558 90 24             		mv	a,[x++]
-0BE55A 48 20             		sub	a,20h
-0BE55C 2C                		pushu	x
-0BE55D 8C 90 FC 0B       		mv	x,[0bfc90h]	;font pointer
-0BE561 46 00             		add	a,a
-0BE563 45 40             		add	x,a
-0BE565 46 00             		add	a,a
-0BE567 45 40             		add	x,a
-0BE569 29                		pushu	il
-0BE56A                   	;
-0BE56A 09 06             		mv	il,6
-0BE56C 90 24             	d1:	mv	a,[x++]
-0BE56E B0 25             		mv	[y++],a
-0BE570 7C 01             		dec	il
-0BE572 1B 08             		jrnz	d1
-0BE574                   	;
-0BE574 39                		popu	il
-0BE575 3C                		popu	x
-0BE576 7C 01             		dec	il
-0BE578 1B 25             		jrnz	d0
-0BE57A                   	;
-0BE57A 0C 35 E8 0B       	p44:	mv	x,VRAM
-0BE57E 05 67 E6 0B       	p45:	callf	disp
-0BE582 07                		retf
-0BE583                   	;
-0BE583                   	;
-0BE583                   	get_regs:
-0BE583 0D 7F E7 0B       	p46:	mv	y,stacks
-0BE587 FD 47             		mv	x,s
-0BE589 6C 04             		inc	x
-0BE58B 6C 04             		inc	x			;RETURN ADRS of "get_regs"
-0BE58D 6C 04             		inc	x
-0BE58F 6C 04             		inc	x
-0BE591 6C 04             		inc	x			;RETURN ADRS = F2098h  in INT_SERVICE
-0BE593 6C 04             		inc	x
-0BE595 90 24             		mv	a,[x++]			;IMR
-0BE597 B0 25             		mv	[y++],a
-0BE599 90 24             		mv	a,[x++]			;FLAGS
-0BE59B B0 25             		mv	[y++],a
-0BE59D E2 24 00          		mvp	(0),[x++]		;PS:PC
-0BE5A0 EA 25 00          		mvp	[y++],(0)
-0BE5A3 B4 25             		mv	[y++],x			;S-STACK register
-0BE5A5                   	;
-0BE5A5 FD 46             		mv	x,u
-0BE5A7 09 09             		mv	il,9
-0BE5A9 45 43             		add	x,i			;(0) .. (8)
-0BE5AB 90 24             		mv	a,[x++]			;BP
-0BE5AD B0 25             		mv	[y++],a
-0BE5AF 90 24             		mv	a,[x++]			;IMR (already masked ,bit7=0)
-0BE5B1 90 24             		mv	a,[x++]			;isr/issr mask pattern (key=FBh)
-0BE5B3 E2 24 00          		mvp	(0),[x++]		;Y
-0BE5B6 EA 25 00          		mvp	[y++],(0)
-0BE5B9 E2 24 00          		mvp	(0),[x++]		;X
-0BE5BC EA 25 00          		mvp	[y++],(0)
-0BE5BF E1 24 00          		mvw	(0),[x++]		;I
-0BE5C2 E9 25 00          		mvw	[y++],(0)
-0BE5C5 E1 24 00          		mvw	(0),[x++]		;BA
-0BE5C8 E9 25 00          		mvw	[y++],(0)
-0BE5CB B4 25             		mv	[y++],x			;U-STACK register
-0BE5CD 07                		retf
-0BE5CE                   	;
-0BE5CE                   	;
-0BE5CE                   	s_rgstr:
-0BE5CE 05 2A E6 0B       	p47:	callf	clrscrn
-0BE5D2                   	;
-0BE5D2 0D 95 E7 0B       	p48:	mv	y,chars
-0BE5D6 0C 7F E7 0B       	p49:	mv	x,stacks
-0BE5DA 94 84 05          		mv	x,[x+5]
-0BE5DD CC 04 04          		mv	(4),4
-0BE5E0 09 08             	dsp00:	mv	il,8
-0BE5E2 A4 00             		mv	(0),x
-0BE5E4 80 02             		mv	a,(2)
-0BE5E6 05 39 E6 0B       	p50:	callf	hexwrite
-0BE5EA 80 01             		mv	a,(1)
-0BE5EC 05 39 E6 0B       	p51:	callf	hexwrite
-0BE5F0 80 00             		mv	a,(0)
-0BE5F2 05 39 E6 0B       	p52:	callf	hexwrite
-0BE5F6 08 20             		mv	a,' '
-0BE5F8 B0 25             		mv	[y++],a
-0BE5FA 90 24             	dsps0:	mv	a,[x++]
-0BE5FC 05 39 E6 0B       	p53:	callf	hexwrite
-0BE600 08 20             		mv	a,' '
-0BE602 B0 25             		mv	[y++],a
-0BE604 7C 01             		dec	il
-0BE606 1B 0E             		jrnz	dsps0
-0BE608 0A 09 00          		mv	ba,9
-0BE60B 45 52             		add	y,ba
-0BE60D 7D 04             		dec	(4)
-0BE60F 1B 31             		jrnz	dsp00
-0BE611                   	;
-0BE611 05 4B E5 0B       	p54:	callf	mk_scrn
-0BE615 07                		retf
-0BE616                   	;
-0BE616                   	;
-0BE616                   	u_rgstr:
-0BE616 05 2A E6 0B       	p55:	callf	clrscrn
-0BE61A                   	;
-0BE61A 0D 95 E7 0B       	p56:	mv	y,chars
-0BE61E 0C 7F E7 0B       	p57:	mv	x,stacks
-0BE622 94 84 13          		mv	x,[x+19]
-0BE625 CC 04 04          		mv	(4),4
-0BE628 13 4A             		jr	dsp00
-0BE62A                   	;
-0BE62A                   	;
-0BE62A                   	clrscrn:
-0BE62A 0D 95 E7 0B       	p58:	mv	y,chars
-0BE62E 08 20             		mv	a,' '
-0BE630 09 A0             		mv	il,160
-0BE632 B0 25             	clrs0:	mv	[y++],a
-0BE634 7C 01             		dec	il
-0BE636 1B 06             		jrnz	clrs0
-0BE638 07                		retf
-0BE639                   	;
-0BE639                   	;
-0BE639                   	hexwrite:
-0BE639 28                		pushu	a
-0BE63A EE                		swap	a
-0BE63B 70 0F             		and	a,0fh
-0BE63D 60 0A             		cmp	a,10
-0BE63F 1C 02             		jrc	hx0
-0BE641 40 07             		add	a,'A'-'0'-10
-0BE643 40 30             	hx0:	add	a,'0'
-0BE645 B0 25             		mv	[y++],a
-0BE647 38                		popu	a
-0BE648 70 0F             		and	a,0fh
-0BE64A 60 0A             		cmp	a,10
-0BE64C 1C 02             		jrc	hx1
-0BE64E 40 07             		add	a,'A'-'0'-10
-0BE650 40 30             	hx1:	add	a,'0'
-0BE652 B0 25             		mv	[y++],a
-0BE654 07                		retf
-0BE655                   	;
-0BE655                   	;
-0BE655                   	save_vram:
-0BE655 0C F5 EB 0B       	p59:	mv	x,VRAM2			;VRAM save
-0BE659 05 DF E6 0B       	p60:	callf	vcopy
-0BE65D 07                		retf
-0BE65E                   	;
-0BE65E                   	;
-0BE65E                   	restore_vram:
-0BE65E 0C F5 EB 0B       	p61:	mv	x,VRAM2			;VRAM restore
-0BE662 05 67 E6 0B       	p62:	callf	disp
-0BE666 07                		retf
-0BE667                   	;
-0BE667                   	;
-0BE667                   	disp:					;transfer virtual VRAM --> LCD
-0BE667 CC 03 04          		mv	(3),4
-0BE66A F0 80 00 E6 08    		mv	(0),[(0e6h)+8]
-0BE66F 79 00 B8          		or	(0),0b8h
-0BE672 D8 04 A0 00 00    	l0:	mv	[lcd_cl],(0)
-0BE677 D8 08 A0 00 00    		mv	[lcd_cr],(0)
-0BE67C CD 01 40 38       		mvw	(1),3840h
-0BE680 D8 04 A0 00 01    		mv	[lcd_cl],(1)
-0BE685 D8 08 A0 00 01    		mv	[lcd_cr],(1)
-0BE68A 90 24             	l5:	mv	a,[x++]
-0BE68C A8 06 A0 00       		mv	[lcd_dl],a
-0BE690 7D 01             		dec	(1)
-0BE692 1B 0A             		jrnz	l5
-0BE694 90 24             	l6:	mv	a,[x++]
-0BE696 A8 0A A0 00       		mv	[lcd_dr],a
-0BE69A 7D 02             		dec	(2)
-0BE69C 1B 0A             		jrnz	l6
-0BE69E CD 01 40 38       		mvw	(1),3840h
-0BE6A2 D8 04 A0 00 01    		mv	[lcd_cl],(1)
-0BE6A7 D8 08 A0 00 01    		mv	[lcd_cr],(1)
-0BE6AC 80 00             		mv	a,(0)
-0BE6AE 48 04             		sub	a,4
-0BE6B0 78 B8             		or	a,0b8h
-0BE6B2 A8 04 A0 00       		mv	[lcd_cl],a
-0BE6B6 A8 08 A0 00       		mv	[lcd_cr],a
-0BE6BA 09 78             		mv	il,78h
-0BE6BC 45 41             		add	x,il
-0BE6BE 90 34             	l1:	mv	a,[--x]
-0BE6C0 A8 06 A0 00       		mv	[lcd_dl],a
-0BE6C4 7D 01             		dec	(1)
-0BE6C6 1B 0A             		jrnz	l1
-0BE6C8 90 34             	l2:	mv	a,[--x]
-0BE6CA A8 0A A0 00       		mv	[lcd_dr],a
-0BE6CE 7D 02             		dec	(2)
-0BE6D0 1B 0A             		jrnz	l2
-0BE6D2 45 41             		add	x,il
-0BE6D4 49 00 07          		sub	(0),7
-0BE6D7 79 00 B8          		or	(0),0b8h
-0BE6DA 7D 03             		dec	(3)
-0BE6DC 1B 6C             		jrnz	l0
-0BE6DE 07                		retf
-0BE6DF                   	;
-0BE6DF                   	vcopy:					;transfer LCD --> virtual VRAM
-0BE6DF 0A 00 00          		mv	ba,0
-0BE6E2 CC 03 10          		mv	(3),10h
-0BE6E5 F0 80 00 E6 08    		mv	(0),[(0e6h)+8]
-0BE6EA DC 04 04 A0 00    		mvp	(4),lcd_cl
-0BE6EF CD 01 00 01       		mvw	(1),0100h
-0BE6F3 09 40             		mv	il,40h
-0BE6F5                   	vcpy1:
-0BE6F5 80 00             		mv	a,(0)
-0BE6F7 42 01             		add	a,(1)
-0BE6F9 78 B8             		or	a,0b8h
-0BE6FB B8 00 04          		mv	[(04)],a
-0BE6FE 00                		nop
-0BE6FF 00                		nop
-0BE700 00                		nop
-0BE701 00                		nop
-0BE702 00                		nop
-0BE703 00                		nop
-0BE704 00                		nop
-0BE705 00                		nop
-0BE706 08 40             		mv	a,40h
-0BE708 B8 00 04          		mv	[(04)],a
-0BE70B 00                		nop
-0BE70C 00                		nop
-0BE70D 00                		nop
-0BE70E 00                		nop
+0BE39F                   		pre_off
+0BE39F                   	;
+0BE39F EA 36 00          		mvp	[--u],(0)
+0BE3A2 EA 36 03          		mvp	[--u],(3)
+0BE3A5 EA 36 06          		mvp	[--u],(6)
+0BE3A8                   	;
+0BE3A8 05 66 E6 0B       	p7:	callf	save_vram		;VRAM save
+0BE3AC                   	;
+0BE3AC 05 94 E5 0B       	p8:	callf	get_regs
+0BE3B0                   	;
+0BE3B0 05 0E E4 0B       	p9:	callf	disp_regs
+0BE3B4                   	;
+0BE3B4                   	waitky:
+0BE3B4 CC F0 02          		mv	(ko_lo),02h
+0BE3B7 71 F1 F8          		and	(ko_hi),$f8
+0BE3BA 00                		nop
+0BE3BB 80 F2             		mv	a,(ki_in)
+0BE3BD 60 04             		cmp	a,04h
+0BE3BF 18 3B             		jrz	disp_s			;[S] key
+0BE3C1 CC F0 08          		mv	(ko_lo),08h
+0BE3C4 71 F1 F8          		and	(ko_hi),$f8
+0BE3C7 00                		nop
+0BE3C8 80 F2             		mv	a,(ki_in)
+0BE3CA 60 02             		cmp	a,02h
+0BE3CC 18 34             		jrz	disp_u			;[U] key
+0BE3CE CC F0 04          		mv	(ko_lo),04h
+0BE3D1 71 F1 F8          		and	(ko_hi),$f8
+0BE3D4 00                		nop
+0BE3D5 80 F2             		mv	a,(ki_in)
+0BE3D7 60 01             		cmp	a,01h
+0BE3D9 18 2D             		jrz	disp_r			;[R] key
+0BE3DB CC F0 01          		mv	(ko_lo),01h
+0BE3DE 71 F1 F8          		and	(ko_hi),$f8
+0BE3E1 00                		nop
+0BE3E2 80 F2             		mv	a,(ki_in)
+0BE3E4 70 C0             		and	a,0c0h
+0BE3E6 68 C0             		xor	a,0c0h
+0BE3E8 19 36             		jrz	waitky
+0BE3EA                   	;
+0BE3EA 05 6F E6 0B       	p10:	callf	restore_vram		;VRAM restore
+0BE3EE                   	;
+0BE3EE E2 26 06          		mvp	(6),[u++]
+0BE3F1 E2 26 03          		mvp	(3),[u++]
+0BE3F4 E2 26 00          		mvp	(0),[u++]
+0BE3F7 E0 26 EC          		mv	(bp_p),[u++]		;restore BP
+0BE3FA 3F                		popu	imr
+0BE3FB 07                		retf
+0BE3FC                   	;
+0BE3FC                   	disp_s:
+0BE3FC 05 DF E5 0B       	p11:	callf	s_rgstr
+0BE400 13 4E             		jr	waitky
+0BE402                   	;
+0BE402                   	disp_u:
+0BE402 05 27 E6 0B       	p12:	callf	u_rgstr
+0BE406 13 54             		jr	waitky
+0BE408                   	;
+0BE408                   	disp_r:
+0BE408 05 0E E4 0B       	p13:	callf	disp_regs
+0BE40C 13 5A             		jr	waitky
+0BE40E                   	;
+0BE40E                   	;
+0BE40E                   	disp_regs:
+0BE40E 05 3B E6 0B       	p14:	callf	clrscrn
+0BE412                   	;
+0BE412 0C 90 E7 0B       	p15:	mv	x,stacks
+0BE416 0D A6 E7 0B       	p16:	mv	y,chars
+0BE41A                   	;
+0BE41A 08 50             		mv	a,'P'			;'PS:PC=xxxxxx '
+0BE41C B0 25             		mv	[y++],a
+0BE41E 08 53             		mv	a,'S'
+0BE420 B0 25             		mv	[y++],a
+0BE422 08 3A             		mv	a,':'
+0BE424 B0 25             		mv	[y++],a
+0BE426 08 50             		mv	a,'P'
+0BE428 B0 25             		mv	[y++],a
+0BE42A 08 43             		mv	a,'C'
+0BE42C B0 25             		mv	[y++],a
+0BE42E 08 3D             		mv	a,'='
+0BE430 B0 25             		mv	[y++],a
+0BE432 90 84 04          		mv	a,[x+4]
+0BE435 05 4A E6 0B       	p17:	callf	hexwrite
+0BE439 90 84 03          		mv	a,[x+3]
+0BE43C 05 4A E6 0B       	p18:	callf	hexwrite
+0BE440 90 84 02          		mv	a,[x+2]
+0BE443 05 4A E6 0B       	p19:	callf	hexwrite
+0BE447 08 20             		mv	a,' '
+0BE449 B0 25             		mv	[y++],a
+0BE44B                   	;
+0BE44B 08 53             		mv	a,'S'			;'S=xxxxxx '
+0BE44D B0 25             		mv	[y++],a
+0BE44F 08 3D             		mv	a,'='
+0BE451 B0 25             		mv	[y++],a
+0BE453 90 84 07          		mv	a,[x+7]
+0BE456 05 4A E6 0B       	p20:	callf	hexwrite
+0BE45A 90 84 06          		mv	a,[x+6]
+0BE45D 05 4A E6 0B       	p21:	callf	hexwrite
+0BE461 90 84 05          		mv	a,[x+5]
+0BE464 05 4A E6 0B       	p22:	callf	hexwrite
+0BE468 08 20             		mv	a,' '
+0BE46A B0 25             		mv	[y++],a
+0BE46C                   	;
+0BE46C 08 55             		mv	a,'U'			;'U=xxxxxx'
+0BE46E B0 25             		mv	[y++],a
+0BE470 08 3D             		mv	a,'='
+0BE472 B0 25             		mv	[y++],a
+0BE474 90 84 15          		mv	a,[x+21]
+0BE477 05 4A E6 0B       	p23:	callf	hexwrite
+0BE47B 90 84 14          		mv	a,[x+20]
+0BE47E 05 4A E6 0B       	p24:	callf	hexwrite
+0BE482 90 84 13          		mv	a,[x+19]
+0BE485 05 4A E6 0B       	p25:	callf	hexwrite
+0BE489                   	;
+0BE489 0D CE E7 0B       	p26:	mv	y,chars+40
+0BE48D                   	;
+0BE48D 08 58             		mv	a,'X'			;'X=xxxxxx '
+0BE48F B0 25             		mv	[y++],a
+0BE491 08 3D             		mv	a,'='
+0BE493 B0 25             		mv	[y++],a
+0BE495 90 84 0E          		mv	a,[x+14]
+0BE498 05 4A E6 0B       	p27:	callf	hexwrite
+0BE49C 90 84 0D          		mv	a,[x+13]
+0BE49F 05 4A E6 0B       	p28:	callf	hexwrite
+0BE4A3 90 84 0C          		mv	a,[x+12]
+0BE4A6 05 4A E6 0B       	p29:	callf	hexwrite
+0BE4AA 08 20             		mv	a,' '
+0BE4AC B0 25             		mv	[y++],a
+0BE4AE                   	;
+0BE4AE 08 59             		mv	a,'Y'			;'Y=xxxxxx '
+0BE4B0 B0 25             		mv	[y++],a
+0BE4B2 08 3D             		mv	a,'='
+0BE4B4 B0 25             		mv	[y++],a
+0BE4B6 90 84 0B          		mv	a,[x+11]
+0BE4B9 05 4A E6 0B       	p30:	callf	hexwrite
+0BE4BD 90 84 0A          		mv	a,[x+10]
+0BE4C0 05 4A E6 0B       	p31:	callf	hexwrite
+0BE4C4 90 84 09          		mv	a,[x+9]
+0BE4C7 05 4A E6 0B       	p32:	callf	hexwrite
+0BE4CB 08 20             		mv	a,' '
+0BE4CD B0 25             		mv	[y++],a
+0BE4CF                   	;
+0BE4CF 08 49             		mv	a,'I'			;'I=xxxx '
+0BE4D1 B0 25             		mv	[y++],a
+0BE4D3 08 3D             		mv	a,'='
+0BE4D5 B0 25             		mv	[y++],a
+0BE4D7 90 84 10          		mv	a,[x+16]
+0BE4DA 05 4A E6 0B       	p33:	callf	hexwrite
+0BE4DE 90 84 0F          		mv	a,[x+15]
+0BE4E1 05 4A E6 0B       	p34:	callf	hexwrite
+0BE4E5 08 20             		mv	a,' '
+0BE4E7 B0 25             		mv	[y++],a
+0BE4E9                   	;
+0BE4E9 08 42             		mv	a,'B'			;'BA=xxxx'
+0BE4EB B0 25             		mv	[y++],a
+0BE4ED 08 41             		mv	a,'A'
+0BE4EF B0 25             		mv	[y++],a
+0BE4F1 08 3D             		mv	a,'='
+0BE4F3 B0 25             		mv	[y++],a
+0BE4F5 90 84 12          		mv	a,[x+18]
+0BE4F8 05 4A E6 0B       	p35:	callf	hexwrite
+0BE4FC 90 84 11          		mv	a,[x+17]
+0BE4FF 05 4A E6 0B       	p36:	callf	hexwrite
+0BE503                   	;
+0BE503 0D F6 E7 0B       	p37:	mv	y,chars+80
+0BE507                   	;
+0BE507 08 46             		mv	a,'F'			;'FLAGS=xx '
+0BE509 B0 25             		mv	[y++],a
+0BE50B 08 4C             		mv	a,'L'
+0BE50D B0 25             		mv	[y++],a
+0BE50F 08 41             		mv	a,'A'
+0BE511 B0 25             		mv	[y++],a
+0BE513 08 47             		mv	a,'G'
+0BE515 B0 25             		mv	[y++],a
+0BE517 08 53             		mv	a,'S'
+0BE519 B0 25             		mv	[y++],a
+0BE51B 08 3D             		mv	a,'='
+0BE51D B0 25             		mv	[y++],a
+0BE51F 90 84 01          		mv	a,[x+1]
+0BE522 05 4A E6 0B       	p38:	callf	hexwrite
+0BE526 08 20             		mv	a,' '
+0BE528 B0 25             		mv	[y++],a
+0BE52A                   	;
+0BE52A 08 42             		mv	a,'B'			;'BP=xx '
+0BE52C B0 25             		mv	[y++],a
+0BE52E 08 50             		mv	a,'P'
+0BE530 B0 25             		mv	[y++],a
+0BE532 08 3D             		mv	a,'='
+0BE534 B0 25             		mv	[y++],a
+0BE536 90 84 08          		mv	a,[x+8]
+0BE539 05 4A E6 0B       	p39:	callf	hexwrite
+0BE53D 08 20             		mv	a,' '
+0BE53F B0 25             		mv	[y++],a
+0BE541                   	;
+0BE541 08 49             		mv	a,'I'			;'IMR=xx'
+0BE543 B0 25             		mv	[y++],a
+0BE545 08 4D             		mv	a,'M'
+0BE547 B0 25             		mv	[y++],a
+0BE549 08 52             		mv	a,'R'
+0BE54B B0 25             		mv	[y++],a
+0BE54D 08 3D             		mv	a,'='
+0BE54F B0 25             		mv	[y++],a
+0BE551 90 04             		mv	a,[x]
+0BE553 05 4A E6 0B       	p40:	callf	hexwrite
+0BE557                   	;
+0BE557 05 5C E5 0B       	p41:	callf	mk_scrn
+0BE55B 07                		retf
+0BE55C                   	;
+0BE55C                   	mk_scrn:
+0BE55C 0C A6 E7 0B       	p42:	mv	x,chars
+0BE560 0D 46 E8 0B       	p43:	mv	y,VRAM
+0BE564 09 A0             		mv	il,160
+0BE566                   	;
+0BE566 0A 00 00          	d0:	mv	ba,0
+0BE569 90 24             		mv	a,[x++]
+0BE56B 48 20             		sub	a,20h
+0BE56D 2C                		pushu	x
+0BE56E 8C 90 FC 0B       		mv	x,[0bfc90h]	;font pointer
+0BE572 46 00             		add	a,a
+0BE574 45 40             		add	x,a
+0BE576 46 00             		add	a,a
+0BE578 45 40             		add	x,a
+0BE57A 29                		pushu	il
+0BE57B                   	;
+0BE57B 09 06             		mv	il,6
+0BE57D 90 24             	d1:	mv	a,[x++]
+0BE57F B0 25             		mv	[y++],a
+0BE581 7C 01             		dec	il
+0BE583 1B 08             		jrnz	d1
+0BE585                   	;
+0BE585 39                		popu	il
+0BE586 3C                		popu	x
+0BE587 7C 01             		dec	il
+0BE589 1B 25             		jrnz	d0
+0BE58B                   	;
+0BE58B 0C 46 E8 0B       	p44:	mv	x,VRAM
+0BE58F 05 78 E6 0B       	p45:	callf	disp
+0BE593 07                		retf
+0BE594                   	;
+0BE594                   	;
+0BE594                   	get_regs:
+0BE594 0D 90 E7 0B       	p46:	mv	y,stacks
+0BE598 FD 47             		mv	x,s
+0BE59A 6C 04             		inc	x
+0BE59C 6C 04             		inc	x			;RETURN ADRS of "get_regs"
+0BE59E 6C 04             		inc	x
+0BE5A0 6C 04             		inc	x
+0BE5A2 6C 04             		inc	x			;RETURN ADRS = F2098h  in INT_SERVICE
+0BE5A4 6C 04             		inc	x
+0BE5A6 90 24             		mv	a,[x++]			;IMR
+0BE5A8 B0 25             		mv	[y++],a
+0BE5AA 90 24             		mv	a,[x++]			;FLAGS
+0BE5AC B0 25             		mv	[y++],a
+0BE5AE E2 24 00          		mvp	(0),[x++]		;PS:PC
+0BE5B1 EA 25 00          		mvp	[y++],(0)
+0BE5B4 B4 25             		mv	[y++],x			;S-STACK register
+0BE5B6                   	;
+0BE5B6 FD 46             		mv	x,u
+0BE5B8 09 09             		mv	il,9
+0BE5BA 45 43             		add	x,i			;(0) .. (8)
+0BE5BC 90 24             		mv	a,[x++]			;BP
+0BE5BE B0 25             		mv	[y++],a
+0BE5C0 90 24             		mv	a,[x++]			;IMR (already masked ,bit7=0)
+0BE5C2 90 24             		mv	a,[x++]			;isr/issr mask pattern (key=FBh)
+0BE5C4 E2 24 00          		mvp	(0),[x++]		;Y
+0BE5C7 EA 25 00          		mvp	[y++],(0)
+0BE5CA E2 24 00          		mvp	(0),[x++]		;X
+0BE5CD EA 25 00          		mvp	[y++],(0)
+0BE5D0 E1 24 00          		mvw	(0),[x++]		;I
+0BE5D3 E9 25 00          		mvw	[y++],(0)
+0BE5D6 E1 24 00          		mvw	(0),[x++]		;BA
+0BE5D9 E9 25 00          		mvw	[y++],(0)
+0BE5DC B4 25             		mv	[y++],x			;U-STACK register
+0BE5DE 07                		retf
+0BE5DF                   	;
+0BE5DF                   	;
+0BE5DF                   	s_rgstr:
+0BE5DF 05 3B E6 0B       	p47:	callf	clrscrn
+0BE5E3                   	;
+0BE5E3 0D A6 E7 0B       	p48:	mv	y,chars
+0BE5E7 0C 90 E7 0B       	p49:	mv	x,stacks
+0BE5EB 94 84 05          		mv	x,[x+5]
+0BE5EE CC 04 04          		mv	(4),4
+0BE5F1 09 08             	dsp00:	mv	il,8
+0BE5F3 A4 00             		mv	(0),x
+0BE5F5 80 02             		mv	a,(2)
+0BE5F7 05 4A E6 0B       	p50:	callf	hexwrite
+0BE5FB 80 01             		mv	a,(1)
+0BE5FD 05 4A E6 0B       	p51:	callf	hexwrite
+0BE601 80 00             		mv	a,(0)
+0BE603 05 4A E6 0B       	p52:	callf	hexwrite
+0BE607 08 20             		mv	a,' '
+0BE609 B0 25             		mv	[y++],a
+0BE60B 90 24             	dsps0:	mv	a,[x++]
+0BE60D 05 4A E6 0B       	p53:	callf	hexwrite
+0BE611 08 20             		mv	a,' '
+0BE613 B0 25             		mv	[y++],a
+0BE615 7C 01             		dec	il
+0BE617 1B 0E             		jrnz	dsps0
+0BE619 0A 09 00          		mv	ba,9
+0BE61C 45 52             		add	y,ba
+0BE61E 7D 04             		dec	(4)
+0BE620 1B 31             		jrnz	dsp00
+0BE622                   	;
+0BE622 05 5C E5 0B       	p54:	callf	mk_scrn
+0BE626 07                		retf
+0BE627                   	;
+0BE627                   	;
+0BE627                   	u_rgstr:
+0BE627 05 3B E6 0B       	p55:	callf	clrscrn
+0BE62B                   	;
+0BE62B 0D A6 E7 0B       	p56:	mv	y,chars
+0BE62F 0C 90 E7 0B       	p57:	mv	x,stacks
+0BE633 94 84 13          		mv	x,[x+19]
+0BE636 CC 04 04          		mv	(4),4
+0BE639 13 4A             		jr	dsp00
+0BE63B                   	;
+0BE63B                   	;
+0BE63B                   	clrscrn:
+0BE63B 0D A6 E7 0B       	p58:	mv	y,chars
+0BE63F 08 20             		mv	a,' '
+0BE641 09 A0             		mv	il,160
+0BE643 B0 25             	clrs0:	mv	[y++],a
+0BE645 7C 01             		dec	il
+0BE647 1B 06             		jrnz	clrs0
+0BE649 07                		retf
+0BE64A                   	;
+0BE64A                   	;
+0BE64A                   	hexwrite:
+0BE64A 28                		pushu	a
+0BE64B EE                		swap	a
+0BE64C 70 0F             		and	a,0fh
+0BE64E 60 0A             		cmp	a,10
+0BE650 1C 02             		jrc	hx0
+0BE652 40 07             		add	a,'A'-'0'-10
+0BE654 40 30             	hx0:	add	a,'0'
+0BE656 B0 25             		mv	[y++],a
+0BE658 38                		popu	a
+0BE659 70 0F             		and	a,0fh
+0BE65B 60 0A             		cmp	a,10
+0BE65D 1C 02             		jrc	hx1
+0BE65F 40 07             		add	a,'A'-'0'-10
+0BE661 40 30             	hx1:	add	a,'0'
+0BE663 B0 25             		mv	[y++],a
+0BE665 07                		retf
+0BE666                   	;
+0BE666                   	;
+0BE666                   	save_vram:
+0BE666 0C 06 EC 0B       	p59:	mv	x,VRAM2			;VRAM save
+0BE66A 05 F0 E6 0B       	p60:	callf	vcopy
+0BE66E 07                		retf
+0BE66F                   	;
+0BE66F                   	;
+0BE66F                   	restore_vram:
+0BE66F 0C 06 EC 0B       	p61:	mv	x,VRAM2			;VRAM restore
+0BE673 05 78 E6 0B       	p62:	callf	disp
+0BE677 07                		retf
+0BE678                   	;
+0BE678                   	;
+0BE678                   	disp:					;transfer virtual VRAM --> LCD
+0BE678 CC 03 04          		mv	(3),4
+0BE67B F0 80 00 E6 08    		mv	(0),[(0e6h)+8]
+0BE680 79 00 B8          		or	(0),0b8h
+0BE683 D8 04 A0 00 00    	l0:	mv	[lcd_cl],(0)
+0BE688 D8 08 A0 00 00    		mv	[lcd_cr],(0)
+0BE68D CD 01 40 38       		mvw	(1),3840h
+0BE691 D8 04 A0 00 01    		mv	[lcd_cl],(1)
+0BE696 D8 08 A0 00 01    		mv	[lcd_cr],(1)
+0BE69B 90 24             	l5:	mv	a,[x++]
+0BE69D A8 06 A0 00       		mv	[lcd_dl],a
+0BE6A1 7D 01             		dec	(1)
+0BE6A3 1B 0A             		jrnz	l5
+0BE6A5 90 24             	l6:	mv	a,[x++]
+0BE6A7 A8 0A A0 00       		mv	[lcd_dr],a
+0BE6AB 7D 02             		dec	(2)
+0BE6AD 1B 0A             		jrnz	l6
+0BE6AF CD 01 40 38       		mvw	(1),3840h
+0BE6B3 D8 04 A0 00 01    		mv	[lcd_cl],(1)
+0BE6B8 D8 08 A0 00 01    		mv	[lcd_cr],(1)
+0BE6BD 80 00             		mv	a,(0)
+0BE6BF 48 04             		sub	a,4
+0BE6C1 78 B8             		or	a,0b8h
+0BE6C3 A8 04 A0 00       		mv	[lcd_cl],a
+0BE6C7 A8 08 A0 00       		mv	[lcd_cr],a
+0BE6CB 09 78             		mv	il,78h
+0BE6CD 45 41             		add	x,il
+0BE6CF 90 34             	l1:	mv	a,[--x]
+0BE6D1 A8 06 A0 00       		mv	[lcd_dl],a
+0BE6D5 7D 01             		dec	(1)
+0BE6D7 1B 0A             		jrnz	l1
+0BE6D9 90 34             	l2:	mv	a,[--x]
+0BE6DB A8 0A A0 00       		mv	[lcd_dr],a
+0BE6DF 7D 02             		dec	(2)
+0BE6E1 1B 0A             		jrnz	l2
+0BE6E3 45 41             		add	x,il
+0BE6E5 49 00 07          		sub	(0),7
+0BE6E8 79 00 B8          		or	(0),0b8h
+0BE6EB 7D 03             		dec	(3)
+0BE6ED 1B 6C             		jrnz	l0
+0BE6EF 07                		retf
+0BE6F0                   	;
+0BE6F0                   	vcopy:					;transfer LCD --> virtual VRAM
+0BE6F0 0A 00 00          		mv	ba,0
+0BE6F3 CC 03 10          		mv	(3),10h
+0BE6F6 F0 80 00 E6 08    		mv	(0),[(0e6h)+8]
+0BE6FB DC 04 04 A0 00    		mvp	(4),lcd_cl
+0BE700 CD 01 00 01       		mvw	(1),0100h
+0BE704 09 40             		mv	il,40h
+0BE706                   	vcpy1:
+0BE706 80 00             		mv	a,(0)
+0BE708 42 01             		add	a,(1)
+0BE70A 78 B8             		or	a,0b8h
+0BE70C B8 00 04          		mv	[(04)],a
 0BE70F 00                		nop
 0BE710 00                		nop
 0BE711 00                		nop
 0BE712 00                		nop
-0BE713 41 04 03          		add	(4),03h
-0BE716 98 00 04          		mv	a,[(4)]
-0BE719 00                		nop
-0BE71A 00                		nop
-0BE71B 00                		nop
+0BE713 00                		nop
+0BE714 00                		nop
+0BE715 00                		nop
+0BE716 00                		nop
+0BE717 08 40             		mv	a,40h
+0BE719 B8 00 04          		mv	[(04)],a
 0BE71C 00                		nop
 0BE71D 00                		nop
 0BE71E 00                		nop
 0BE71F 00                		nop
 0BE720 00                		nop
-0BE721 98 00 04          	vcpy2:	mv	a,[(4)]
-0BE724 B0 24             		mv	[x++],a
-0BE726 65 02 01          		test	(2),01h
-0BE729 1A 04             		jrnz	vcpy3
-0BE72B 7C 04             		dec	x
-0BE72D 7C 04             		dec	x
-0BE72F 7C 01             	vcpy3:	dec	il
-0BE731 1B 12             		jrnz	vcpy2
-0BE733 49 04 03          		sub	(4),03h
-0BE736 80 03             		mv	a,(3)
-0BE738 64 02             		test	a,02h
-0BE73A 1A 1C             		jrnz	case1
-0BE73C                   	case0:
-0BE73C 64 01             		test	a,01h
-0BE73E 1A 0A             		jrnz	case01
-0BE740                   	case00:	
-0BE740 CC 04 08          		mv	(4),08h
-0BE743 09 38             		mv	il,38h
-0BE745 CC 02 01          		mv	(2),01h
-0BE748 12 2C             		jr	vcpy4
-0BE74A                   	case01:	
-0BE74A 49 01 03          		sub	(1),03h
-0BE74D 09 40             		mv	il,40h
-0BE74F CC 02 01          		mv	(2),01h
-0BE752 08 41             		mv	a,41h
-0BE754 45 40             		add	x,a
-0BE756 12 1E             		jr	vcpy4
-0BE758                   	case1:
-0BE758 64 01             		test	a,01h
-0BE75A 1A 0E             		jrnz	case11
-0BE75C                   	case10:
-0BE75C CC 04 04          		mv	(4),04h
-0BE75F 09 40             		mv	il,40h
-0BE761 CC 02 00          		mv	(2),0h
-0BE764 08 78             		mv	a,78h
-0BE766 45 40             		add	x,a
-0BE768 12 0C             		jr	vcpy4
-0BE76A                   	case11:
-0BE76A 41 01 04          		add	(1),4
-0BE76D 09 38             		mv	il,38h
-0BE76F CC 02 00          		mv	(2),0
-0BE772 08 37             		mv	a,37h
-0BE774 45 40             		add	x,a
-0BE776                   	;
-0BE776 7D 03             	vcpy4:	dec	(3)
-0BE778 1B 85             		jrnz	vcpy1
-0BE77A 07                		retf
-0BE77B                   	;
-0BE77B                   	;
-0BE77B                   	;
-0BE77B                   	save_vct:
-0BE77B 00 00 00          		dp	0		;original  key interrupt vector
-0BE77E                   	save_imr:
-0BE77E 00                		db	0		;original  IMR
-0BE77F                   	;
-0BE77F 00 00 00 00 00 00 	stacks:	ds	22,0
-0BE785 00 00 00 00 00 00 	
-0BE78B 00 00 00 00 00 00 	
-0BE791 00 00 00 00       	
-0BE795 00 00 00 00 00 00 	chars:	ds	160,0
-0BE79B 00 00 00 00 00 00 	
-0BE7A1 00 00 00 00 00 00 	
-0BE7A7 00 00 00 00 00 00 	
-0BE7AD 00 00 00 00 00 00 	
-0BE7B3 00 00 00 00 00 00 	
-0BE7B9 00 00 00 00 00 00 	
-0BE7BF 00 00 00 00 00 00 	
-0BE7C5 00 00 00 00 00 00 	
-0BE7CB 00 00 00 00 00 00 	
-0BE7D1 00 00 00 00 00 00 	
-0BE7D7 00 00 00 00 00 00 	
-0BE7DD 00 00 00 00 00 00 	
-0BE7E3 00 00 00 00 00 00 	
-0BE7E9 00 00 00 00 00 00 	
-0BE7EF 00 00 00 00 00 00 	
-0BE7F5 00 00 00 00 00 00 	
-0BE7FB 00 00 00 00 00 00 	
-0BE801 00 00 00 00 00 00 	
-0BE807 00 00 00 00 00 00 	
-0BE80D 00 00 00 00 00 00 	
-0BE813 00 00 00 00 00 00 	
-0BE819 00 00 00 00 00 00 	
-0BE81F 00 00 00 00 00 00 	
-0BE825 00 00 00 00 00 00 	
-0BE82B 00 00 00 00 00 00 	
-0BE831 00 00 00 00       	
-0BE835 00 00 00 00 00 00 	VRAM:	ds	960,0
-0BE83B 00 00 00 00 00 00 	
-0BE841 00 00 00 00 00 00 	
-0BE847 00 00 00 00 00 00 	
-0BE84D 00 00 00 00 00 00 	
-0BE853 00 00 00 00 00 00 	
-0BE859 00 00 00 00 00 00 	
-0BE85F 00 00 00 00 00 00 	
-0BE865 00 00 00 00 00 00 	
-0BE86B 00 00 00 00 00 00 	
-0BE871 00 00 00 00 00 00 	
-0BE877 00 00 00 00 00 00 	
-0BE87D 00 00 00 00 00 00 	
-0BE883 00 00 00 00 00 00 	
-0BE889 00 00 00 00 00 00 	
-0BE88F 00 00 00 00 00 00 	
-0BE895 00 00 00 00 00 00 	
-0BE89B 00 00 00 00 00 00 	
-0BE8A1 00 00 00 00 00 00 	
-0BE8A7 00 00 00 00 00 00 	
-0BE8AD 00 00 00 00 00 00 	
-0BE8B3 00 00 00 00 00 00 	
-0BE8B9 00 00 00 00 00 00 	
-0BE8BF 00 00 00 00 00 00 	
-0BE8C5 00 00 00 00 00 00 	
-0BE8CB 00 00 00 00 00 00 	
-0BE8D1 00 00 00 00 00 00 	
-0BE8D7 00 00 00 00 00 00 	
-0BE8DD 00 00 00 00 00 00 	
-0BE8E3 00 00 00 00 00 00 	
-0BE8E9 00 00 00 00 00 00 	
-0BE8EF 00 00 00 00 00 00 	
-0BE8F5 00 00 00 00 00 00 	
-0BE8FB 00 00 00 00 00 00 	
-0BE901 00 00 00 00 00 00 	
-0BE907 00 00 00 00 00 00 	
-0BE90D 00 00 00 00 00 00 	
-0BE913 00 00 00 00 00 00 	
-0BE919 00 00 00 00 00 00 	
-0BE91F 00 00 00 00 00 00 	
-0BE925 00 00 00 00 00 00 	
-0BE92B 00 00 00 00 00 00 	
-0BE931 00 00 00 00 00 00 	
-0BE937 00 00 00 00 00 00 	
-0BE93D 00 00 00 00 00 00 	
-0BE943 00 00 00 00 00 00 	
-0BE949 00 00 00 00 00 00 	
-0BE94F 00 00 00 00 00 00 	
-0BE955 00 00 00 00 00 00 	
-0BE95B 00 00 00 00 00 00 	
-0BE961 00 00 00 00 00 00 	
-0BE967 00 00 00 00 00 00 	
-0BE96D 00 00 00 00 00 00 	
-0BE973 00 00 00 00 00 00 	
-0BE979 00 00 00 00 00 00 	
-0BE97F 00 00 00 00 00 00 	
-0BE985 00 00 00 00 00 00 	
-0BE98B 00 00 00 00 00 00 	
-0BE991 00 00 00 00 00 00 	
-0BE997 00 00 00 00 00 00 	
-0BE99D 00 00 00 00 00 00 	
-0BE9A3 00 00 00 00 00 00 	
-0BE9A9 00 00 00 00 00 00 	
-0BE9AF 00 00 00 00 00 00 	
-0BE9B5 00 00 00 00 00 00 	
-0BE9BB 00 00 00 00 00 00 	
-0BE9C1 00 00 00 00 00 00 	
-0BE9C7 00 00 00 00 00 00 	
-0BE9CD 00 00 00 00 00 00 	
-0BE9D3 00 00 00 00 00 00 	
-0BE9D9 00 00 00 00 00 00 	
-0BE9DF 00 00 00 00 00 00 	
-0BE9E5 00 00 00 00 00 00 	
-0BE9EB 00 00 00 00 00 00 	
-0BE9F1 00 00 00 00 00 00 	
-0BE9F7 00 00 00 00 00 00 	
-0BE9FD 00 00 00 00 00 00 	
-0BEA03 00 00 00 00 00 00 	
-0BEA09 00 00 00 00 00 00 	
-0BEA0F 00 00 00 00 00 00 	
-0BEA15 00 00 00 00 00 00 	
-0BEA1B 00 00 00 00 00 00 	
-0BEA21 00 00 00 00 00 00 	
-0BEA27 00 00 00 00 00 00 	
-0BEA2D 00 00 00 00 00 00 	
-0BEA33 00 00 00 00 00 00 	
-0BEA39 00 00 00 00 00 00 	
-0BEA3F 00 00 00 00 00 00 	
-0BEA45 00 00 00 00 00 00 	
-0BEA4B 00 00 00 00 00 00 	
-0BEA51 00 00 00 00 00 00 	
-0BEA57 00 00 00 00 00 00 	
-0BEA5D 00 00 00 00 00 00 	
-0BEA63 00 00 00 00 00 00 	
-0BEA69 00 00 00 00 00 00 	
-0BEA6F 00 00 00 00 00 00 	
-0BEA75 00 00 00 00 00 00 	
-0BEA7B 00 00 00 00 00 00 	
-0BEA81 00 00 00 00 00 00 	
-0BEA87 00 00 00 00 00 00 	
-0BEA8D 00 00 00 00 00 00 	
-0BEA93 00 00 00 00 00 00 	
-0BEA99 00 00 00 00 00 00 	
-0BEA9F 00 00 00 00 00 00 	
-0BEAA5 00 00 00 00 00 00 	
-0BEAAB 00 00 00 00 00 00 	
-0BEAB1 00 00 00 00 00 00 	
-0BEAB7 00 00 00 00 00 00 	
-0BEABD 00 00 00 00 00 00 	
-0BEAC3 00 00 00 00 00 00 	
-0BEAC9 00 00 00 00 00 00 	
-0BEACF 00 00 00 00 00 00 	
-0BEAD5 00 00 00 00 00 00 	
-0BEADB 00 00 00 00 00 00 	
-0BEAE1 00 00 00 00 00 00 	
-0BEAE7 00 00 00 00 00 00 	
-0BEAED 00 00 00 00 00 00 	
-0BEAF3 00 00 00 00 00 00 	
-0BEAF9 00 00 00 00 00 00 	
-0BEAFF 00 00 00 00 00 00 	
-0BEB05 00 00 00 00 00 00 	
-0BEB0B 00 00 00 00 00 00 	
-0BEB11 00 00 00 00 00 00 	
-0BEB17 00 00 00 00 00 00 	
-0BEB1D 00 00 00 00 00 00 	
-0BEB23 00 00 00 00 00 00 	
-0BEB29 00 00 00 00 00 00 	
-0BEB2F 00 00 00 00 00 00 	
-0BEB35 00 00 00 00 00 00 	
-0BEB3B 00 00 00 00 00 00 	
-0BEB41 00 00 00 00 00 00 	
-0BEB47 00 00 00 00 00 00 	
-0BEB4D 00 00 00 00 00 00 	
-0BEB53 00 00 00 00 00 00 	
-0BEB59 00 00 00 00 00 00 	
-0BEB5F 00 00 00 00 00 00 	
-0BEB65 00 00 00 00 00 00 	
-0BEB6B 00 00 00 00 00 00 	
-0BEB71 00 00 00 00 00 00 	
-0BEB77 00 00 00 00 00 00 	
-0BEB7D 00 00 00 00 00 00 	
-0BEB83 00 00 00 00 00 00 	
-0BEB89 00 00 00 00 00 00 	
-0BEB8F 00 00 00 00 00 00 	
-0BEB95 00 00 00 00 00 00 	
-0BEB9B 00 00 00 00 00 00 	
-0BEBA1 00 00 00 00 00 00 	
-0BEBA7 00 00 00 00 00 00 	
-0BEBAD 00 00 00 00 00 00 	
-0BEBB3 00 00 00 00 00 00 	
-0BEBB9 00 00 00 00 00 00 	
-0BEBBF 00 00 00 00 00 00 	
-0BEBC5 00 00 00 00 00 00 	
-0BEBCB 00 00 00 00 00 00 	
-0BEBD1 00 00 00 00 00 00 	
-0BEBD7 00 00 00 00 00 00 	
-0BEBDD 00 00 00 00 00 00 	
-0BEBE3 00 00 00 00 00 00 	
-0BEBE9 00 00 00 00 00 00 	
-0BEBEF 00 00 00 00 00 00 	
-0BEBF5 00 00 00 00 00 00 	VRAM2:	ds	960,0
-0BEBFB 00 00 00 00 00 00 	
-0BEC01 00 00 00 00 00 00 	
-0BEC07 00 00 00 00 00 00 	
-0BEC0D 00 00 00 00 00 00 	
-0BEC13 00 00 00 00 00 00 	
-0BEC19 00 00 00 00 00 00 	
-0BEC1F 00 00 00 00 00 00 	
-0BEC25 00 00 00 00 00 00 	
-0BEC2B 00 00 00 00 00 00 	
-0BEC31 00 00 00 00 00 00 	
-0BEC37 00 00 00 00 00 00 	
-0BEC3D 00 00 00 00 00 00 	
-0BEC43 00 00 00 00 00 00 	
-0BEC49 00 00 00 00 00 00 	
-0BEC4F 00 00 00 00 00 00 	
-0BEC55 00 00 00 00 00 00 	
-0BEC5B 00 00 00 00 00 00 	
-0BEC61 00 00 00 00 00 00 	
-0BEC67 00 00 00 00 00 00 	
-0BEC6D 00 00 00 00 00 00 	
-0BEC73 00 00 00 00 00 00 	
-0BEC79 00 00 00 00 00 00 	
-0BEC7F 00 00 00 00 00 00 	
-0BEC85 00 00 00 00 00 00 	
-0BEC8B 00 00 00 00 00 00 	
-0BEC91 00 00 00 00 00 00 	
-0BEC97 00 00 00 00 00 00 	
-0BEC9D 00 00 00 00 00 00 	
-0BECA3 00 00 00 00 00 00 	
-0BECA9 00 00 00 00 00 00 	
-0BECAF 00 00 00 00 00 00 	
-0BECB5 00 00 00 00 00 00 	
-0BECBB 00 00 00 00 00 00 	
-0BECC1 00 00 00 00 00 00 	
-0BECC7 00 00 00 00 00 00 	
-0BECCD 00 00 00 00 00 00 	
-0BECD3 00 00 00 00 00 00 	
-0BECD9 00 00 00 00 00 00 	
-0BECDF 00 00 00 00 00 00 	
-0BECE5 00 00 00 00 00 00 	
-0BECEB 00 00 00 00 00 00 	
-0BECF1 00 00 00 00 00 00 	
-0BECF7 00 00 00 00 00 00 	
-0BECFD 00 00 00 00 00 00 	
-0BED03 00 00 00 00 00 00 	
-0BED09 00 00 00 00 00 00 	
-0BED0F 00 00 00 00 00 00 	
-0BED15 00 00 00 00 00 00 	
-0BED1B 00 00 00 00 00 00 	
-0BED21 00 00 00 00 00 00 	
-0BED27 00 00 00 00 00 00 	
-0BED2D 00 00 00 00 00 00 	
-0BED33 00 00 00 00 00 00 	
-0BED39 00 00 00 00 00 00 	
-0BED3F 00 00 00 00 00 00 	
-0BED45 00 00 00 00 00 00 	
-0BED4B 00 00 00 00 00 00 	
-0BED51 00 00 00 00 00 00 	
-0BED57 00 00 00 00 00 00 	
-0BED5D 00 00 00 00 00 00 	
-0BED63 00 00 00 00 00 00 	
-0BED69 00 00 00 00 00 00 	
-0BED6F 00 00 00 00 00 00 	
-0BED75 00 00 00 00 00 00 	
-0BED7B 00 00 00 00 00 00 	
-0BED81 00 00 00 00 00 00 	
-0BED87 00 00 00 00 00 00 	
-0BED8D 00 00 00 00 00 00 	
-0BED93 00 00 00 00 00 00 	
-0BED99 00 00 00 00 00 00 	
-0BED9F 00 00 00 00 00 00 	
-0BEDA5 00 00 00 00 00 00 	
-0BEDAB 00 00 00 00 00 00 	
-0BEDB1 00 00 00 00 00 00 	
-0BEDB7 00 00 00 00 00 00 	
-0BEDBD 00 00 00 00 00 00 	
-0BEDC3 00 00 00 00 00 00 	
-0BEDC9 00 00 00 00 00 00 	
-0BEDCF 00 00 00 00 00 00 	
-0BEDD5 00 00 00 00 00 00 	
-0BEDDB 00 00 00 00 00 00 	
-0BEDE1 00 00 00 00 00 00 	
-0BEDE7 00 00 00 00 00 00 	
-0BEDED 00 00 00 00 00 00 	
-0BEDF3 00 00 00 00 00 00 	
-0BEDF9 00 00 00 00 00 00 	
-0BEDFF 00 00 00 00 00 00 	
-0BEE05 00 00 00 00 00 00 	
-0BEE0B 00 00 00 00 00 00 	
-0BEE11 00 00 00 00 00 00 	
-0BEE17 00 00 00 00 00 00 	
-0BEE1D 00 00 00 00 00 00 	
-0BEE23 00 00 00 00 00 00 	
-0BEE29 00 00 00 00 00 00 	
-0BEE2F 00 00 00 00 00 00 	
-0BEE35 00 00 00 00 00 00 	
-0BEE3B 00 00 00 00 00 00 	
-0BEE41 00 00 00 00 00 00 	
-0BEE47 00 00 00 00 00 00 	
-0BEE4D 00 00 00 00 00 00 	
-0BEE53 00 00 00 00 00 00 	
-0BEE59 00 00 00 00 00 00 	
-0BEE5F 00 00 00 00 00 00 	
-0BEE65 00 00 00 00 00 00 	
-0BEE6B 00 00 00 00 00 00 	
-0BEE71 00 00 00 00 00 00 	
-0BEE77 00 00 00 00 00 00 	
-0BEE7D 00 00 00 00 00 00 	
-0BEE83 00 00 00 00 00 00 	
-0BEE89 00 00 00 00 00 00 	
-0BEE8F 00 00 00 00 00 00 	
-0BEE95 00 00 00 00 00 00 	
-0BEE9B 00 00 00 00 00 00 	
-0BEEA1 00 00 00 00 00 00 	
-0BEEA7 00 00 00 00 00 00 	
-0BEEAD 00 00 00 00 00 00 	
-0BEEB3 00 00 00 00 00 00 	
-0BEEB9 00 00 00 00 00 00 	
-0BEEBF 00 00 00 00 00 00 	
-0BEEC5 00 00 00 00 00 00 	
-0BEECB 00 00 00 00 00 00 	
-0BEED1 00 00 00 00 00 00 	
-0BEED7 00 00 00 00 00 00 	
-0BEEDD 00 00 00 00 00 00 	
-0BEEE3 00 00 00 00 00 00 	
-0BEEE9 00 00 00 00 00 00 	
-0BEEEF 00 00 00 00 00 00 	
-0BEEF5 00 00 00 00 00 00 	
-0BEEFB 00 00 00 00 00 00 	
-0BEF01 00 00 00 00 00 00 	
-0BEF07 00 00 00 00 00 00 	
-0BEF0D 00 00 00 00 00 00 	
-0BEF13 00 00 00 00 00 00 	
-0BEF19 00 00 00 00 00 00 	
-0BEF1F 00 00 00 00 00 00 	
-0BEF25 00 00 00 00 00 00 	
-0BEF2B 00 00 00 00 00 00 	
-0BEF31 00 00 00 00 00 00 	
-0BEF37 00 00 00 00 00 00 	
-0BEF3D 00 00 00 00 00 00 	
-0BEF43 00 00 00 00 00 00 	
-0BEF49 00 00 00 00 00 00 	
-0BEF4F 00 00 00 00 00 00 	
-0BEF55 00 00 00 00 00 00 	
-0BEF5B 00 00 00 00 00 00 	
-0BEF61 00 00 00 00 00 00 	
-0BEF67 00 00 00 00 00 00 	
-0BEF6D 00 00 00 00 00 00 	
-0BEF73 00 00 00 00 00 00 	
-0BEF79 00 00 00 00 00 00 	
-0BEF7F 00 00 00 00 00 00 	
-0BEF85 00 00 00 00 00 00 	
-0BEF8B 00 00 00 00 00 00 	
-0BEF91 00 00 00 00 00 00 	
-0BEF97 00 00 00 00 00 00 	
-0BEF9D 00 00 00 00 00 00 	
-0BEFA3 00 00 00 00 00 00 	
-0BEFA9 00 00 00 00 00 00 	
-0BEFAF 00 00 00 00 00 00 	
-0BEFB5                   	;
-0BEFB5                   	;
-0BEFB5                   	block_bottom:
-0BEFB5                   	;
-0BEFB5                   	;-----------------------------------------------------------
-0BEFB5                   	;       DEVICE-DRIVER RELOCATE-TABLE
-0BEFB5                   	;-----------------------------------------------------------
-0BEFB5                   	modify_table:
-0BEFB5 06 E3 0B 1C E3 0B 		dp	attr,p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15
-0BEFBB 26 E3 0B 2C E3 0B 	
-0BEFC1 3C E3 0B 45 E3 0B 	
-0BEFC7 70 E3 0B 7C E3 0B 	
-0BEFCD 97 E3 0B 9B E3 0B 	
-0BEFD3 9F E3 0B D9 E3 0B 	
-0BEFD9 EB E3 0B F1 E3 0B 	
-0BEFDF F7 E3 0B FD E3 0B 	
-0BEFE5 01 E4 0B          	
-0BEFE8 05 E4 0B 24 E4 0B 		dp	p16,p17,p18,p19,p20,p21,p22,p23,p24,p25,p26,p27,p28,p29
-0BEFEE 2B E4 0B 32 E4 0B 	
-0BEFF4 45 E4 0B 4C E4 0B 	
-0BEFFA 53 E4 0B 66 E4 0B 	
-0BF000 6D E4 0B 74 E4 0B 	
-0BF006 78 E4 0B 87 E4 0B 	
-0BF00C 8E E4 0B 95 E4 0B 	
-0BF012 A8 E4 0B AF E4 0B 		dp	p30,p31,p32,p33,p34,p35,p36,p37,p38,p39,p40,p41,p42,p43
-0BF018 B6 E4 0B C9 E4 0B 	
-0BF01E D0 E4 0B E7 E4 0B 	
-0BF024 EE E4 0B F2 E4 0B 	
-0BF02A 11 E5 0B 28 E5 0B 	
-0BF030 42 E5 0B 46 E5 0B 	
-0BF036 4B E5 0B 4F E5 0B 	
-0BF03C 7A E5 0B 7E E5 0B 		dp	p44,p45,p46,p47,p48,p49,p50,p51,p52,p53,p54,p55,p56,p57
-0BF042 83 E5 0B CE E5 0B 	
-0BF048 D2 E5 0B D6 E5 0B 	
-0BF04E E6 E5 0B EC E5 0B 	
-0BF054 F2 E5 0B FC E5 0B 	
-0BF05A 11 E6 0B 16 E6 0B 	
-0BF060 1A E6 0B 1E E6 0B 	
-0BF066 2A E6 0B 55 E6 0B 		dp	p58,p59,p60,p61,p62
-0BF06C 59 E6 0B 5E E6 0B 	
-0BF072 62 E6 0B          	
-0BF075 FF FF 0F          		dp	-1
-0BF078                   	modify_end_tbl:
-0BF078                   	;
-0BF078                   	;---------------------------------------------------------------------------
-0BF078                   	;	VERIFICATIONS A L'ASSEMBLAGE
-0BF078                   	;
-0BF078                   	;	Elles n'emettent aucun octet : elles ne font qu'interrompre
-0BF078                   	;	l'assemblage si une hypothese du programme cesse d'etre vraie.
-0BF078                   	;---------------------------------------------------------------------------
-0BF078                   	;
-0BF078                   	; La table contient attr, p0..p62 et le terminateur -1, soit 65 entrees de
-0BF078                   	; 3 octets. Si ce total change sans que ce soit voulu, c'est qu'une entree a
-0BF078                   	; ete ajoutee ou perdue par megarde.
-0BF078                   		assert	modify_end_tbl-modify_table = 65*3,'table de relocation : nombre d entrees inattendu'
-0BF078                   	;
-0BF078                   	; Chaque point de relocation doit se trouver a l'interieur du pilote : un pN
-0BF078                   	; hors bloc serait corrige a tort lors de la copie.
-0BF078                   		assert	p0 >= block_top,'p0 hors du bloc pilote'
-0BF078                   		assert	p62 < block_bottom,'p62 hors du bloc pilote'
-0BF078                   		assert	attr >= block_top,'attr hors du bloc pilote'
-0BF078                   	;
-0BF078                   	; Le pilote est copie tel quel : sa taille doit rester non nulle et tenir dans
-0BF078                   	; ce que l'installeur sait deplacer.
-0BF078                   		assert	block_bottom > block_top,'taille du pilote nulle'
-0BF078                   	;
-0BF078                   		end
+0BE721 00                		nop
+0BE722 00                		nop
+0BE723 00                		nop
+0BE724 41 04 03          		add	(4),03h
+0BE727 98 00 04          		mv	a,[(4)]
+0BE72A 00                		nop
+0BE72B 00                		nop
+0BE72C 00                		nop
+0BE72D 00                		nop
+0BE72E 00                		nop
+0BE72F 00                		nop
+0BE730 00                		nop
+0BE731 00                		nop
+0BE732 98 00 04          	vcpy2:	mv	a,[(4)]
+0BE735 B0 24             		mv	[x++],a
+0BE737 65 02 01          		test	(2),01h
+0BE73A 1A 04             		jrnz	vcpy3
+0BE73C 7C 04             		dec	x
+0BE73E 7C 04             		dec	x
+0BE740 7C 01             	vcpy3:	dec	il
+0BE742 1B 12             		jrnz	vcpy2
+0BE744 49 04 03          		sub	(4),03h
+0BE747 80 03             		mv	a,(3)
+0BE749 64 02             		test	a,02h
+0BE74B 1A 1C             		jrnz	case1
+0BE74D                   	case0:
+0BE74D 64 01             		test	a,01h
+0BE74F 1A 0A             		jrnz	case01
+0BE751                   	case00:	
+0BE751 CC 04 08          		mv	(4),08h
+0BE754 09 38             		mv	il,38h
+0BE756 CC 02 01          		mv	(2),01h
+0BE759 12 2C             		jr	vcpy4
+0BE75B                   	case01:	
+0BE75B 49 01 03          		sub	(1),03h
+0BE75E 09 40             		mv	il,40h
+0BE760 CC 02 01          		mv	(2),01h
+0BE763 08 41             		mv	a,41h
+0BE765 45 40             		add	x,a
+0BE767 12 1E             		jr	vcpy4
+0BE769                   	case1:
+0BE769 64 01             		test	a,01h
+0BE76B 1A 0E             		jrnz	case11
+0BE76D                   	case10:
+0BE76D CC 04 04          		mv	(4),04h
+0BE770 09 40             		mv	il,40h
+0BE772 CC 02 00          		mv	(2),0h
+0BE775 08 78             		mv	a,78h
+0BE777 45 40             		add	x,a
+0BE779 12 0C             		jr	vcpy4
+0BE77B                   	case11:
+0BE77B 41 01 04          		add	(1),4
+0BE77E 09 38             		mv	il,38h
+0BE780 CC 02 00          		mv	(2),0
+0BE783 08 37             		mv	a,37h
+0BE785 45 40             		add	x,a
+0BE787                   	;
+0BE787 7D 03             	vcpy4:	dec	(3)
+0BE789 1B 85             		jrnz	vcpy1
+0BE78B 07                		retf
+0BE78C                   	;
+0BE78C                   	;
+0BE78C                   	;
+0BE78C                   	save_vct:
+0BE78C 00 00 00          		dp	0		;original  key interrupt vector
+0BE78F                   	save_imr:
+0BE78F 00                		db	0		;original  IMR
+0BE790                   	;
+0BE790 00 00 00 00 00 00 	stacks:	ds	22,0
+0BE796 00 00 00 00 00 00 	
+0BE79C 00 00 00 00 00 00 	
+0BE7A2 00 00 00 00       	
+0BE7A6 00 00 00 00 00 00 	chars:	ds	160,0
+0BE7AC 00 00 00 00 00 00 	
+0BE7B2 00 00 00 00 00 00 	
+0BE7B8 00 00 00 00 00 00 	
+0BE7BE 00 00 00 00 00 00 	
+0BE7C4 00 00 00 00 00 00 	
+0BE7CA 00 00 00 00 00 00 	
+0BE7D0 00 00 00 00 00 00 	
+0BE7D6 00 00 00 00 00 00 	
+0BE7DC 00 00 00 00 00 00 	
+0BE7E2 00 00 00 00 00 00 	
+0BE7E8 00 00 00 00 00 00 	
+0BE7EE 00 00 00 00 00 00 	
+0BE7F4 00 00 00 00 00 00 	
+0BE7FA 00 00 00 00 00 00 	
+0BE800 00 00 00 00 00 00 	
+0BE806 00 00 00 00 00 00 	
+0BE80C 00 00 00 00 00 00 	
+0BE812 00 00 00 00 00 00 	
+0BE818 00 00 00 00 00 00 	
+0BE81E 00 00 00 00 00 00 	
+0BE824 00 00 00 00 00 00 	
+0BE82A 00 00 00 00 00 00 	
+0BE830 00 00 00 00 00 00 	
+0BE836 00 00 00 00 00 00 	
+0BE83C 00 00 00 00 00 00 	
+0BE842 00 00 00 00       	
+0BE846 00 00 00 00 00 00 	VRAM:	ds	960,0
+0BE84C 00 00 00 00 00 00 	
+0BE852 00 00 00 00 00 00 	
+0BE858 00 00 00 00 00 00 	
+0BE85E 00 00 00 00 00 00 	
+0BE864 00 00 00 00 00 00 	
+0BE86A 00 00 00 00 00 00 	
+0BE870 00 00 00 00 00 00 	
+0BE876 00 00 00 00 00 00 	
+0BE87C 00 00 00 00 00 00 	
+0BE882 00 00 00 00 00 00 	
+0BE888 00 00 00 00 00 00 	
+0BE88E 00 00 00 00 00 00 	
+0BE894 00 00 00 00 00 00 	
+0BE89A 00 00 00 00 00 00 	
+0BE8A0 00 00 00 00 00 00 	
+0BE8A6 00 00 00 00 00 00 	
+0BE8AC 00 00 00 00 00 00 	
+0BE8B2 00 00 00 00 00 00 	
+0BE8B8 00 00 00 00 00 00 	
+0BE8BE 00 00 00 00 00 00 	
+0BE8C4 00 00 00 00 00 00 	
+0BE8CA 00 00 00 00 00 00 	
+0BE8D0 00 00 00 00 00 00 	
+0BE8D6 00 00 00 00 00 00 	
+0BE8DC 00 00 00 00 00 00 	
+0BE8E2 00 00 00 00 00 00 	
+0BE8E8 00 00 00 00 00 00 	
+0BE8EE 00 00 00 00 00 00 	
+0BE8F4 00 00 00 00 00 00 	
+0BE8FA 00 00 00 00 00 00 	
+0BE900 00 00 00 00 00 00 	
+0BE906 00 00 00 00 00 00 	
+0BE90C 00 00 00 00 00 00 	
+0BE912 00 00 00 00 00 00 	
+0BE918 00 00 00 00 00 00 	
+0BE91E 00 00 00 00 00 00 	
+0BE924 00 00 00 00 00 00 	
+0BE92A 00 00 00 00 00 00 	
+0BE930 00 00 00 00 00 00 	
+0BE936 00 00 00 00 00 00 	
+0BE93C 00 00 00 00 00 00 	
+0BE942 00 00 00 00 00 00 	
+0BE948 00 00 00 00 00 00 	
+0BE94E 00 00 00 00 00 00 	
+0BE954 00 00 00 00 00 00 	
+0BE95A 00 00 00 00 00 00 	
+0BE960 00 00 00 00 00 00 	
+0BE966 00 00 00 00 00 00 	
+0BE96C 00 00 00 00 00 00 	
+0BE972 00 00 00 00 00 00 	
+0BE978 00 00 00 00 00 00 	
+0BE97E 00 00 00 00 00 00 	
+0BE984 00 00 00 00 00 00 	
+0BE98A 00 00 00 00 00 00 	
+0BE990 00 00 00 00 00 00 	
+0BE996 00 00 00 00 00 00 	
+0BE99C 00 00 00 00 00 00 	
+0BE9A2 00 00 00 00 00 00 	
+0BE9A8 00 00 00 00 00 00 	
+0BE9AE 00 00 00 00 00 00 	
+0BE9B4 00 00 00 00 00 00 	
+0BE9BA 00 00 00 00 00 00 	
+0BE9C0 00 00 00 00 00 00 	
+0BE9C6 00 00 00 00 00 00 	
+0BE9CC 00 00 00 00 00 00 	
+0BE9D2 00 00 00 00 00 00 	
+0BE9D8 00 00 00 00 00 00 	
+0BE9DE 00 00 00 00 00 00 	
+0BE9E4 00 00 00 00 00 00 	
+0BE9EA 00 00 00 00 00 00 	
+0BE9F0 00 00 00 00 00 00 	
+0BE9F6 00 00 00 00 00 00 	
+0BE9FC 00 00 00 00 00 00 	
+0BEA02 00 00 00 00 00 00 	
+0BEA08 00 00 00 00 00 00 	
+0BEA0E 00 00 00 00 00 00 	
+0BEA14 00 00 00 00 00 00 	
+0BEA1A 00 00 00 00 00 00 	
+0BEA20 00 00 00 00 00 00 	
+0BEA26 00 00 00 00 00 00 	
+0BEA2C 00 00 00 00 00 00 	
+0BEA32 00 00 00 00 00 00 	
+0BEA38 00 00 00 00 00 00 	
+0BEA3E 00 00 00 00 00 00 	
+0BEA44 00 00 00 00 00 00 	
+0BEA4A 00 00 00 00 00 00 	
+0BEA50 00 00 00 00 00 00 	
+0BEA56 00 00 00 00 00 00 	
+0BEA5C 00 00 00 00 00 00 	
+0BEA62 00 00 00 00 00 00 	
+0BEA68 00 00 00 00 00 00 	
+0BEA6E 00 00 00 00 00 00 	
+0BEA74 00 00 00 00 00 00 	
+0BEA7A 00 00 00 00 00 00 	
+0BEA80 00 00 00 00 00 00 	
+0BEA86 00 00 00 00 00 00 	
+0BEA8C 00 00 00 00 00 00 	
+0BEA92 00 00 00 00 00 00 	
+0BEA98 00 00 00 00 00 00 	
+0BEA9E 00 00 00 00 00 00 	
+0BEAA4 00 00 00 00 00 00 	
+0BEAAA 00 00 00 00 00 00 	
+0BEAB0 00 00 00 00 00 00 	
+0BEAB6 00 00 00 00 00 00 	
+0BEABC 00 00 00 00 00 00 	
+0BEAC2 00 00 00 00 00 00 	
+0BEAC8 00 00 00 00 00 00 	
+0BEACE 00 00 00 00 00 00 	
+0BEAD4 00 00 00 00 00 00 	
+0BEADA 00 00 00 00 00 00 	
+0BEAE0 00 00 00 00 00 00 	
+0BEAE6 00 00 00 00 00 00 	
+0BEAEC 00 00 00 00 00 00 	
+0BEAF2 00 00 00 00 00 00 	
+0BEAF8 00 00 00 00 00 00 	
+0BEAFE 00 00 00 00 00 00 	
+0BEB04 00 00 00 00 00 00 	
+0BEB0A 00 00 00 00 00 00 	
+0BEB10 00 00 00 00 00 00 	
+0BEB16 00 00 00 00 00 00 	
+0BEB1C 00 00 00 00 00 00 	
+0BEB22 00 00 00 00 00 00 	
+0BEB28 00 00 00 00 00 00 	
+0BEB2E 00 00 00 00 00 00 	
+0BEB34 00 00 00 00 00 00 	
+0BEB3A 00 00 00 00 00 00 	
+0BEB40 00 00 00 00 00 00 	
+0BEB46 00 00 00 00 00 00 	
+0BEB4C 00 00 00 00 00 00 	
+0BEB52 00 00 00 00 00 00 	
+0BEB58 00 00 00 00 00 00 	
+0BEB5E 00 00 00 00 00 00 	
+0BEB64 00 00 00 00 00 00 	
+0BEB6A 00 00 00 00 00 00 	
+0BEB70 00 00 00 00 00 00 	
+0BEB76 00 00 00 00 00 00 	
+0BEB7C 00 00 00 00 00 00 	
+0BEB82 00 00 00 00 00 00 	
+0BEB88 00 00 00 00 00 00 	
+0BEB8E 00 00 00 00 00 00 	
+0BEB94 00 00 00 00 00 00 	
+0BEB9A 00 00 00 00 00 00 	
+0BEBA0 00 00 00 00 00 00 	
+0BEBA6 00 00 00 00 00 00 	
+0BEBAC 00 00 00 00 00 00 	
+0BEBB2 00 00 00 00 00 00 	
+0BEBB8 00 00 00 00 00 00 	
+0BEBBE 00 00 00 00 00 00 	
+0BEBC4 00 00 00 00 00 00 	
+0BEBCA 00 00 00 00 00 00 	
+0BEBD0 00 00 00 00 00 00 	
+0BEBD6 00 00 00 00 00 00 	
+0BEBDC 00 00 00 00 00 00 	
+0BEBE2 00 00 00 00 00 00 	
+0BEBE8 00 00 00 00 00 00 	
+0BEBEE 00 00 00 00 00 00 	
+0BEBF4 00 00 00 00 00 00 	
+0BEBFA 00 00 00 00 00 00 	
+0BEC00 00 00 00 00 00 00 	
+0BEC06 00 00 00 00 00 00 	VRAM2:	ds	960,0
+0BEC0C 00 00 00 00 00 00 	
+0BEC12 00 00 00 00 00 00 	
+0BEC18 00 00 00 00 00 00 	
+0BEC1E 00 00 00 00 00 00 	
+0BEC24 00 00 00 00 00 00 	
+0BEC2A 00 00 00 00 00 00 	
+0BEC30 00 00 00 00 00 00 	
+0BEC36 00 00 00 00 00 00 	
+0BEC3C 00 00 00 00 00 00 	
+0BEC42 00 00 00 00 00 00 	
+0BEC48 00 00 00 00 00 00 	
+0BEC4E 00 00 00 00 00 00 	
+0BEC54 00 00 00 00 00 00 	
+0BEC5A 00 00 00 00 00 00 	
+0BEC60 00 00 00 00 00 00 	
+0BEC66 00 00 00 00 00 00 	
+0BEC6C 00 00 00 00 00 00 	
+0BEC72 00 00 00 00 00 00 	
+0BEC78 00 00 00 00 00 00 	
+0BEC7E 00 00 00 00 00 00 	
+0BEC84 00 00 00 00 00 00 	
+0BEC8A 00 00 00 00 00 00 	
+0BEC90 00 00 00 00 00 00 	
+0BEC96 00 00 00 00 00 00 	
+0BEC9C 00 00 00 00 00 00 	
+0BECA2 00 00 00 00 00 00 	
+0BECA8 00 00 00 00 00 00 	
+0BECAE 00 00 00 00 00 00 	
+0BECB4 00 00 00 00 00 00 	
+0BECBA 00 00 00 00 00 00 	
+0BECC0 00 00 00 00 00 00 	
+0BECC6 00 00 00 00 00 00 	
+0BECCC 00 00 00 00 00 00 	
+0BECD2 00 00 00 00 00 00 	
+0BECD8 00 00 00 00 00 00 	
+0BECDE 00 00 00 00 00 00 	
+0BECE4 00 00 00 00 00 00 	
+0BECEA 00 00 00 00 00 00 	
+0BECF0 00 00 00 00 00 00 	
+0BECF6 00 00 00 00 00 00 	
+0BECFC 00 00 00 00 00 00 	
+0BED02 00 00 00 00 00 00 	
+0BED08 00 00 00 00 00 00 	
+0BED0E 00 00 00 00 00 00 	
+0BED14 00 00 00 00 00 00 	
+0BED1A 00 00 00 00 00 00 	
+0BED20 00 00 00 00 00 00 	
+0BED26 00 00 00 00 00 00 	
+0BED2C 00 00 00 00 00 00 	
+0BED32 00 00 00 00 00 00 	
+0BED38 00 00 00 00 00 00 	
+0BED3E 00 00 00 00 00 00 	
+0BED44 00 00 00 00 00 00 	
+0BED4A 00 00 00 00 00 00 	
+0BED50 00 00 00 00 00 00 	
+0BED56 00 00 00 00 00 00 	
+0BED5C 00 00 00 00 00 00 	
+0BED62 00 00 00 00 00 00 	
+0BED68 00 00 00 00 00 00 	
+0BED6E 00 00 00 00 00 00 	
+0BED74 00 00 00 00 00 00 	
+0BED7A 00 00 00 00 00 00 	
+0BED80 00 00 00 00 00 00 	
+0BED86 00 00 00 00 00 00 	
+0BED8C 00 00 00 00 00 00 	
+0BED92 00 00 00 00 00 00 	
+0BED98 00 00 00 00 00 00 	
+0BED9E 00 00 00 00 00 00 	
+0BEDA4 00 00 00 00 00 00 	
+0BEDAA 00 00 00 00 00 00 	
+0BEDB0 00 00 00 00 00 00 	
+0BEDB6 00 00 00 00 00 00 	
+0BEDBC 00 00 00 00 00 00 	
+0BEDC2 00 00 00 00 00 00 	
+0BEDC8 00 00 00 00 00 00 	
+0BEDCE 00 00 00 00 00 00 	
+0BEDD4 00 00 00 00 00 00 	
+0BEDDA 00 00 00 00 00 00 	
+0BEDE0 00 00 00 00 00 00 	
+0BEDE6 00 00 00 00 00 00 	
+0BEDEC 00 00 00 00 00 00 	
+0BEDF2 00 00 00 00 00 00 	
+0BEDF8 00 00 00 00 00 00 	
+0BEDFE 00 00 00 00 00 00 	
+0BEE04 00 00 00 00 00 00 	
+0BEE0A 00 00 00 00 00 00 	
+0BEE10 00 00 00 00 00 00 	
+0BEE16 00 00 00 00 00 00 	
+0BEE1C 00 00 00 00 00 00 	
+0BEE22 00 00 00 00 00 00 	
+0BEE28 00 00 00 00 00 00 	
+0BEE2E 00 00 00 00 00 00 	
+0BEE34 00 00 00 00 00 00 	
+0BEE3A 00 00 00 00 00 00 	
+0BEE40 00 00 00 00 00 00 	
+0BEE46 00 00 00 00 00 00 	
+0BEE4C 00 00 00 00 00 00 	
+0BEE52 00 00 00 00 00 00 	
+0BEE58 00 00 00 00 00 00 	
+0BEE5E 00 00 00 00 00 00 	
+0BEE64 00 00 00 00 00 00 	
+0BEE6A 00 00 00 00 00 00 	
+0BEE70 00 00 00 00 00 00 	
+0BEE76 00 00 00 00 00 00 	
+0BEE7C 00 00 00 00 00 00 	
+0BEE82 00 00 00 00 00 00 	
+0BEE88 00 00 00 00 00 00 	
+0BEE8E 00 00 00 00 00 00 	
+0BEE94 00 00 00 00 00 00 	
+0BEE9A 00 00 00 00 00 00 	
+0BEEA0 00 00 00 00 00 00 	
+0BEEA6 00 00 00 00 00 00 	
+0BEEAC 00 00 00 00 00 00 	
+0BEEB2 00 00 00 00 00 00 	
+0BEEB8 00 00 00 00 00 00 	
+0BEEBE 00 00 00 00 00 00 	
+0BEEC4 00 00 00 00 00 00 	
+0BEECA 00 00 00 00 00 00 	
+0BEED0 00 00 00 00 00 00 	
+0BEED6 00 00 00 00 00 00 	
+0BEEDC 00 00 00 00 00 00 	
+0BEEE2 00 00 00 00 00 00 	
+0BEEE8 00 00 00 00 00 00 	
+0BEEEE 00 00 00 00 00 00 	
+0BEEF4 00 00 00 00 00 00 	
+0BEEFA 00 00 00 00 00 00 	
+0BEF00 00 00 00 00 00 00 	
+0BEF06 00 00 00 00 00 00 	
+0BEF0C 00 00 00 00 00 00 	
+0BEF12 00 00 00 00 00 00 	
+0BEF18 00 00 00 00 00 00 	
+0BEF1E 00 00 00 00 00 00 	
+0BEF24 00 00 00 00 00 00 	
+0BEF2A 00 00 00 00 00 00 	
+0BEF30 00 00 00 00 00 00 	
+0BEF36 00 00 00 00 00 00 	
+0BEF3C 00 00 00 00 00 00 	
+0BEF42 00 00 00 00 00 00 	
+0BEF48 00 00 00 00 00 00 	
+0BEF4E 00 00 00 00 00 00 	
+0BEF54 00 00 00 00 00 00 	
+0BEF5A 00 00 00 00 00 00 	
+0BEF60 00 00 00 00 00 00 	
+0BEF66 00 00 00 00 00 00 	
+0BEF6C 00 00 00 00 00 00 	
+0BEF72 00 00 00 00 00 00 	
+0BEF78 00 00 00 00 00 00 	
+0BEF7E 00 00 00 00 00 00 	
+0BEF84 00 00 00 00 00 00 	
+0BEF8A 00 00 00 00 00 00 	
+0BEF90 00 00 00 00 00 00 	
+0BEF96 00 00 00 00 00 00 	
+0BEF9C 00 00 00 00 00 00 	
+0BEFA2 00 00 00 00 00 00 	
+0BEFA8 00 00 00 00 00 00 	
+0BEFAE 00 00 00 00 00 00 	
+0BEFB4 00 00 00 00 00 00 	
+0BEFBA 00 00 00 00 00 00 	
+0BEFC0 00 00 00 00 00 00 	
+0BEFC6                   	;
+0BEFC6                   	;
+0BEFC6                   	block_bottom:
+0BEFC6                   	;
+0BEFC6                   	;-----------------------------------------------------------
+0BEFC6                   	;       DEVICE-DRIVER RELOCATE-TABLE
+0BEFC6                   	;-----------------------------------------------------------
+0BEFC6                   	modify_table:
+0BEFC6 17 E3 0B 2D E3 0B 		dp	attr,p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15
+0BEFCC 37 E3 0B 3D E3 0B 	
+0BEFD2 4D E3 0B 56 E3 0B 	
+0BEFD8 81 E3 0B 8D E3 0B 	
+0BEFDE A8 E3 0B AC E3 0B 	
+0BEFE4 B0 E3 0B EA E3 0B 	
+0BEFEA FC E3 0B 02 E4 0B 	
+0BEFF0 08 E4 0B 0E E4 0B 	
+0BEFF6 12 E4 0B          	
+0BEFF9 16 E4 0B 35 E4 0B 		dp	p16,p17,p18,p19,p20,p21,p22,p23,p24,p25,p26,p27,p28,p29
+0BEFFF 3C E4 0B 43 E4 0B 	
+0BF005 56 E4 0B 5D E4 0B 	
+0BF00B 64 E4 0B 77 E4 0B 	
+0BF011 7E E4 0B 85 E4 0B 	
+0BF017 89 E4 0B 98 E4 0B 	
+0BF01D 9F E4 0B A6 E4 0B 	
+0BF023 B9 E4 0B C0 E4 0B 		dp	p30,p31,p32,p33,p34,p35,p36,p37,p38,p39,p40,p41,p42,p43
+0BF029 C7 E4 0B DA E4 0B 	
+0BF02F E1 E4 0B F8 E4 0B 	
+0BF035 FF E4 0B 03 E5 0B 	
+0BF03B 22 E5 0B 39 E5 0B 	
+0BF041 53 E5 0B 57 E5 0B 	
+0BF047 5C E5 0B 60 E5 0B 	
+0BF04D 8B E5 0B 8F E5 0B 		dp	p44,p45,p46,p47,p48,p49,p50,p51,p52,p53,p54,p55,p56,p57
+0BF053 94 E5 0B DF E5 0B 	
+0BF059 E3 E5 0B E7 E5 0B 	
+0BF05F F7 E5 0B FD E5 0B 	
+0BF065 03 E6 0B 0D E6 0B 	
+0BF06B 22 E6 0B 27 E6 0B 	
+0BF071 2B E6 0B 2F E6 0B 	
+0BF077 3B E6 0B 66 E6 0B 		dp	p58,p59,p60,p61,p62
+0BF07D 6A E6 0B 6F E6 0B 	
+0BF083 73 E6 0B          	
+0BF086 FF FF 0F          		dp	-1
+0BF089                   	modify_end_tbl:
+0BF089                   	;
+0BF089                   	;---------------------------------------------------------------------------
+0BF089                   	;	VERIFICATIONS A L'ASSEMBLAGE
+0BF089                   	;
+0BF089                   	;	Elles n'emettent aucun octet : elles ne font qu'interrompre
+0BF089                   	;	l'assemblage si une hypothese du programme cesse d'etre vraie.
+0BF089                   	;---------------------------------------------------------------------------
+0BF089                   	;
+0BF089                   	; La table contient attr, p0..p62 et le terminateur -1, soit 65 entrees de
+0BF089                   	; 3 octets. Si ce total change sans que ce soit voulu, c'est qu'une entree a
+0BF089                   	; ete ajoutee ou perdue par megarde.
+0BF089                   		assert	modify_end_tbl-modify_table = 65*3,'table de relocation : nombre d entrees inattendu'
+0BF089                   	;
+0BF089                   	; Chaque point de relocation doit se trouver a l'interieur du pilote : un pN
+0BF089                   	; hors bloc serait corrige a tort lors de la copie.
+0BF089                   		assert	p0 >= block_top,'p0 hors du bloc pilote'
+0BF089                   		assert	p62 < block_bottom,'p62 hors du bloc pilote'
+0BF089                   		assert	attr >= block_top,'attr hors du bloc pilote'
+0BF089                   	;
+0BF089                   	; Le pilote est copie tel quel : sa taille doit rester non nulle et tenir dans
+0BF089                   	; ce que l'installeur sait deplacer.
+0BF089                   		assert	block_bottom > block_top,'taille du pilote nulle'
+0BF089                   	;
+0BF089                   		end
 
-  No fatal error.  Code: 0BE000h - 0BF077h [     4216 byte(s)]
+  No fatal error.  Code: 0BE000h - 0BF088h [     4233 byte(s)]

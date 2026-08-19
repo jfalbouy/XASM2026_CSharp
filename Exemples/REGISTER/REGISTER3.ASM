@@ -337,16 +337,14 @@ un_found:
 	mv	x,[x]			; x = notre lien suivant (3 premiers octets de l'en-tete)
 	mv	y,(13)
 	mv	[y],x
-;  rendre le bloc supprimable par KILL : effacer les bits Device+Protect de
-;  l'attribut du bloc (offset 0Ch). Le pilote n'etant plus dans la chaine des
-;  devices, il redevient un simple fichier que l'utilisateur retire par
-;  KILL "S1:REGIST3.SYS" ; la ROM libere alors la memoire (recompactage).
-	mv	x,(10)			; en-tete IOCS = block_top + 22h
-	mv	ba,022h-0ch		; distance en-tete -> octet d'attribut du bloc
-	sub	x,ba
-	mv	a,[x]
-	and	a,0f3h			; ~0Ch : oter Device & Protect
-	mv	[x],a
+;  Le pilote n'est plus dans la chaine des devices, mais son bloc reste en
+;  memoire avec l'attribut 'Protected' du systeme de fichiers (que KILL refuse).
+;  Le flag Protected de BASIC n'est PAS le bit 0Ch teste par REGISTER (verifie
+;  sur emulateur : effacer 0Ch ne suffit pas). On laisse donc l'utilisateur
+;  lever la protection puis liberer, via les commandes BASIC affichees ci-apres
+;  (la ROM met alors proprement a jour le repertoire et recompacte) :
+;      SET  "S1:REGIST3.SYS"," "   (oter la protection)
+;      KILL "S1:REGIST3.SYS"       (liberer la memoire)
 ;  succes
 	mv	x,msg_ok
 	mv	y,btm_ok-msg_ok
@@ -371,8 +369,9 @@ un_err:
 
 msg_un:	db	'Uninstalling RG3:',13,10
 btm_un:
-msg_ok:	db	'Uninstalled.',13,10
-	db	'KILL "S1:REGIST3.SYS" to free mem.',13,10
+msg_ok:	db	'Uninstalled. To free memory :',13,10
+	db	'SET  "S1:REGIST3.SYS"," "',13,10
+	db	'KILL "S1:REGIST3.SYS"',13,10
 btm_ok:
 msg_ns:	db	'Cannot: hooked by another.',13,10
 btm_ns:
