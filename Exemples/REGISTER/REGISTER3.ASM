@@ -85,6 +85,27 @@ blk_id:	equ	0fbh		;identifiant de bloc de fichier
 	nop
 	endm
 ;
+; Nom du pilote defini UNE SEULE FOIS ici (base + extension). Deux macros le
+; formatent : 'name83' pour l'en-tete de bloc (8 car. completes d'espaces, sans
+; point) et 'namedot' pour les messages (base.ext). Pour renommer le pilote, ne
+; changer que 'drvbase' et 'drvext'.
+	macro	drvbase
+	db	'REGIST3'
+	endm
+	macro	drvext
+	db	'SYS'
+	endm
+	macro	name83
+_n83:	drvbase
+	ds	8-(*-_n83),' '		; completer le nom a 8 caracteres
+	drvext
+	endm
+	macro	namedot
+	drvbase
+	db	'.'
+	drvext
+	endm
+;
 ;
 	org	0be000h
 ;
@@ -370,8 +391,12 @@ un_err:
 msg_un:	db	'Uninstalling RG3:',13,10
 btm_un:
 msg_ok:	db	'Uninstalled. To free memory :',13,10
-	db	'SET  "S1:REGIST3.SYS"," "',13,10
-	db	'KILL "S1:REGIST3.SYS"',13,10
+	db	'SET  "S1:'
+	namedot
+	db	'"," "',13,10
+	db	'KILL "S1:'
+	namedot
+	db	'"',13,10
 btm_ok:
 msg_ns:	db	'Cannot: hooked by another.',13,10
 btm_ns:
@@ -380,7 +405,8 @@ btm_nf:
 drv_str:	db	'RG3:'
 
 block_top:
-	db	blk_id,'REGIST3 SYS'		;block name
+	db	blk_id			;block name (8.3, complete par la macro)
+	name83
 	db	25h				;block attr
 	dw	0,0				;date,time
 	dp	block_bottom - block_top	;block size

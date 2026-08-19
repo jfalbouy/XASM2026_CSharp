@@ -76,6 +76,11 @@
 000000                   	; Selectionne une colonne du clavier et laisse le resultat lisible en (ki_in).
 000000                   	; Le NOP est un delai de stabilisation : ne pas le retirer.
 000000                   	;
+000000                   	; Nom du pilote defini UNE SEULE FOIS ici (base + extension). Deux macros le
+000000                   	; formatent : 'name83' pour l'en-tete de bloc (8 car. completes d'espaces, sans
+000000                   	; point) et 'namedot' pour les messages (base.ext). Pour renommer le pilote, ne
+000000                   	; changer que 'drvbase' et 'drvext'.
+000000                   	;
 000000                   	;
 0BE000                   		org	0be000h
 0BE000                   	;
@@ -380,15 +385,21 @@
 0BE27D 65 65 20 6D 65 6D 	
 0BE283 6F 72 79 20 3A 0D 	
 0BE289 0A                	
-0BE28A 53 45 54 20 20 22 		db	'SET  "S1:REGIST3.SYS"," "',13,10
-0BE290 53 31 3A 52 45 47 	
-0BE296 49 53 54 33 2E 53 	
-0BE29C 59 53 22 2C 22 20 	
-0BE2A2 22 0D 0A          	
-0BE2A5 4B 49 4C 4C 20 22 		db	'KILL "S1:REGIST3.SYS"',13,10
-0BE2AB 53 31 3A 52 45 47 	
-0BE2B1 49 53 54 33 2E 53 	
-0BE2B7 59 53 22 0D 0A    	
+0BE28A 53 45 54 20 20 22 		db	'SET  "S1:'
+0BE290 53 31 3A          	
+0BE293 52 45 47 49 53 54 		db	'REGIST3'
+0BE299 33                	
+0BE29A 2E                		db	'.'
+0BE29B 53 59 53          		db	'SYS'
+0BE29E 22 2C 22 20 22 0D 		db	'"," "',13,10
+0BE2A4 0A                	
+0BE2A5 4B 49 4C 4C 20 22 		db	'KILL "S1:'
+0BE2AB 53 31 3A          	
+0BE2AE 52 45 47 49 53 54 		db	'REGIST3'
+0BE2B4 33                	
+0BE2B5 2E                		db	'.'
+0BE2B6 53 59 53          		db	'SYS'
+0BE2B9 22 0D 0A          		db	'"',13,10
 0BE2BC                   	btm_ok:
 0BE2BC 43 61 6E 6E 6F 74 	msg_ns:	db	'Cannot: hooked by another.',13,10
 0BE2C2 3A 20 68 6F 6F 6B 	
@@ -404,8 +415,12 @@
 0BE2ED 52 47 33 3A       	drv_str:	db	'RG3:'
 0BE2F1                   	
 0BE2F1                   	block_top:
-0BE2F1 FB 52 45 47 49 53 		db	blk_id,'REGIST3 SYS'		;block name
-0BE2F7 54 33 20 53 59 53 	
+0BE2F1 FB                		db	blk_id			;block name (8.3, complete par la macro)
+0BE2F2                   	_n83:
+0BE2F2 52 45 47 49 53 54 		db	'REGIST3'
+0BE2F8 33                	
+0BE2F9 20                		ds	8-(*-_n83),' '		; completer le nom a 8 caracteres
+0BE2FA 53 59 53          		db	'SYS'
 0BE2FD 25                		db	25h				;block attr
 0BE2FE 00 00 00 00       		dw	0,0				;date,time
 0BE302 D5 0C 00          		dp	block_bottom - block_top	;block size
