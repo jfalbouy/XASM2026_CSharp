@@ -168,17 +168,27 @@ init_5:	mv	a,[x++]
 	jrnz	init_5
 
 ;  (7) messages de fin
+;  --- succes : afficher 'Installed.' PUIS recaler BASIC ---
 exit1:	mv	x,msg1
 	mv	y,btm1-msg1
-	jr	exit4
-exit2:	mv	x,msg2
-	mv	y,btm2-msg2
-	jr	exit4
-exit3:	mv	x,msg3
-	mv	y,btm3-msg3
-exit4:	mv	(cl),0
+	mv	(cl),0
 	mv	il,4
 	callf	fcs_call
+	jr	remake_slot
+
+;  --- erreurs : afficher le message et RENDRE LA MAIN sans recaler BASIC ---
+;      (aucun bloc n'a ete insere ; recaler BTEXT$/BDATA$ corromprait BASIC)
+exit2:	mv	x,msg2
+	mv	y,btm2-msg2
+	jr	exit_err
+exit3:	mv	x,msg3
+	mv	y,btm3-msg3
+exit_err:
+	mv	(cl),0
+	mv	il,4
+	callf	fcs_call
+	sc
+	retf
 
 ;  (8) recaler les pointeurs BTEXT$ / BDATA$ de BASIC, decales par l'insertion
 remake_slot:

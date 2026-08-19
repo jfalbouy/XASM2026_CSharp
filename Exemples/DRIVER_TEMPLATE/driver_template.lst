@@ -42,7 +42,7 @@
 0BE000                   	; ==========================================================================
 0BE000                   	start:
 0BE000                   	;  (1) banniere
-0BE000 0C 99 E1 0B       		mv	x,msg0
+0BE000 0C A4 E1 0B       		mv	x,msg0
 0BE004 0D 11 00 00       		mv	y,btm0-msg0
 0BE008 CC D6 00          		mv	(cl),0
 0BE00B 09 04             		mv	il,4
@@ -62,12 +62,12 @@
 0BE029 90 04             	init_1:	mv	a,[x]
 0BE02B 60 FB             		cmp	a,blk_id		; encore un bloc de fichier ?
 0BE02D 1A 2B             		jrnz	block_end
-0BE02F 0D E8 E1 0B       		mv	y,block_top		; comparer le nom au notre
+0BE02F 0D F3 E1 0B       		mv	y,block_top		; comparer le nom au notre
 0BE033 09 0C             		mv	il,12
 0BE035 2C                		pushu	x
-0BE036 05 82 E1 0B       		callf	stricmp
+0BE036 05 8D E1 0B       		callf	stricmp
 0BE03A 3C                		popu	x
-0BE03B 18 B4             		jrz	exit2			; deja installe
+0BE03B 18 BD             		jrz	exit2			; deja installe
 0BE03D 90 84 0C          		mv	a,[x+12]		; attribut du bloc
 0BE040 64 0C             		test	a,0ch			; device & protege ?
 0BE042 18 07             		jrz	set_start
@@ -92,11 +92,11 @@
 0BE064 A5 10             		mv	(16),y			; espace libre
 0BE066 0D 31 00 00       		mv	y,block_bottom-block_top
 0BE06A D7 05 10          		cmpp	(16),y
-0BE06D 1C 8C             		jrc	exit3			; pas assez de memoire
+0BE06D 1C 95             		jrc	exit3			; pas assez de memoire
 0BE06F                   	
 0BE06F                   	;  (4) chainer le nouveau device en tete de la liste IOCS
 0BE06F 8C A2 FC 0B       		mv	x,[d_link]		; ancienne tete
-0BE073 AC 0A E2 0B       		mv	[header],x		; -> champ 'lien suivant' du nouvel en-tete
+0BE073 AC 15 E2 0B       		mv	[header],x		; -> champ 'lien suivant' du nouvel en-tete
 0BE077 84 0A             		mv	x,(10)
 0BE079 09 22             		mv	il,iocs_header-block_top
 0BE07B 45 41             		add	x,il
@@ -104,16 +104,16 @@
 0BE081                   	
 0BE081                   	;  (5) relocation : corriger chaque pointeur du bloc SOURCE pour l'adresse
 0BE081                   	;      de DESTINATION (10), avant la copie.
-0BE081 0C 19 E2 0B       		mv	x,modify_table
+0BE081 0C 24 E2 0B       		mv	x,modify_table
 0BE085 92 04             		mv	ba,[x]			; ba = nombre d'entrees
-0BE087 0C 1B E2 0B       		mv	x,modify_table+2	; sauter le compte, pointer le 1er site
+0BE087 0C 26 E2 0B       		mv	x,modify_table+2	; sauter le compte, pointer le 1er site
 0BE08B                   	reloc_lp:
 0BE08B 95 24             		mv	y,[x++]			; site = adresse d'un pointeur 3 octets
 0BE08D 2C                		pushu	x
 0BE08E 2A                		pushu	ba
 0BE08F 94 05             		mv	x,[y]			; valeur assemblee du pointeur
 0BE091 2D                		pushu	y			; sauver le site
-0BE092 0D E8 E1 0B       		mv	y,block_top
+0BE092 0D F3 E1 0B       		mv	y,block_top
 0BE096 4D 45             		sub	x,y			; - base d'assemblage
 0BE098 85 0A             		mv	y,(10)
 0BE09A 45 45             		add	x,y			; + base de destination
@@ -153,169 +153,179 @@
 0BE0D6                   	
 0BE0D6 0B 31 00          		mv	i,block_bottom-block_top	; copier le pilote
 0BE0D9 85 0A             		mv	y,(10)
-0BE0DB 0C E8 E1 0B       		mv	x,block_top
+0BE0DB 0C F3 E1 0B       		mv	x,block_top
 0BE0DF 90 24             	init_5:	mv	a,[x++]
 0BE0E1 B0 25             		mv	[y++],a
 0BE0E3 7C 03             		dec	i
 0BE0E5 1B 08             		jrnz	init_5
 0BE0E7                   	
 0BE0E7                   	;  (7) messages de fin
-0BE0E7 0C AA E1 0B       	exit1:	mv	x,msg1
+0BE0E7                   	;  --- succes : afficher 'Installed.' PUIS recaler BASIC ---
+0BE0E7 0C B5 E1 0B       	exit1:	mv	x,msg1
 0BE0EB 0D 0C 00 00       		mv	y,btm1-msg1
-0BE0EF 12 12             		jr	exit4
-0BE0F1 0C B6 E1 0B       	exit2:	mv	x,msg2
-0BE0F5 0D 17 00 00       		mv	y,btm2-msg2
-0BE0F9 12 08             		jr	exit4
-0BE0FB 0C CD E1 0B       	exit3:	mv	x,msg3
-0BE0FF 0D 1B 00 00       		mv	y,btm3-msg3
-0BE103 CC D6 00          	exit4:	mv	(cl),0
-0BE106 09 04             		mv	il,4
-0BE108 05 E4 FF 0F       		callf	fcs_call
-0BE10C                   	
-0BE10C                   	;  (8) recaler les pointeurs BTEXT$ / BDATA$ de BASIC, decales par l'insertion
-0BE10C                   	remake_slot:
-0BE10C 8C 0E FD 0B       		mv	x,[baswrk]
-0BE110 90 84 72          		mv	a,[x+72h]
-0BE113 60 00             		cmp	a,0			; BTEXT$ dans "S1:" ?
-0BE115 1A 2F             		jrnz	remake_data
-0BE117 0D 73 00 00       		mv	y,73h
-0BE11B 45 54             		add	y,x
-0BE11D 2D                		pushu	y
-0BE11E 8C 15 FC 0B       		mv	x,[s1_top]
-0BE122 95 84 12          		mv	y,[x+12h]
-0BE125 45 45             		add	x,y
-0BE127 3D                		popu	y
-0BE128 90 04             	text1:	mv	a,[x]
-0BE12A 60 FB             		cmp	a,blk_id
-0BE12C 1A 52             		jrnz	remake_end
-0BE12E 09 0B             		mv	il,11
-0BE130 2D                		pushu	y
-0BE131 2C                		pushu	x
-0BE132 6C 04             		inc	x
-0BE134 05 82 E1 0B       		callf	stricmp
-0BE138 3C                		popu	x
-0BE139 18 08             		jrz	text2
-0BE13B 95 84 11          		mv	y,[x+11h]
-0BE13E 45 45             		add	x,y
-0BE140 3D                		popu	y
-0BE141 13 1B             		jr	text1
-0BE143 3D                	text2:	popu	y
-0BE144 A4 CB             		mv	(text_ad),x
-0BE146                   	remake_data:
-0BE146 8C 0E FD 0B       		mv	x,[baswrk]
-0BE14A 90 84 7E          		mv	a,[x+7eh]
-0BE14D 60 00             		cmp	a,0			; BDATA$ dans "S2:" ?
-0BE14F 1A 2F             		jrnz	remake_end
-0BE151 0D 7F 00 00       		mv	y,7fh
-0BE155 45 54             		add	y,x
-0BE157 2D                		pushu	y
-0BE158 8C 15 FC 0B       		mv	x,[s1_top]
-0BE15C 95 84 12          		mv	y,[x+12h]
-0BE15F 45 45             		add	x,y
-0BE161 3D                		popu	y
-0BE162 90 04             	data1:	mv	a,[x]
-0BE164 60 FB             		cmp	a,blk_id
-0BE166 1A 18             		jrnz	remake_end
-0BE168 09 0B             		mv	il,11
-0BE16A 2D                		pushu	y
-0BE16B 2C                		pushu	x
-0BE16C 6C 04             		inc	x
-0BE16E 05 82 E1 0B       		callf	stricmp
-0BE172 3C                		popu	x
-0BE173 18 08             		jrz	data2
-0BE175 95 84 11          		mv	y,[x+11h]
-0BE178 45 45             		add	x,y
-0BE17A 3D                		popu	y
-0BE17B 13 1B             		jr	data1
-0BE17D 3D                	data2:	popu	y
-0BE17E A4 CE             		mv	(data_ad),x
-0BE180                   	remake_end:
-0BE180 9F                		rc
-0BE181 07                		retf
-0BE182                   	
-0BE182                   	; --- helper : comparaison de chaine sur IL octets -------------------------
-0BE182                   	stricmp:
-0BE182 E0 24 00          		mv	(0),[x++]
-0BE185 90 25             		mv	a,[y++]
-0BE187 61 00 00          		cmp	(0),0
-0BE18A 18 09             		jrz	stricmp1
-0BE18C 63 00             		cmp	(0),a
-0BE18E 1A 08             		jrnz	stricmp2
-0BE190 7C 01             		dec	il
-0BE192 1B 12             		jrnz	stricmp
-0BE194 07                		retf
-0BE195                   	stricmp1:
-0BE195 63 00             		cmp	(0),a
-0BE197 07                		retf
-0BE198                   	stricmp2:
-0BE198 07                		retf
-0BE199                   	
-0BE199                   	; --- messages -------------------------------------------------------------
-0BE199 44 52 49 56 45 52 	msg0:	db	'DRIVER template',13,10
-0BE19F 20 74 65 6D 70 6C 	
-0BE1A5 61 74 65 0D 0A    	
-0BE1AA                   	btm0:
-0BE1AA 49 6E 73 74 61 6C 	msg1:	db	'Installed.',13,10
-0BE1B0 6C 65 64 2E 0D 0A 	
-0BE1B6                   	btm1:
-0BE1B6 45 72 72 6F 72 3A 	msg2:	db	'Error: already exist.',13,10
-0BE1BC 20 61 6C 72 65 61 	
-0BE1C2 64 79 20 65 78 69 	
-0BE1C8 73 74 2E 0D 0A    	
-0BE1CD                   	btm2:
-0BE1CD 45 72 72 6F 72 3A 	msg3:	db	'Error: not enough memory.',13,10
-0BE1D3 20 6E 6F 74 20 65 	
-0BE1D9 6E 6F 75 67 68 20 	
-0BE1DF 6D 65 6D 6F 72 79 	
-0BE1E5 2E 0D 0A          	
-0BE1E8                   	btm3:
-0BE1E8                   	
-0BE1E8                   	; ==========================================================================
-0BE1E8                   	;  LE PILOTE RESIDENT  (copie en RAM par l'installateur)
-0BE1E8                   	; ==========================================================================
-0BE1E8                   	block_top:
-0BE1E8                   	; -- en-tete de bloc memoire --
-0BE1E8 FB 44 52 49 56 45 		db	blk_id,'DRIVER  SYS'	; signature + nom 8.3 (complete d'espaces)
-0BE1EE 52 20 20 53 59 53 	
-0BE1F4 25                		db	25h			; attributs de bloc
-0BE1F5 00 00 00 00       		dw	0,0			; date, heure
-0BE1F9 31 00 00          		dp	block_bottom-block_top	; taille du bloc
-0BE1FC 00 00             		dw	0
-0BE1FE 31 00 00          		dp	block_bottom-block_top	; taille du fichier
-0BE201 31 00 00          		dp	block_bottom-block_top
-0BE204 00 00 00 00 00 00 		dp	0,0
-0BE20A                   	; -- en-tete IOCS (maillon de chaine) --
-0BE20A                   	iocs_header:
-0BE20A 00 00 00          	header:	dp	0			; lien suivant (rempli a l'installation)
-0BE20D 14                	number:	db	20			; numero de device (a adapter)
-0BE20E 63                	attr:	db	63h			; attribut de device
-0BE20F                   	adrs:
-0BE20F 17 E2 0B          		dp	iocs_entry
-0BE212                   	_nrel:	set	_nrel+1
-0BE212 44 52 56 3A 00    		db	'DRV:',0			; nom de device (a adapter)
-0BE217                   	
-0BE217                   	; -- CORPS (a remplacer par vos fonctions) --
-0BE217                   	;    Ici un stub minimal : renvoie 'commande non geree' (carry).
-0BE217                   	;    Toute adresse absolue interne emise ici doit passer par 'reldp' et etre
-0BE217                   	;    inscrite dans modify_table via 'relref' (voir la discipline).
-0BE217                   	iocs_entry:
-0BE217 97                		sc
-0BE218 07                		retf
-0BE219                   	block_bottom:
-0BE219                   	
-0BE219                   	; ==========================================================================
-0BE219                   	;  TABLE DE RELOCATION  +  VERIFICATIONS A L'ASSEMBLAGE
-0BE219                   	; ==========================================================================
-0BE219                   	modify_table:
-0BE219 01 00             		dw	_nrel			; nombre d'entrees (lu par l'installateur)
-0BE21B 0F E2 0B          		dp	adrs
-0BE21E                   	_ntbl:	set	_ntbl+1
-0BE21E                   	modify_end_tbl:
-0BE21E                   	
-0BE21E                   		assert	_nrel = _ntbl,'table de relocation incomplete (reldp vs relref)'
-0BE21E                   		assert	adrs >= block_top,'site de relocation hors du pilote'
-0BE21E                   		assert	adrs < block_bottom,'site de relocation hors du pilote'
-0BE21E                   		assert	block_bottom > block_top,'pilote de taille nulle'
-0BE21E                   		end
+0BE0EF CC D6 00          		mv	(cl),0
+0BE0F2 09 04             		mv	il,4
+0BE0F4 05 E4 FF 0F       		callf	fcs_call
+0BE0F8 12 1D             		jr	remake_slot
+0BE0FA                   	
+0BE0FA                   	;  --- erreurs : afficher le message et RENDRE LA MAIN sans recaler BASIC ---
+0BE0FA                   	;      (aucun bloc n'a ete insere ; recaler BTEXT$/BDATA$ corromprait BASIC)
+0BE0FA 0C C1 E1 0B       	exit2:	mv	x,msg2
+0BE0FE 0D 17 00 00       		mv	y,btm2-msg2
+0BE102 12 08             		jr	exit_err
+0BE104 0C D8 E1 0B       	exit3:	mv	x,msg3
+0BE108 0D 1B 00 00       		mv	y,btm3-msg3
+0BE10C                   	exit_err:
+0BE10C CC D6 00          		mv	(cl),0
+0BE10F 09 04             		mv	il,4
+0BE111 05 E4 FF 0F       		callf	fcs_call
+0BE115 97                		sc
+0BE116 07                		retf
+0BE117                   	
+0BE117                   	;  (8) recaler les pointeurs BTEXT$ / BDATA$ de BASIC, decales par l'insertion
+0BE117                   	remake_slot:
+0BE117 8C 0E FD 0B       		mv	x,[baswrk]
+0BE11B 90 84 72          		mv	a,[x+72h]
+0BE11E 60 00             		cmp	a,0			; BTEXT$ dans "S1:" ?
+0BE120 1A 2F             		jrnz	remake_data
+0BE122 0D 73 00 00       		mv	y,73h
+0BE126 45 54             		add	y,x
+0BE128 2D                		pushu	y
+0BE129 8C 15 FC 0B       		mv	x,[s1_top]
+0BE12D 95 84 12          		mv	y,[x+12h]
+0BE130 45 45             		add	x,y
+0BE132 3D                		popu	y
+0BE133 90 04             	text1:	mv	a,[x]
+0BE135 60 FB             		cmp	a,blk_id
+0BE137 1A 52             		jrnz	remake_end
+0BE139 09 0B             		mv	il,11
+0BE13B 2D                		pushu	y
+0BE13C 2C                		pushu	x
+0BE13D 6C 04             		inc	x
+0BE13F 05 8D E1 0B       		callf	stricmp
+0BE143 3C                		popu	x
+0BE144 18 08             		jrz	text2
+0BE146 95 84 11          		mv	y,[x+11h]
+0BE149 45 45             		add	x,y
+0BE14B 3D                		popu	y
+0BE14C 13 1B             		jr	text1
+0BE14E 3D                	text2:	popu	y
+0BE14F A4 CB             		mv	(text_ad),x
+0BE151                   	remake_data:
+0BE151 8C 0E FD 0B       		mv	x,[baswrk]
+0BE155 90 84 7E          		mv	a,[x+7eh]
+0BE158 60 00             		cmp	a,0			; BDATA$ dans "S2:" ?
+0BE15A 1A 2F             		jrnz	remake_end
+0BE15C 0D 7F 00 00       		mv	y,7fh
+0BE160 45 54             		add	y,x
+0BE162 2D                		pushu	y
+0BE163 8C 15 FC 0B       		mv	x,[s1_top]
+0BE167 95 84 12          		mv	y,[x+12h]
+0BE16A 45 45             		add	x,y
+0BE16C 3D                		popu	y
+0BE16D 90 04             	data1:	mv	a,[x]
+0BE16F 60 FB             		cmp	a,blk_id
+0BE171 1A 18             		jrnz	remake_end
+0BE173 09 0B             		mv	il,11
+0BE175 2D                		pushu	y
+0BE176 2C                		pushu	x
+0BE177 6C 04             		inc	x
+0BE179 05 8D E1 0B       		callf	stricmp
+0BE17D 3C                		popu	x
+0BE17E 18 08             		jrz	data2
+0BE180 95 84 11          		mv	y,[x+11h]
+0BE183 45 45             		add	x,y
+0BE185 3D                		popu	y
+0BE186 13 1B             		jr	data1
+0BE188 3D                	data2:	popu	y
+0BE189 A4 CE             		mv	(data_ad),x
+0BE18B                   	remake_end:
+0BE18B 9F                		rc
+0BE18C 07                		retf
+0BE18D                   	
+0BE18D                   	; --- helper : comparaison de chaine sur IL octets -------------------------
+0BE18D                   	stricmp:
+0BE18D E0 24 00          		mv	(0),[x++]
+0BE190 90 25             		mv	a,[y++]
+0BE192 61 00 00          		cmp	(0),0
+0BE195 18 09             		jrz	stricmp1
+0BE197 63 00             		cmp	(0),a
+0BE199 1A 08             		jrnz	stricmp2
+0BE19B 7C 01             		dec	il
+0BE19D 1B 12             		jrnz	stricmp
+0BE19F 07                		retf
+0BE1A0                   	stricmp1:
+0BE1A0 63 00             		cmp	(0),a
+0BE1A2 07                		retf
+0BE1A3                   	stricmp2:
+0BE1A3 07                		retf
+0BE1A4                   	
+0BE1A4                   	; --- messages -------------------------------------------------------------
+0BE1A4 44 52 49 56 45 52 	msg0:	db	'DRIVER template',13,10
+0BE1AA 20 74 65 6D 70 6C 	
+0BE1B0 61 74 65 0D 0A    	
+0BE1B5                   	btm0:
+0BE1B5 49 6E 73 74 61 6C 	msg1:	db	'Installed.',13,10
+0BE1BB 6C 65 64 2E 0D 0A 	
+0BE1C1                   	btm1:
+0BE1C1 45 72 72 6F 72 3A 	msg2:	db	'Error: already exist.',13,10
+0BE1C7 20 61 6C 72 65 61 	
+0BE1CD 64 79 20 65 78 69 	
+0BE1D3 73 74 2E 0D 0A    	
+0BE1D8                   	btm2:
+0BE1D8 45 72 72 6F 72 3A 	msg3:	db	'Error: not enough memory.',13,10
+0BE1DE 20 6E 6F 74 20 65 	
+0BE1E4 6E 6F 75 67 68 20 	
+0BE1EA 6D 65 6D 6F 72 79 	
+0BE1F0 2E 0D 0A          	
+0BE1F3                   	btm3:
+0BE1F3                   	
+0BE1F3                   	; ==========================================================================
+0BE1F3                   	;  LE PILOTE RESIDENT  (copie en RAM par l'installateur)
+0BE1F3                   	; ==========================================================================
+0BE1F3                   	block_top:
+0BE1F3                   	; -- en-tete de bloc memoire --
+0BE1F3 FB 44 52 49 56 45 		db	blk_id,'DRIVER  SYS'	; signature + nom 8.3 (complete d'espaces)
+0BE1F9 52 20 20 53 59 53 	
+0BE1FF 25                		db	25h			; attributs de bloc
+0BE200 00 00 00 00       		dw	0,0			; date, heure
+0BE204 31 00 00          		dp	block_bottom-block_top	; taille du bloc
+0BE207 00 00             		dw	0
+0BE209 31 00 00          		dp	block_bottom-block_top	; taille du fichier
+0BE20C 31 00 00          		dp	block_bottom-block_top
+0BE20F 00 00 00 00 00 00 		dp	0,0
+0BE215                   	; -- en-tete IOCS (maillon de chaine) --
+0BE215                   	iocs_header:
+0BE215 00 00 00          	header:	dp	0			; lien suivant (rempli a l'installation)
+0BE218 14                	number:	db	20			; numero de device (a adapter)
+0BE219 63                	attr:	db	63h			; attribut de device
+0BE21A                   	adrs:
+0BE21A 22 E2 0B          		dp	iocs_entry
+0BE21D                   	_nrel:	set	_nrel+1
+0BE21D 44 52 56 3A 00    		db	'DRV:',0			; nom de device (a adapter)
+0BE222                   	
+0BE222                   	; -- CORPS (a remplacer par vos fonctions) --
+0BE222                   	;    Ici un stub minimal : renvoie 'commande non geree' (carry).
+0BE222                   	;    Toute adresse absolue interne emise ici doit passer par 'reldp' et etre
+0BE222                   	;    inscrite dans modify_table via 'relref' (voir la discipline).
+0BE222                   	iocs_entry:
+0BE222 97                		sc
+0BE223 07                		retf
+0BE224                   	block_bottom:
+0BE224                   	
+0BE224                   	; ==========================================================================
+0BE224                   	;  TABLE DE RELOCATION  +  VERIFICATIONS A L'ASSEMBLAGE
+0BE224                   	; ==========================================================================
+0BE224                   	modify_table:
+0BE224 01 00             		dw	_nrel			; nombre d'entrees (lu par l'installateur)
+0BE226 1A E2 0B          		dp	adrs
+0BE229                   	_ntbl:	set	_ntbl+1
+0BE229                   	modify_end_tbl:
+0BE229                   	
+0BE229                   		assert	_nrel = _ntbl,'table de relocation incomplete (reldp vs relref)'
+0BE229                   		assert	adrs >= block_top,'site de relocation hors du pilote'
+0BE229                   		assert	adrs < block_bottom,'site de relocation hors du pilote'
+0BE229                   		assert	block_bottom > block_top,'pilote de taille nulle'
+0BE229                   		end
 
-  No fatal error.  Code: 0BE000h - 0BE21Dh [      542 byte(s)]
+  No fatal error.  Code: 0BE000h - 0BE228h [      553 byte(s)]
