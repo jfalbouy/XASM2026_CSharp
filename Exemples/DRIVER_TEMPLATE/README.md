@@ -11,16 +11,21 @@ Voir `Documentation/Modele_Pilotes_Resident_PC-E500S.md` pour l'architecture d'e
 | --- | --- |
 | `driver_template.asm` | le squelette, assemblable tel quel (pilote minimal : un stub qui renvoie « commande non gérée ») |
 | `driver_template.obj` / `.lst` | l'objet et le listing produits |
-| `driver_template.uu` | auto-décodeur BASIC pour l'émulateur (nom Sharp `DRVTMPL .OBJ`) |
+| `driver_template.uu` | auto-décodeur BASIC pour l'émulateur (nom Sharp `DRVTMP  .OBJ`) |
 
 ## Ce que fournit le template
 
 1. **Les deux en-têtes** — bloc mémoire (`$fb` + nom `8.3` + attributs + tailles) et en-tête
    IOCS (lien de chaîne + n° device + point d'entrée + noms), prêts à paramétrer.
-2. **L'installateur** (les 8 étapes, lancé par `CALL &BE000`) : bannière → compactage S1 →
-   recherche de doublon et point d'insertion → contrôle mémoire → chaînage en tête de la liste
-   des devices (`0BFCA2h`) → **relocation** → décalage des blocs et copie → recalage des
-   pointeurs `BTEXT$`/`BDATA$` de BASIC.
+2. **L'installateur** (lancé par `CALL &BE000`) : bannière → compactage S1 → recherche de
+   doublon et de la **fin** de la chaîne des blocs → contrôle mémoire → chaînage en tête de la
+   liste des devices (`0BFCA2h`) → **relocation** → **copie en fin de chaîne** + terminateur.
+
+   Modèle **ajout-en-fin** : le pilote est placé *après* les blocs existants, sans les décaler.
+   Aucun fichier BASIC ne bouge, donc **aucun recalage des pointeurs `BTEXT$`/`BDATA$`** — ce
+   qui supprime le risque de corruption de BASIC de l'insertion-avec-décalage à la REGISTER. En
+   cas d'échec (doublon, mémoire), l'installateur affiche un message et rend la main (carry)
+   sans rien toucher.
 3. **La discipline de relocation** — l'apport principal (voir ci-dessous).
 
 ## La discipline de relocation
