@@ -104,26 +104,37 @@ start:
 ;          CALL &BE000 "-u"     -> desinstalle
 ;      La ligne de commande (avec ses guillemets) est en tete de la pile U ;
 ;      le scan saute le guillemet ouvrant et cherche "-u".
-	popu	x
-	pushu	x
+	popu	x			; x = pointeur de ligne (empile par CALL)
+	mv	(0),0			; (0) = 0 : installer ; sinon : desinstaller
 sc_arg:	mv	a,[x++]
 	cmp	a,0
-	jrz	sc_install
+	jrz	sc_done
 	cmp	a,0dh
-	jrz	sc_install
+	jrz	sc_done
 	cmp	a,'-'
 	jrnz	sc_arg
 	mv	a,[x]
 	cmp	a,'u'
-	jrz	sc_uninst
+	jrz	sc_setu
 	cmp	a,'U'
-	jrz	sc_uninst
+	jrz	sc_setu
 	jr	sc_arg
-sc_uninst:
-	popu	x
+sc_setu:
+	mv	a,1
+	mv	(0),a
+	jr	sc_arg
+sc_done:
+;      RESTITUER a BASIC le pointeur de ligne AVANCE au-dela de l'argument
+;      (protocole UUENCODE : popu a l'entree, pushu du pointeur avance a la
+;      sortie). Sans ce pushu, BASIC ne retrouve pas ou reprendre -> 'Syntax
+;      error' au retour d'un CALL suivi d'un argument.
+	dec	x			; revenir sur le terminateur de l'argument
+	pushu	x
+	mv	a,(0)
+	cmp	a,0
+	jrz	sc_install
 	jp	uninstall
 sc_install:
-	popu	x
 ;  (1) banniere
 	mv	x,msg0
 	mv	y,btm0-msg0
@@ -326,6 +337,16 @@ un_found:
 	mv	x,[x]			; x = notre lien suivant (3 premiers octets de l'en-tete)
 	mv	y,(13)
 	mv	[y],x
+;  rendre le bloc supprimable par KILL : effacer les bits Device+Protect de
+;  l'attribut du bloc (offset 0Ch). Le pilote n'etant plus dans la chaine des
+;  devices, il redevient un simple fichier que l'utilisateur retire par
+;  KILL "S1:REGIST3.SYS" ; la ROM libere alors la memoire (recompactage).
+	mv	x,(10)			; en-tete IOCS = block_top + 22h
+	mv	ba,022h-0ch		; distance en-tete -> octet d'attribut du bloc
+	sub	x,ba
+	mv	a,[x]
+	and	a,0f3h			; ~0Ch : oter Device & Protect
+	mv	[x],a
 ;  succes
 	mv	x,msg_ok
 	mv	y,btm_ok-msg_ok
@@ -351,6 +372,7 @@ un_err:
 msg_un:	db	'Uninstalling RG3:',13,10
 btm_un:
 msg_ok:	db	'Uninstalled.',13,10
+	db	'KILL "S1:REGIST3.SYS" to free mem.',13,10
 btm_ok:
 msg_ns:	db	'Cannot: hooked by another.',13,10
 btm_ns:
