@@ -17,6 +17,10 @@
 ; ==========================================================================
 
 	org	0be000h			; adresse de chargement de l'installateur
+	pre_on				; INDISPENSABLE : auto-prebyte de la RAM interne.
+					; Sans lui, "mv (n),x", "cmpp (n),y"... visent
+					; (BP+n) au lieu de la RAM interne absolue (n),
+					; et le controle memoire lit une valeur parasite.
 
 ; --- constantes systeme (voir Exemples/INCLUDE/pce500.inc) -----------------
 blk_id:		equ	0fbh		; signature d'un bloc de fichier
