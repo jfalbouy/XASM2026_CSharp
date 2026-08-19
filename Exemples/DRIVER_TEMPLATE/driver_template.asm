@@ -3,18 +3,22 @@
 ;
 ;  Voir Documentation/Modele_Pilotes_Resident_PC-E500S.md pour l'architecture.
 ;
+;  Installation par 'CALL &BE000', desinstallation par 'CALL &BE000 "-u"'.
+;
 ;  Modele d'installation : AJOUT EN FIN de la chaine des blocs de S1: (pas de
 ;  decalage des fichiers existants -> aucun recalage des pointeurs BASIC, donc
 ;  pas de corruption possible de BASIC). Plus simple et plus sur que l'insertion
 ;  avec decalage employee par REGISTER.
 ;
-;  A ADAPTER : le nom (DRIVER  SYS), le numero de device (number), la chaine de
-;  noms ('DRV:'), et le CORPS (a partir de iocs_entry). Toute adresse absolue
-;  interne au pilote DOIT etre emise par 'reldp' (voir la discipline).
+;  A ADAPTER : les noms (macros 'drvbase'/'drvext' pour le fichier, 'drvdev' pour
+;  le device), le numero de device (number), et le CORPS (a partir de iocs_entry).
+;  Toute adresse absolue interne au pilote DOIT etre emise par 'reldp' (voir la
+;  discipline). Un pilote qui detourne un vecteur le restaure dans 'un_found'.
 ;
 ;  VALIDE sur emulateur : le pilote minimal s'installe (apparait sous DRIVER.SYS).
 ;  En cas d'echec (doublon, memoire), l'installateur rend la main proprement
-;  (message + carry), sans toucher a BASIC.
+;  (message + carry), sans toucher a BASIC. Le mecanisme install/desinstall et
+;  les macros de nom ont ete valides de bout en bout sur REGISTER3 avant portage.
 ; ==========================================================================
 
 	org	0be000h			; adresse de chargement de l'installateur
@@ -50,10 +54,73 @@ _nrel:	set	_nrel+1
 _ntbl:	set	_ntbl+1
 	endm
 
+; --- noms du pilote, definis UNE SEULE FOIS -------------------------------
+;  Nom de FICHIER (bloc memoire) : base + extension. 'name83' l'emet au format
+;  8.3 de l'en-tete (8 caracteres completes d'espaces, sans point) ; 'namedot'
+;  l'emet au format fichier des messages (base.ext). Pour renommer le pilote,
+;  ne changer que 'drvbase' et 'drvext'.
+	macro	drvbase
+	db	'DRIVER'		; <= nom de fichier du pilote (<= 8 caracteres)
+	endm
+	macro	drvext
+	db	'SYS'			; <= extension (3 caracteres)
+	endm
+	macro	name83
+_n83:	drvbase
+	ds	8-(*-_n83),' '		; completer le nom a 8 caracteres
+	drvext
+	endm
+	macro	namedot
+	drvbase
+	db	'.'
+	drvext
+	endm
+;  Nom de DEVICE (chaine IOCS), defini une seule fois : sert a l'en-tete et a la
+;  recherche du pilote lors de la desinstallation.
+	macro	drvdev
+	db	'DRV:'			; <= nom de device (termine par ':')
+	endm
+
 ; ==========================================================================
-;  INSTALLATEUR  (lance par CALL &BE000)
+;  POINT D'ENTREE : install par 'CALL &BE000', desinstall par 'CALL &BE000 "-u"'
 ; ==========================================================================
 start:
+;  (0) lire l'argument de CALL. L'argument doit etre ENTRE GUILLEMETS (syntaxe
+;      BASIC), comme UUENCODE : la chaine "-u" (ou "-U") lance la desinstallation,
+;      sinon on installe. 'CALL' empile le pointeur de ligne sur la pile U ; on
+;      le RESTITUE avance au-dela de l'argument (pushu) pour que BASIC reprenne
+;      correctement (sinon 'Syntax error' au retour).
+	popu	x			; x = pointeur de ligne (pile U)
+	mv	(0),0			; (0) = 0 : installer ; sinon : desinstaller
+sc_arg:	mv	a,[x++]
+	cmp	a,0
+	jrz	sc_done
+	cmp	a,0dh
+	jrz	sc_done
+	cmp	a,'-'
+	jrnz	sc_arg
+	mv	a,[x]
+	cmp	a,'u'
+	jrz	sc_setu
+	cmp	a,'U'
+	jrz	sc_setu
+	jr	sc_arg
+sc_setu:
+	mv	a,1
+	mv	(0),a
+	jr	sc_arg
+sc_done:
+	dec	x			; revenir sur le terminateur de l'argument
+	pushu	x			; RESTITUER le pointeur avance a BASIC
+	mv	a,(0)
+	cmp	a,0
+	jrz	install
+	jp	uninstall
+
+; ==========================================================================
+;  INSTALLATEUR  (CALL &BE000)
+; ==========================================================================
+install:
 ;  (1) banniere
 	mv	x,msg0
 	mv	y,btm0-msg0
@@ -188,11 +255,95 @@ msg3:	db	'Error: not enough memory.',13,10
 btm3:
 
 ; ==========================================================================
+;  DESINSTALLATEUR  (CALL &BE000 "-u")
+; ==========================================================================
+;  Retire le pilote de la chaine des devices, puis laisse l'utilisateur liberer
+;  le bloc memoire par les commandes BASIC affichees (SET pour oter la
+;  protection, KILL pour liberer : la ROM met a jour le repertoire et recompacte).
+;  Le bloc n'est PAS libere par le code : le flag 'Protected' du systeme de
+;  fichiers n'est pas le bit teste par les pilotes, et l'effacer ne suffit pas.
+uninstall:
+	mv	x,msg_un
+	mv	y,btm_un-msg_un
+	mv	(cl),0
+	mv	il,4
+	callf	fcs_call
+;  parcourir la chaine des devices en gardant le predecesseur
+	mv	y,d_link			; y = emplacement du pointeur vers l'en-tete courant
+un_find:
+	mv	x,[y]
+	inc	x
+	jrz	un_notfound			; -1 : fin de chaine, non trouve
+	dec	x
+	mv	(10),x				; (10) = en-tete courant
+	mv	(13),y				; (13) = predecesseur (emplacement du pointeur)
+	mv	il,8
+	add	x,il				; x = en-tete + 8 = nom de device
+	mv	y,drv_str
+	mv	il,4
+	callf	stricmp
+	mv	x,(10)
+	mv	y,(13)
+	jrz	un_found
+	mv	y,x				; avancer : predecesseur = en-tete courant
+	jr	un_find
+un_found:
+;  x = notre en-tete ; (13) = predecesseur.
+;  --- restauration des vecteurs detournes (a completer pour un vrai pilote) ---
+;  Si votre pilote a detourne un vecteur systeme (clavier, SIO, timer...) a
+;  l'installation, restaurez-le ICI, AVANT de delier, avec le controle "sommet
+;  de la pile de hooks" : le vecteur pointe-t-il encore vers VOTRE handler ? Si
+;  un autre pilote a hooke apres vous, refusez (sinon vous cassez sa chaine).
+;  Modele complet : Exemples/REGISTER/REGISTER3.ASM (un_found : securite sur
+;  keyvct + restauration depuis save_vct). Le stub de ce template ne detourne
+;  rien, il n'y a donc rien a restaurer.
+;  --- delier de la chaine : [predecesseur] = notre lien suivant ---
+	mv	x,(10)
+	mv	x,[x]				; x = notre lien suivant (3 premiers octets de l'en-tete)
+	mv	y,(13)
+	mv	[y],x
+;  succes : afficher les commandes de liberation et rendre la main
+	mv	x,msg_ok
+	mv	y,btm_ok-msg_ok
+	mv	(cl),0
+	mv	il,4
+	callf	fcs_call
+	rc
+	retf
+un_notfound:
+	mv	x,msg_nf
+	mv	y,btm_nf-msg_nf
+	mv	(cl),0
+	mv	il,4
+	callf	fcs_call
+	sc
+	retf
+
+; --- messages de desinstallation ------------------------------------------
+msg_un:	db	'Uninstalling '
+	drvdev
+	db	13,10
+btm_un:
+msg_ok:	db	'Uninstalled. To free memory :',13,10
+	db	'SET  "S1:'
+	namedot
+	db	'"," "',13,10
+	db	'KILL "S1:'
+	namedot
+	db	'"',13,10
+btm_ok:
+msg_nf:	drvdev
+	db	' not installed.',13,10
+btm_nf:
+drv_str:	drvdev				; nom recherche dans la chaine des devices
+
+; ==========================================================================
 ;  LE PILOTE RESIDENT  (copie en RAM par l'installateur)
 ; ==========================================================================
 block_top:
 ; -- en-tete de bloc memoire --
-	db	blk_id,'DRIVER  SYS'	; signature + nom 8.3 (complete d'espaces)
+	db	blk_id			; signature de bloc de fichier
+	name83				; nom 8.3 (complete d'espaces par la macro)
 	db	25h			; attributs de bloc (device + protege)
 	dw	0,0			; date, heure
 	dp	block_bottom-block_top	; taille du bloc  (offset 011h : lien vers le bloc suivant)
@@ -207,7 +358,8 @@ number:	db	20			; numero de device (a adapter)
 attr:	db	63h			; attribut de device
 adrs:
 	reldp	iocs_entry		; point d'entree (pointeur relogeable)
-	db	'DRV:',0			; nom de device (a adapter)
+	drvdev				; nom de device (defini une seule fois)
+	db	0			; terminateur de la chaine de nom
 
 ; -- CORPS (a remplacer par vos fonctions) --
 ;    Stub minimal : renvoie 'commande non geree' (carry).
