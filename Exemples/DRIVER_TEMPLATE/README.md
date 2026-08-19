@@ -75,9 +75,16 @@ cd .\Exemples\DRIVER_TEMPLATE
 
 ## À savoir
 
-- L'installateur est **dérivé de REGISTER2** (validé sur PC-E500S réel) ; sa boucle de
-  relocation a été réécrite (comptage explicite). Comme tout pilote de ce corpus, **validez un
-  nouveau pilote sur émulateur** avant emploi réel.
+- **Validé sur émulateur** : le pilote minimal s'installe et apparaît dans le listing sous
+  `DRIVER  .SYS` (protégé), son nom affiché correctement — preuve que le chaînage, la relocation
+  et l'en-tête sont bons. Un pilote réel (corps complet) reste à valider pour son propre code.
+- **Piège à connaître — `PRE_ON` est indispensable.** Sans lui, les accès à la RAM interne
+  (`mv (n),x`, `cmpp (n),y`…) visent `(BP+n)` au lieu de l'absolu `(n)` : l'installateur lit sa
+  mémoire de travail au mauvais endroit et échoue au contrôle mémoire (« not enough memory »).
+  Il est placé juste après l'`org` ; ne le retirez pas.
+- L'installateur est **dérivé de REGISTER2** (validé sur PC-E500S réel), avec un modèle
+  d'installation simplifié (ajout en fin, sans recalage BASIC) et une boucle de relocation
+  réécrite (comptage explicite).
 - La partie *désinstallation* n'est pas encore fournie (livrable suivant) : elle est possible —
   l'état nécessaire (ancienne tête de chaîne, vecteurs détournés) est déjà conservé — sous la
   condition d'être au sommet de la pile de hooks. Voir la section 5 du document de conception.

@@ -12,8 +12,9 @@
 000000                   	;  noms ('DRV:'), et le CORPS (a partir de iocs_entry). Toute adresse absolue
 000000                   	;  interne au pilote DOIT etre emise par 'reldp' (voir la discipline).
 000000                   	;
-000000                   	;  EXPERIMENTAL : a valider sur emulateur. En cas d'echec, l'installateur rend
-000000                   	;  la main proprement (message + carry), sans toucher a BASIC.
+000000                   	;  VALIDE sur emulateur : le pilote minimal s'installe (apparait sous DRIVER.SYS).
+000000                   	;  En cas d'echec (doublon, memoire), l'installateur rend la main proprement
+000000                   	;  (message + carry), sans toucher a BASIC.
 000000                   	; ==========================================================================
 000000                   	
 0BE000                   		org	0be000h			; adresse de chargement de l'installateur

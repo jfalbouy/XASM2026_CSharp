@@ -181,8 +181,17 @@ réduirait un nouveau pilote à l'écriture de ses seules **fonctions**. Il four
 C'est l'esprit de `Exemples/INCLUDE/pce500.inc` — mutualiser ce qui est invariant — appliqué
 cette fois à la **structure** d'un pilote, et non plus aux seules constantes.
 
-**Réalisé** : `Exemples/DRIVER_TEMPLATE/` fournit ce squelette — les deux en-têtes, l'installateur
-en 8 étapes (généralisé depuis REGISTER2, sans le hook clavier), et la discipline de relocation
-`reldp`/`relref` avec l'assertion de complétude qui rend un oubli détectable **à l'assemblage**
-(là où REGISTER2 ne le voyait qu'à l'exécution). La routine de désinstallation (§5) reste à
-ajouter.
+**Réalisé et validé sur émulateur** : `Exemples/DRIVER_TEMPLATE/` fournit ce squelette — les deux
+en-têtes, un installateur **ajout-en-fin** (le pilote est copié après le dernier bloc, sans
+décaler les fichiers, donc sans recalage BASIC), et la discipline de relocation `reldp`/`relref`
+avec l'assertion de complétude qui rend un oubli détectable **à l'assemblage** (là où REGISTER2
+ne le voyait qu'à l'exécution). Le pilote minimal s'installe et apparaît sous `DRIVER.SYS`.
+
+> Deux enseignements de la mise au point sur émulateur, inscrits dans le template : (1) `PRE_ON`
+> est **indispensable** — sans lui les accès RAM interne `(n)` visent `(BP+n)` et l'installateur
+> lit sa mémoire de travail au mauvais endroit ; (2) le recalage des pointeurs BASIC
+> (`remake_slot`) ne doit se faire **qu'après une insertion réussie avec décalage** — sur un
+> échec, ou dans le modèle ajout-en-fin, il corromprait BASIC (bascule en mode TEXT). Le modèle
+> ajout-en-fin l'évite entièrement.
+
+La routine de désinstallation (§5) reste à ajouter.
