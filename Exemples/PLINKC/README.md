@@ -114,6 +114,21 @@ de `REGISTER2`) :
 Le pilote ne détourne la SIO que le temps de chaque appel (`jump00`), donc au repos il ne tient
 aucun vecteur → la désinstallation se limite au déliage.
 
-**Statut : premier jet, à valider sur émulateur** (`PLINK2.uu`, nom Sharp `PLINK2.SYS`). La
-relocation est vérifiée statiquement ; l'installation/désinstallation restent à confirmer sur
-machine, comme le fut REGISTER3.
+**Statut : validé sur émulateur** (`PLINK2.uu`, nom Sharp `PLINK2.SYS`, 1735 o). `CALL &BF000`
+installe (`PLINK2.SYS` apparaît en fin de S1:, protégé) ; `CALL &BF000 "-u"` désinstalle
+(« Uninstalled. » + commandes `SET`/`KILL`). La relocation à 60 sites, réutilisée verbatim, tient.
+
+Le figement a été localisé par une version instrumentée (`build_plink2.py` avec
+`PLINK2_DEBUG=1` : un chiffre imprimé au début de chaque étape) — l'écran affichait `123456`,
+révélant deux appels IOCS aux conventions incertaines, écartés :
+
+- **la recherche dynamique de numéro de device** (`iocs il=1`) risquait une boucle infinie → le
+  numéro est **codé en dur** (10) dans l'en-tête ;
+- **l'initialisation des paramètres** (`iocs il=4`, reprise de PLINKC) figeait au premier accès
+  device → écartée (REGISTER3 ne la fait pas ; le device est chaîné et le pilote s'initialise à
+  la première commande).
+
+*Réserve honnête :* le transfert cache réel (SIO) exige un câble PLINK relié à un PC, donc
+intestable sur émulateur ; la validation porte sur **install + bloc/​device en place +
+désinstall propre**. Si l'usage réel révélait un besoin d'init des paramètres, il faudrait
+retrouver la bonne convention de `iocs il=4`.

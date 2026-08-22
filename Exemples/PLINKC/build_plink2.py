@@ -96,7 +96,11 @@ start:
 sc_arg:	mv	a,[x++]
 	cmp	a,0
 	jrz	sc_done
-	cmp	a,0dh
+	cmp	a,0dh			; CR
+	jrz	sc_done
+	cmp	a,1ah			; fin de chaine BASIC (comme UUENCODE argskp)
+	jrz	sc_done
+	cmp	a,0ffh			; fin de chaine BASIC
 	jrz	sc_done
 	cmp	a,'-'
 	jrnz	sc_arg
