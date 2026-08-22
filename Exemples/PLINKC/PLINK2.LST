@@ -249,7 +249,7 @@
 0BF138 30 CC D6 00       		mv	(cl),0
 0BF13C 09 04             		mv	il,4
 0BF13E 05 E4 FF 0F       		callf	fcs
-0BF142 97                		sc
+0BF142 9F                		rc				; rendre la main carry CLAIR (carry arme -> Syntax error BASIC)
 0BF143 07                		retf
 0BF144                   	
 0BF144                   	; ==========================================================================
@@ -301,7 +301,7 @@
 0BF1A8 30 CC D6 00       		mv	(cl),0
 0BF1AC 09 04             		mv	il,4
 0BF1AE 05 E4 FF 0F       		callf	fcs
-0BF1B2 97                		sc
+0BF1B2 9F                		rc				; carry CLAIR (sinon Syntax error BASIC au retour)
 0BF1B3 07                		retf
 0BF1B4                   	
 0BF1B4                   	; --- helper : comparaison de chaine sur IL octets --------------------------

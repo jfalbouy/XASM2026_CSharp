@@ -268,7 +268,7 @@ exit_err:
 	mv	(cl),0
 	mv	il,4
 	callf	fcs
-	sc
+	rc				; rendre la main carry CLAIR (carry arme -> Syntax error BASIC)
 	retf
 
 ; ==========================================================================
@@ -320,7 +320,7 @@ un_notfound:
 	mv	(cl),0
 	mv	il,4
 	callf	fcs
-	sc
+	rc				; carry CLAIR (sinon Syntax error BASIC au retour)
 	retf
 
 ; --- helper : comparaison de chaine sur IL octets --------------------------
