@@ -127,15 +127,9 @@ install:
 	mv	x,[iroot]
 	mv	[ihead],x
 
-;  (3) trouver un numero de device libre (>= 10) et l'inscrire dans l'en-tete
-	mv	(cl),10-1		; (cl)=(cx)=0D6h : numero de device candidat
-free_dev:
-	inc	(cl)
-	mv	il,1
-	callf	iocs			; il=1 : le numero (cx) existe-t-il ?
-	jrnc	free_dev		; NC : occupe -> essayer le suivant
-	mv	a,(cl)
-	mv	[devno],a		; C : libre -> l'adopter
+;  (3) numero de device : code en dur dans l'en-tete (devno). La recherche
+;      dynamique via 'iocs il=1' (convention incertaine) est ecartee : elle
+;      risquait une boucle infinie (figement). 10 est libre sur un systeme courant.
 
 ;  (4) compacter S1: (regrouper l'espace libre en fin de zone)
 	mv	(cl),6
@@ -212,12 +206,12 @@ rl_short:
 	add	y,a
 rl_corr:
 	mv	x,[y]			; valeur 3 octets a corriger
-	pushs	y			; (la pile S : u sert de pointeur de table)
+	mv	[--s],y			; sauver le pointeur de table (u sert deja de lecteur)
 	mv	y,block_top
 	sub	x,y			; - base d'assemblage
 	mv	y,(10)
 	add	x,y			; + base de destination
-	pops	y
+	mv	y,[s++]			; restaurer le pointeur de table
 	mv	[y],x
 	jr	rl
 rl_end:
@@ -389,7 +383,7 @@ block_top:
 ;----------------------------------------------------------------------
 iocs_header:
 ihead:		dp	0			;Adresse du prochain en-tete de pilote de peripherique
-devno:		db	0			;Numero d'appareil (variable)
+devno:		db	10			;Numero d'appareil (code en dur ; 10 libre en general)
 		db	$83				;Attribut de peripherique (identique a E :)
 rel_dev0:	dp	devmain		;Adresse du corps du pilote (site 0 de la relocation)
 dvname:		drvdev			;Nom de l'appareil (defini une seule fois)
