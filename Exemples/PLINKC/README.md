@@ -88,3 +88,32 @@ Note : au premier `CALL &BF000`, l'installateur peut déclencher son propre `res
 (étiquette `bomb`, quand `linkbas` ne retrouve pas les pointeurs `BTEXT$`/`BDATA$` de BASIC).
 C'est le comportement du driver d'origine — l'enregistrement IOCS a lieu avant, donc le driver
 reste installé après le reset.
+
+## PLINK2 — portage sur le modèle REGISTER3 (`PLINK2.asm`)
+
+`PLINK2.asm` reprend PLINKC sur le **modèle du template de pilotes** (comme `REGISTER3` vis-à-vis
+de `REGISTER2`) :
+
+| Aspect | PLINKC (origine) | PLINK2 |
+| --- | --- | --- |
+| Installation | insertion + décalage + recalage BASIC (`linkbas`, `reset`/bomb possible) | **ajout-en-fin** : placé après les blocs, sans décalage → **pas de `linkbas`, pas de bomb** |
+| Désinstallation | aucune | **`CALL &BF000 "-u"`** (déliage de la chaîne + `SET`/`KILL`) |
+| Nom | `PLINK   SYS` / device `L:` | `PLINK2  SYS` / device `PL2:`, **définis une seule fois** (macros) |
+| Relocation | table de deltas d'origine | **la même table, réutilisée verbatim** (un seul octet ajusté : `PL2:` fait +2 vs `L:`) |
+
+**Le corps du pilote et la zone de travail sont repris byte-pour-byte de `plinkc.native.asm`** (le
+`.asm` est généré par `build_plink2.py`). Points clés vérifiés à l'assemblage :
+
+- le corps est byte-cohérent (offsets = natif +2 après `dvname`, `dvname` inchangé) ;
+- la table de relocation d'origine (60 sites, dont **tous les `call` à cible absolue** — les
+  marqueurs `;rel` du natif étaient incomplets) tombe exactement sur les bons champs d'adresse
+  dans la nouvelle disposition ;
+- `pre_off` sépare l'installateur (adressage RAM absolu, `pre_on`) du corps (qui a ses propres
+  `pre` explicites) — sans quoi les prébytes se doubleraient.
+
+Le pilote ne détourne la SIO que le temps de chaque appel (`jump00`), donc au repos il ne tient
+aucun vecteur → la désinstallation se limite au déliage.
+
+**Statut : premier jet, à valider sur émulateur** (`PLINK2.uu`, nom Sharp `PLINK2.SYS`). La
+relocation est vérifiée statiquement ; l'installation/désinstallation restent à confirmer sur
+machine, comme le fut REGISTER3.
