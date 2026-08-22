@@ -65,7 +65,13 @@ parcourt la chaîne des devices (`0BFCA2h`), retrouve le pilote par son nom de d
 - **Retour à BASIC.** `CALL` empile le pointeur de ligne sur la pile U ; il faut le **restituer
   avancé** au-delà de l'argument (`popu` à l'entrée, `pushu` du pointeur avancé à la sortie),
   sinon BASIC affiche « Syntax error » au retour. Le squelette le fait ; le solde de la pile U
-  est de +1 à chaque `retf`.
+  est de +1 à chaque `retf`. Deux détails **indispensables**, validés sur matériel (PLINK2,
+  REGISTER3) : le scan doit reconnaître les **quatre** terminateurs de BASIC (`0`, `CR`, `1Ah`,
+  `0FFh` — ceux d'`argskp` d'UUENCODE), sinon une chaîne *complète* `"-u"` (terminée `1Ah`/`0FFh`)
+  fait déborder le scan → « Syntax error » ; et **tous** les chemins de l'installateur rendent la
+  main **carry clair** (`rc`), un `CALL` qui rend la main carry armé (`sc`) provoquant lui aussi
+  une « Syntax error ». *(Le `sc` du stub `iocs_entry` est autre chose : c'est la réponse du
+  pilote résident à une commande non gérée, à conserver.)*
 - **Libération de la mémoire.** Le bloc n'est **pas** libéré par le code. Le flag *Protected* du
   système de fichiers (que `KILL` contrôle) n'est pas le bit device testé par les pilotes, et
   l'effacer ne suffit pas (vérifié). Le désinstallateur affiche donc les deux commandes BASIC à
