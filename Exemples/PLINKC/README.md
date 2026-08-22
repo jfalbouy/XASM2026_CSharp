@@ -114,9 +114,21 @@ de `REGISTER2`) :
 Le pilote ne détourne la SIO que le temps de chaque appel (`jump00`), donc au repos il ne tient
 aucun vecteur → la désinstallation se limite au déliage.
 
-**Statut : validé sur émulateur** (`PLINK2.uu`, nom Sharp `PLINK2.SYS`, 1735 o). `CALL &BF000`
-installe (`PLINK2.SYS` apparaît en fin de S1:, protégé) ; `CALL &BF000 "-u"` désinstalle
-(« Uninstalled. » + commandes `SET`/`KILL`). La relocation à 60 sites, réutilisée verbatim, tient.
+**Statut : validé sur émulateur, tous les cas** (`PLINK2.uu`, nom Sharp `PLINK2.SYS`, 1743 o).
+`CALL &BF000` installe (`PLINK2.SYS` en fin de S1:, protégé) ; `CALL &BF000 "-u"` désinstalle
+(« Uninstalled. » + `SET`/`KILL`) ; relancer à vide donne « PL2: not installed. » et réinstaller
+« Error: already exist. » — **tous avec un retour BASIC propre**. La relocation à 60 sites,
+réutilisée verbatim, tient.
+
+Deux corrections du **retour à BASIC** ont été nécessaires (mêmes causes que pour UUENCODE) :
+
+- **Terminateurs de l'argument.** Le scan ne reconnaissait que `0` et `CR` ; pour une chaîne
+  *complète* (`"-u"`, guillemets fermés), BASIC termine par `1Ah` ou `0FFh` — le scan dépassait
+  et rempilait un pointeur de ligne faux → « Syntax error ». Ajout des quatre terminateurs de
+  `argskp` d'UUENCODE (`0`, `CR`, `1Ah`, `0FFh`).
+- **Carry de retour.** Un `CALL` qui rend la main **carry armé** (`sc`) provoque une « Syntax
+  error » BASIC. Les chemins d'erreur (`already exist`, `not installed`) rendent désormais la
+  main **carry clair** (`rc`), comme les chemins succès.
 
 Le figement a été localisé par une version instrumentée (`build_plink2.py` avec
 `PLINK2_DEBUG=1` : un chiffre imprimé au début de chaque étape) — l'écran affichait `123456`,
