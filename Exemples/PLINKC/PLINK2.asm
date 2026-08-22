@@ -239,10 +239,9 @@ rl_end:
 	mv	a,0ffh
 	mv	[x],a
 
-;  (12) initialiser les parametres du device
-	mv	x,dvname
-	mv	il,4
-	callf	iocs
+;  (12) l'init des parametres par 'iocs il=4' (comme PLINKC) FIGE la machine sur
+;      l'emulateur (convention incertaine, 1er acces device). Ecartee : le device
+;      est deja chaine (comme REGISTER3), le pilote s'initialise a la 1re commande.
 
 ;  (13) succes
 	mv	x,msg_ins

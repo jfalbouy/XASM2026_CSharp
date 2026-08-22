@@ -26,6 +26,12 @@ def reloc_db():
         out.append('\tdb\t'+row)
     return '\n'.join(out)
 
+import os
+DEBUG = os.environ.get('PLINK2_DEBUG') == '1'
+def mark(n):
+    if not DEBUG: return ''
+    return "\tmv\ta,'%s'\n\tcallf\tputc\n" % n
+
 # ================= PROLOGUE : org, pre_on, constantes, macros =================
 prologue = r'''; ==========================================================================
 ;  PLINK2.asm - Pocket Link Cache Device Driver, portage sur le modele REGISTER3
@@ -230,10 +236,9 @@ rl_end:
 	mv	a,0ffh
 	mv	[x],a
 
-;  (12) initialiser les parametres du device
-	mv	x,dvname
-	mv	il,4
-	callf	iocs
+;  (12) l'init des parametres par 'iocs il=4' (comme PLINKC) FIGE la machine sur
+;      l'emulateur (convention incertaine, 1er acces device). Ecartee : le device
+;      est deja chaine (comme REGISTER3), le pilote s'initialise a la 1re commande.
 
 ;  (13) succes
 	mv	x,msg_ins
@@ -396,6 +401,26 @@ body = L(288, 806)
 # ================= blen (renomme btop -> block_top) =================
 tail = 'blen:\t\tequ\t%-block_top\n\tend\n'
 
+if DEBUG:
+    # helper putc : imprime le caractere A, en preservant x/y/i/ba
+    putc = (
+        "\n; --- DEBUG : imprime le caractere A (preserve x/y/i/ba) ------------------\n"
+        "putc:\n\tpushu\tx\n\tpushu\ty\n\tpushu\ti\n\tpushu\tba\n"
+        "\tmv\t[dbgbuf],a\n\tmv\tx,dbgbuf\n\tmv\ty,1\n\tmv\t(cl),0\n\tmv\til,4\n\tcallf\tfcs\n"
+        "\tpopu\tba\n\tpopu\ti\n\tpopu\ty\n\tpopu\tx\n\tretf\ndbgbuf:\tdb\t0\n")
+    prologue = prologue.replace("; --- table de relocation", putc + "\n; --- table de relocation")
+    # marqueurs au debut de chaque etape
+    for anchor, n in [
+        (";  (4) compacter S1:", '1'),
+        (";  (5) parcourir les blocs", '2'),
+        (";  (8) copier le CODE", '3'),
+        (";  (9) RELOCATION", '4'),
+        (";  (10) chainer", '5'),
+        (";  (12) initialiser les parametres", '6'),
+        (";  (13) succes", '7'),
+    ]:
+        prologue = prologue.replace(anchor, mark(n) + anchor, 1)
+
 open(OUT, 'w', encoding='latin-1', newline='\r\n').write(
     prologue + '\n' + header + '\n' + body + '\n\n' + tail)
-print("ecrit:", OUT)
+print("ecrit:", OUT, "(DEBUG)" if DEBUG else "")
