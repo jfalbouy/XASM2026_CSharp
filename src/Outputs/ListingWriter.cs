@@ -1,3 +1,4 @@
+using Xasm2026.Native.Assembly;
 using Xasm2026.Native.Core;
 
 namespace Xasm2026.Native.Outputs;
@@ -31,10 +32,19 @@ internal static class ListingWriter
             ? result.Warnings.ToList()
             : new List<AssemblyWarning>();
 
+        // -K : nom du fichier source principal, pour distinguer une ligne d'INCLUDE.
+        var mainFile = System.IO.Path.GetFileName(options.SourceFile ?? string.Empty);
+
         if (result.ListingLines.Count > 0)
         {
             foreach (var line in result.ListingLines)
             {
+                if (options.ListingUsedConstantsOnly &&
+                    IsHiddenIncludeLine(line, mainFile, result))
+                {
+                    continue;
+                }
+
                 WriteListingLine(writer, line);
 
                 // Ordre d'emission preserve : plusieurs avertissements peuvent viser la
@@ -95,6 +105,31 @@ internal static class ListingWriter
     /// Donnees d'entree : parametres de la signature (StreamWriter writer, ListingLine line) et etat courant necessaire.
     /// Donnees de sortie : aucune valeur retournee ; effets attendus sur fichiers, resultat ou etat interne.
     /// </summary>
+    /// <summary>
+    /// -K : vrai si la ligne provient d'un fichier INCLUDE (pas de la source principale) et
+    /// doit etre masquee. On ne conserve d'un include que les constantes EQU effectivement
+    /// referencees et les lignes qui emettent des octets ; tout le reste (constantes inutiles,
+    /// commentaires, en-tetes de section, lignes vides, directives sans effet) est omis, pour
+    /// un listing reduit aux seules constantes utilisees. La source principale n'est jamais
+    /// touchee.
+    /// </summary>
+    private static bool IsHiddenIncludeLine(ListingLine line, string mainFile, AssemblyResult result)
+    {
+        // Lignes emettant des octets, et toute la source principale : toujours affichees.
+        if (line.Bytes.Count != 0 ||
+            string.IsNullOrEmpty(line.File) ||
+            string.Equals(line.File, mainFile, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var parsed = SourceLine.Parse(line.SourceText);
+        var isUsedEqu = parsed.Mnemonic.Equals("EQU", StringComparison.OrdinalIgnoreCase) &&
+                        !string.IsNullOrEmpty(parsed.Label) &&
+                        result.SymbolReferences.ContainsKey(parsed.Label);
+        return !isUsedEqu;
+    }
+
     private static void WriteListingLine(StreamWriter writer, ListingLine line)
     {
         var source = line.SourceText;

@@ -39,7 +39,18 @@ basename with a new extension. Flags are parsed in `src/CommandLineOptions.cs`:
 `-O` object, `-L` listing, `-I` Intel HEX, `-M` S-record (`.s19`), `-P` map, `-D` dependency,
 `-B` BASIC uuencode (`.uu`, self-decodable), `-X` HxD-style text dump, `-T<type>` object type
 (e.g. `-TZ`), `-E` error report (`.err`), `-S` symbol list, `-C` line count, `-W` warnings
-(see below), `-H` disable hash, `-V` verbose errors, `-R` section size report, `-?` help.
+(see below), `-H` disable hash, `-V` verbose errors, `-R` section size report, `-K` listing:
+hide unused INCLUDE constants (see below), `-?` help.
+
+`-K` (opt-in, added beyond the C reference) trims the `.lst`: a line **from an included file**
+that emits no bytes is dropped **unless it is an `EQU` whose symbol is actually referenced**.
+Everything from the main source, every byte-emitting line, and every *used* constant is kept;
+unused constants, section-header comments and blank lines of the include vanish. It lets a source
+`include pce500.inc` (276 constants) and still get a short listing showing only the handful it
+uses. Purely a listing filter — the object and all other outputs are untouched, and since the
+goldens are produced without `-K` they stay byte-identical. Implemented in `ListingWriter`
+(`IsHiddenIncludeLine`), using `AssemblyResult.SymbolReferences` (populated unconditionally by
+`CopySymbols`) as the "used" set and `ListingLine.File` to tell an include from the main source.
 
 ### Warnings (`-W`)
 

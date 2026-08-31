@@ -44,3 +44,20 @@ quelques noms répétés dans les tables source — ceux-ci sont listés en fin 
 Ces trois noms désignent à la fois un registre CPU et une adresse de RAM interne. La définition
 `EQU` cohabite sans heurt avec l'usage registre : `pushu imr` reste l'empilement du registre IMR,
 tandis que `mv (imr),0A0H` emploie l'adresse `0FBh`. Vérifié à l'assemblage (`example.asm`).
+
+## Un listing court avec `-K`
+
+Inclure `pce500.inc` insère ses 276 constantes dans le `.lst`, ce qui le noie. L'option **`-K`**
+(à combiner avec `-L`) n'y conserve, **des fichiers inclus**, que les constantes réellement
+**utilisées** par le programme :
+
+```powershell
+..\..\bin\xasm2026-4.exe example.asm -O example.obj -L example.lst -K
+```
+
+Sur `example.asm`, le listing passe de **357 à 36 lignes** : la source principale reste
+intégrale (commentaires, code, `end`) et l'include se réduit aux ~10 constantes employées, avec
+leur commentaire. Tout ce qui n'émet pas d'octet et n'est pas une constante utilisée (constantes
+inutiles, en-têtes de section, lignes vides) est masqué. C'est un **filtre de listing pur** :
+l'objet et les autres sorties sont identiques avec ou sans `-K`, et les goldens (produits sans
+`-K`) restent inchangés.

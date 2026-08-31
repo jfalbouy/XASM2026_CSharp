@@ -2,6 +2,7 @@ using System.IO;
 using System.Linq;
 using Xasm2026.Native;
 using Xasm2026.Native.Assembly;
+using Xasm2026.Native.Outputs;
 using Xunit;
 
 namespace Xasm2026.Tests;
@@ -46,6 +47,43 @@ public sealed class SystemIncludeTests
         }
         finally
         {
+            Directory.SetCurrentDirectory(previous);
+        }
+    }
+
+    /// <summary>
+    /// -K : le listing ne conserve d'un fichier INCLUDE que les constantes EQU effectivement
+    /// utilisees. Une constante inutilisee (txtbas) disparait, une utilisee (s1_top) reste, et
+    /// la source principale est intacte. Sans -K, tout l'include est present : c'est ce qui
+    /// garantit que l'option est purement additive et que les goldens restent identiques.
+    /// </summary>
+    [Fact]
+    public void Dash_K_keeps_only_used_include_constants_in_the_listing()
+    {
+        var dir = Path.Combine(TestPaths.ExamplesDir, "INCLUDE");
+        var previous = Directory.GetCurrentDirectory();
+        Directory.SetCurrentDirectory(dir);
+        var lst = Path.Combine(Path.GetTempPath(), $"example_K_{System.Guid.NewGuid():N}.lst");
+        try
+        {
+            // Sans -K : txtbas (inutilisee) est bien presente.
+            var full = CommandLineOptions.Parse(new[] { "example.asm" });
+            var resultFull = new NativeAssembler(full).Assemble();
+            ListingWriter.Write(lst, full, resultFull);
+            Assert.Contains("txtbas:", File.ReadAllText(lst));
+
+            // Avec -K : txtbas disparait, s1_top (utilisee) reste, la source principale est la.
+            var trimmed = CommandLineOptions.Parse(new[] { "example.asm", "-K" });
+            var resultTrimmed = new NativeAssembler(trimmed).Assemble();
+            ListingWriter.Write(lst, trimmed, resultTrimmed);
+            var text = File.ReadAllText(lst);
+            Assert.DoesNotContain("txtbas:", text);
+            Assert.Contains("s1_top:", text);
+            Assert.Contains("montre l'usage de pce500.inc", text);
+        }
+        finally
+        {
+            if (File.Exists(lst)) File.Delete(lst);
             Directory.SetCurrentDirectory(previous);
         }
     }

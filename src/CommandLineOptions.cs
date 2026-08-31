@@ -21,6 +21,14 @@ internal sealed class CommandLineOptions
 
     /// <summary>Annexe la table des references croisees au listing (-U).</summary>
     public bool CrossReferenceEnabled { get; private set; }
+
+    /// <summary>
+    /// -K : dans le listing, masque les constantes (EQU) provenant d'un fichier INCLUDE
+    /// qui ne sont pas referencees par le programme. Permet un .lst court et non pollue
+    /// quand on inclut un gros fichier de constantes (ex. pce500.inc). Opt-in : sans -K le
+    /// listing est inchange, donc les sorties de reference restent identiques.
+    /// </summary>
+    public bool ListingUsedConstantsOnly { get; private set; }
     public bool HashDisabled { get; private set; }
     public bool IntelHexEnabled { get; private set; }
     public bool SRecordEnabled { get; private set; }
@@ -94,6 +102,9 @@ internal sealed class CommandLineOptions
                     break;
                 case 'U':
                     options.CrossReferenceEnabled = true;
+                    break;
+                case 'K':
+                    options.ListingUsedConstantsOnly = true;
                     break;
                 case 'H':
                     options.HashDisabled = true;
