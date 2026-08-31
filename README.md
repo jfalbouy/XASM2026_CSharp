@@ -239,11 +239,23 @@ source est repris avec la nouvelle extension.
 | `-B[fichier]` | Programme **BASIC auto-décodable** (`.uu`) pour PC-E500S |
 | `-X[fichier]` | **Dump hexadécimal** style HxD (`.txt`) |
 | `-U` | Table des **références croisées** ajoutée au listing (avec `-L`) |
+| `-K` | Listing : ne garde des fichiers **inclus** que les constantes **utilisées** (avec `-L`) |
 | `-V` | Mode verbeux : ajoute la colonne aux diagnostics |
 | `-R` | Rapport de taille des sections |
 | `-?` | Affiche l'aide |
 
 Les options sont analysées dans `src/CommandLineOptions.cs`.
+
+### `-K` — un listing court malgré un gros include
+
+Inclure un fichier de constantes comme `Exemples/INCLUDE/pce500.inc` (276 `EQU`) noie le `.lst`.
+L'option `-K` (à combiner avec `-L`) n'y conserve, **des fichiers inclus**, que les constantes
+`EQU` effectivement **référencées** par le programme ; tout ce qui n'émet pas d'octet et n'est
+pas une constante utilisée (constantes inutiles, en-têtes de section, lignes vides de l'include)
+est masqué, la **source principale restant intégrale**. Sur `example.asm`, le listing passe de
+**357 à 36 lignes**. C'est un **filtre de listing pur** : l'objet et toutes les autres sorties
+sont identiques avec ou sans `-K`, et comme les sorties de référence sont produites sans `-K`,
+elles restent inchangées.
 
 ---
 
