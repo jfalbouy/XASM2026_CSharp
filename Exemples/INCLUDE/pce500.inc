@@ -5,7 +5,7 @@
 ; GENERE automatiquement par tools/generate_pce500_inc.py a partir des tables
 ; du desassembleur SC62015Disassembler (Data/*.json), source autoritative alignee
 ; sur le listing de reference. NE PAS EDITER A LA MAIN : regenerer depuis les tables.
-; Genere le 2026-08-14.
+; Genere le 2026-09-03.
 ;
 ; Usage :   include pce500.inc
 ;
@@ -16,6 +16,7 @@
 ; --- Registres et zones de la RAM interne (00h-0FFh) ---------------------------
 txtbas: equ 0CBH ; TEXT.BAS courant
 datbas: equ 0CEH ; DATA.BAS courant
+basptr: equ 0D1H ; POINTEUR (3 octets) vers la zone de travail de l'interpreteur BASIC. A NE PAS CONFONDRE avec baswrk = 0BFD0Eh, qui est la zone elle-meme : ce nom-la vient du listing de E. Kako (register.lst, 1990) et sert de verite terrain. Les crochets d'extension du BASIC sont en [(basptr)+090h] et [(basptr)+093h]
 bl:     equ 0D4H ; registre BL / BX bas
 bh:     equ 0D5H ; registre BH / BX haut
 cl:     equ 0D6H ; registre CL / CX bas
@@ -49,88 +50,97 @@ lcc:    equ 0FEH ; LCD Contrast Control : bits 7-3 contraste sur 32 crans, bit 2
 ssr:    equ 0FFH ; System Status Register : bit 3 ONK touche ON enfoncee, bit 2 RSF (1 : on sort d'un HALT/OFF, 0 : le pin RESET a ete active), bit 1 CI entree cassette, bit 0 TEST entree de test. LECTURE SEULE (manuel CPU p20-21)
 
 ; --- Adresses systeme et vecteurs (20 bits) -----------------------------------
-s1_top:           equ 0BFC15H ; top of S1 (nom et libelle de REGISTER.ASM) ; lead address du slot 0 = lecteur S1:, 080000h sur PC-E500S (3 octets ; manuel technique, Parameter of memory block device)
-scrn_crsr_x:      equ 0BFC27H ; X du curseur du peripherique stdo:/scrn:
-scrn_crsr_y:      equ 0BFC28H ; Y du curseur du peripherique stdo:/scrn:
-ctrl_disp:        equ 0BFC29H ; code de controle affiche au lieu d'etre execute (bit 6)
-linprn:           equ 0BFC2AH ; motif de points du trait et du remplissage de rectangle, 16 points (2 octets) ; employe par les commandes 04Eh line_draw et 04Fh box_fill du device 0. ATTENTION : le manuel se contredit sur ce nom - la liste des parametres (p42) ecrit linprn, la description des commandes (p38) ecrit linptn ; la liste, qui definit le champ, fait autorite
-keytbl_1b:        equ 0BFC2DH ; pointeur table conversion clavier, code 1 octet (3 o, table de 62 o)
-keytbl_2b:        equ 0BFC30H ; pointeur table conversion clavier, code 2 octets (3 o)
-keytbl_1b_shift:  equ 0BFC33H ; pointeur table conversion clavier SHIFT, code 1 octet (3 o)
-keytbl_2b_shift:  equ 0BFC36H ; pointeur table conversion clavier SHIFT, code 2 octets (3 o)
-keytbl_1b_ctrl:   equ 0BFC39H ; pointeur table conversion clavier CTRL, code 1 octet (3 o)
-keytbl_2b_ctrl:   equ 0BFC3CH ; pointeur table conversion clavier CTRL, code 2 octets (3 o)
-funckey_flag:     equ 0BFC3FH ; bit 2 = affichage des touches de fonction interdit
-key_hook1:        equ 0BFC41H ; hook de la routine de traitement clavier (3 o)
-funckey_slot:     equ 0BFC45H ; numero de slot portant le fichier FUNCKEY (0 = S1:)
-funckey_name:     equ 0BFC46H ; nom du fichier portant les touches de fonction (BFC46-BFC51)
-font_00_1f:       equ 0BFC87H ; adresse de la police des caracteres 00h-1Fh (3 o, 6 octets par caractere)
-font_80_9f:       equ 0BFC8AH ; adresse de la police des caracteres 80h-9Fh (3 o)
-font_e0_ff:       equ 0BFC8DH ; adresse de la police des caracteres E0h-FFh, 32 glyphes (3 o ; le resolveur 0F2418h borne par cmp a,0E0h)
-font_20_7f:       equ 0BFC90H ; adresse de la police des caracteres 20h-7Fh, l'ASCII (3 o)
-font_a0_df:       equ 0BFC93H ; adresse de la police des caracteres A0h-DFh, 64 glyphes (3 o ; et non A0h-CFh comme le dit le manuel)
-dotsop:           equ 0BFC96H ; operation sur le point deja affiche : 0 allume, 1 efface, 2 inverse
-lcd_crsr_x:       equ 0BFC9BH ; X du curseur ecran
-lcd_crsr_y:       equ 0BFC9CH ; Y du curseur ecran
-lcd_width:        equ 0BFC9DH ; nombre de colonnes affichables
-lcd_height:       equ 0BFC9EH ; nombre de lignes affichables
-lcd_mode:         equ 0BFCA1H ; mode d'affichage : bit 6 = video inverse
-d_link:           equ 0BFCA2H ; device link pointer / IOCSH
-repeat_wait:      equ 0BFCBAH ; delai avant repetition d'une touche (unite 16 ms)
-repeat_pitch:     equ 0BFCBBH ; intervalle entre deux repetitions (unite 16 ms)
-apo_time:         equ 0BFCBCH ; delai d'extinction automatique (2 o, bas puis haut, unite 0,5 s)
-softint:          equ 0BFCBEH ; bit 7 = break, bit 6 = batterie faible
-keyrep:           equ 0BFCBFH ; bit 7 = repetition active, bit 4 = clic touche
-keymtx_tbl:       equ 0BFCC0H ; adresse de la table code materiel -> code matrice clavier (3 o)
-key_hook2:        equ 0BFCC3H ; hook de la routine de traitement clavier (3 o)
-intv_ftimer:      equ 0BFCC6H ; vecteur interruption timer principal, ISR/IMR bit 0 MTM ; balayage du clavier, touche BREAK comprise (manuel technique, List of interrupt factor p91-92)
-intv_stimer:      equ 0BFCC9H ; vecteur interruption timer lent, ISR/IMR bit 1 STM ; clignotement du curseur (manuel technique, List of interrupt factor p91-92)
-keyvct:           equ 0BFCCCH ; vecteur interruption clavier, ISR/IMR bit 2 KEYM ; non employee par le systeme ; se declenche quand un port K10-K17 passe a 1, soit (kil) non nul (manuel technique, List of interrupt factor p91-92)
-intv_onkey:       equ 0BFCCFH ; vecteur interruption touche ON, ISR/IMR bit 3 ONKM ; non employee par le systeme (manuel technique, List of interrupt factor p91-92)
-intv_sio_tx:      equ 0BFCD2H ; vecteur interruption emission SIO, ISR/IMR bit 4 TXRM ; non employee par le systeme ; se declencherait a la fin de l'emission d'un octet (manuel technique, List of interrupt factor p91-92)
-intv_sio_rx:      equ 0BFCD5H ; vecteur interruption reception SIO, ISR/IMR bit 5 RXRM ; reception d'un octet SIO terminee (manuel technique, List of interrupt factor p91-92)
-intv_ext:         equ 0BFCD8H ; vecteur interruption externe, ISR/IMR bit 6 EXM ; BATTERIE FAIBLE : l'interruption exterieure est cablee au controleur de batterie de la machine (manuel technique, List of interrupt factor p91-92)
-intv_soft:        equ 0BFCDBH ; vecteur interruption logicielle : instruction IR, ISR/IMR bit 7 IRM ; non employee par le systeme ; declenchee par l'instruction IR (manuel technique, List of interrupt factor p91-92)
-s1_btm:           equ 0BFCDEH ; bottom of S1 (nom et libelle de REGISTER.ASM) ; le manuel dit "last address of slot 0 (S1:) + 1" et La Feuille du Sharp en fait le pointeur de la 1re zone de travail, la pile utilisateur U : trois lectures d'une meme frontiere, la fin de la zone de fichiers de S1: ou commencent les zones de travail
-swork:            equ 0BFCE1H ; pointeur de zone de travail : pile systeme S ; taille de la zone U = [0BFCE1h] - [0BFCDEh]
-baswrk:           equ 0BFD0EH ; BASIC work address
-iocswrk:          equ 0BFD17H ; pointeur de zone de travail : IOCS ; debut de la zone de travail IOCS ; elle s'etend jusqu'a [0BFD1Ah] et fait environ 246h octets ; ce pointeur est recopie en RAM interne (iocsw) (manuel technique, IOCS Special Technique p85-86)
-usrwrk:           equ 0BFD1AH ; machine language area ; fin de la zone de travail IOCS et debut de la zone langage machine de l'utilisateur (manuel technique, IOCS Special Technique p85-86)
-sio_timer:        equ 0BFD31H ; minuterie d'erreur SIO, 2 octets : n x 0,5 s ; 0FFFFh = sans limite (defaut) (manuel technique, Parameter Work du driver SIO p53)
-sio_baud:         equ 0BFD33H ; reglage de la liaison SIO : bits 6-4 = vitesse (001 300, 010 600, 011 1200, 100 2400, 101 4800, 110 9600 bauds ; 000 aucune), bits 3-2 = parite (00 paire, 01 impaire, 1x aucune), bit 1 = longueur (0 : 8 bits, 1 : 7), bit 0 = bits d'arret (0 : 1, 1 : 2) ; defaut 03Ch = 1200 bauds, sans parite, 8 bits, 1 stop. Apres modification, appeler la commande 043h du device 2 (manuel technique, Parameter Work du driver SIO p53)
-sio_setup:        equ 0BFD34H ; reglage du protocole SIO : bit 6 = emettre l'octet [0BFD61h] a l'ouverture, bit 4 = emettre [0BFD62h] a la fermeture, bit 2 = XON/XOFF en reception, bit 1 = XON/XOFF en emission ; defaut 021h (manuel technique, Parameter Work du driver SIO p53)
-sio_open_data:    equ 0BFD61H ; octet emis a l'ouverture du port SIO, si le bit 6 de [0BFD34h] est arme (manuel technique, Parameter Work du driver SIO p53)
-sio_close_data:   equ 0BFD62H ; octet emis a la fermeture du port SIO, si le bit 4 de [0BFD34h] est arme (manuel technique, Parameter Work du driver SIO p53)
-lcd_cmd:          equ 0A000H  ; LCD, commande des DEUX controleurs a la fois : rom83/rom53 y font l'initialisation et l'extinction (17 ecritures), vogue y ecrit sa commande avant de streamer vers lcd1_data et lcd2_data
-lcd_data:         equ 0A002H  ; LCD, donnees vers les deux controleurs a la fois
-lcd1_cmd:         equ 0A004H  ; HD61202 IC-6 (moitie gauche, 120 colonnes), commande : 03Eh/03Fh eteint-allume, 0C0h+adresse de depart, 0B8h+page (adresse X, 0-7), 040h+adresse Y (0-63) ; cf. La Feuille du Sharp n.9, Voyage au coeur de l'ecran (A. Hansen)
-lcd1_stat:        equ 0A005H  ; HD61202 IC-6, lecture des statuts : bit 7 BUSY, bit 5 ON/OFF, bit 4 RESET
-lcd1_data:        equ 0A006H  ; HD61202 IC-6, ecriture d'un octet dans la RAM d'affichage ; l'adresse s'incremente apres chaque acces
-lcd1_read:        equ 0A007H  ; HD61202 IC-6, lecture d'un octet de la RAM d'affichage
-lcd2_cmd:         equ 0A008H  ; HD61202 IC-5 (moitie droite, 120 colonnes), commande ; memes codes que lcd1_cmd
-lcd2_stat:        equ 0A009H  ; HD61202 IC-5, lecture des statuts
-lcd2_data:        equ 0A00AH  ; HD61202 IC-5, ecriture d'un octet dans la RAM d'affichage
-lcd2_read:        equ 0A00BH  ; HD61202 IC-5, lecture d'un octet de la RAM d'affichage
-lcd_cmd_2000:     equ 02000H  ; meme registre que lcd_cmd, vu en 002000h : les deux bases ne different que du bit 15
-lcd_data_2000:    equ 02002H  ; meme registre que lcd_data, vu en 002002h : les deux bases ne different que du bit 15
-lcd1_cmd_2000:    equ 02004H  ; meme registre que lcd1_cmd, vu en 002004h : les deux bases ne different que du bit 15 ; c'est la base que documente La Feuille du Sharp n.9, Voyage au coeur de l'ecran (A. Hansen), et celle qu'emploient S3EXT et ROUTINES.SHA
-lcd1_stat_2000:   equ 02005H  ; meme registre que lcd1_stat, vu en 002005h : les deux bases ne different que du bit 15
-lcd1_data_2000:   equ 02006H  ; meme registre que lcd1_data, vu en 002006h : les deux bases ne different que du bit 15
-lcd1_read_2000:   equ 02007H  ; meme registre que lcd1_read, vu en 002007h : les deux bases ne different que du bit 15
-lcd2_cmd_2000:    equ 02008H  ; meme registre que lcd2_cmd, vu en 002008h : les deux bases ne different que du bit 15
-lcd2_stat_2000:   equ 02009H  ; meme registre que lcd2_stat, vu en 002009h : les deux bases ne different que du bit 15
-lcd2_data_2000:   equ 0200AH  ; meme registre que lcd2_data, vu en 00200Ah : les deux bases ne different que du bit 15
-lcd2_read_2000:   equ 0200BH  ; meme registre que lcd2_read, vu en 00200Bh : les deux bases ne different que du bit 15
-drv_off:          equ 0E01C2H ; extinction (simuler OFF) : releve sur rom83, aucune table de l'image ne le designe
-secure_work_call: equ 0FFFD8H ; reservation de zone de travail : POKE en 0BFE03h l'ADRESSE DU POINTEUR de la zone ; reservation d'une zone de travail : [0BFE03h] = adresse du pointeur a deplacer (3 octets), [0BFE06h] = taille voulue (3 octets), puis CALL ; provoque un petit reset sans dommage (manuel technique, IOCS Special Technique p85-86)
-iocs_call3:       equ 0FFFDCH ; appel IOCS a trois registres seulement : POKE &BFE00,cl,ch,il puis CALL &FFFDC (manuel technique p31 ; exemple donne : POKE &HBFE00,8,0,&H41 = device 8 systeme, lecteur 0, commande 41h, qui eteint la machine). ATTENTION : la ROM emploie aussi 0BFE00h comme octet de drapeaux prive pour BASIC, TEXT, DELETE et RENUM (48 acces, bits 0 a 7 ; dans RENUM les bits 5-4 numerotent une des trois passes de balayage) : la zone est un brouillon, pas une variable persistante
-fcs_call:         equ 0FFFE4H ; FCS call entry
-iocs_call:        equ 0FFFE8H ; IOCS call entry
-s3_top:           equ 0BFC09H ; lead address du slot 2 = lecteur S3: (3 octets ; manuel technique, Parameter of memory block device)
-s3_cap:           equ 0BFC0CH ; capacite du slot 2 (S3:) en blocs de 2 Ko (2 octets ; manuel technique, Parameter of memory block device)
-s2_top:           equ 0BFC0FH ; lead address du slot 1 = lecteur S2:, 040000h sur PC-E500S (3 octets ; manuel technique, Parameter of memory block device)
-s2_cap:           equ 0BFC12H ; capacite du slot 1 (S2:) en blocs de 2 Ko (2 octets ; manuel technique, Parameter of memory block device)
-s1_cap:           equ 0BFC18H ; capacite du slot 0 (S1:) en blocs de 2 Ko (2 octets ; manuel technique, Parameter of memory block device)
+lcd_cmd_2000:       equ 02000H  ; meme registre que lcd_cmd, vu en 002000h : les deux bases ne different que du bit 15
+lcd_data_2000:      equ 02002H  ; meme registre que lcd_data, vu en 002002h : les deux bases ne different que du bit 15
+lcd1_cmd_2000:      equ 02004H  ; meme registre que lcd1_cmd, vu en 002004h : les deux bases ne different que du bit 15 ; c'est la base que documente La Feuille du Sharp n.9, Voyage au coeur de l'ecran (A. Hansen), et celle qu'emploient S3EXT et ROUTINES.SHA
+lcd1_stat_2000:     equ 02005H  ; meme registre que lcd1_stat, vu en 002005h : les deux bases ne different que du bit 15
+lcd1_data_2000:     equ 02006H  ; meme registre que lcd1_data, vu en 002006h : les deux bases ne different que du bit 15
+lcd1_read_2000:     equ 02007H  ; meme registre que lcd1_read, vu en 002007h : les deux bases ne different que du bit 15
+lcd2_cmd_2000:      equ 02008H  ; meme registre que lcd2_cmd, vu en 002008h : les deux bases ne different que du bit 15
+lcd2_stat_2000:     equ 02009H  ; meme registre que lcd2_stat, vu en 002009h : les deux bases ne different que du bit 15
+lcd2_data_2000:     equ 0200AH  ; meme registre que lcd2_data, vu en 00200Ah : les deux bases ne different que du bit 15
+lcd2_read_2000:     equ 0200BH  ; meme registre que lcd2_read, vu en 00200Bh : les deux bases ne different que du bit 15
+lcd_cmd:            equ 0A000H  ; LCD, commande des DEUX controleurs a la fois : rom83/rom53 y font l'initialisation et l'extinction (17 ecritures), vogue y ecrit sa commande avant de streamer vers lcd1_data et lcd2_data
+lcd_data:           equ 0A002H  ; LCD, donnees vers les deux controleurs a la fois
+lcd1_cmd:           equ 0A004H  ; HD61202 IC-6 (moitie gauche, 120 colonnes), commande : 03Eh/03Fh eteint-allume, 0C0h+adresse de depart, 0B8h+page (adresse X, 0-7), 040h+adresse Y (0-63) ; cf. La Feuille du Sharp n.9, Voyage au coeur de l'ecran (A. Hansen)
+lcd1_stat:          equ 0A005H  ; HD61202 IC-6, lecture des statuts : bit 7 BUSY, bit 5 ON/OFF, bit 4 RESET
+lcd1_data:          equ 0A006H  ; HD61202 IC-6, ecriture d'un octet dans la RAM d'affichage ; l'adresse s'incremente apres chaque acces
+lcd1_read:          equ 0A007H  ; HD61202 IC-6, lecture d'un octet de la RAM d'affichage
+lcd2_cmd:           equ 0A008H  ; HD61202 IC-5 (moitie droite, 120 colonnes), commande ; memes codes que lcd1_cmd
+lcd2_stat:          equ 0A009H  ; HD61202 IC-5, lecture des statuts
+lcd2_data:          equ 0A00AH  ; HD61202 IC-5, ecriture d'un octet dans la RAM d'affichage
+lcd2_read:          equ 0A00BH  ; HD61202 IC-5, lecture d'un octet de la RAM d'affichage
+s3_top:             equ 0BFC09H ; lead address du slot 2 = lecteur S3: (3 octets ; manuel technique, Parameter of memory block device)
+s3_cap:             equ 0BFC0CH ; capacite du slot 2 (S3:) en blocs de 2 Ko (2 octets ; manuel technique, Parameter of memory block device)
+s2_top:             equ 0BFC0FH ; lead address du slot 1 = lecteur S2:, 040000h sur PC-E500S (3 octets ; manuel technique, Parameter of memory block device)
+s2_cap:             equ 0BFC12H ; capacite du slot 1 (S2:) en blocs de 2 Ko (2 octets ; manuel technique, Parameter of memory block device)
+s1_top:             equ 0BFC15H ; top of S1 (nom et libelle de REGISTER.ASM) ; lead address du slot 0 = lecteur S1:, 080000h sur PC-E500S (3 octets ; manuel technique, Parameter of memory block device)
+s1_cap:             equ 0BFC18H ; capacite du slot 0 (S1:) en blocs de 2 Ko (2 octets ; manuel technique, Parameter of memory block device)
+scrn_crsr_x:        equ 0BFC27H ; X du curseur du peripherique stdo:/scrn:
+scrn_crsr_y:        equ 0BFC28H ; Y du curseur du peripherique stdo:/scrn:
+ctrl_disp:          equ 0BFC29H ; code de controle affiche au lieu d'etre execute (bit 6)
+linprn:             equ 0BFC2AH ; motif de points du trait et du remplissage de rectangle, 16 points (2 octets) ; employe par les commandes 04Eh line_draw et 04Fh box_fill du device 0. ATTENTION : le manuel se contredit sur ce nom - la liste des parametres (p42) ecrit linprn, la description des commandes (p38) ecrit linptn ; la liste, qui definit le champ, fait autorite
+keytbl_1b:          equ 0BFC2DH ; pointeur table conversion clavier, code 1 octet (3 o, table de 62 o)
+keytbl_2b:          equ 0BFC30H ; pointeur table conversion clavier, code 2 octets (3 o)
+keytbl_1b_shift:    equ 0BFC33H ; pointeur table conversion clavier SHIFT, code 1 octet (3 o)
+keytbl_2b_shift:    equ 0BFC36H ; pointeur table conversion clavier SHIFT, code 2 octets (3 o)
+keytbl_1b_ctrl:     equ 0BFC39H ; pointeur table conversion clavier CTRL, code 1 octet (3 o)
+keytbl_2b_ctrl:     equ 0BFC3CH ; pointeur table conversion clavier CTRL, code 2 octets (3 o)
+funckey_flag:       equ 0BFC3FH ; bit 2 = affichage des touches de fonction interdit
+key_hook1:          equ 0BFC41H ; hook de la routine de traitement clavier (3 o)
+funckey_slot:       equ 0BFC45H ; numero de slot portant le fichier FUNCKEY (0 = S1:)
+funckey_name:       equ 0BFC46H ; nom du fichier portant les touches de fonction (BFC46-BFC51)
+font_00_1f:         equ 0BFC87H ; adresse de la police des caracteres 00h-1Fh (3 o, 6 octets par caractere)
+font_80_9f:         equ 0BFC8AH ; adresse de la police des caracteres 80h-9Fh (3 o)
+font_e0_ff:         equ 0BFC8DH ; adresse de la police des caracteres E0h-FFh, 32 glyphes (3 o ; le resolveur 0F2418h borne par cmp a,0E0h)
+font_20_7f:         equ 0BFC90H ; adresse de la police des caracteres 20h-7Fh, l'ASCII (3 o)
+font_a0_df:         equ 0BFC93H ; adresse de la police des caracteres A0h-DFh, 64 glyphes (3 o ; et non A0h-CFh comme le dit le manuel)
+dotsop:             equ 0BFC96H ; operation sur le point deja affiche : 0 allume, 1 efface, 2 inverse
+lcd_crsr_x:         equ 0BFC9BH ; X du curseur ecran
+lcd_crsr_y:         equ 0BFC9CH ; Y du curseur ecran
+lcd_width:          equ 0BFC9DH ; nombre de colonnes affichables
+lcd_height:         equ 0BFC9EH ; nombre de lignes affichables
+lcd_mode:           equ 0BFCA1H ; mode d'affichage : bit 6 = video inverse
+d_link:             equ 0BFCA2H ; device link pointer / IOCSH
+repeat_wait:        equ 0BFCBAH ; delai avant repetition d'une touche (unite 16 ms)
+repeat_pitch:       equ 0BFCBBH ; intervalle entre deux repetitions (unite 16 ms)
+apo_time:           equ 0BFCBCH ; delai d'extinction automatique (2 o, bas puis haut, unite 0,5 s)
+softint:            equ 0BFCBEH ; bit 7 = break, bit 6 = batterie faible
+keyrep:             equ 0BFCBFH ; bit 7 = repetition active, bit 4 = clic touche
+keymtx_tbl:         equ 0BFCC0H ; adresse de la table code materiel -> code matrice clavier (3 o)
+key_hook2:          equ 0BFCC3H ; hook de la routine de traitement clavier (3 o)
+intv_ftimer:        equ 0BFCC6H ; vecteur interruption timer principal, ISR/IMR bit 0 MTM ; balayage du clavier, touche BREAK comprise (manuel technique, List of interrupt factor p91-92)
+intv_stimer:        equ 0BFCC9H ; vecteur interruption timer lent, ISR/IMR bit 1 STM ; clignotement du curseur (manuel technique, List of interrupt factor p91-92)
+keyvct:             equ 0BFCCCH ; vecteur interruption clavier, ISR/IMR bit 2 KEYM ; non employee par le systeme ; se declenche quand un port K10-K17 passe a 1, soit (kil) non nul (manuel technique, List of interrupt factor p91-92)
+intv_onkey:         equ 0BFCCFH ; vecteur interruption touche ON, ISR/IMR bit 3 ONKM ; non employee par le systeme (manuel technique, List of interrupt factor p91-92)
+intv_sio_tx:        equ 0BFCD2H ; vecteur interruption emission SIO, ISR/IMR bit 4 TXRM ; non employee par le systeme ; se declencherait a la fin de l'emission d'un octet (manuel technique, List of interrupt factor p91-92)
+intv_sio_rx:        equ 0BFCD5H ; vecteur interruption reception SIO, ISR/IMR bit 5 RXRM ; reception d'un octet SIO terminee (manuel technique, List of interrupt factor p91-92)
+intv_ext:           equ 0BFCD8H ; vecteur interruption externe, ISR/IMR bit 6 EXM ; BATTERIE FAIBLE : l'interruption exterieure est cablee au controleur de batterie de la machine (manuel technique, List of interrupt factor p91-92)
+intv_soft:          equ 0BFCDBH ; vecteur interruption logicielle : instruction IR, ISR/IMR bit 7 IRM ; non employee par le systeme ; declenchee par l'instruction IR (manuel technique, List of interrupt factor p91-92)
+s1_btm:             equ 0BFCDEH ; bottom of S1 (nom et libelle de REGISTER.ASM) ; le manuel dit "last address of slot 0 (S1:) + 1" et La Feuille du Sharp en fait le pointeur de la 1re zone de travail, la pile utilisateur U : trois lectures d'une meme frontiere, la fin de la zone de fichiers de S1: ou commencent les zones de travail
+swork:              equ 0BFCE1H ; pointeur de zone de travail : pile systeme S ; taille de la zone U = [0BFCE1h] - [0BFCDEh]
+baswrk:             equ 0BFD0EH ; BASIC work address -- la ZONE de travail, en memoire EXTERNE. Nom repris du listing de E. Kako (register.lst, 1990), ou il est declare baswrk: equ 0bfd0eh. A NE PAS CONFONDRE avec basptr = 0D1h, le POINTEUR en RAM interne : un mv x,(baswrk) serait tronque a 8 bits par l assembleur, sans le moindre avertissement
+iocswrk:            equ 0BFD17H ; pointeur de zone de travail : IOCS ; debut de la zone de travail IOCS ; elle s'etend jusqu'a [0BFD1Ah] et fait environ 246h octets ; ce pointeur est recopie en RAM interne (iocsw) (manuel technique, IOCS Special Technique p85-86)
+usrwrk:             equ 0BFD1AH ; machine language area ; fin de la zone de travail IOCS et debut de la zone langage machine de l'utilisateur (manuel technique, IOCS Special Technique p85-86)
+sio_timer:          equ 0BFD31H ; minuterie d'erreur SIO, 2 octets : n x 0,5 s ; 0FFFFh = sans limite (defaut) (manuel technique, Parameter Work du driver SIO p53)
+sio_baud:           equ 0BFD33H ; reglage de la liaison SIO : bits 6-4 = vitesse (001 300, 010 600, 011 1200, 100 2400, 101 4800, 110 9600 bauds ; 000 aucune), bits 3-2 = parite (00 paire, 01 impaire, 1x aucune), bit 1 = longueur (0 : 8 bits, 1 : 7), bit 0 = bits d'arret (0 : 1, 1 : 2) ; defaut 03Ch = 1200 bauds, sans parite, 8 bits, 1 stop. Apres modification, appeler la commande 043h du device 2 (manuel technique, Parameter Work du driver SIO p53)
+sio_setup:          equ 0BFD34H ; reglage du protocole SIO : bit 6 = emettre l'octet [0BFD61h] a l'ouverture, bit 4 = emettre [0BFD62h] a la fermeture, bit 2 = XON/XOFF en reception, bit 1 = XON/XOFF en emission ; defaut 021h (manuel technique, Parameter Work du driver SIO p53)
+sio_rx_port_cond:   equ 0BFD35H ; SIO receive port condition : ce qui CONDITIONNE la reception. bit 2 CS = 1 : ne prendre la donnee que si le signal CS est haut, l'ignorer sinon ; bit 1 CD = 1 : idem sur CD ; 0 = don't care. Defaut 002h. Technical Reference Manual PC-E500 p54 (releve du projet << Sharp transfert serial >>)
+sio_rx_port_ctrl:   equ 0BFD36H ; SIO receive port control : ce que le Sharp FAIT de ses sorties quand le tampon de reception est plein. bit 6 ER = 0 : ER passe bas ; bit 5 RR = 0 : RR passe bas ; bit 4 RS = 0 : RS passe bas ; 1 = don't care. Defaut 0DFh. Technical Reference Manual PC-E500 p54 (releve du projet << Sharp transfert serial >>)
+sio_tx_port_cond:   equ 0BFD37H ; SIO send port condition : ce qui CONDITIONNE l'emission. bit 2 CS = 1 : n'emettre que si CS est haut, attendre sinon ; bit 1 CD = 1 : idem sur CD ; 0 = don't care. Defaut 004h. ATTENTION, c'est le reglage qui explique les I/O ERROR en emission : sans RTS cote PC, le CS du Sharp reste bas et son XOFF ne part jamais. Technical Reference Manual PC-E500 p54 (releve du projet << Sharp transfert serial >>)
+sio_tx_port_ctrl:   equ 0BFD38H ; SIO send port control : ce que le Sharp fait de ses sorties autour d'un bloc emis. bit 6 ER, bit 5 RR, bit 4 RS = 1 : le signal passe haut avant le transfert du bloc et bas apres ; 0 = don't care. Defaut 050h. Technical Reference Manual PC-E500 p54 (releve du projet << Sharp transfert serial >>)
+sio_tx_delay:       equ 0BFD39H ; SIO send delay : attente avant ou apres un bloc emis, <000h-0FFh> x 2 ms. Defaut 001h (2 ms). Technical Reference Manual PC-E500 p54 (releve du projet << Sharp transfert serial >>)
+sio_crlf:           equ 0BFD3BH ; SIO crlf : delimiteur externe converti en delimiteur interne (00Dh + 00Ah). bits 1-0 : 00 aucun, 01 = 00Dh, 10 = 00Ah, 11 = 00Dh + 00Ah. Defaut 001h. Technical Reference Manual PC-E500 p54 (releve du projet << Sharp transfert serial >>)
+sio_eof:            equ 0BFD3CH ; SIO eof code : code de fin de fichier. Defaut 01Ah. Technical Reference Manual PC-E500 p54 (releve du projet << Sharp transfert serial >>)
+sio_open_wait:      equ 0BFD40H ; SIO open close wait : attente de n x 0,5 ms juste apres l'ouverture et juste avant la fermeture du port. Defaut 004h (20 ms). Technical Reference Manual PC-E500 p54 (releve du projet << Sharp transfert serial >>)
+sio_open_port_ctrl: equ 0BFD41H ; SIO open port control : etat des sorties a l'ouverture du port. Defaut 041h. Technical Reference Manual PC-E500 p54 (releve du projet << Sharp transfert serial >>)
+sio_open_data:      equ 0BFD61H ; octet emis a l'ouverture du port SIO, si le bit 6 de [0BFD34h] est arme (manuel technique, Parameter Work du driver SIO p53)
+sio_close_data:     equ 0BFD62H ; octet emis a la fermeture du port SIO, si le bit 4 de [0BFD34h] est arme (manuel technique, Parameter Work du driver SIO p53)
+drv_off:            equ 0E01C2H ; extinction (simuler OFF) : releve sur rom83, aucune table de l'image ne le designe
+secure_work_call:   equ 0FFFD8H ; reservation de zone de travail : POKE en 0BFE03h l'ADRESSE DU POINTEUR de la zone ; reservation d'une zone de travail : [0BFE03h] = adresse du pointeur a deplacer (3 octets), [0BFE06h] = taille voulue (3 octets), puis CALL ; provoque un petit reset sans dommage (manuel technique, IOCS Special Technique p85-86)
+iocs_call3:         equ 0FFFDCH ; appel IOCS a trois registres seulement : POKE &BFE00,cl,ch,il puis CALL &FFFDC (manuel technique p31 ; exemple donne : POKE &HBFE00,8,0,&H41 = device 8 systeme, lecteur 0, commande 41h, qui eteint la machine). ATTENTION : la ROM emploie aussi 0BFE00h comme octet de drapeaux prive pour BASIC, TEXT, DELETE et RENUM (48 acces, bits 0 a 7 ; dans RENUM les bits 5-4 numerotent une des trois passes de balayage) : la zone est un brouillon, pas une variable persistante
+fcs_call:           equ 0FFFE4H ; FCS call entry
+iocs_call:          equ 0FFFE8H ; IOCS call entry
 
 ; --- Codes de fonction FCS (IL) -----------------------------------------------
 ; (les points d'entree fcs_call=0FFFE4H et iocs_call=0FFFE8H figurent ci-dessus)

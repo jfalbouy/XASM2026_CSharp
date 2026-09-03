@@ -46,10 +46,24 @@ iram = load("InternalRAMNames.json")["names"]
 sysa = load("SystemAddresses.json")["addresses"]
 fcs = load("FCSFunctions.json")
 
-# Les adresses systeme priment sur la RAM interne en cas de nom identique : les exemples
-# (REGISTER, PLINKC) emploient la version systeme. Ex. baswrk = 0BFD0Eh, pas 0D1h.
-sys_names = {x["name"] for x in sysa}
-iram = [x for x in iram if x["name"] not in sys_names]
+# Un meme nom pour deux adresses rend l'une des deux INNOMMABLE dans une source, et
+# ce fichier etait l'endroit ou elle disparaissait -- en silence.
+#
+# C'est arrive, et cela a coute une dizaine d'essais sur machine le 2026-09-03 :
+# "baswrk" designait 0D1h (le POINTEUR, en RAM interne) et 0BFD0Eh (la ZONE, en
+# memoire externe, nom repris du listing de E. Kako). Ce filtre ecartait l'interne
+# sans rien dire ; "mv x,(baswrk)" assemblait donc la version systeme, que XASM
+# TRONQUAIT a 8 bits pour un acces interne -- 0BFD0Eh devenait 0Eh, toujours sans
+# avertissement. Une extension BASIC installait ses crochets a la mauvaise adresse.
+#
+# On REFUSE desormais. Une collision est un defaut des carnets, a corriger la-bas :
+# SC62015Disassembler/Tests/CarnetNameCollisionTests.cs la verrouille depuis.
+collisions = sorted({x["name"] for x in iram} & {x["name"] for x in sysa})
+if collisions:
+    sys.exit("generate_pce500_inc: collision de noms entre les carnets -- l une des "
+             "deux adresses serait innommable dans une source : "
+             + ", ".join(collisions)
+             + " | Corriger Data/InternalRAMNames.json ou Data/SystemAddresses.json.")
 
 emit("; ============================================================================")
 emit("; pce500.inc - constantes systeme du SHARP PC-E500S / SC62015")
