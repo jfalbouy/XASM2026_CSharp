@@ -1,0 +1,67 @@
+000000                   	; ==========================================================================
+000000                   	;  01_expressions.asm - les EXPRESSIONS de XASM2026-4
+000000                   	;
+000000                   	;  Illustre : le radix par caractere de fin, les operateurs, le compteur de
+000000                   	;  localisation '*', et l'extraction d'octets d'une adresse 20 bits.
+000000                   	;  Assembler :  xasm2026-4 01_expressions.asm -O -L
+000000                   	; ==========================================================================
+000000                   	
+00E000                   		org	0E000H
+00E000                   	
+00E000                   	; --------------------------------------------------------------------------
+00E000                   	;  1. Le RADIX est donne par le caractere de fin du nombre (regle de eval.c)
+00E000                   	;     B = binaire, O = octal, D = decimal, H = hexa, aucun = decimal.
+00E000                   	;     Un nombre doit commencer par un chiffre ou '$'. Le '_' est ignore.
+00E000                   	; --------------------------------------------------------------------------
+00E000 0A                		db	1010B		; binaire  -> 0Ah
+00E001 0F                		db	17O		; octal    -> 0Fh (1*8 + 7 = 15)
+00E002 19                		db	25D		; decimal  -> 19h
+00E003 1F                		db	1Fh		; hexa     -> 1Fh
+00E004 2A                		db	42		; decimal par defaut -> 2Ah
+00E005 2A                		db	$2A		; '$' = hexa -> 2Ah
+00E006 AA                		db	1010_1010B	; '_' ignore, juste pour la lisibilite -> 0AAh
+00E007                   	
+00E007                   	; --------------------------------------------------------------------------
+00E007                   	;  2. Operateurs arithmetiques et binaires (precedence de eval.c)
+00E007                   	;     * / ont la priorite sur + - ; & | ^ ~ << >> completent l'arithmetique.
+00E007                   	; --------------------------------------------------------------------------
+00E007 0E                		db	2+3*4		; = 0Eh (14 : * avant +)
+00E008 14                		db	(2+3)*4		; = 14h (20 : parentheses)
+00E009 06                		db	20/3		; division entiere -> 06h
+00E00A 02                		db	20%3		; modulo (% entre deux valeurs) -> 02h
+00E00B 0F                		db	0FFh & 0Fh	; ET   -> 0Fh
+00E00C FF                		db	0F0h | 0Fh	; OU   -> 0FFh
+00E00D F0                		db	0FFh ^ 0Fh	; XOR  -> 0F0h
+00E00E F0                		db	~0Fh		; NON (complement, tronque a l'octet) -> 0F0h
+00E00F 10                		db	1 << 4		; decalage a gauche -> 10h
+00E010 10                		db	80h >> 3	; decalage a droite -> 10h
+00E011                   	
+00E011                   	; --------------------------------------------------------------------------
+00E011                   	;  3. Operateurs de comparaison : rendent 1 (vrai) ou 0 (faux).
+00E011                   	;     Utiles dans les conditionnelles.  = <> < > <= >=
+00E011                   	; --------------------------------------------------------------------------
+00E011 01                		db	5 = 5		; -> 01h
+00E012 00                		db	5 <> 5		; -> 00h
+00E013 01                		db	3 < 5		; -> 01h
+00E014 00                		db	5 >= 9		; -> 00h
+00E015                   	
+00E015                   	; --------------------------------------------------------------------------
+00E015                   	;  4. Le compteur de localisation '*' vaut l'adresse courante.
+00E015                   	;     En position de terme c'est le LC ; entre deux valeurs '*' est la
+00E015                   	;     multiplication -- la position le desambiguise.
+00E015                   	; --------------------------------------------------------------------------
+00E015 15 E0             	ici:	dw	*		; emet l'adresse de 'ici' (16 bits, poids faible)
+00E017 02                		db	*-ici		; distance depuis 'ici' (ici on a deja emis 2 octets) -> 02h
+00E018 0C                		db	3*4		; ici '*' est bien la multiplication -> 0Ch
+00E019                   	
+00E019                   	; --------------------------------------------------------------------------
+00E019                   	;  5. Extraire les octets d'une adresse 20 bits : LOW / MID / HIGH
+00E019                   	; --------------------------------------------------------------------------
+00E019                   	cible:	equ	0BF1A5H
+00E019 A5                		db	LOW cible	; poids faible  -> A5h
+00E01A F1                		db	MID cible	; octet median -> F1h
+00E01B 0B                		db	HIGH cible	; poids fort   -> 0Bh
+00E01C                   	
+00E01C                   		end
+
+  No fatal error.  Code: 00E000h - 00E01Bh [       28 byte(s)]

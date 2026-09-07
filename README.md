@@ -214,6 +214,11 @@ cd .\Exemples\VOGUE
 ..\..\bin\xasm2026-4.exe VOGUE.S -O vogue.obj -L vogue.lst -I -M -P -D -B -X -S -R
 ```
 
+> 📚 **Pour découvrir les fonctionnalités une par une**, voir le dossier
+> [`Exemples/TUTORIEL/`](Exemples/TUTORIEL/) : sept fichiers commentés qui illustrent, avec leur
+> listing, les expressions, les directives, les symboles locaux, les macros, les structures et le
+> préprocesseur A62 — chacun mettant en regard une construction et l'octet qu'elle produit.
+
 ---
 
 ## Options

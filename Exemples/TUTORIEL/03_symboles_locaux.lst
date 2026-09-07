@@ -1,0 +1,54 @@
+000000                   	; ==========================================================================
+000000                   	;  03_symboles_locaux.asm - SYMBOLES LOCAUX et portees (LOCAL / ENDL)
+000000                   	;
+000000                   	;  Illustre : les portees LOCAL, un meme nom reutilise dans deux portees, la
+000000                   	;  reference au symbole parent par '..!', et la portee ANONYME (LOCAL sans
+000000                   	;  etiquette) qui rend uniques les labels d'un corps de macro repete.
+000000                   	;  Assembler :  xasm2026-4 03_symboles_locaux.asm -O -L -S
+000000                   	; ==========================================================================
+000000                   	
+00E000                   		org	0E000H
+00E000                   	
+00E000                   	; --------------------------------------------------------------------------
+00E000                   	;  Un symbole global, visible partout.
+00E000                   	; --------------------------------------------------------------------------
+00E000                   	global:	equ	0AAH
+00E000                   	
+00E000                   	; --------------------------------------------------------------------------
+00E000                   	;  'LOCAL nom' ouvre une portee. Les symboles definis dedans sont prefixes
+00E000                   	;  par la portee (nom!label en interne), donc invisibles au dehors. Le meme
+00E000                   	;  nom 'valeur' peut ainsi exister dans deux portees sans collision.
+00E000                   	; --------------------------------------------------------------------------
+00E000                   		local	premiere
+00E000                   	valeur:	equ	011H
+00E000 11                		db	valeur			; -> 11h  (valeur de 'premiere')
+00E001 AA                		db	..!global		; '..!' = reference au parent -> AAh
+00E002                   		endl
+00E002                   	
+00E002                   		local	seconde
+00E002                   	valeur:	equ	022H			; meme nom, autre portee : pas de collision
+00E002 22                		db	valeur			; -> 22h  (valeur de 'seconde')
+00E003                   		endl
+00E003                   	
+00E003                   	; --------------------------------------------------------------------------
+00E003                   	;  Portee ANONYME : 'LOCAL' sans etiquette ouvre une portee au nom genere
+00E003                   	;  (n%05X). C'est ce qui rend uniques les labels internes quand une macro
+00E003                   	;  est expansee plusieurs fois : chaque expansion entre dans sa propre portee,
+00E003                   	;  donc une reference avant vers un label interne ne se lie plus par erreur a
+00E003                   	;  l'expansion voisine.
+00E003                   	; --------------------------------------------------------------------------
+00E003                   	
+00E003                   		local				; portee anonyme : 'fin' devient unique
+00E003 12 01             		jr	fin			; saut avant vers 'fin' de CETTE expansion
+00E005 CC                		db	0CCH
+00E006 00                	fin:	nop
+00E007                   		endl
+00E007                   		local				; portee anonyme : 'fin' devient unique
+00E007 12 01             		jr	fin			; saut avant vers 'fin' de CETTE expansion
+00E009 DD                		db	0DDH
+00E00A 00                	fin:	nop
+00E00B                   		endl
+00E00B                   	
+00E00B                   		end
+
+  No fatal error.  Code: 00E000h - 00E00Ah [       11 byte(s)]

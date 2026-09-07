@@ -1,0 +1,62 @@
+000000                   	; ==========================================================================
+000000                   	;  06_structures.asm - STRUCT, zone de travail SUBORG, blocs structures { }
+000000                   	;
+000000                   	;  Illustre : la definition d'une structure (STRUCT/ENDS) et l'usage de ses
+000000                   	;  champs comme offsets, la zone de travail A62 (SUBORG + BYTE/WORD/PNTR) qui
+000000                   	;  nomme des champs sans emettre d'octet, et les boucles structurees { } avec
+000000                   	;  continue / break.
+000000                   	;  Assembler :  xasm2026-4 06_structures.asm -O -L -S
+000000                   	; ==========================================================================
+000000                   	
+00E000                   		org	0E000H
+00E000                   	
+00E000                   	; --------------------------------------------------------------------------
+00E000                   	;  STRUCT nom ... ENDS : decrit une disposition de champs. Les etiquettes
+00E000                   	;  internes valent l'offset du champ ; le nom de la structure vaut sa taille.
+00E000                   	;  Rien n'est emis : c'est une description reutilisable.
+00E000                   	; --------------------------------------------------------------------------
+00E000                   	point:	struct
+00E000 00                	px:	ds	1			; offset 0
+00E001 00                	py:	ds	1			; offset 1
+00E002 00 00             	pcouleur:	ds	2		; offset 2 (2 octets)
+00E004                   		ends
+00E004                   	
+00E004 00                		db	px			; offset de px  -> 00h
+00E005 01                		db	py			; offset de py  -> 01h
+00E006 02                		db	pcouleur		; offset       -> 02h
+00E007 00                		db	point			; TAILLE de la structure -> 04h
+00E008                   	
+00E008                   	; --------------------------------------------------------------------------
+00E008                   	;  Zone de travail A62 (SUBORG) : un COMPTEUR SECONDAIRE nomme des champs a
+00E008                   	;  des offsets successifs, 1/2/3 octets (BYTE/WORD/PNTR), tableaux via nom[n].
+00E008                   	;  N'emet AUCUN octet et ne touche pas le compteur principal. La taille du
+00E008                   	;  cadre se relit par '%' en position de terme.
+00E008                   	; --------------------------------------------------------------------------
+00E008                   		suborg	0			; base du cadre a 0
+00E008                   	etat:	byte	drapeau,mode		; deux champs de 1 octet : offsets 0 et 1
+00E008                   	sect:	word	numero			; un champ de 2 octets : offset 2
+00E008                   	buf:	byte	tampon[8]		; un tableau de 8 octets : offset 4
+00E008                   	ptr:	pntr	suivant			; un pointeur de 3 octets : offset 12
+00E008                   	
+00E008 00                		db	drapeau			; -> 00h
+00E009 01                		db	mode			; -> 01h
+00E00A 02                		db	numero			; -> 02h
+00E00B 04                		db	tampon			; -> 04h
+00E00C 0C                		db	suivant			; -> 0Ch (12)
+00E00D 0F                		db	%			; taille totale du cadre -> 0Fh (15 octets)
+00E00E                   	
+00E00E                   	; --------------------------------------------------------------------------
+00E00E                   	;  Blocs structures { } (dialecte A62) : boucle ou 'continue' vise le debut du
+00E00E                   	;  bloc et 'break' la sortie. Reserves SEULEMENT a l'interieur d'un bloc, donc
+00E00E                   	;  un vrai label 'continue:' hors bloc resterait intact. Ici, un simple corps
+00E00E                   	;  qui emet un octet (les octets de saut dependent du CPU ; on illustre la
+00E00E                   	;  structure, pas le detail des sauts).
+00E00E                   	; --------------------------------------------------------------------------
+00E00E                   	_blk00001_t:
+00E00E AA                		db	0AAH			; corps du bloc
+00E00F 00                		nop
+00E010                   	_blk00001_e:
+00E010                   	
+00E010                   		end
+
+  No fatal error.  Code: 00E000h - 00E00Fh [       16 byte(s)]

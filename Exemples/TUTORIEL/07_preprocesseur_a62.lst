@@ -1,0 +1,52 @@
+000000                   	; ==========================================================================
+000000                   	;  07_preprocesseur_a62.asm - PREPROCESSEUR A62 (dialecte Kon)
+000000                   	;
+000000                   	;  Illustre ce qui rend XASM2026-4 capable d'assembler les sources A62
+000000                   	;  d'origine : le prefixe 'rel' qui fait GENERER une table de relocation, la
+000000                   	;  macro A62 '#defmacro' a parametres positionnels %0..%9, et l'assemblage
+000000                   	;  conditionnel '#if / #else / #endif'.
+000000                   	;  Assembler :  xasm2026-4 07_preprocesseur_a62.asm -O -L
+000000                   	;
+000000                   	;  NB : la table de relocation n'est emise QUE si des 'rel' existent. Un
+000000                   	;  fichier sans 'rel' produit un objet identique -- l'apport est purement
+000000                   	;  additif.
+000000                   	; ==========================================================================
+000000                   	
+0BF000                   		org	0BF000H
+0BF000                   	
+0BF000                   	; --------------------------------------------------------------------------
+0BF000                   	;  #defmacro : macro A62 a parametres positionnels %0..%9, fermee par
+0BF000                   	;  #endmacro. Ici 'bsr' = 'rel call' (un appel proche RELOGEABLE), exactement
+0BF000                   	;  comme dans les pilotes de N. Kon / D. Mizobata.
+0BF000                   	; --------------------------------------------------------------------------
+0BF000                   	
+0BF000                   	; --------------------------------------------------------------------------
+0BF000                   	;  #if : assemblage conditionnel A62. Conditions : '#if symbole' (vrai si != 0),
+0BF000                   	;  '#if a == b', '#if a != b'.
+0BF000                   	; --------------------------------------------------------------------------
+0BF000                   	version:	equ	2
+0BF000                   	
+0BF000 22                		db	022H			; emis (version != 1) -> 22h
+0BF001                   	
+0BF001                   	; --------------------------------------------------------------------------
+0BF001                   	;  Le corps du "pilote" : quelques instructions dont des adresses ABSOLUES
+0BF001                   	;  internes marquees relogeables. 'rel' assemble l'instruction normalement
+0BF001                   	;  ET enregistre son champ d'adresse comme site de relocation.
+0BF001                   	; --------------------------------------------------------------------------
+0BF001                   	corps:
+0BF001 0C 0B F0 0B       		rel	mv x,routine		; pointeur 3 octets relogeable (largeur 3)
+0BF005 04 0B F0          		rel call routine
+0BF008 0B F0 0B          		rel	dp routine		; pointeur donnee relogeable (largeur 3)
+0BF00B                   	routine:
+0BF00B 9F                		rc
+0BF00C 07                		retf
+0BF00D                   	
+0BF00D                   	; --------------------------------------------------------------------------
+0BF00D                   	;  A l'assemblage, les sites 'rel' collectes sont encodes en TABLE DE
+0BF00D                   	;  RELOCATION (format Kon) ajoutee automatiquement APRES le code :
+0BF00D                   	;    delta entre offsets de champ, bit 080h = largeur 3, 07Eh = delta long,
+0BF00D                   	;    0FFh = fin. Regardez la fin de l'objet / du listing.
+0BF00D                   	; --------------------------------------------------------------------------
+0BF00D                   		end
+
+  No fatal error.  Code: 0BF000h - 0BF010h [       17 byte(s)]

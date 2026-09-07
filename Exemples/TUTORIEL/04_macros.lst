@@ -1,0 +1,49 @@
+000000                   	; ==========================================================================
+000000                   	;  04_macros.asm - MACROS et repetition sur liste (IRP / IRPC)
+000000                   	;
+000000                   	;  Illustre : la definition d'une macro a parametres, l'expansion, EXITM
+000000                   	;  (sortie anticipee), et les repetitions IRP (sur une liste de valeurs) et
+000000                   	;  IRPC (sur les caracteres d'une chaine).
+000000                   	;  Assembler :  xasm2026-4 04_macros.asm -O -L
+000000                   	; ==========================================================================
+000000                   	
+00E000                   		org	0E000H
+00E000                   	
+00E000                   	; --------------------------------------------------------------------------
+00E000                   	;  MACRO nom,param1,param2 ... ENDM
+00E000                   	;  Le corps est re-developpe a chaque appel : les conditionnelles, REPEAT et
+00E000                   	;  macros imbriquees y sont donc resolues au moment de l'expansion.
+00E000                   	; --------------------------------------------------------------------------
+00E000                   	;  NB : donner aux parametres des noms NON AMBIGUS. La substitution est
+00E000                   	;  textuelle : un parametre nomme 'b' remplacerait aussi le 'b' de 'db' !
+00E000                   	
+00E000 11                		db	011H
+00E001 22                		db	022H
+00E002 33                		db	033H
+00E003 44                		db	044H
+00E004                   	
+00E004                   	; --------------------------------------------------------------------------
+00E004                   	;  EXITM : interrompt l'expansion de la macro. Combine a une conditionnelle,
+00E004                   	;  il rend le corps generatif. Ici : n'emettre l'octet que si le drapeau
+00E004                   	;  est non nul, sinon sortir sans rien emettre.
+00E004                   	; --------------------------------------------------------------------------
+00E004                   	
+00E004 BB                		db	0BBH
+00E005                   	
+00E005                   	; --------------------------------------------------------------------------
+00E005                   	;  IRP nom,v1,v2,... : repete le bloc pour chaque valeur (separees par virgule).
+00E005                   	;  IRPC nom,chaine   : repete le bloc pour chaque caractere de la chaine ;
+00E005                   	;                      chaque caractere est injecte comme litteral, donc 'DB nom'
+00E005                   	;                      (SANS guillemets) emet son code ASCII.
+00E005                   	;  Tous deux se ferment par ENDR.
+00E005                   	; --------------------------------------------------------------------------
+00E005 10                		db	010H			; -> 10 20 30
+00E006 20                		db	020H			; -> 10 20 30
+00E007 30                		db	030H			; -> 10 20 30
+00E008                   	
+00E008 41                		db	'A'			; code ASCII du caractere -> 41 42
+00E009 42                		db	'B'			; code ASCII du caractere -> 41 42
+00E00A                   	
+00E00A                   		end
+
+  No fatal error.  Code: 00E000h - 00E009h [       10 byte(s)]

@@ -1,0 +1,54 @@
+Directives de donnees
+
+000000                   	; ==========================================================================
+000000                   	;  02_directives_donnees.asm - DIRECTIVES de definition et d'alignement
+000000                   	;
+000000                   	;  Illustre : EQU vs SET, les directives de donnees DB/DM/DW/DP/DS/DZ,
+000000                   	;  et l'alignement ALIGN/EVEN.
+000000                   	;  Assembler :  xasm2026-4 02_directives_donnees.asm -O -L
+000000                   	; ==========================================================================
+000000                   	
+000000                   		title	'Directives de donnees'	; titre en tete du listing (n'emet rien)
+00E000                   		org	0E000H
+00E000                   	
+00E000                   	; --------------------------------------------------------------------------
+00E000                   	;  EQU  = constante (une valeur, definie une fois).
+00E000                   	;  SET (ou =) = variable d'assemblage, REDEFINISSABLE.
+00E000                   	; --------------------------------------------------------------------------
+00E000                   	base:	equ	0E000H		; constante
+00E000                   	compteur:	set	0		; variable : redefinissable plus bas
+00E000                   	
+00E000                   	; --------------------------------------------------------------------------
+00E000                   	;  Donnees : DB (octet), DW (mot 16 bits), DP (pointeur 24 bits),
+00E000                   	;            DM (chaine), DZ (chaine + NUL), DS (reserve).
+00E000                   	; --------------------------------------------------------------------------
+00E000 01 02 03 04       	octets:	db	1, 2, 3, 4		; quatre octets
+00E004 34 12             	mot:	dw	1234H			; 16 bits, poids faible d'abord -> 34 12
+00E006 A5 F1 0B          	pointeur:	dp	0BF1A5H		; 24 bits -> A5 F1 0B
+00E009 58 41 53 4D       	texte:	dm	'XASM'			; chaine, sans terminateur -> 58 41 53 4D
+00E00D 48 69 00          	chaine:	dz	'Hi'			; chaine + NUL -> 48 69 00
+00E010 00 00 00 00       	reserve:	ds	4			; reserve 4 octets (emis a 00)
+00E014 FF FF             		ds	2,0FFH			; reserve 2 octets remplis de FFh
+00E016                   	
+00E016                   	; --------------------------------------------------------------------------
+00E016                   	;  Redefinition avec SET : le compteur avance (impossible avec EQU).
+00E016                   	; --------------------------------------------------------------------------
+00E016                   	compteur:	set	compteur+1
+00E016 01                		db	compteur		; -> 01h
+00E017                   	compteur:	set	compteur+1
+00E017 02                		db	compteur		; -> 02h
+00E018                   	
+00E018                   	; --------------------------------------------------------------------------
+00E018                   	;  Alignement : ALIGN n (multiple de n) et EVEN (multiple de 2).
+00E018                   	;  Contrairement a un simple ajustement du compteur, XASM **emet** le
+00E018                   	;  remplissage : l'image reste contigue.
+00E018                   	; --------------------------------------------------------------------------
+00E018 00 00 00 00 00 00 		align	16			; aligner sur 16 octets (emet le bourrage)
+00E01E 00 00             	
+00E020 AA                	apres_align:	db	0AAH
+00E021 00                		even				; aligner sur 2 octets
+00E022 BB                	apres_even:	db	0BBH
+00E023                   	
+00E023                   		end
+
+  No fatal error.  Code: 00E000h - 00E022h [       35 byte(s)]

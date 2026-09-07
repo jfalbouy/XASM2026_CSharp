@@ -1,0 +1,61 @@
+000000                   	; ==========================================================================
+000000                   	;  05_repeat_conditions.asm - REPETITION generative et ASSEMBLAGE CONDITIONNEL
+000000                   	;
+000000                   	;  Illustre : REPEAT/ENDR avec un compteur SET qui progresse d'une iteration a
+000000                   	;  l'autre, les conditionnelles numeriques IFEQ/IFNE/IFGT/IFLT, et ASSERT qui
+000000                   	;  verrouille une hypothese a l'assemblage.
+000000                   	;  Assembler :  xasm2026-4 05_repeat_conditions.asm -O -L
+000000                   	; ==========================================================================
+000000                   	
+00E000                   		org	0E000H
+00E000                   	
+00E000                   	; --------------------------------------------------------------------------
+00E000                   	;  REPEAT n ... ENDR repete le bloc n fois. Couple a SET, il devient
+00E000                   	;  generatif : le compteur avance a chaque tour (le bloc est re-developpe).
+00E000                   	; --------------------------------------------------------------------------
+00E000                   	i:	set	0
+00E000 00                		db	i			; emet 00 01 02 03 04
+00E001                   	i:	set	i+1
+00E001 01                		db	i			; emet 00 01 02 03 04
+00E002                   	i:	set	i+1
+00E002 02                		db	i			; emet 00 01 02 03 04
+00E003                   	i:	set	i+1
+00E003 03                		db	i			; emet 00 01 02 03 04
+00E004                   	i:	set	i+1
+00E004 04                		db	i			; emet 00 01 02 03 04
+00E005                   	i:	set	i+1
+00E005                   	
+00E005                   	; --------------------------------------------------------------------------
+00E005                   	;  Table generee : le carre de 1 a 4.
+00E005                   	; --------------------------------------------------------------------------
+00E005                   	n:	set	1
+00E005 01                		db	n*n			; emet 01 04 09 10 (1,4,9,16)
+00E006                   	n:	set	n+1
+00E006 04                		db	n*n			; emet 01 04 09 10 (1,4,9,16)
+00E007                   	n:	set	n+1
+00E007 09                		db	n*n			; emet 01 04 09 10 (1,4,9,16)
+00E008                   	n:	set	n+1
+00E008 10                		db	n*n			; emet 01 04 09 10 (1,4,9,16)
+00E009                   	n:	set	n+1
+00E009                   	
+00E009                   	; --------------------------------------------------------------------------
+00E009                   	;  Conditionnelles numeriques : chacune teste UN operande contre zero.
+00E009                   	;    IFEQ (==0), IFNE (!=0), IFGT (>0), IFLT (<0). Fin par ENDIF, ELSE possible.
+00E009                   	; --------------------------------------------------------------------------
+00E009                   	mode:	equ	2
+00E009                   	
+00E009                   	
+00E009 EE                		db	0EEH			; emis (mode != 0) -> EEh
+00E00A                   	
+00E00A F0                		db	0F0H			; ecarte
+00E00B                   	
+00E00B                   	; --------------------------------------------------------------------------
+00E00B                   	;  ASSERT : interrompt l'assemblage si l'hypothese est fausse. N'emet rien.
+00E00B                   	;  Ici : verifier que la table des carres fait bien 4 octets.
+00E00B                   	; --------------------------------------------------------------------------
+00E00B                   	debut_table:	equ	0E000H + 5	; apres les 5 octets du 1er REPEAT
+00E00B                   		assert	*-0E000H = 5+4+2,'taille inattendue avant les asserts'
+00E00B                   	
+00E00B                   		end
+
+  No fatal error.  Code: 00E000h - 00E00Ah [       11 byte(s)]
