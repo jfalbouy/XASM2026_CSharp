@@ -23,6 +23,12 @@ internal sealed partial class NativeAssembler
     private readonly HashSet<string> _includeStack = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<SectionBuilder> _sections = [];
 
+    // Sites de relocation A62 (prefixe 'rel') : offset du champ d'adresse dans l'objet et
+    // largeur (2 octets = call/jp proche, 3 = mv imm20 / dp / callf). A la fin de l'assemblage
+    // ils sont encodes en table de deltas (format Kon) ajoutee apres le code, comme le fait le
+    // compilateur A62. Collectes en passe d'emission uniquement.
+    private readonly List<(int Offset, int Width)> _relocSites = [];
+
     // Avertissements non fatals (mes.c / err_handle). Ceux du preprocesseur sont collectes
     // une seule fois ; ceux des passes ne sont retenus qu'en passe d'emission pour eviter
     // les doublons, l'assemblage etant execute deux fois.
@@ -156,6 +162,7 @@ internal sealed partial class NativeAssembler
         _listingSuspended = false;
         _symbols.ResetScopes();
         _preStack.Clear();
+        _relocSites.Clear();
         if (!emit)
         {
             _symbols.ClearOccurrences();
@@ -247,6 +254,16 @@ internal sealed partial class NativeAssembler
                             _symbols.AddOccurrence(symbolName, _locationCounter);
                         }
                     }
+                }
+
+                // Prefixe A62 'rel' : l'operande est l'instruction reelle (le label eventuel a
+                // deja ete traite ci-dessus). On l'assemble normalement, puis on enregistre son
+                // champ d'adresse comme site de relocation (voir la table emise a END).
+                var relLine = mnemonic == "REL";
+                if (relLine)
+                {
+                    line = SourceLine.Parse(line.OperandText);
+                    mnemonic = line.Mnemonic.ToUpperInvariant();
                 }
 
                 switch (mnemonic)
@@ -682,6 +699,7 @@ internal sealed partial class NativeAssembler
                         continue;
                     }
 
+                    AppendRelocTable(emit, result);
                     FinishSections();
                     result.StartAddress = _startAddress;
                     result.EndAddress = _locationCounter;
@@ -696,6 +714,15 @@ internal sealed partial class NativeAssembler
                     default:
                         throw new NotSupportedException(
                             $"opcode ou directive non encore portee: {mnemonic}");
+                }
+
+                // Site de relocation A62 : le champ d'adresse occupe les derniers octets de
+                // l'instruction (2 pour call/jp proche, 3 pour mv imm20 / dp / callf). Son offset
+                // dans l'objet est l'index courant moins cette largeur.
+                if (relLine && emit)
+                {
+                    var width = mnemonic is "CALL" or "JP" ? 2 : 3;
+                    _relocSites.Add((result.GeneratedBytes.Count - width, width));
                 }
 
                 AddListingLine(emit, result, mnemonic == "ORG" ? _locationCounter : lineAddress, lineByteStart, rawLine);
@@ -713,6 +740,7 @@ internal sealed partial class NativeAssembler
             }
         }
 
+        AppendRelocTable(emit, result);
         FinishSections();
         result.StartAddress = _startAddress;
         result.EndAddress = _locationCounter;
@@ -2991,6 +3019,56 @@ internal sealed partial class NativeAssembler
 
             _subCounter += elementSize * nombre;
         }
+    }
+
+    /// <summary>
+    /// Action : ajoute apres le code la table de relocation A62 encodee a partir des sites
+    /// collectes par le prefixe 'rel'. N'agit qu'en passe d'emission et seulement s'il existe
+    /// des sites, si bien qu'une source sans 'rel' produit un objet identique (goldens saufs).
+    /// </summary>
+    private void AppendRelocTable(bool emit, AssemblyResult result)
+    {
+        if (!emit || _relocSites.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var b in EncodeRelocTable(_relocSites))
+        {
+            Emit(b, emit, result);
+        }
+    }
+
+    /// <summary>
+    /// Action : encode les sites de relocation au format Kon/A62. Chaque entree est le delta
+    /// (ecart entre offsets de champs d'adresse successifs, le premier partant de 0) ; le bit
+    /// 080h marque une largeur 3 octets (pointeur), son absence une largeur 2 (call/jp proche) ;
+    /// une valeur 07Eh signale un delta long (2 octets little-endian suivent) ; 0FFh termine.
+    /// Verifie octet-exact contre la table de PLINKC.OBJ.
+    /// </summary>
+    private static byte[] EncodeRelocTable(List<(int Offset, int Width)> sites)
+    {
+        var bytes = new List<byte>();
+        var previous = 0;
+        foreach (var (offset, width) in sites)
+        {
+            var delta = offset - previous;
+            previous = offset;
+            var widthBit = width == 3 ? 0x80 : 0x00;
+            if (delta < 0x7E)
+            {
+                bytes.Add((byte)(delta | widthBit));
+            }
+            else
+            {
+                bytes.Add((byte)(0x7E | widthBit));
+                bytes.Add((byte)(delta & 0xFF));
+                bytes.Add((byte)((delta >> 8) & 0xFF));
+            }
+        }
+
+        bytes.Add(0xFF);
+        return bytes.ToArray();
     }
 
     /// <summary>

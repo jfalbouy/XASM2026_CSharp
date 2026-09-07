@@ -678,6 +678,35 @@ public sealed class BehaviorTests
         });
     }
 
+    /// <summary>
+    /// Le prefixe A62 'rel' fait generer, apres le code, une table de relocation au format Kon :
+    /// deltas entre champs d'adresse successifs, bit 080h = largeur 3 (mv imm20 / dp), absence =
+    /// largeur 2 (call proche), 0FFh final. Ici 'rel mv x,1234h' (champ @ offset 1, largeur 3 ->
+    /// 081h) puis 'rel call 5678h' (champ @ offset 5, delta 4, largeur 2 -> 004h) donnent
+    /// 81 04 FF. Encodage verifie octet-exact contre la table de PLINKC.OBJ.
+    /// </summary>
+    [Fact]
+    public void Rel_prefix_emits_an_A62_relocation_table_after_the_code()
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "rel.asm"),
+                "        ORG 0BF000H\n" +
+                "        rel mv x,1234H\n" +
+                "        rel call 5678H\n" +
+                "        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "rel.asm" });
+            var bytes = new NativeAssembler(options).Assemble()
+                .GeneratedBytes.Select(b => (int)b.Value & 0xFF).ToArray();
+
+            // mv x,imm20 (0C + 3 o) puis call imm16 (04 + 2 o), enfin la table 81 04 FF.
+            Assert.Equal(
+                new[] { 0x0C, 0x34, 0x12, 0x00, 0x04, 0x78, 0x56, 0x81, 0x04, 0xFF },
+                bytes);
+        });
+    }
+
     private static void RunInTempDir(Action<string> body)
     {
         var dir = Path.Combine(Path.GetTempPath(), "xasm_behavior", Guid.NewGuid().ToString("N"));
