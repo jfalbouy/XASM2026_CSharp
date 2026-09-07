@@ -1,0 +1,45 @@
+; XASM MAP file - coverage_all.asm
+; Code: 0BE000h - 0BE37Bh [892 bytes]
+
+; Sections:
+;   CODE             0BE000h  0BE337h  824
+;   DATA             0BE338h  0BE37Bh  68
+
+; Symbols:
+000000h  base0
+000001h  base1
+000002h  base2
+000003h  base3
+000004h  base4
+000005h  base5
+000006h  base6
+000007h  base7
+0BE31Ah  branch_a
+0BE31Dh  branch_b
+0BE320h  branch_c
+0BE323h  branch_d
+0BE325h  branch_e
+0BE327h  branch_f
+0BE329h  branch_g
+0BE32Bh  branch_h
+0BE32Dh  branch_i
+0BE330h  branch_j
+0BE020h  data_block
+0BE900h  ext0
+0BEA00h  ext1
+0BE000h  inc_byte
+000034h  inc_const
+0BE006h  inc_ptr
+0BE004h  inc_word
+0BE337h  irq_return
+0BE338h  more_data
+0BE332h  n00001
+0BE332h  n00001!loop_top
+000020h  ptr0
+000024h  ptr1
+0BE039h  start
+0BE336h  sub_far
+0BE335h  sub_near
+0BE009h  w_a
+0BE00Ah  w_b
+0BE00Ch  w_p

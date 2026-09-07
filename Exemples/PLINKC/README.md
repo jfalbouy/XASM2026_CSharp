@@ -11,6 +11,7 @@ dialogue avec la SIO.
 | `PLINKC-BF000.asm` | désassemblage de l'objet par `SC62015Disassembler` — se réassemble en un `PLINKC.OBJ` **identique octet pour octet** (table de relocation comprise, codée en `db`) |
 | `plinkc.native.asm` | **port dans le dialecte XASM2026-4** (ce dossier) |
 | `convert_a62.py` | le convertisseur qui produit `plinkc.native.asm` |
+| `A62/` | **la source A62 d'origine assemblée directement** par XASM2026-4 (préfixe `rel` + table de relocation générée) → `PLINKC.OBJ` **byte-exact**, sans codage en dur. Voir `A62/README.md` |
 
 ## Le dialecte A62 et son portage
 
@@ -46,11 +47,14 @@ octets** de la section code de `PLINKC.OBJ` — c'est-à-dire tout le code machi
 `suborg *`, 1340 o de RAM au total, de `0BF5C3h` à `0BFAFFh`) sont exactes : le code qui les
 référence émet les bons octets, ce que prouve justement l'égalité des 1475 octets.
 
-**Limite — la table de relocation.** `PLINKC.OBJ` se termine par 63 octets qui ne proviennent
-d'aucune donnée de la source : c'est la **table de relocation** qu'A62 émet à partir des 30
-`rel`, tout comme les `.DVF` de `ssfdc120`. XASM2026-4 n'a pas cette notion ; `plinkc.native.asm`
-produit donc le code (1475 o) mais pas ces 63 octets. L'objet complet reste reproductible par le
-désassemblage `PLINKC-BF000.asm`, qui code cette table en `db` explicite.
+**La table de relocation — désormais générée (voir `A62/`).** `PLINKC.OBJ` se termine par 63
+octets qui ne proviennent d'aucune donnée de la source : c'est la **table de relocation** qu'A62
+émet à partir des `rel`. `plinkc.native.asm` (ce dossier) reproduit le code (1475 o) mais **pas**
+ces 63 octets — les `rel` y étaient devenus des commentaires. Ce n'est **plus une limite** :
+XASM2026-4 reproduit maintenant le préfixe `rel`, la macro `#defmacro` (`bsr = rel call`) et
+**génère la table** au format Kon. La source A62 d'origine s'assemble donc directement en un
+`PLINKC.OBJ` **byte-exact** — voir le sous-dossier **`A62/`**. Le désassemblage `PLINKC-BF000.asm`
+(table codée en `db` explicite) reste une autre voie de reproduction.
 
 ## Assemblage
 

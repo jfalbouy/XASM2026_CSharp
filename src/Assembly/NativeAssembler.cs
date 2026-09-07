@@ -289,9 +289,11 @@ internal sealed partial class NativeAssembler
                 case "STRUCT":
                     break;
                 case "PRE_ON":
+                case "PREON":                 // orthographe A62 (dialecte Kon)
                     _preOn = true;
                     break;
                 case "PRE_OFF":
+                case "PREOFF":                // orthographe A62
                     _preOn = false;
                     break;
                 case "PRE_PUSH":

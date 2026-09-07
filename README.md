@@ -586,6 +586,26 @@ le cadre sur le compteur courant, et `%` (en position de terme) rend la taille d
 | `SUBORG expr` | Positionne le compteur secondaire (`*` = compteur principal courant) |
 | `BYTE` / `WORD` / `PNTR` noms | Champs de 1 / 2 / 3 octets ; tableaux via `nom[taille]` ; n'émettent rien |
 
+### Préprocesseur A62 : `rel`, `#defmacro`, `#if`
+
+XASM2026-4 reproduit le **préprocesseur du compilateur A62 (Kon)**, ce qui permet d'assembler les
+sources d'origine des drivers Kon **telles quelles**. Trois constructions :
+
+| Construction | Description |
+|---|---|
+| `[label:] rel <instruction>` | **Relocation.** Assemble l'instruction **et** enregistre son champ d'adresse comme site relogeable. En fin d'assemblage, les sites sont encodés en **table de relocation** (format Kon) ajoutée après le code — comme le faisait A62, au lieu de coder la table en dur. Émise **seulement** si des `rel` existent (sinon objet identique) |
+| `#defmacro nom` … `#endmacro` | **Macro A62** à paramètres positionnels `%0..%9`. Ex. `bsr` : `#defmacro bsr` / `rel call %0` / `#endmacro`, puis `bsr cible` |
+| `#if <cond>` / `#else` / `#endif` | **Assemblage conditionnel** : `#if symbole` (vrai si ≠ 0), `#if a == b`, `#if a != b` |
+
+Format de la table (rétro-ingénieré, **byte-exact** contre `PLINKC.OBJ`) : deltas entre offsets
+des champs d'adresse, bit `080h` = largeur 3 octets (`mv imm20`/`dp`), absent = 2 octets
+(`call`/`jp` proche), `07Eh` = delta long (2 octets LE), `0FFh` = fin. `PREON`/`PREOFF` sont
+acceptés comme orthographes A62 de `PRE_ON`/`PRE_OFF`.
+
+> **Démonstration :** la source A62 d'origine de PLINKC s'assemble **directement** en un
+> `PLINKC.OBJ` **octet-exact** (table de relocation générée, non codée en dur) — voir
+> `Exemples/PLINKC/A62/`.
+
 ### Symboles redéfinissables
 
 | Directive | Description |

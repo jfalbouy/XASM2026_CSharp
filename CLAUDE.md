@@ -245,6 +245,14 @@ identical bytes and the goldens are unaffected by construction:
 | `PHASE` / `DEPHASE` | Labels take the logical address while bytes stay at their physical place, via `_phaseOffset` subtracted in `Emit` |
 | `{` / `}` blocks | Structured loops from the A62 dialect. `continue` targets the block start, `break` the exit. Reserved **only inside a block**, so a real `continue:`/`break:` label outside one (SAMPLE2, COMPILE.S) is untouched. Rewritten to synthetic labels once on the flattened list (`RewriteStructuredBlocks`); blocks must balance or it's a fatal error |
 | `SUBORG` + `BYTE` / `WORD` / `PNTR` | A62 work-area declaration: names fields at successive offsets in a **secondary counter** (`_subCounter`), 1/2/3 bytes each, arrays via `name[size]`. Emits nothing and never touches the main LC. `SUBORG *` bases the frame on the current LC. The counter is read back by `%` in term position (see the evaluator). Used to port the PLINKC driver |
+| `rel` (prefix) | A62 relocation: `[label:] rel <instruction>` assembles the instruction and records its address field as a relocatable **site**. At the end of assembly the sites are encoded into an **A62/Kon relocation table** appended after the code — reproducing the A62 compiler, not hand-coding the table. Table format (reverse-engineered, byte-exact vs `PLINKC.OBJ`): deltas between successive address-field offsets (first delta from the org), bit `080h` = 3-byte width (`mv imm20`/`dp`), absent = 2-byte (`call`/`jp` near), `07Eh` = long delta (2-byte LE follows), `0FFh` = end. Implemented in `NativeAssembler` (`_relocSites`/`AppendRelocTable`/`EncodeRelocTable`); emitted only when `rel` sites exist, so a source without `rel` is byte-identical (goldens safe) |
+| `#defmacro` / `#endmacro` | A62 macro syntax: `#defmacro name` … `#endmacro`, body with positional parameters `%0..%9`. Reduced to the existing `MACRO` machinery with parameter names `%0..%9` (`_macros`, `A62MacroParameters` in the preprocessor). `bsr X` = `rel call X` is defined this way |
+| `#if` / `#else` / `#endif` | A62 conditional assembly: `#if symbol` (true if ≠ 0), `#if a == b`, `#if a != b`. Evaluated in the preprocessor where the EQU/SET seen so far are known (`EvaluateA62Condition`). Shares the condition stack with `ELSE`/`ENDIF` |
+
+Together (`rel` + `#defmacro` + `#if`) these reproduce the **A62 (Kon) preprocessor**: the original
+A62-dialect PLINKC source assembles **directly** to `PLINKC.OBJ` byte-for-byte (see
+`Exemples/PLINKC/A62/`), the relocation table generated rather than hand-coded. `PREON`/`PREOFF`
+are accepted as A62 spellings of `PRE_ON`/`PRE_OFF`.
 
 **Duplicate labels** are rejected (the C's err 13, `xasm.c`). The check runs on the
 **resolution pass only** — mirroring the C's `if (pass_sw == 1)` — because the emit pass

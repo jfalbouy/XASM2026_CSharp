@@ -377,7 +377,17 @@ internal sealed partial class NativeAssembler
                 continue;
             }
 
-            if (mnemonic == "ELSE")
+            if (mnemonic == "#IF")
+            {
+                // Conditionnelle A62 (Kon) : '#if symbole' (vrai si != 0), '#if a == b',
+                // '#if a != b'. Evaluee au preprocesseur, ou les EQU/SET deja rencontres sont
+                // connus (les drapeaux de configuration sont poses en tete de source).
+                conditions.Push(active);
+                active = active && EvaluateA62Condition(line.OperandText);
+                continue;
+            }
+
+            if (mnemonic is "ELSE" or "#ELSE")
             {
                 if (conditions.TryPeek(out var parent))
                 {
@@ -386,7 +396,7 @@ internal sealed partial class NativeAssembler
                 continue;
             }
 
-            if (mnemonic == "ENDIF")
+            if (mnemonic is "ENDIF" or "#ENDIF")
             {
                 if (conditions.TryPop(out var previous))
                 {
@@ -472,6 +482,24 @@ internal sealed partial class NativeAssembler
                 continue;
             }
 
+            if (mnemonic == "#DEFMACRO")
+            {
+                // Macro A62 : le nom suit '#DEFMACRO', le corps utilise %0..%9, '#ENDMACRO' ferme.
+                var nameA62 = line.OperandText.Trim();
+                if (nameA62.Length == 0)
+                {
+                    throw new InvalidOperationException($"#DEFMACRO sans nom: {origin.Text.Trim()}");
+                }
+
+                var bodyA62 = CollectBlock(sourceLines, ref i, end, DefMacroOpeners, "#ENDMACRO");
+                if (expandMacroDefinitions)
+                {
+                    _macros[nameA62] = new MacroDefinition(nameA62, A62MacroParameters, bodyA62);
+                }
+
+                continue;
+            }
+
             if (mnemonic == "MACRO")
             {
                 var header = SplitOperands(line.OperandText);
@@ -546,6 +574,14 @@ internal sealed partial class NativeAssembler
     private static readonly IReadOnlySet<string> MacroOpeners =
         new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "MACRO" };
 
+    // Macro du dialecte A62 (Kon) : '#DEFMACRO nom' ... '#ENDMACRO', corps a parametres
+    // positionnels %0..%9. On la ramene au meme mecanisme que MACRO, avec ces noms de parametres.
+    private static readonly IReadOnlySet<string> DefMacroOpeners =
+        new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "#DEFMACRO" };
+
+    private static readonly string[] A62MacroParameters =
+        ["%0", "%1", "%2", "%3", "%4", "%5", "%6", "%7", "%8", "%9"];
+
     /// <summary>
     /// Action : collecte les lignes d'un bloc jusqu'a son terminateur, en tenant compte de
     /// l'imbrication.
@@ -588,6 +624,28 @@ internal sealed partial class NativeAssembler
         }
 
         return block;
+    }
+
+    /// <summary>
+    /// Action : evalue une condition A62 de '#if' : 'a == b', 'a != b', ou 'symbole' (vrai si
+    /// != 0). Les operandes sont evaluees avec les symboles connus a ce point du preprocesseur.
+    /// </summary>
+    private bool EvaluateA62Condition(string condition)
+    {
+        condition = condition.Trim();
+        var eq = condition.IndexOf("==", StringComparison.Ordinal);
+        if (eq >= 0)
+        {
+            return Eval(condition[..eq]) == Eval(condition[(eq + 2)..]);
+        }
+
+        var ne = condition.IndexOf("!=", StringComparison.Ordinal);
+        if (ne >= 0)
+        {
+            return Eval(condition[..ne]) != Eval(condition[(ne + 2)..]);
+        }
+
+        return Eval(condition) != 0;
     }
 
     /// <summary>

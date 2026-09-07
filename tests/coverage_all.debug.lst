@@ -1,0 +1,442 @@
+000000                   	; Large parser/output coverage file for xasm2026-4
+000000                   	; It intentionally covers many instructions, addressing modes and directives.
+000000                   	
+0BE000                   	        org     $BE000
+0BE000                   	        section CODE
+0BE000                   	        include coverage_all_include.asm
+0BE000                   	; Included by coverage_all.asm
+0BE000                   	inc_const:       equ     $34
+0BE000 12 34 56 78       	inc_byte:        db      $12,$34,$56,$78
+0BE004 34 12             	inc_word:        dw      $1234
+0BE006 23 E1 0B          	inc_ptr:         dp      $0BE123
+0BE009                   	
+0BE009                   	
+0BE009                   	        def     INCLUDE_FLAG
+0BE009                   	        end
+0BE009                   	
+0BE009                   	base0:  equ     $00
+0BE009                   	base1:  equ     $01
+0BE009                   	base2:  equ     $02
+0BE009                   	base3:  equ     $03
+0BE009                   	base4:  equ     $04
+0BE009                   	base5:  equ     $05
+0BE009                   	base6:  equ     $06
+0BE009                   	base7:  equ     $07
+0BE009                   	ptr0:   equ     $20
+0BE009                   	ptr1:   equ     $24
+0BE009                   	ext0:   equ     $0BE900
+0BE009                   	ext1:   equ     $0BEA00
+0BE009                   	
+0BE009                   	        struct  work
+0BE009 00                	w_a:    ds      1
+0BE00A 00 00             	w_b:    ds      2
+0BE00C 00 00 00          	w_p:    ds      3
+0BE00F                   	        ends
+0BE00F                   	
+0BE00F                   	
+0BE00F                   	
+0BE00F                   	
+0BE00F                   	
+0BE00F                   	        pre_off
+0BE00F 00                	        nop
+0BE010                   	        pre_on
+0BE010                   	        pre_push
+0BE010                   	        pre_off
+0BE010 CC 00 11          	        mv      (base0),$11
+0BE013                   	        pre_pop
+0BE013 30 CC 01 22       	        mv      (base1),$22
+0BE017                   	
+0BE017 AA                	        db      $AA
+0BE018                   	
+0BE018 BB                	        db      $BB
+0BE019                   	
+0BE019 CC                	        db      $CC
+0BE01A                   	
+0BE01A DD                	        db      $DD
+0BE01B                   	
+0BE01B EE                	        db      $EE
+0BE01C                   	
+0BE01C                   	
+0BE01C 5A                	        db      $5A
+0BE01D 5A                	        db      $5A
+0BE01E 5A                	        db      $5A
+0BE01F 5A                	        db      $5A
+0BE020                   	
+0BE020                   	data_block:
+0BE020 41 42 43 00       	        db      'A','B','C',0
+0BE024 48 45 4C 4C 4F 0D 	        dm      'HELLO',13,10
+0BE02A 0A                	
+0BE02B 34 12 00 E9       	        dw      $1234,ext0-base0
+0BE02F 00 E9 0B 00 EA 0B 	        dp      ext0,ext1
+0BE035 00 00 00          	        ds      3
+0BE038 7E                	        db      $7E
+0BE039                   	
+0BE039                   	start:
+0BE039 08 01             	        mv      a,$01
+0BE03B 09 02             	        mv      il,$02
+0BE03D 0A 34 12          	        mv      ba,$1234
+0BE040 0B 78 56          	        mv      i,$5678
+0BE043 0C 00 E9 0B       	        mv      x,ext0
+0BE047 0D 00 EA 0B       	        mv      y,ext1
+0BE04B 0E 00 EE 0B       	        mv      u,$0BEE00
+0BE04F 0F 00 EF 0B       	        mv      s,$0BEF00
+0BE053 74                	        mv      a,b
+0BE054 75                	        mv      b,a
+0BE055 DD                	        ex      a,b
+0BE056 EE                	        swap    a
+0BE057                   	
+0BE057 30 80 00          	        mv      a,(base0)
+0BE05A 30 81 01          	        mv      il,(base1)
+0BE05D 30 82 02          	        mv      ba,(base2)
+0BE060 30 83 03          	        mv      i,(base3)
+0BE063 30 84 04          	        mv      x,(base4)
+0BE066 30 85 05          	        mv      y,(base5)
+0BE069 30 86 06          	        mv      u,(base6)
+0BE06C 30 87 07          	        mv      s,(base7)
+0BE06F                   	
+0BE06F 30 A0 00          	        mv      (base0),a
+0BE072 30 A1 01          	        mv      (base1),il
+0BE075 30 A2 02          	        mv      (base2),ba
+0BE078 30 A3 03          	        mv      (base3),i
+0BE07B 30 A4 04          	        mv      (base4),x
+0BE07E 30 A5 05          	        mv      (base5),y
+0BE081 30 A6 06          	        mv      (base6),u
+0BE084 30 A7 07          	        mv      (base7),s
+0BE087                   	
+0BE087 88 00 E9 0B       	        mv      a,[ext0]
+0BE08B 89 00 E9 0B       	        mv      il,[ext0]
+0BE08F 8A 00 E9 0B       	        mv      ba,[ext0]
+0BE093 8B 00 E9 0B       	        mv      i,[ext0]
+0BE097 8C 00 E9 0B       	        mv      x,[ext0]
+0BE09B 8D 00 E9 0B       	        mv      y,[ext0]
+0BE09F 8E 00 E9 0B       	        mv      u,[ext0]
+0BE0A3 8F 00 E9 0B       	        mv      s,[ext0]
+0BE0A7                   	
+0BE0A7 A8 00 EA 0B       	        mv      [ext1],a
+0BE0AB A9 00 EA 0B       	        mv      [ext1],il
+0BE0AF AA 00 EA 0B       	        mv      [ext1],ba
+0BE0B3 AB 00 EA 0B       	        mv      [ext1],i
+0BE0B7 AC 00 EA 0B       	        mv      [ext1],x
+0BE0BB AD 00 EA 0B       	        mv      [ext1],y
+0BE0BF AE 00 EA 0B       	        mv      [ext1],u
+0BE0C3 AF 00 EA 0B       	        mv      [ext1],s
+0BE0C7                   	
+0BE0C7 90 04             	        mv      a,[x]
+0BE0C9 91 05             	        mv      il,[y]
+0BE0CB 92 06             	        mv      ba,[u]
+0BE0CD 93 07             	        mv      i,[s]
+0BE0CF 94 24             	        mv      x,[x++]
+0BE0D1 95 25             	        mv      y,[y++]
+0BE0D3 96 36             	        mv      u,[--u]
+0BE0D5 97 37             	        mv      s,[--s]
+0BE0D7 90 84 01          	        mv      a,[x+1]
+0BE0DA 91 C5 02          	        mv      il,[y-2]
+0BE0DD 92 86 03          	        mv      ba,[u+3]
+0BE0E0 93 C7 04          	        mv      i,[s-4]
+0BE0E3                   	
+0BE0E3 B0 04             	        mv      [x],a
+0BE0E5 B1 05             	        mv      [y],il
+0BE0E7 B2 06             	        mv      [u],ba
+0BE0E9 B3 07             	        mv      [s],i
+0BE0EB B4 24             	        mv      [x++],x
+0BE0ED B5 25             	        mv      [y++],y
+0BE0EF B6 36             	        mv      [--u],u
+0BE0F1 B7 37             	        mv      [--s],s
+0BE0F3 B0 84 05          	        mv      [x+5],a
+0BE0F6 B1 C5 06          	        mv      [y-6],il
+0BE0F9 B2 86 07          	        mv      [u+7],ba
+0BE0FC B3 C7 08          	        mv      [s-8],i
+0BE0FF                   	
+0BE0FF 30 98 00 20       	        mv      a,[(ptr0)]
+0BE103 30 99 80 20 01    	        mv      il,[(ptr0)+1]
+0BE108 30 9A C0 20 02    	        mv      ba,[(ptr0)-2]
+0BE10D 30 B8 00 24       	        mv      [(ptr1)],a
+0BE111 30 B9 80 24 03    	        mv      [(ptr1)+3],il
+0BE116 30 BA C0 24 04    	        mv      [(ptr1)-4],ba
+0BE11B                   	
+0BE11B 32 C8 10 11       	        mv      (16),(17)
+0BE11F 30 CC 10 44       	        mv      (16),$44
+0BE123 30 D0 11 00 E9 0B 	        mv      (17),[ext0]
+0BE129 30 E0 04 12       	        mv      (18),[x]
+0BE12D 30 E0 25 12       	        mv      (18),[y++]
+0BE131 30 E0 C6 12 01    	        mv      (18),[u-1]
+0BE136 30 32 F0 00 12 20 	        mv      (18),[(ptr0)]
+0BE13C 30 32 F0 80 12 20 	        mv      (18),[(ptr0)+2]
+0BE142 02                	
+0BE143 30 D8 00 EA 0B 10 	        mv      [ext1],(16)
+0BE149 30 E8 04 10       	        mv      [x],(16)
+0BE14D 30 E8 25 11       	        mv      [y++],(17)
+0BE151 30 E8 C6 12 03    	        mv      [u-3],(18)
+0BE156 32 F8 00 24 10    	        mv      [(ptr1)],(16)
+0BE15B 32 F8 80 24 11 04 	        mv      [(ptr1)+4],(17)
+0BE161                   	
+0BE161 32 C9 10 11       	        mvw     (16),(17)
+0BE165 30 CD 10 34 12    	        mvw     (16),$1234
+0BE16A 30 D1 10 00 E9 0B 	        mvw     (16),[ext0]
+0BE170 30 E1 04 10       	        mvw     (16),[x]
+0BE174 32 F1 00 10 20    	        mvw     (16),[(ptr0)]
+0BE179 30 D9 00 EA 0B 10 	        mvw     [ext1],(16)
+0BE17F E9 04 30 10       	        mvw     [x],(16)
+0BE183 F9 00 30 24 30 10 	        mvw     [(ptr1)],(16)
+0BE189                   	
+0BE189 32 CA 10 11       	        mvp     (16),(17)
+0BE18D 30 DC 10 00 E9 0B 	        mvp     (16),ext0
+0BE193 30 D2 10 00 E9 0B 	        mvp     (16),[ext0]
+0BE199 30 E2 04 10       	        mvp     (16),[x]
+0BE19D F2 00 10 20       	        mvp     (16),[(ptr0)]
+0BE1A1 30 DA 00 EA 0B 10 	        mvp     [ext1],(16)
+0BE1A7 EA 04 10          	        mvp     [x],(16)
+0BE1AA FA 00 24 10       	        mvp     [(ptr1)],(16)
+0BE1AE                   	
+0BE1AE 32 CB 10 11       	        mvl     (16),(17)
+0BE1B2 D3 30 10 00 E9 0B 	        mvl     (16),[ext0]
+0BE1B8 30 56 84 10 01    	        mvl     (16),[x+1]
+0BE1BD 32 F3 80 10 20 01 	        mvl     (16),[(ptr0)+1]
+0BE1C3 DB 00 EA 0B 30 10 	        mvl     [ext1],(16)
+0BE1C9 30 5E 84 10 01    	        mvl     [x+1],(16)
+0BE1CE 32 FB 80 24 10 01 	        mvl     [(ptr1)+1],(16)
+0BE1D4 32 CF 10 11       	        mvld    (16),(17)
+0BE1D8                   	
+0BE1D8 32 C0 10 11       	        ex      (16),(17)
+0BE1DC 32 C1 10 11       	        exw     (16),(17)
+0BE1E0 32 C2 10 11       	        exp     (16),(17)
+0BE1E4 32 C3 10 11       	        exl     (16),(17)
+0BE1E8                   	
+0BE1E8 40 10             	        add     a,$10
+0BE1EA 30 42 10          	        add     a,(16)
+0BE1ED 30 41 10 11       	        add     (16),$11
+0BE1F1 30 43 10          	        add     (16),a
+0BE1F4 46 01             	        add     a,il
+0BE1F6 44 23             	        add     ba,i
+0BE1F8 45 45             	        add     x,y
+0BE1FA 46 01             	        addb    a,il
+0BE1FC 44 23             	        addw    ba,i
+0BE1FE 45 45             	        addp    x,y
+0BE200 50 12             	        adc     a,$12
+0BE202 30 51 10 13       	        adc     (16),$13
+0BE206 30 53 10          	        adc     (16),a
+0BE209 32 54 10 11       	        adcl    (16),(17)
+0BE20D 30 55 10          	        adcl    (16),a
+0BE210 32 C4 10 11       	        dadl    (16),(17)
+0BE214 30 C5 10          	        dadl    (16),a
+0BE217 30 47 10 14       	        pmdf    (16),$14
+0BE21B 30 57 10          	        pmdf    (16),a
+0BE21E                   	
+0BE21E 48 20             	        sub     a,$20
+0BE220 30 4A 10          	        sub     a,(16)
+0BE223 30 49 10 21       	        sub     (16),$21
+0BE227 30 4B 10          	        sub     (16),a
+0BE22A 4E 01             	        sub     a,il
+0BE22C 4C 23             	        sub     ba,i
+0BE22E 4D 45             	        sub     x,y
+0BE230 4E 01             	        subb    a,il
+0BE232 4C 23             	        subw    ba,i
+0BE234 4D 45             	        subp    x,y
+0BE236 58 22             	        sbc     a,$22
+0BE238 30 59 10 23       	        sbc     (16),$23
+0BE23C 30 5B 10          	        sbc     (16),a
+0BE23F 32 5C 10 11       	        sbcl    (16),(17)
+0BE243 30 5D 10          	        sbcl    (16),a
+0BE246 32 D4 10 11       	        dsbl    (16),(17)
+0BE24A 30 D5 10          	        dsbl    (16),a
+0BE24D                   	
+0BE24D 70 30             	        and     a,$30
+0BE24F 30 77 10          	        and     a,(16)
+0BE252 30 71 10 31       	        and     (16),$31
+0BE256 30 73 10          	        and     (16),a
+0BE259 32 76 10 11       	        and     (16),(17)
+0BE25D 72 00 E9 0B 32    	        and     [ext0],$32
+0BE262 78 33             	        or      a,$33
+0BE264 30 7F 10          	        or      a,(16)
+0BE267 30 79 10 34       	        or      (16),$34
+0BE26B 30 7B 10          	        or      (16),a
+0BE26E 32 7E 10 11       	        or      (16),(17)
+0BE272 7A 00 E9 0B 35    	        or      [ext0],$35
+0BE277 68 36             	        xor     a,$36
+0BE279 30 6F 10          	        xor     a,(16)
+0BE27C 30 69 10 37       	        xor     (16),$37
+0BE280 30 6B 10          	        xor     (16),a
+0BE283 32 6E 10 11       	        xor     (16),(17)
+0BE287 6A 00 E9 0B 38    	        xor     [ext0],$38
+0BE28C 64 39             	        test    a,$39
+0BE28E 30 65 10 3A       	        test    (16),$3A
+0BE292 30 67 10          	        test    (16),a
+0BE295 66 00 E9 0B 3B    	        test    [ext0],$3B
+0BE29A                   	
+0BE29A 60 40             	        cmp     a,$40
+0BE29C 30 62 10          	        cmp     a,(16)
+0BE29F 30 63 10          	        cmp     (16),a
+0BE2A2 32 B7 10 11       	        cmp     (16),(17)
+0BE2A6 62 00 E9 0B 41    	        cmp     [ext0],$41
+0BE2AB 32 C6 10 11       	        cmpw    (16),(17)
+0BE2AF 30 D6 02 10       	        cmpw    (16),ba
+0BE2B3 32 C7 10 11       	        cmpp    (16),(17)
+0BE2B7 30 D7 04 10       	        cmpp    (16),x
+0BE2BB                   	
+0BE2BB 6C 00             	        inc     a
+0BE2BD 6C 01             	        inc     il
+0BE2BF 6C 02             	        inc     ba
+0BE2C1 6C 03             	        inc     i
+0BE2C3 6C 04             	        inc     x
+0BE2C5 6C 05             	        inc     y
+0BE2C7 6C 06             	        inc     u
+0BE2C9 6C 07             	        inc     s
+0BE2CB 30 6D 10          	        inc     (16)
+0BE2CE 7C 00             	        dec     a
+0BE2D0 7C 01             	        dec     il
+0BE2D2 7C 02             	        dec     ba
+0BE2D4 7C 03             	        dec     i
+0BE2D6 7C 04             	        dec     x
+0BE2D8 7C 05             	        dec     y
+0BE2DA 7C 06             	        dec     u
+0BE2DC 7C 07             	        dec     s
+0BE2DE 30 7D 10          	        dec     (16)
+0BE2E1                   	
+0BE2E1 E4                	        ror     a
+0BE2E2 30 E5 10          	        ror     (16)
+0BE2E5 E6                	        rol     a
+0BE2E6 30 E7 10          	        rol     (16)
+0BE2E9 F4                	        shr     a
+0BE2EA 30 F5 10          	        shr     (16)
+0BE2ED F6                	        shl     a
+0BE2EE 30 F7 10          	        shl     (16)
+0BE2F1 30 FC 10          	        dsrl    (16)
+0BE2F4 30 EC 10          	        dsll    (16)
+0BE2F7                   	
+0BE2F7 28                	        pushu   a
+0BE2F8 29                	        pushu   il
+0BE2F9 2A                	        pushu   ba
+0BE2FA 2B                	        pushu   i
+0BE2FB 2C                	        pushu   x
+0BE2FC 2D                	        pushu   y
+0BE2FD 2E                	        pushu   f
+0BE2FE 2F                	        pushu   imr
+0BE2FF 3F                	        popu    imr
+0BE300 3E                	        popu    f
+0BE301 3D                	        popu    y
+0BE302 3C                	        popu    x
+0BE303 3B                	        popu    i
+0BE304 3A                	        popu    ba
+0BE305 39                	        popu    il
+0BE306 38                	        popu    a
+0BE307 4F                	        pushs   f
+0BE308 5F                	        pops    f
+0BE309                   	
+0BE309 97                	        sc
+0BE30A 9F                	        rc
+0BE30B CE                	        tcl
+0BE30C DE                	        halt
+0BE30D DF                	        off
+0BE30E EF                	        wait
+0BE30F FE                	        ir
+0BE310                   	
+0BE310 04 35 E3          	        call    sub_near
+0BE313 05 36 E3 0B       	        callf   sub_far
+0BE317 14 1A E3          	        jpz     branch_a
+0BE31A                   	branch_a:
+0BE31A 15 1D E3          	        jpnz    branch_b
+0BE31D                   	branch_b:
+0BE31D 16 20 E3          	        jpc     branch_c
+0BE320                   	branch_c:
+0BE320 17 23 E3          	        jpnc    branch_d
+0BE323                   	branch_d:
+0BE323 12 00             	        jr      branch_e
+0BE325                   	branch_e:
+0BE325 18 00             	        jrz     branch_f
+0BE327                   	branch_f:
+0BE327 1A 00             	        jrnz    branch_g
+0BE329                   	branch_g:
+0BE329 1C 00             	        jrc     branch_h
+0BE32B                   	branch_h:
+0BE32B 1E 00             	        jrnc    branch_i
+0BE32D                   	branch_i:
+0BE32D 02 30 E3          	        jp      branch_j
+0BE330                   	branch_j:
+0BE330 11 04             	        jp      x
+0BE332                   	
+0BE332                   	        local
+0BE332                   	loop_top:
+0BE332 01                	        db      $01
+0BE333 13 03             	        jr      loop_top
+0BE335                   	        endl
+0BE335                   	
+0BE335                   	sub_near:
+0BE335 06                	        ret
+0BE336                   	
+0BE336                   	sub_far:
+0BE336 07                	        retf
+0BE337                   	
+0BE337                   	irq_return:
+0BE337 01                	        reti
+0BE338                   	
+0BE338                   	        section DATA
+0BE338                   	more_data:
+0BE338 46 01             	        add     a,il
+0BE33A 4E 01             	        sub     a,il
+0BE33C 30 41 10 12       	        add     (16),$12
+0BE340 30 49 10 12       	        sub     (16),$12
+0BE344 30 71 10 12       	        and     (16),$12
+0BE348 30 79 10 12       	        or      (16),$12
+0BE34C 30 69 10 12       	        xor     (16),$12
+0BE350 30 61 10 12       	        cmp     (16),$12
+0BE354                   	        undef   INCLUDE_FLAG
+0BE354 24                	        db      $24
+0BE355                   	
+0BE355                   	        pre_on
+0BE355 A0 01             	        mv      (bp+1),a
+0BE357 34 A0 02          	        mv      (px+2),a
+0BE35A 24 A0 00          	        mv      (bp+px),a
+0BE35D 30 A0 40          	        mv      (#$40),a
+0BE360 80 01             	        mv      a,(bp+1)
+0BE362 34 80 02          	        mv      a,(px+2)
+0BE365 24 80 00          	        mv      a,(bp+px)
+0BE368 30 80 40          	        mv      a,(#$40)
+0BE36B 23 C8 01 02       	        mv      (bp+1),(py+2)
+0BE36F 34 C9 02 03       	        mvw     (px+2),(bp+3)
+0BE373 25 CA 00 00       	        mvp     (bp+px),(bp+py)
+0BE377 23 CB 01 02       	        mvl     (bp+1),(py+2)
+0BE37B                   	
+0BE37B FF                	        reset
+0BE37C                   	        end
+
+ - Symbols -
+
+000000h  base0
+000001h  base1
+000002h  base2
+000003h  base3
+000004h  base4
+000005h  base5
+000006h  base6
+000007h  base7
+0BE31Ah  branch_a
+0BE31Dh  branch_b
+0BE320h  branch_c
+0BE323h  branch_d
+0BE325h  branch_e
+0BE327h  branch_f
+0BE329h  branch_g
+0BE32Bh  branch_h
+0BE32Dh  branch_i
+0BE330h  branch_j
+0BE020h  data_block
+0BE900h  ext0
+0BEA00h  ext1
+0BE000h  inc_byte
+000034h  inc_const
+0BE006h  inc_ptr
+0BE004h  inc_word
+0BE337h  irq_return
+0BE338h  more_data
+0BE332h  n00001
+0BE332h  n00001!loop_top
+000020h  ptr0
+000024h  ptr1
+0BE039h  start
+0BE336h  sub_far
+0BE335h  sub_near
+0BE009h  w_a
+0BE00Ah  w_b
+0BE00Ch  w_p
+
+  No fatal error.  Code: 0BE000h - 0BE37Bh [      892 byte(s)]
