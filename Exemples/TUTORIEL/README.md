@@ -13,8 +13,9 @@ surtout l'octet qu'elle produit.
 > source*, c'est là qu'on lit le résultat de chaque construction) et le **`.obj`** (octets assemblés).
 >
 > **Exception : `08_relocation_detaillee.asm` EST exécutable et testable sur le Sharp** (il a donc
-> un `.uu`). La relocation étant délicate, on la comprend beaucoup mieux en la voyant fonctionner :
-> ce programme relocalise réellement un bout de code et affiche le résultat.
+> un `.uu`), et il est **validé sur émulateur** : `CALL &BF000` affiche « RELOC. REUSSIE ». La
+> relocation étant délicate, on la comprend beaucoup mieux en la voyant fonctionner : ce programme
+> relocalise réellement un bout de code et affiche le résultat.
 
 ## Les exemples
 
