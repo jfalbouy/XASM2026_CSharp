@@ -5,13 +5,16 @@ expressions, directives, symboles locaux, macros, structures, préprocesseur A62
 le [README principal](../../README.md) en montrant chaque construction **à l'œuvre** — et
 surtout l'octet qu'elle produit.
 
-> **Ce ne sont PAS des programmes exécutables sur le Sharp.** Ils émettent des données pour
+> **La plupart ne sont PAS des programmes exécutables sur le Sharp.** Ils émettent des données pour
 > *démontrer l'assembleur*, pas pour tourner : les exécuter (`CALL`) planterait la machine
-> (des données seraient exécutées comme du code). C'est pourquoi **aucun `.uu` n'est fourni** —
-> le `.uu` sert à déployer un programme réel sur le PC-E500S, ce qui n'a pas de sens ici. Pour
-> chaque exemple : le **`.asm`** (source commentée), le **`.lst`** (listing : *adresse → octets →
-> source*, c'est là qu'on lit le résultat de chaque construction) et le **`.obj`** (les octets
-> assemblés).
+> (des données seraient exécutées comme du code). C'est pourquoi ils **n'ont pas de `.uu`** — le
+> `.uu` sert à déployer un programme réel sur le PC-E500S, ce qui n'a pas de sens pour eux. Pour
+> ces exemples : le **`.asm`** (source commentée), le **`.lst`** (listing : *adresse → octets →
+> source*, c'est là qu'on lit le résultat de chaque construction) et le **`.obj`** (octets assemblés).
+>
+> **Exception : `08_relocation_detaillee.asm` EST exécutable et testable sur le Sharp** (il a donc
+> un `.uu`). La relocation étant délicate, on la comprend beaucoup mieux en la voyant fonctionner :
+> ce programme relocalise réellement un bout de code et affiche le résultat.
 
 ## Les exemples
 
@@ -24,6 +27,7 @@ surtout l'octet qu'elle produit.
 | `05_repeat_conditions.asm` | `REPEAT`/`ENDR` + compteur `SET` **génératif**, conditionnelles `IFEQ`/`IFNE`/`IFGT`/`IFLT` (+ `ELSE`), `ASSERT` | *Répétition, conditionnelles* |
 | `06_structures.asm` | `STRUCT`/`ENDS` (champs = offsets, nom = taille), zone de travail A62 `SUBORG` + `BYTE`/`WORD`/`PNTR` + `%`, blocs `{ }` | *Structures, blocs A62* |
 | `07_preprocesseur_a62.asm` | le **préprocesseur A62** : `rel` (génère la table de relocation), `#defmacro`/`%0..%9` (dont `bsr`), `#if`/`#else`/`#endif` | *Préprocesseur A62 : `rel`, `#defmacro`, `#if`* |
+| `08_relocation_detaillee.asm` | **la relocation, démontrée et TESTABLE** : copie un code à une autre adresse, applique la table `rel`, sabote l'original, exécute la copie → affiche « RELOC. REUSSIE ». Décode la table octet par octet et donne la correction. **A un `.uu`.** | *Préprocesseur A62 → la relocation* |
 
 ## Comment lire un exemple
 
