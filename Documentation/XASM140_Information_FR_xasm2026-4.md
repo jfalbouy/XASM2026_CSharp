@@ -90,6 +90,12 @@ Le compteur de position est `*`.
 | `REPEAT`, `ENDR` | Répète un bloc. |
 | `STRUCT`, `ENDS` | Décrit une structure et calcule sa taille. |
 | `SECTION` | Marque une section pour MAP et rapport de taille. |
+| `SUBORG`, `BYTE`/`WORD`/`PNTR`, `{ }` | Zone de travail et blocs structurés du dialecte A62. |
+| `rel`, `#defmacro`/`#endmacro`, `#if`/`#else`/`#endif` | **Préprocesseur A62** : relocation avec table générée, macros à paramètres `%0..%9`, conditionnelles `symbole`/`==`/`!=`. `PREON`/`PREOFF` = orthographes A62 de `PRE_ON`/`PRE_OFF`. |
+
+> Le jeu complet des directives ajoutées en 2026-4 (`SET`/`=`, `IRP`/`IRPC`, `EXITM`,
+> `ALIGN`/`EVEN`, `DZ`, `ASSERT`/`ERROR`/`WARNING`, `TITLE`/`LIST`/`NOLIST`/`PAGE`,
+> `PHASE`/`DEPHASE`…) est détaillé dans `Documentation_XASM2026-4_PC-E500S.md`, §6.
 
 ## 7. Prébytes automatiques
 
@@ -123,6 +129,8 @@ Attention : `PY+n` et `BP+PY` ne sont pas des formes de premier opérande. Elles
 -D  dépendances
 -B  BASIC UUENCODE auto-décodeur
 -X  dump texte HxD
+-U  table des références croisées dans le listing
+-K  listing : ne garde des includes que les constantes utilisées
 -V  erreurs détaillées
 -R  rapport de sections
 ```

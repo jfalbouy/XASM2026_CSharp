@@ -40,7 +40,8 @@ Ce fichier interprete les options historiques de XASM, notamment :
 - `-E` pour le rapport d'erreur ;
 - `-B` pour le fichier BASIC uuencode ;
 - `-I`, `-M`, `-P`, `-D`, `-X` pour les autres formats de sortie ;
-- `-T` pour le type d'objet.
+- `-T` pour le type d'objet ;
+- `-S`, `-U`, `-K` pour enrichir ou filtrer le listing (symboles, references croisees, et masquage des constantes d'include inutilisees).
 
 Il calcule egalement les noms de sortie par defaut a partir du nom du fichier source.
 
@@ -68,7 +69,7 @@ Ce fichier assure la majorite du travail :
 - generation des octets, lignes de listing, sections et dependances ;
 - validation des prebytes et des operandes de memoire interne.
 
-Les procedures `Emit...` encodent les familles d'instructions : mouvements, comparaisons, operations logiques, arithmetiques, sauts, pile, donnees et stockage. Les familles a post-octet (MV/MVW/MVP/MVL) sont verrouillees par le jeu d'essai `postbyte_families`. La zone de travail A62 est geree par `SUBORG` et `DeclareFields` (`BYTE`/`WORD`/`PNTR`), qui nomment des champs dans un compteur secondaire sans emettre d'octet.
+Les procedures `Emit...` encodent les familles d'instructions : mouvements, comparaisons, operations logiques, arithmetiques, sauts, pile, donnees et stockage. Les familles a post-octet (MV/MVW/MVP/MVL) sont verrouillees par le jeu d'essai `postbyte_families`. La zone de travail A62 est geree par `SUBORG` et `DeclareFields` (`BYTE`/`WORD`/`PNTR`), qui nomment des champs dans un compteur secondaire sans emettre d'octet. Le prefixe A62 `rel` fait enregistrer le champ d'adresse de l'instruction dans `_relocSites` ; a la fin de l'assemblage, `AppendRelocTable`/`EncodeRelocTable` encodent ces sites en **table de relocation** (format Kon) ajoutee apres le code, uniquement s'il en existe (une source sans `rel` produit un objet identique).
 
 Les procedures `Parse...`, `TryEmit...`, `Is...` et `Resolve...` sont des aides internes pour analyser les operandes, resoudre les symboles et choisir la bonne forme d'encodage.
 
@@ -87,6 +88,11 @@ expansion des macros, `REPEAT`, `IRP` et `IRPC`, et traitement des conditionnell
 Le corps d'une macro y est **re-developpe** plutot que recopie tel quel, ce qui permet les
 conditionnelles internes, `EXITM`, les macros imbriquees et `REPEAT` dans un corps. Un
 garde-fou rejette une macro qui s'appellerait elle-meme.
+
+Le **preprocesseur A62** est ici aussi : `#defmacro`/`#endmacro` (parametres positionnels
+`%0..%9`, ramenes au meme mecanisme que `MACRO` via `A62MacroParameters`) et les conditionnelles
+`#if`/`#else`/`#endif` (`EvaluateA62Condition` : `symbole`, `a == b`, `a != b`), evaluees la ou
+les `EQU`/`SET` deja rencontres sont connus.
 
 `RewriteStructuredBlocks` traite les blocs structures `{ }` du dialecte A62 sur la liste
 aplatie : chaque `{`/`}` devient une etiquette synthetique et les cibles reservees
@@ -205,7 +211,7 @@ Ce fichier reprend la logique attendue par le decodeur historique `UUSELFX`.
 
 Generation du fichier `.lst`.
 
-Il ecrit les options actives, les lignes assemblees, les adresses, les octets produits et, si demande, la liste des symboles.
+Il ecrit les options actives, les lignes assemblees, les adresses, les octets produits et, si demande, la liste des symboles. Sous l'option `-K`, `IsHiddenIncludeLine` masque du listing les lignes d'un fichier **inclus** qui n'emettent aucun octet et ne sont pas une constante `EQU` referencee, en s'appuyant sur `AssemblyResult.SymbolReferences` et sur le fichier d'origine de chaque ligne.
 
 ### `src/Outputs/MapWriter.cs`
 

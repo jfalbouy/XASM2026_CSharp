@@ -1,6 +1,6 @@
 # Documentation XASM2026-4 pour Sharp PC-E500S
 
-Version du document : 05/06/2026
+Version du document : 08/09/2026
 
 ## 1. Objet du document
 
@@ -83,6 +83,7 @@ xasm2026-4.exe coverage_all.asm -O coverage_all.obj -L coverage_all.lst -E -S -T
 | `-B[filename]` | Génère un BASIC auto-décodeur UUENCODE. |
 | `-X[filename]` | Génère un dump texte façon HxD. |
 | `-U` | Annexe la table des références croisées au listing (avec `-L`). |
+| `-K` | Listing : ne conserve, des fichiers **inclus**, que les constantes `EQU` réellement utilisées (avec `-L`). Voir §6.3. |
 | `-V` | Active les diagnostics détaillés. |
 | `-R` | Affiche le rapport de taille par section. |
 | `-?` | Affiche l'aide. |
@@ -196,6 +197,9 @@ qui ne les emploie pas produit exactement les mêmes octets qu'auparavant.
 | `{` … `}` | Blocs structurés (dialecte A62) : cibles `continue` (début) et `break` (sortie). |
 | `SUBORG expr` | Positionne un **compteur secondaire** (zone de travail) ; `*` = compteur principal. |
 | `BYTE`, `WORD`, `PNTR` | Nomment des champs de 1/2/3 octets dans ce compteur, sans rien émettre. |
+| `rel <instruction>` | Préfixe A62 : assemble l'instruction **et** enregistre son champ d'adresse pour la **table de relocation** générée (§6.1.2). |
+| `#defmacro nom` … `#endmacro` | Macro A62 à paramètres positionnels `%0..%9` (§6.1.2). |
+| `#if <cond>`, `#else`, `#endif` | Assemblage conditionnel A62 : `symbole`, `a == b`, `a != b` (§6.1.2). |
 
 **`SET` est ce qui rend `REPEAT` réellement génératif** : sans symbole redéfinissable, aucun
 compteur ne peut progresser d'une itération à l'autre.
@@ -267,6 +271,41 @@ la taille du cadre — même distinction par la position que `*` pour le compteu
         pntr   tete                 ; tete=4  (pointeur 3 octets) ; ici "%" vaut 7
 ```
 
+### 6.1.2 Préprocesseur A62 : `rel`, `#defmacro`, `#if`
+
+Trois constructions supplémentaires reproduisent le **préprocesseur du compilateur A62 (Kon)**,
+ce qui permet d'assembler les sources d'origine des drivers Kon **telles quelles**.
+
+**`[label:] rel <instruction>`** — relocation. L'instruction est assemblée normalement, mais son
+**champ d'adresse** est enregistré comme *site relogeable*. À la fin de l'assemblage, les sites
+sont encodés en **table de relocation** (format Kon) **ajoutée après le code** — comme le faisait
+A62, au lieu de coder la table à la main. Elle n'est émise **que** si des `rel` existent (une
+source sans `rel` produit un objet identique). Format de la table (rétro-ingénieré, byte-exact
+contre `PLINKC.OBJ`) : suite de deltas entre offsets des champs d'adresse (1ᵉʳ delta depuis
+l'`org`), bit `080h` = largeur 3 octets (`mv imm20`/`dp`), absent = 2 octets (`call`/`jp` proche),
+`07Eh` = delta long (2 octets little-endian suivent), `0FFh` = fin.
+
+**`#defmacro nom` … `#endmacro`** — macro A62 à paramètres positionnels `%0..%9`. Par exemple
+`bsr` (appel proche relogeable) se définit par `#defmacro bsr` / `rel call %0` / `#endmacro`.
+
+**`#if <condition>` / `#else` / `#endif`** — assemblage conditionnel A62 : `#if symbole` (vrai si
+≠ 0), `#if a == b`, `#if a != b`. Enfin `PREON`/`PREOFF` sont acceptés comme orthographes A62 de
+`PRE_ON`/`PRE_OFF`.
+
+```asm
+#defmacro bsr
+        rel call %0                 ; %0 = argument de l'appel
+#endmacro
+#if version == 2
+        rel mv x,routine            ; adresse absolue relogeable (site, largeur 3)
+        bsr routine                 ; appel proche relogeable (site, largeur 2)
+#endif
+```
+
+> **Démonstration :** la source A62 d'origine de `PLINKC` s'assemble **directement** en un
+> `PLINKC.OBJ` **octet-exact** (table de relocation générée, non codée en dur) — voir
+> `Exemples/PLINKC/A62/`.
+
 ### 6.2 Exemples fournis
 
 Le dossier `Exemples/SAMPLES` contient deux familles de sources :
@@ -285,10 +324,36 @@ Les octets qu'ils produisent sont néanmoins verrouillés par le harnais de test
 
 D'autres dossiers d'`Exemples/` contiennent des **portages du dialecte A62 / Kon** : `ssfdc120`
 (driver SmartMedia) et `PLINKC` (Pocket Link Cache, même famille que `REGISTER`). Leur code
-machine est reproduit à l'octet près contre les binaires d'époque ; seule la table de
-relocation propre à A62 n'est pas régénérée. `Exemples/INCLUDE/pce500.inc` fournit les 276
-constantes système du PC-E500S en un seul `include`, généré depuis les tables du désassembleur
-`SC62015Disassembler` pour un vocabulaire de noms cohérent entre les deux outils.
+machine est reproduit à l'octet près contre les binaires d'époque. Depuis l'ajout du préprocesseur
+A62 (§6.1.2), la **table de relocation est désormais régénérée** : la source A62 d'origine de
+`PLINKC` s'assemble directement en `PLINKC.OBJ` byte-exact (voir `Exemples/PLINKC/A62/`).
+
+Le dossier **`Exemples/TUTORIEL`** rassemble huit fichiers **pédagogiques** commentés qui
+illustrent, listing à l'appui, chaque originalité de l'assembleur : expressions, directives de
+données, symboles locaux, macros, répétition/conditionnelles, structures, préprocesseur A62, et
+une **démonstration de relocation exécutable et validée sur émulateur** (`08`, `CALL &BF000` →
+« RELOC. REUSSIE »). Ce ne sont pas des programmes destinés à tourner (sauf `08`), mais des
+supports d'apprentissage : on y lit, dans le `.lst`, la correspondance *construction → octet émis*.
+
+Enfin, les **outils de développement de pilotes résidents** ont leur dossier : `DRIVER_TEMPLATE`
+(squelette réutilisable : installation ajout-en-fin, désinstallation `-u`, discipline de
+relocation) et les portages validés sur matériel `REGISTER3` et `PLINK2` — voir le document
+`Modele_Pilotes_Resident_PC-E500S.md`.
+
+`Exemples/INCLUDE/pce500.inc` fournit les 276 constantes système du PC-E500S en un seul `include`,
+généré depuis les tables du désassembleur `SC62015Disassembler` pour un vocabulaire de noms
+cohérent entre les deux outils (voir l'option `-K` en §6.3 pour n'en lister que les constantes
+utilisées).
+
+### 6.3 Option `-K` — listing réduit aux constantes d'include utilisées
+
+Inclure un gros fichier de constantes comme `pce500.inc` (276 `EQU`) noie le `.lst`. L'option
+`-K` (avec `-L`) n'y conserve, **des fichiers inclus**, que les constantes `EQU` effectivement
+**référencées** par le programme ; tout ce qui n'émet pas d'octet et n'est pas une constante
+utilisée (constantes inutiles, en-têtes de section, lignes vides de l'include) est masqué, la
+source principale restant intégrale. Sur `Exemples/INCLUDE/example.asm`, le listing passe de 357
+à 36 lignes. C'est un **filtre de listing pur** : l'objet et toutes les autres sorties sont
+identiques avec ou sans `-K`.
 
 ## 7. Prébytes et nomenclature mémoire interne
 
@@ -392,6 +457,28 @@ Travaux ajoutés depuis (2026-07 à 2026-08), détaillés dans `PORTAGE.md` :
   `PLINKC`, ce dernier validé sur matériel réel).
 - **`Exemples/INCLUDE/pce500.inc`** : 276 constantes système générées depuis les tables du
   désassembleur, pour un vocabulaire de noms partagé.
+
+Travaux ajoutés en 2026-08, détaillés dans `PORTAGE.md` :
+
+- **Outillage de développement de pilotes résidents** : document de conception
+  (`Documentation/Modele_Pilotes_Resident_PC-E500S.md`), squelette réutilisable `DRIVER_TEMPLATE`
+  (installation ajout-en-fin sans recalage BASIC, désinstallation `CALL &... "-u"`, discipline de
+  relocation `reldp`/`relref` détectable à l'assemblage), et deux portages **validés sur émulateur
+  dans tous les cas** : `REGISTER3` et `PLINK2` (portage de `PLINKC` sur ce modèle). Trois
+  enseignements réutilisables en sont tirés : `PRE_ON` indispensable pour l'adressage interne
+  absolu ; le pointeur de ligne d'un `CALL` à argument doit être restitué avancé (protocole
+  UUENCODE) avec reconnaissance des **quatre** terminateurs BASIC (`0`, `CR`, `1Ah`, `0FFh`) ; et
+  un `CALL` doit rendre la main **carry clair** (`rc`), un carry armé provoquant une « Syntax
+  error ».
+- **Option `-K`** : le listing ne conserve d'un fichier inclus que les constantes `EQU` utilisées
+  (§6.3). Filtre de listing pur, opt-in : les sorties de référence restent identiques.
+- **Préprocesseur A62 complet** (§6.1.2) : préfixe `rel` avec **génération de la table de
+  relocation** (format Kon, rétro-ingénieré et byte-exact), macros `#defmacro`/`#endmacro`
+  (paramètres `%0..%9`) et conditionnelles `#if`/`#else`/`#endif`. Résultat : la **source A62
+  d'origine de `PLINKC` s'assemble directement en `PLINKC.OBJ` octet-exact** (`Exemples/PLINKC/A62/`),
+  la table étant désormais générée et non plus codée en dur.
+- **Dossier `Exemples/TUTORIEL`** : huit exemples pédagogiques commentés des fonctionnalités de
+  l'assembleur, dont une démonstration de relocation **exécutable et validée sur émulateur**.
 
 ## 12. Validation et non-régression
 
