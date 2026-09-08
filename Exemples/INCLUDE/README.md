@@ -61,3 +61,11 @@ leur commentaire. Tout ce qui n'émet pas d'octet et n'est pas une constante uti
 inutiles, en-têtes de section, lignes vides) est masqué. C'est un **filtre de listing pur** :
 l'objet et les autres sorties sont identiques avec ou sans `-K`, et les goldens (produits sans
 `-K`) restent inchangés.
+
+## Vue triée par adresse
+
+Pour visualiser la **continuité de la mémoire** et retrouver *ce qui se trouve à une adresse
+donnée*, le document `Documentation/Carte_Memoire_PC-E500S.md` liste ces mêmes constantes
+**triées par adresse croissante** (RAM interne, registres d'E/S, zone système, points d'entrée
+ROM), avec les codes de fonction FCS/IOCS et numéros de device en tables séparées. Il est généré
+depuis `pce500.inc` par `tools/gen_carte_memoire.py`.
