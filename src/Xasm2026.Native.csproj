@@ -6,6 +6,13 @@
     <Nullable>enable</Nullable>
     <AssemblyName>xasm2026-4</AssemblyName>
     <RootNamespace>Xasm2026.Native</RootNamespace>
+
+    <!-- Build reproductible et sans chemin machine dans les binaires publies :
+         symboles integres au .dll (pas de .pdb externe reference par chemin absolu),
+         et normalisation des chemins source embarques dans les infos de debogage. -->
+    <Deterministic>true</Deterministic>
+    <DebugType>embedded</DebugType>
+    <PathMap>$(MSBuildProjectDirectory)=/xasm2026-4/src</PathMap>
   </PropertyGroup>
 
   <ItemGroup>

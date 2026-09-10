@@ -23,3 +23,14 @@ dist/
 
 # Sorties du test de coherence round-trip (regenerable)
 tests/_roundtrip_coherence/
+
+# Sorties d'assemblage ad-hoc dans Exemples/ (regenerables ; les goldens versionnes
+# — SAMPLE5.*, PLINKC.OBJ, PLINK2.*, REGISTER*.*, register.*, plinkc.a62.* — restent
+# suivis, .gitignore ne desuit jamais un fichier deja versionne).
+Exemples/SAMPLES/sample[1-4].*
+Exemples/SAMPLES/SAMPLE5_v14.*
+Exemples/INCLUDE/example.obj
+Exemples/INCLUDE/example.lst
+Exemples/PLINKC/plinkc.native.obj
+Exemples/PLINKC/PLINKC.UU
+Exemples/REGISTER/tmac.obj
