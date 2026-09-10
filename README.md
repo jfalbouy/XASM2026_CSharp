@@ -896,16 +896,37 @@ Les mnémoniques ou formes d'adressage non encore portés provoquent une erreur 
 ```
 XASM original    Copyright (c) 1990-1993 N. Kon (Turbo Pascal)
 XASM 1.40        Copyright (c) 1995-1996 E. Kako (C)
-XASM 2026-4      Updated by Jean-François Albouy, 2026
+XASM 2026-4      Portage C# — Jean-François Albouy, 2026
 ```
 
-Ce logiciel est distribué pour usage personnel et éducatif avec les machines
-Sharp PC-E500 / PC-E500S.
+**Ce dépôt réunit plusieurs œuvres sous des régimes de droits différents.** La
+règle qui prime, dans tous les cas, est l'**usage non commercial**.
+
+- **Le portage C# (`src/`, `tests/`, `tools/`, documentation du portage)** est
+  une **œuvre dérivée** de XASM, publiée sous **PolyForm Noncommercial License
+  1.0.0** — voir [`LICENSE`](LICENSE). Le choix d'une licence non commerciale
+  est délibéré : il respecte la condition « no commercial use » de l'amont.
+- **XASM d'origine** (N. Kon & E. Kako) est un *freeware* aux conditions
+  « no commercial use » et « no altering ». La distribution originale est fournie
+  **inaltérée** dans [`Sources originales/`](Sources%20originales/) ; les sources
+  C de référence sont dans [`Reference/C/`](Reference/C/). Le portage dérivé
+  s'appuie sur la permission explicite d'« improving and rewriting » accordée par
+  N. Kon (voir [`NOTICE.md`](NOTICE.md)).
+- **Les programmes d'exemple** de `Exemples/` (PLINKC, REGISTER, SSFDC, MASSE,
+  Vogue, Tmap…) restent sous les droits de leurs auteurs respectifs.
+
+L'inventaire complet des droits d'auteur, licences et attributions figure dans
+[`NOTICE.md`](NOTICE.md) — à conserver et à lire avant toute redistribution.
+
+Logiciel fourni « en l'état », sans garantie, pour usage personnel, éducatif et
+non commercial avec les machines Sharp PC-E500 / PC-E500S.
 
 ---
 
 ## Références
 
+- [`LICENSE`](LICENSE) — licence du portage (PolyForm Noncommercial 1.0.0)
+- [`NOTICE.md`](NOTICE.md) — inventaire des droits d'auteur et attributions
 - [`CLAUDE.md`](CLAUDE.md) — guide de contribution et architecture détaillée
 - [`PORTAGE.md`](PORTAGE.md) — journal daté du portage, module par module
 - [`xasm2026-4.md`](xasm2026-4.md) — note de cadrage du portage

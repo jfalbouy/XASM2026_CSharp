@@ -4,10 +4,12 @@
 #    (une seule table, pour visualiser la continuite memoire) ;
 #  - les constantes de CODE (fonctions FCS/IOCS, numeros de device) en tables
 #    separees, triees par valeur, clairement etiquetees "pas des adresses".
-import re, datetime
+import re, datetime, os
 
-INC = r"C:\Claude\xasm2026-4\Exemples\INCLUDE\pce500.inc"
-OUT = r"C:\Claude\xasm2026-4\Documentation\Carte_Memoire_PC-E500S.md"
+# Chemins deduits de l'emplacement du script (tools/), sans arborescence machine.
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+INC = os.path.join(ROOT, "Exemples", "INCLUDE", "pce500.inc")
+OUT = os.path.join(ROOT, "Documentation", "Carte_Memoire_PC-E500S.md")
 
 # section courante -> categorie
 SECTIONS = {

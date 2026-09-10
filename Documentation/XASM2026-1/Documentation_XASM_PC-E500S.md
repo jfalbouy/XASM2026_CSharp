@@ -420,16 +420,18 @@ xasm2026-1.exe PROGRAM.ASM -O PROGRAM.obj -L PROGRAM.lst -B PROGRAM.uu -X PROGRA
 
 ## 10.3 Sources consultees
 
-- `<archive>\xasm140\XASM - ENGLISH.DOC`
-- `<archive>\xasm140\README.txt`
-- `<archive>\xasm140\Samples`
-- `<archive>\xasm2026-1\xasm2026.md`
-- `<archive>\xasm2026-1\*.c` et `*.h`
-- `<archive>\Manuels - Sharp PC-E500S\ESR-L_CPU_tech_manual.pdf`
-- `<archive>\Manuels - Sharp PC-E500S\pce500_tech_manual.pdf`
-- `<archive>\Manuels - Sharp PC-E500S\TechnicalReferenceManualPC-E500.pdf`
-- `<archive>\Manuels - Sharp PC-E500S\PC-E500 manual_EN.pdf`
-- `<archive>\Manuels - Sharp PC-E500S\PC-E500S-DE.pdf`
+Distribution XASM 1.40 (voir `Sources originales/` et `Reference/C/`) :
+
+- `XASM - ENGLISH.DOC`, `README.txt`, dossier `Samples`
+- `xasm2026-1/xasm2026.md`, sources `*.c` et `*.h`
+
+Manuels techniques Sharp PC-E500 / PC-E500S (documents externes, non redistribués ici) :
+
+- `ESR-L_CPU_tech_manual.pdf`
+- `pce500_tech_manual.pdf`
+- `TechnicalReferenceManualPC-E500.pdf`
+- `PC-E500 manual_EN.pdf`
+- `PC-E500S-DE.pdf`
 
 ## 10.4 Pistes d enrichissement pour une version encyclopedique
 

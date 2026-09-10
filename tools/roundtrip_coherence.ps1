@@ -33,7 +33,9 @@ $RepoRoot = Split-Path -Parent $PSScriptRoot
 if (-not $CandidateXasm) { $CandidateXasm = Join-Path $RepoRoot "src\bin\Release\net8.0\xasm2026-4.exe" }
 if (-not $OutDir) { $OutDir = Join-Path $RepoRoot "tests\_roundtrip_coherence" }
 if (-not $Disassembler) {
-    $Disassembler = "C:\Claude\SC62015Disassembler\Publish\e500dasm.exe"
+    # Ressource externe absente du depot : chemin fourni via -Disassembler ou la
+    # variable d'environnement E500DASM_EXE (pas de chemin machine code en dur).
+    $Disassembler = $env:E500DASM_EXE
 }
 
 if (-not (Test-Path $Disassembler)) {

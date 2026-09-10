@@ -21,13 +21,16 @@ FINAL_ROOT = Path(os.environ.get("XASM_FINAL_ROOT", str(ROOT)))
 DOC_DIR = ROOT / "Documentation"
 FINAL_DOC_DIR = FINAL_ROOT / "Documentation"
 
-# Ressources externes absentes du depot : surchargeables par variable d'environnement.
+# Ressources externes absentes du depot : a fournir via variable d'environnement.
+# Les valeurs par defaut ne pointent volontairement sur aucune arborescence
+# personnelle : ce sont des emplacements relatifs au depot, a surcharger par
+# XASM_INSTRUCTION_TABLE / XASM140_INFO_TXT selon la machine.
 INSTRUCTION_TABLE = Path(os.environ.get(
     "XASM_INSTRUCTION_TABLE",
-    r"C:\Codex\Manuels - Sharp PC-E500S\Documents\README - PC-E500 Instruction Table.md"))
+    str(ROOT / "_ressources_externes" / "README - PC-E500 Instruction Table.md")))
 XASM140_INFO_TXT = Path(os.environ.get(
     "XASM140_INFO_TXT",
-    r"<archive>\XASM140 - Information.DOC.txt"))
+    str(ROOT / "_ressources_externes" / "XASM140 - Information.DOC.txt")))
 
 
 def read(path: Path) -> str:

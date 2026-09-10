@@ -5,10 +5,12 @@
 #  - noms definis une seule fois (macros)
 #  - table de relocation d'origine reutilisee VERBATIM (1 octet ajuste : nom device +2)
 #  - corps du pilote + zone de travail VERBATIM depuis plinkc.native.asm
-import io, re
+import io, re, os
 
-SRC = r"C:\Claude\xasm2026-4\Exemples\PLINKC\plinkc.native.asm"
-OUT = r"C:\Claude\xasm2026-4\Exemples\PLINKC\PLINK2.asm"
+# Chemins deduits de l'emplacement du script (dossier de l'exemple), sans chemin machine.
+HERE = os.path.dirname(os.path.abspath(__file__))
+SRC = os.path.join(HERE, "plinkc.native.asm")
+OUT = os.path.join(HERE, "PLINK2.asm")
 
 nat = open(SRC, encoding='latin-1').read().split('\n')
 def L(a, b):  # lignes a..b (1-based, inclus)

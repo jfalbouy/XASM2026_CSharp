@@ -30,8 +30,8 @@ référence. Écrire une source avec ces noms puis la désassembler là-bas redo
 Pour régénérer après une évolution des tables :
 
 ```powershell
-python tools\generate_pce500_inc.py            # tables prises dans C:\Claude\SC62015Disassembler\Data
-python tools\generate_pce500_inc.py <dossier_Data>   # ou un autre emplacement
+python tools\generate_pce500_inc.py                  # tables du desassembleur (emplacement par defaut)
+python tools\generate_pce500_inc.py <dossier_Data>   # ou un dossier Data explicite
 ```
 
 Le générateur donne la priorité à l'adresse **système** sur la RAM interne en cas de nom

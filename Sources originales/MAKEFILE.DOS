@@ -1,0 +1,56 @@
+#
+#       Makefile  of   SC62015 Cross Assembler "XASM"
+#
+# ---------------------------------------------------------
+#	for DOS (or Win95/NT)  (Watcom C/C++ ver11)
+# ---------------------------------------------------------
+#
+#CC	=	wcl386
+CC	=	wcl
+OPT	=	/3 /ox
+OBJS	=	xasm.obj var.obj init.obj genop.obj hash.obj \
+		eval.obj mes.obj misc.obj mvopr.obj opr.obj
+.c.obj:
+		$(CC) $(OPT) -c $<
+xasm.exe:	$(OBJS)
+		$(CC) $(OPT) $(OBJS)
+#
+# ---------------------------------------------------------
+#	for MS-DOS (Turbo-C++ ver4.0)
+# ---------------------------------------------------------
+#
+#CC	=	tcc
+#OPT	=	-ml -1 -a2 -G -O -Z -w-pro -w-rvl
+#OBJS	=	xasm.obj var.obj init.obj genop.obj hash.obj \
+#		eval.obj mes.obj misc.obj mvopr.obj opr.obj
+#.c.obj:
+#		$(CC) $(OPT) -c $<
+#xasm.exe:	$(OBJS)
+#		$(CC) $(OPT) $(OBJS)
+#
+# ---------------------------------------------------------
+#       for MS-DOS  (Microsoft-C)
+# ---------------------------------------------------------
+#CC	=	cl
+#OPT	=	/Oaxb2 /AL /F 6800
+#OBJS	=	xasm.obj var.obj init.obj genop.obj hash.obj \
+#		eval.obj mes.obj misc.obj mvopr.obj opr.obj
+#.c.obj:
+#		$(CC) $(OPT) -c $<
+#xasm.exe:	$(OBJS)
+#		$(CC) $(OPT) $(OBJS)
+#
+# ---------------------------------------------------------
+#       for X68000 Human68K
+# ---------------------------------------------------------
+#CC	=	gcc
+#CFLAGS	=	-fstrength-reduce -fomit-frame-pointer \
+#		-fforce-addr -fforce-mem -fcombine-regs \
+#		-funsigned-char -fall-bsr -O
+#OBJS	=	xasm.o var.o init.o genop.o hash.o \
+#		eval.o mes.o misc.o mvopr.o opr.o
+#.c.o:
+#		$(CC) $(CFLAGS) -c $<
+#xasm:		$(OBJS)
+#		$(CC) $(CFLAGS) -o xasm $(OBJS)
+#

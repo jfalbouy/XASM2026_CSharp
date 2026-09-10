@@ -11,9 +11,11 @@ from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
 
 
-ROOT = Path(r"<archive>")
-SRC = ROOT / "xasm2026-1" / "Documentation" / "Documentation_XASM_PC-E500S.md"
-OUT = ROOT / "xasm2026-1" / "Documentation" / "Documentation_XASM_PC-E500S.docx"
+# Le document source est le voisin de ce script (dossier Documentation/XASM2026-1/) :
+# on le deduit de l'emplacement du script, sans chemin machine.
+DOC_DIR = Path(__file__).resolve().parent.parent
+SRC = DOC_DIR / "Documentation_XASM_PC-E500S.md"
+OUT = DOC_DIR / "Documentation_XASM_PC-E500S.docx"
 
 BLUE = RGBColor(0x2E, 0x74, 0xB5)
 DARK = RGBColor(0x1F, 0x4D, 0x78)

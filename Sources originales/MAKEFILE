@@ -1,0 +1,14 @@
+#
+#       Makefile  of   SC62015 Cross Assembler "XASM"
+#
+# ---------------------------------------------------------
+#       for UNIX   (add -DSYSV to OPT for System-V)
+# ---------------------------------------------------------
+CC	=	gcc
+OPT	=	-O
+OBJS	=	xasm.o var.o init.o genop.o hash.o \
+		eval.o mes.o misc.o mvopr.o opr.o
+.c.o:
+		$(CC) $(OPT) -c $<
+xasm:		$(OBJS)
+		$(CC) $(OPT) -o xasm $(OBJS)
