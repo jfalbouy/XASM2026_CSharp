@@ -34,3 +34,8 @@ Exemples/INCLUDE/example.lst
 Exemples/PLINKC/plinkc.native.obj
 Exemples/PLINKC/PLINKC.UU
 Exemples/REGISTER/tmac.obj
+
+# Fichiers volontairement NON publies (conserves en local uniquement)
+.github/copilot-instructions.md
+Exemples/PLINKC/Screenshot.docx
+Exemples/REGISTER/tmac.asm
