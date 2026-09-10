@@ -4,7 +4,7 @@ Oui. Pour travailler confortablement dans Visual Studio Code, je te conseille ce
 
 Ouvre directement le dossier :
 
-code "<archive>\\xasm2026-1"Installe l’extension VS Code C/C++ de Microsoft. Elle suffit pour la coloration, la navigation dans le code C et les diagnostics de base.
+code "<chemin-du-depot>\\xasm2026-1"Installe l’extension VS Code C/C++ de Microsoft. Elle suffit pour la coloration, la navigation dans le code C et les diagnostics de base.
 
 Commande de compilation depuis le terminal VS Code, dans le dossier xasm2026-1 :
 
