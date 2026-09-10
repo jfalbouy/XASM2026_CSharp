@@ -1,0 +1,400 @@
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+			 TY-DOS series Vol.1/Vol.2
+				TY-DOS system
+
+		   ＴＹ－ＤＯＳ　Ｖ１／ＴＹ－ＣＯＭ　Ｖ１
+
+			For PC-E500/1480U/E550/1490U
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+Le systeme TY-DOS est un DOS qui fonctionne sur la serie PC-E500/1480U annoncee par Toshiro Yamaguchi dans le numero d'aout a novembre 1988 de PJ.
+Actuellement, il est courant de l'obtenir par D/L chez Poketsu, mais dans ce cas, le manuel n'est pas distribue, donc vous ne savez pas comment l'utiliser, et le seul moyen d'obtenir le manuel est un service de copie. Il y avait un inconvenient qu'il n'y avait pas une telle chose.
+   Par consequent, nous avons decide de distribuer ce manuel tel qu'il a ete saisi au moment de la publication.
+
+"Pour le moment, je n'ai entre que les manuels de TY-DOS et TY-COM, mais si j'ai le temps et l'energie, j'aimerais les entrer un par un."
+
+
+
+　マシン語プログラムの実行には、従来は、ロードして、開始アドレスをコールするという七面倒くさい作業が必要でした、が、このＴＹ－ＤＯＳを使えば、ユーザーは実行するプログラムのファイル名さえわかれば良く、開始アドレスを考慮する必要はありません。また、バッチ・ファイルやリダイレクトといった便利な機能が使えるようになります。
+　今後、ＰＣ－Ｅ５００／１４９０Ｕシステムブロックはすべて、ＴＹ－ＤＯＳ上で動くものとして発表します。よって、ＴＹ－ＤＯＳがないとそれらのプログラムが利用できないとなるので、ユーザーの皆様ぜひ入力してください。
+
+
+●ＴＹ－ＤＯＳ　導入編●
+
+　ここでは、ＴＹ－ＤＯＳシステムの概要、入力方法、動作環境の設定などについ説明します。
+
+１．ＴＹ－ＤＯＳの機器構成
+
+　ＴＹ－ＤＯＳは、本体のみでも動作しますが、できることならＲＡＭは９６Ｋバイトに拡張されていることが望ましいです。
+　また、ポケット・ディスク・ドライブ、レベルコン・バータ、プリンタがあると何かと便利です。
+
+２．ＴＹ－ＤＯＳの動作
+
+　ＴＹ－ＤＯＳはＴＹ－ＣＯＭとペア（以下ＴＹ－ＤＯＳシステムと呼ぶ）で使用します。ちょうど、ＴＹ－ＤＯＳがＭＳ－ＤＯＳの”ＭＳ－ＤＯＳ．ＳＹＳ”にＴＹ－ＣＯＭが”ＣＯＭＭＡＮＤ．ＣＯＭ”に対応しているわけです。ＭＳ－ＤＯＳでの”ＩＯ．ＳＹＳ”はＴＹ－ＤＯＳシステムには含まれず、ＢＡＳＩＣのファイルＩＯＣＳが対応します｡
+　ＴＹ－ＤＯＳは常にメモリに常駐します。本来は、ＴＹ－ＤＯＳとＴＹ－ＣＯＭをまとめて１本のプログラムにして常駐させても良いのですが、メモリが限られているため、常駐しなくても良い部分はＴＹ－ＣＯＭとして別のプログラムになっているわけです。
+　ＴＹ－ＤＯＳはＴＹ－ＣＯＭの呼び出し、文字列の解析や、アプリケーション（ＡＰ）への制御の引き渡し／戻しを行うＩＯＣＳルーチンから成り立ちます。
+　ＴＹ－ＤＯＳはＴＹ－ＣＯＭを呼び出し、ＴＹ－ＣＯＭからの指令により、ＡＰを呼び出し、再度ＴＹ－ＣＯＭを呼び出す動作を［ＢＡＳＩＣ］が押されるまで繰り返します｡
+
+３．ＴＹ－ＤＯＳの扱えるファイル
+
+　ＴＹ－ＤＯＳはファイル・コントロールプログラムは持たないので、ファイルＩＯＣＳの機能がそのまま、ＴＹ－ＤＯＳのファイル・コントロールの機能となります。つまり、ＢＡＳＩＣのファイルと互換性があるわけです。
+　ファイルＩＯＣＳはポケット・ディスク以外のすべてのデバイス（ラムファイル”Ｅ：”／”Ｆ：”／”Ｇ：”、メモリ・スロット”Ｓ１：”／”Ｓ２：”／”Ｓ３：”、ＬＣＤ画面”ＳＣＲＮ：”、キーボード”ＫＹＢＤ：”、プリンタ”ＰＲＮ：”、ＲＳ－２３２Ｃ”ＣＯＭ：”、カセット”ＣＡＳ：”）を扱えます。
+　なおＴＹ－ＤＯＳの仕様により、ファイル名に使える文字が制限されます。ファイル名には英大小文字、数字、アンダーバー、ＣＨＲ＄（１２８）からＣＨＲ＄（２５４）で示される文字が使用できます。
+
+４．ＴＹ－ＤＯＳシステムの入力
+
+　入力の前にマシン語領域を１０Ｋバイト以上確保しておく必要があります。
+
+1)ＴＹ－ＤＯＳの入力
+　リスト１を簡易モニタで入力し、
+　ディスク：ＳＡＶＥＭ　”Ｘ：ＴＹＤＯＳ．ＳＹＳ”，＆ＢＦ８００、＆ＢＦＢ５３
+　カセット：ＣＳＡＶＥＭ　”ＴＹＤＯＳ．ＳＹＳ”，＆ＢＦ８００、＆ＢＦＢ５３
+でセーブしてください。
+
+2)ＴＹ－ＣＯＭの入力
+　リスト２を簡易モニタで入力し、
+　ディスク：ＳＡＶＥＭ　”Ｘ：ＴＹＣＯＭ．ＳＹＳ”，＆ＢＥ８００、＆ＢＥＦ９６
+　カセット：ＣＳＡＶＥＭ　”ＴＹＣＯＭ．ＳＹＳ”，＆ＢＥ８００、＆ＢＥＦ９６
+でセーブしてください。
+
+５．ＴＹ－ＤＯＳシステムの動作環境
+
+　ラム・ファイル（”Ｅ：”または”Ｆ：”）が存在し、マシン語領域が１０Ｋバイト以上確保されていることが必要です。アプリケーションによってはＴＹ－ＥＤの様に多大なメモリを必要とするものがあるので、これらを動作させる場合にはそのマニュアルに指示されている容量以上のマシン語領域を確保する必要です。
+　また、メモリに”ＴＹＤＯＳ．ＳＹＳ”がロードされていて、ラムファイルに”ＴＹＣＯＭ．ＳＹＳ”が入っていなければなりません。
+
+＜セットアップ例＞
+　ＲＡＭが９６Ｋバイト実装されているときの例を示します。
+
+ＰＯＫＥ　＆ＢＦＥ０３，＆１Ａ，＆ＦＤ，＆０Ｂ，＆２０，＆Ａ０，＆００
+ＣＡＬＬ　＆ＦＦＦＤ８
+ＩＮＩＴ”Ｅ：５０Ｋ”
+ＬＯＡＤＭ”Ｘ：ＴＹＤＯＳ．ＳＹＳ”
+ＣＯＰＹ”Ｘ：ＴＹＣＯＭ．ＳＹＳ”ＴＯ”Ｅ：”
+
+　これで環境が整います。
+
+６．ＴＹ－ＤＯＳシステムの起動
+
+　動作環境が整っていないときには、５．を参照してセット・アップします。
+　整っているときは、ＣＡＬＬ　＆ＢＦ８００で起動します。
+
+７．参考までに
+
+　ＴＹ－ＤＯＳの扱えるメモリ（マシン語領域）の終了アドレスは＆ＢＦＢＦＦで、確定していますが、先頭アドレスは、ラム・カードの装着状況などによって変わってきます。よって、ＡＰの先頭アドレスを固定する事ができません。また、ＣＰＵの特性上、完全リロケータブルなプログラムは作れないこともありませんがメモリを喰うので、事実上不可能です。
+　以上のことから、ＴＹ－ＤＯＳシステム・プログラムはマシン語領域の末尾に。ＡＰはその終了アドレスがＴＹ－ＤＯＳシステムの先頭アドレスに重ならない程度にマシン語領域の後方に置く必要があります。
+　このため、ＴＹ－ＤＯＳのバージョン・アップによってＴＹ－ＤＯＳのプログラム・サイズが大幅に大きくなった場合には、ＡＰとＴＹ－ＤＯＳシステムが重なる恐れがあります。
+　が、ＴＹ－ＤＯＳは大幅な変更はまずなく、せいぜいＢＵＧ・ＦＩＸ位なので、心配はありません。ＴＹ－ＣＯＭは大幅な変更（たとえば、ウィンドウを用いてユーザー・インターフェイスを改善するとか）があるかも知れませんが、ＴＹ－ＣＯＭはＡＰと同じ扱いになので、関係ありません。
+
+
+●ＴＹ－ＤＯＳ　操作編●
+
+　ここでは、ＴＹ－ＣＯＭの使い方、つまりＴＹ－ＤＯＳシステムへの命令の与え方を説明します。前の節とこの節とＡＰのマニュアルを参照すれば、とりあえずひととうりのことはできます。Ｔ－ＤＯＳはＭＳ－ＤＯＳを参考にしてあるため、ＭＳ－ＤＯＳがわかる人には簡単でしょう。
+
+１．プロンプトの表示
+
+　”ＫＹＢＤ：”（キーボード・デバイス）からの入力を受け付けるプロンプトは、画面左端にカレント・ドライブ名に続けて”＞”と表示します。カレント・ドライブとは、デバイス名の指定が、省略されたときに自動的につけられるデバイスを指します。
+　参考までに、ＢＡＳＩＣでは、デバイスへのアクセスの際にデバイス名が省略された場合は、その直前にアクセスされたデバイスをアクセスします。このデバイス名が保存してあるエリアをＴＹ－ＤＯＳでもカレント・ドライブ名保存エリアとして使用します。よって、ＴＹ－ＤＯＳ起動直後には、このエリアの内容がカレント・ドライブになっています。
+
+＜例＞
+　カレント・ドライブが”Ｅ：”のとき、
+Ｅ＞
+
+　の様に表示されます。
+　カレント・ドライブを変更するには、変更先ドライブ名と”：”を入力し、リターン・キーを押します。
+　このカレント・ドライブには必ず”ＴＹＣＯＭ．ＳＹＳ”が入っていなければなりません。従ってＴＹ－ＤＯＳ起動時にはＤＳＫＦ”Ｅ：”などとしてカレント・ドライブをラムファイルに設定しておく必要があります。
+
+２．コマンド、ファイル名の入力
+
+　コマンド、ファイル名の入力はコマンド・ライン上で行い。その内容はプロンプトに続いて表示されます。コマンド・ラインでは、ＢＡＳＩＣと異なり、カーソル・キー／ＩＮＳ／ＤＥＬキーによる入力文字列のＥＤＩＴはできません。ＢＳ／カーソルの左キーでカーソルを１つ戻し、そこの文字を削除すること、［Ｃ・ＣＥ］で画面をクリアすること、［ＣＴＲＬ］＋［Ａ］でコマンド・ライン・バッファの内容を復活することだけができます。また、［ＢＡＳＩＣ］きーで、ＢＡＳＩＣに戻ります。
+　コマンド、ファイル名などの項目は１個以上のスペースで区切り、まず初めに、実行するコマンドまたは、アプリケーション・ファイル名を書きます。次に、引き渡すスイッチ指定、引き渡すファイル名の順に書きます。リダイレクト指定はこの間の任意の位置に書きます。改行キーで、それまで入力された文字列が３．で解釈／実行されます。
+
+３．項目の説明／解釈／実行
+
+1)コマンド／ファイル名
+　ＴＹ－ＣＯＭ　Ｖ１は次に示す内部コマンドを持ちます。内部コマンド以外のファイル名はすべてＡＰまたはバッチファイルのファイル名とみなします。
+　ファイル名のファイルがＡＰ（マシン語プログラム）の場合はこれを呼び出します。
+　テキスト（バッチ・ファイル）の場合には、その内容をすべてキーボードから入力されるようにコマンドラインに出力（つまり、ファイルの内容が解釈／実行される）します｡
+　ファイルが存在しまい時はエラーになります。
+　なお、ＴＹ－ＤＯＳ起動直後には”ＡＵＴＯＥＸＥＣ”のファイル名のファイルが実行されます。これはＭＳ－ＤＯＳの”ＡＵＴＯＥＸＥＣ．ＢＡＴ”に対応しますが、”ＡＵＴＯＥＸＥＣ”ファイルが、バッチファイルではなく実行ファイルであっても一向に差し支えありません。
+　ＴＹ－ＤＯＳ上ではファイルは同時に３つまでしかＯＰＥＮできません。バッチファイルはネスト（バッチファイルの中かで別のバッチファイルを呼び出す）させることができますが、ネストの深さの個数のファイルがＯＰＥＮされる、ＡＰなどで、ファイルがＯＰＥＮできなくなる恐れがあります。ですから、なるべくバッチファイルはネストさせないでください。
+
+・ＣＯＰＹ
+　書式：ＣＯＰＹ　ファイル１　ファイル２
+　動作：ＢＡＳＩＣのコピー命令と同じで、ファイル１をファイル２にコピーします。
+	ただし、ファイル１に”ＳＣＲＮ：”、ファイル２に”ＫＹＢＤ：”は置けま
+	せん。
+
+・ＴＹＰＥ
+　書式：ＴＹＰＥ　ファイル
+　動作：ＣＯＰＹ　ファイル　ＳＣＲＮ：　と同じです。ただし、ファイルに”ＫＹＢ
+	Ｄ：”は置けません。
+	スイッチは”Ｐ”が使え、１画面出力するたびにキー入力待ちすることを示し
+	ます。
+
+・ＤＥＬ
+　書式：ＤＥＬ　ファイル
+　動作：ファイルを削除します。確認を要求するので画面の指示にし違ってください。
+	スイッチは”Ｎ”が使え、削除の確認をしないことを示します。
+
+・ＲＥＮ
+　書式：ＲＥＮ　ファイル１　ファイル２
+　動作：ファイル１のファイルの名前をファイル２の名前のファイルにします。
+
+・ＤＩＲ
+　書式：ＤＩＲ　ファイル
+　動作：ＢＡＳＩＣのＦＩＬＥＳと同じです。
+	スイッチは”Ｐ”と”Ｗ”が使え、”Ｐ”は１画面出力するたびにキー入力待
+	ちすることを示し、”Ｗ”は１行に２つのファイルを表示する事を示します。
+
+・ＣＬＳ
+　書式：ＣＬＳ
+　動作：［Ｃ・ＣＥ］キーを押したのと同じで、画面をクリアーします。
+
+・ＭＡＫＥ
+　書式：ＭＡＫＥ　ファイル
+　動作：ＣＯＰＹ　ＫＹＢＤ：　ファイル　と同じです。
+	ただし、ファイルに”ＳＣＲＮ：”は置けません。
+
+・ＢＡＳＩＣ
+　書式：ＢＡＳＩＣ
+　動作：［ＢＡＳＩＣ］キーを押したのと同じで、ＢＡＳＩＣに戻ります。
+
+2)リダイレクト指定
+　ＴＹ－ＤＯＳのＡＰは、エディタなどの複雑な画面操作を要求されるもの以外では、すべて画面への出力は標準出力デバイス、またキーボードからの入力は標準入力デバイスから行います。
+　普段は、標準出力デバイスは”ＳＣＲＮ：”（ＬＣＤ画面）、標準入力デバイスは”ＫＹＢＤ：”（キーボード）になっていますが、このリダイレクト指定により、これらのデバイスをプリンタやファイルやファイルに置き換えることができます。リダイレクト指定は何回でもできますが、いちばん最後に指定されたものが有効となります。
+
+＞デバイスまたはファイル名
+　で、標準出力デバイスの置き換えができます
+
+＜デバイスまたはファイル名
+　で、標準入力デバイスの置き換えができます
+
+＜例＞
+Ｅ＞ＴＹＫＸＡＳＭ　ＴＹＥＤ．ＴＸＴ　＞ＰＲＮ：　＜ＴＥＳＴ
+　では、画面出力をプリンタへ、キー入力を”Ｅ：ＴＥＳＴ”からに置き換え、”ＴＹＥＤ．ＴＸＴ”をファイル指定としてＴＹ－ＫＸＡＳＭを実行します。
+
+3)スイッチ指定
+　コマンドまたはアプリケーションに引き渡すスイッチ（各種情報）を指定します。スイッチ指定が省略されている場合には各アプリケーションで決まっているデフォルトの状態になります。
+
+－スイッチ名
+　で、そのスイッチを指定します。スイッチ名にはファイル名に使える文字が使えますが、英小文字は英大文字に変換されます。また、長さは１０バイトまでです。スイッチ指定は何個あっても構いません。
+
+＜例＞
+Ｅ＞ＴＹＥＤ　－Ｉ
+　ＴＹ－ＥＤを、インデント・オンの状態で、立ちあげます。
+
+4)ファイル指定
+　コマンドまたはアプリケーションに引き渡すファイルを指定します。ファイルの指定の個数は各アプリケーションにより異なるのでマニュアルを参照してください。
+
+＜例＞
+Ｅ＞ＣＯＰＹ　Ｅ：　Ｆ：
+　”Ｅ：”と”Ｆ：”がこのファイル指定の部分です。
+
+●ＴＹ－ＤＯＳ　応用編●
+
+　ここでは、ＴＹ－ＤＯＳ上のアプリケーションを作ろうという勇気のあるエキスパート達のためにアプリケーションの作り方、ＩＯＣＳについて説明するのですが、原稿が間に合わないので、今号には載りません。
+
+●ＴＹ－ＤＯＳ　喚起編●
+
+　ＴＹ－ＤＯＳのＡＰはＢＡＳＩＣから呼び出すこともできます。ただし、ファンクション・キー表示がなく、ＴＹ－ＤＯＳシステムが１回以上実行されていなければなりません。
+　呼び出し方法は、
+ＣＡＬＬ　ＡＰ先頭アドレス”スイッチ指定　ファイル指定
+です。
+
+●ＴＹ－ＤＯＳ　独言編●
+
+　随分と前に予告したＴＹ－ＤＯＳですが、今やっと完成を見ました。予告したときはＳＣ６１８６０対応だったのですが、ＰＣ－Ｅ５００／１４８０Ｕの出現により、急きょＳＣ６２０１５対応に変更しました。今後ポケコンはＳＣ６２０１５かＺ８０がベースになるでしょうから、よってＳＣ６１８６０対応のＴＹ－ＤＯＳは制作しないこととなりました。あんまり作ってくれという要望くるなら考えないでもないですが、まず、作らないと考えてください。
+　ＰＣ－１２６１からＰＣ－１３５０へ発展したときのギャップより、遥かに大きい性能のギャップＰＣ－１３５０／６０ＫからＰＣ－Ｅ５００への発展に存在しています。ＰＣ－１３５０／６０ＫやほかのＳＣ６１８６０マシンをお持ちの皆様、骨までしゃぶられたポケコンにかじりついているのも結構ですが、もっとビジョンを前に向け、遥かに大きいな可能性のあるＰＣ－Ｅ５００／１４８０Ｕのユーザーに移ってみるのは如何なものでしょうか。
+
+
+Nombre maximal de caracteres : 5000
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+Serie TY-DOS Vol.1 / Vol.2
+Systeme TY-DOS
+
+TY-DOS V1 / TY-COM V1
+
+Pour PC-E 500/1480 U / E 550/1490 U
+
+■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+
+
+Traditionnellement, pour executer un programme en langage machine, il etait necessaire de charger la tache et d'appeler l'adresse 
+de depart, mais avec ce TY-DOS, si l'utilisateur ne connait que le nom de fichier du programme a executer. 
+Eh bien, vous n'avez pas besoin de considerer l'adresse de depart. En outre, vous pouvez utiliser des fonctions pratiques telles 
+que le fichier de traitement par lots et la redirection.
+A l'avenir, nous annoncerons que tous les blocs systeme PC-E500/1490 U fonctionneront sur TY-DOS. 
+Par consequent, sans TY-DOS, ces programmes ne seront pas disponibles, donc veuillez les entrer.
+
+
+● Introduction a TY-DOS ●
+
+Cette section explique les grandes lignes du systeme TY-DOS, la methode de saisie, la configuration de l’environnement d’exploitation, etc.
+
+1 Configuration du peripherique de TY-DOS
+TY-DOS ne fonctionne qu'avec le corps principal, mais il est souhaitable que la RAM soit etendue a 96 Ko si possible.
+En outre, c'est utile si vous avez un lecteur de disque de poche, un peigne de niveau et une imprimante.
+
+2 Operation de TY-DOS
+TY-DOS est utilise en paire avec TY-COM (appele ci-apres systeme TY-DOS). Tout comme TY-DOS correspond a "MS-DOS.SYS" de MS-DOS,
+TY-COM correspond a "COMMAND.COM". 
+"IO.SYS" dans MS - DOS n'est pas inclus dans le systeme TY - DOS et le fichier IOCS de BASIC correspond.
+TY-DOS reside toujours en memoire. A l'origine, TY-DOS et TY-COM peuvent constituer un seul programme a la fois, mais comme la memoire
+est limitee, la partie qui n'est pas obligee de resider est differente de TY-COM. C'est un programme.
+TY-DOS consiste en une routine IOCS qui appelle TY-COM, analyse une chaine de caracteres et transmet / retourne le controle 
+a l'application (AP).
+TY-DOS appelle TY-COM, appelle le point d'acces par une commande de TY-COM, repete l'operation d'appel de TY-COM jusqu'a ce que vous
+appuyiez sur [BASIC].
+
+3 Fichiers que TY-DOS peut gerer
+Comme TY-DOS n’a pas de programme de controle de fichier, la fonction de fichier IOCS devient la fonction de controle de fichier TY-DOS 
+en l’etat. C'est-a-dire qu'il est compatible avec les fichiers BASIC.
+Le fichier IOCS est stocke dans tous les peripheriques sauf le disque de poche (fichier RAM "E:" / "F:" / "G:", emplacement memoire 
+"S1:" / "S2": / / "S3:", ecran LCD " SCRN: ", clavier" KYBD: ", imprimante" PRN: ", RS - 232C" COM: ", cassette" CAS: ").
+Selon la specification TY-DOS, les caracteres pouvant etre utilises pour les noms de fichiers sont limites. Vous pouvez utiliser des 
+lettres majuscules, des chiffres, des traits de soulignement et CHR $ (128) a CHR $ (254) pour les noms de fichier.
+
+4 Entree du systeme TY-DOS
+Avant la saisie, il est necessaire de securiser 10 Ko ou plus de la zone de la langue de la machine.
+
+1) entree TY-DOS
+Entrez dans la liste 1 avec un simple moniteur,
+Disque: SAVEM "X: TYDOS.SYS", & BF800, & BFB53
+Cassette: CSAVEM "TYDOS.SYS", & BF800, & BFB53
+S'il vous plait enregistrer avec.
+
+2) Entree de TY-COM
+Entrez dans la liste 2 avec un simple moniteur,
+Disque: SAVEM "X: TYCOM.SYS", & BE800, & BEF96
+Cassette: CSAVEM "TYCOM.SYS", & BE800, & BEF96
+S'il vous plait enregistrer avec.
+
+5 Environnement d'exploitation du systeme TY-DOS
+Il est necessaire qu’un fichier RAM ("E:" ou "F:") existe et qu’une zone de langage machine de 10 Ko ou plus soit reservee. Certaines 
+applications necessitent beaucoup de memoire, telle que TY-ED. Par consequent, pour les faire fonctionner, il est necessaire de securiser 
+une zone linguistique de la machine qui depasse la capacite specifiee dans le manuel.
+"TYDOS.SYS" est egalement charge dans la memoire et le fichier RAM doit contenir "TYCOM.SYS".
+
+<Exemple d'installation>
+Un exemple de montage d'une memoire RAM de 96 Ko est presente ci-dessous.
+
+POKE & BFE03, &1A, &FD, &0B, &20, &A0, &00
+CALL & FFFD8
+INIT "E: 50K"
+LOADM "X: TYDOS.SYS"
+COPY "X: TYCOM.SYS" A "E:"
+
+L'environnement est maintenant en place.
+
+6 Activation du systeme TY-DOS
+Lorsque l'environnement d'exploitation n'est pas en place, 5. Voir et mettre en place.
+Lorsqu'il est en place, commencez par CALL & BF800.
+
+7 Pour reference
+L'adresse de fin de la memoire (zone linguistique de la machine) que TY-DOS peut gerer est &BFBFF, qui a ete corrigee, mais l'adresse 
+de debut changera en fonction de l'etat de montage de la carte memoire. Par consequent, il est impossible de corriger l'adresse de depart 
+du point d'acces. De plus, en raison des caracteristiques du processeur, il est impossible de creer un programme entierement deplacable, 
+mais comme il consomme de la memoire, il est pratiquement impossible.
+De ce qui precede, le programme systeme TY-DOS se trouve a la fin de la zone de langue de la machine. Le point d'acces doit etre place 
+derriere la zone de langage de la machine pour que son adresse de fin ne chevauche pas l'adresse de debut du systeme TY-DOS.
+Par consequent, si la taille du programme de TY-DOS augmente considerablement en raison de la version superieure de TY-DOS, les systemes AP 
+et TY-DOS peuvent se chevaucher.
+Cependant, TY - DOS n'est pas mal modifie du tout, il est au plus BUG ・ FIX, donc il n'y a pas de souci. TY-COM peut avoir des modifications 
+importantes (par exemple, utiliser la fenetre pour ameliorer l'interface utilisateur), mais TY-COM est traite de la meme maniere que AP, 
+donc cela n'a pas d'importance.
+
+
+● Section d'operation TY-DOS ●
+Cette section explique comment utiliser TY-COM, c'est-a-dire comment donner des instructions au systeme TY-DOS. En vous reportant a la section
+precedente, a cette section et au manuel de AP, je peux faire des choses avec les gens pour le moment. Comme T-DOS fait reference a MS-DOS, 
+il est facile pour ceux qui comprennent MS-DOS.
+
+1 Afficher l'invite
+L'invite a accepter l'entree de "KYBD:" (peripherique clavier) est indiquee par ">" apres le nom du lecteur actuel sur le cote gauche de 
+l'ecran. Le lecteur actuel est un peripherique qui peut etre automatiquement connecte lorsque la specification du nom de peripherique est 
+omise.
+Pour votre information, BASIC accedera au peripherique auquel on avait accede immediatement avant que le nom du peripherique ne soit omis 
+lors de l'acces au peripherique. La zone dans laquelle ce nom de peripherique est enregistre est utilisee comme TY-DOS en tant que zone de 
+sauvegarde du nom de lecteur actuel. Par consequent, immediatement apres le demarrage de TY-DOS, le contenu de cette zone est le lecteur 
+actuel.
+
+<Exemple>
+Lorsque le lecteur actuel est "E:",
+E>
+Il sera affiche comme indique.
+Pour changer le lecteur actuel, entrez le nom du lecteur de destination et ":" et appuyez sur la touche Retour.
+"TYCOM.SYS" doit etre inclus dans ce lecteur en cours. Par consequent, au demarrage de TY-DOS, il est necessaire de definir le lecteur actuel 
+en tant que fichier RAM sous la forme DSKF "E:" ou similaire.
+
+2 Entrez la commande et le nom du fichier
+La commande et le nom du fichier sont saisis sur la ligne de commande. Son contenu sera affiche a la suite de l'invite. Sur la ligne de 
+commande, contrairement a BASIC, EDIT de la chaine de caracteres saisie avec la touche curseur / la touche INS / DEL n'est pas possible. 
+BS / touche de curseur gauche pour supprimer le caractere, supprimer le caractere a cet endroit, effacer l'ecran avec [C ・ CE], restaurer 
+le contenu du tampon de ligne de commande avec [CTRL] + [A] Vous pouvez seulement le faire. De plus, [BASIC] reviendra a BASIC.
+Les commandes, les noms de fichier et les autres elements sont separes par un ou plusieurs espaces. Ecrivez tout d'abord la commande a 
+executer ou le nom du fichier de l'application. Ensuite, ecrivez la designation du commutateur a remettre, suivie du nom de fichier a livrer. 
+La specification de redirection est ecrite a une position arbitraire pendant ce temps. Avec la touche de saut de ligne, la chaine de 
+caracteres entree jusque-la est 3. Il sera interprete / execute.
+
+3 Description de l'article / interpretation / execution
+
+1) Nom de commande / fichier
+TY-COM V1 a la commande interne suivante. Tous les noms de fichiers autres que les commandes internes sont consideres comme des noms de 
+fichiers de points d'acces ou de commandes.
+Si le fichier portant le nom de fichier est AP (programme en langage machine), appelez-le.
+Dans le cas de texte (fichier de commandes), tout son contenu est sorti sur la ligne de commande de sorte qu'il soit entre a partir du 
+clavier (c'est-a-dire que le contenu du fichier est interprete / execute).
+Une erreur se produit lorsque le fichier n'existe pas.
+Immediatement apres le demarrage de TY-DOS, le fichier portant le nom de fichier "AUTOEXEC" est execute. Cela correspond a "AUTOEXEC.BAT" 
+de MS-DOS, mais meme si le fichier "AUTOEXEC" n'est pas un fichier de commandes mais un fichier executable, cela n'a pas d'importance.
+Sous TY-DOS, vous ne pouvez ouvrir que trois fichiers simultanement. Un fichier de commandes peut etre imbrique (appeler un autre fichier 
+de commandes dans un fichier de commandes), mais si le nombre de fichiers de profondeur d'imbrication est OUVERT, le fichier peut ne pas 
+pouvoir etre ouvert par AP, etc. . Par consequent, veuillez ne pas imbriquer autant que possible le fichier de commandes.
+
+・ COPY
+Format: fichier COPY 1 fichier 2
+Operation: Identique a l’instruction de copie BASIC, copie le fichier 1 dans le fichier 2.
+Cependant, vous pouvez mettre "SCRN:" dans le fichier 1 et "KYBD:" dans le fichier 2
+Non
+
+・ TYPE
+Format: fichier TYPE
+Operation: identique au fichier COPY SCRN:. Cependant, si "KYB
+D: "ne peut pas etre place.
+Le commutateur peut utiliser "P", cela signifie qu'il attend l'entree d'une touche chaque fois qu'il affiche 1 ecran.
+Je le ferai
+
+・ DEL
+Format: fichier DEL
+Action: Supprimez le fichier. Veuillez faire une instruction a l'ecran lorsque vous demandez une confirmation.
+"N" peut etre utilise pour le commutateur, indiquant que la suppression n'est pas confirmee.
+
+・ REN
+Format: fichier REN 1 fichier 2
+Action: Faites du nom de fichier du fichier 1 le fichier du nom du fichier 2.
+
+・ DIR
+Format: fichier DIR
+Operation: C'est la meme chose que FILES of BASIC.
+"P" et "W" peuvent etre utilises pour le commutateur et "P" pour l'attente d'une touche
+"W" indique que deux fichiers sont affiches sur une ligne.
+
+CLS
+Format: CLS
+Operation: Identique a l'appui sur la touche [C / CE], efface l'ecran.
+
+MAKE
+Format: fichier MAKE
+Operation: identique a COPY KYBD: fichier.
+Toutefois, "SCRN:" ne peut pas etre place dans le fichier.
+
+・ BASIC
+Format: BASIC
+Operation: Cela revient a appuyer sur la touche [BASIC] et a revenir a BASIC.
+
+2) Specification de redirection
+Tous les AP TY-DOS accedent a tous les ecrans, a l'exception de ceux necessitant des operations d'ecran complexes telles que les editeurs.
+

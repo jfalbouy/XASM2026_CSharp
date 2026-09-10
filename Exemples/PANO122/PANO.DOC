@@ -1,0 +1,883 @@
+==============================================================================
+
+                     Text editor “PANORAMA” Version 1.22
+
+                           for PC-E500/1480U series
+
+                        (C) 1995-1997 Daisuke Mizobata
+                              All rights reserved
+
+==============================================================================
+
+　PC-E500シリーズには、すでに優れたテキストエディタがいくつも発表されていますが、いずれも画面の横幅（折り返し幅）は40桁に固定されていたので、プログラムを書いたり、パソコン通信のログの整理をするのが大変でした。
+　PANORAMAは、画面の横幅をLCDの幅とユーザーの指定幅に切り換えて、横スクロールさせながら編集することができるテキストエディタです。
+La s?rie PC-E500 a d?j? annonc? un certain nombre d'excellents ?diteurs de texte, mais la largeur de l'?cran (largeur d'habillage) a ?t? fix?e ? 40 chiffres pour vous permettre d'?crire des programmes ou de consigner les journaux de communication du PC. C'?tait difficile ? organiser.
+PANORAMA est un ?diteur de texte qui peut ?tre ?dit? en faisant d?filer horizontalement en faisant basculer la largeur de l'?cran sur la largeur de l'?cran LCD et la largeur sp?cifi?e par l'utilisateur.
+
+★☆　特徴　☆★
+
+・シフトJISコードの2バイト文字に対応しています。
+・画面の横幅をLCDの幅とユーザー指定幅に切り換えることができます。
+・タブコードに対応しています。タブ幅は1桁単位で変更できます。
+・よく使う文字列を登録したり、引用符挿入に使うことができるスクラップ機能があります。
+・テキストに他のテキストを挿入したり、テキストの一部を別ファイルに書き出すことができます。
+・圧縮したテキストファイルを自動的に解凍して編集することができます。
+・改行コードがCRのファイルや、末尾にEOFのないファイルも自動的に判断して、編集・保存することができます。また改行コードやEOFを変更できます。
+・ファイルの編集中に各種設定の変更ができます。
+・保存するファイルにタイムスタンプをつけられます。
+-Prend en charge les caract?res 2 octets dans le code Shift JIS.
+La largeur de l'?cran peut ?tre modifi?e en fonction de la largeur de l'?cran LCD et de la largeur sp?cifi?e par l'utilisateur.
+・ Prend en charge le code de tabulation. Vous pouvez modifier la largeur de l'onglet en unit?s ? un chiffre.
+-Il existe une fonction de r?cup?ration qui peut ?tre utilis?e pour enregistrer les cha?nes fr?quemment utilis?es et pour ins?rer des guillemets.
+Vous pouvez ins?rer un autre texte dans le texte ou en exporter une partie dans un autre fichier.
+-Vous pouvez automatiquement d?compresser et ?diter des fichiers texte compress?s.
+・ Les fichiers avec le code de saut de ligne CR et les fichiers sans EOF ? la fin peuvent ?tre automatiquement jug?s, modifi?s et sauvegard?s. Vous pouvez ?galement modifier le code de saut de ligne et EOF.
+Vous pouvez modifier divers param?tres lors de la modification du fichier.
+・ Les fichiers horodat?s peuvent ?tre sauvegard?s.
+
+★☆　動作環境　☆★
+
+　PC-E500シリーズのすべての機種で動作すると思います（E650 version 8で確認）。
+　実行するには11.3KBより多いマシン語領域が必要になります。マシン語領域が多いほど大きな文章が編集できるので、マシン語領域はできるだけたくさん確保してください。それに加えて、"S1:"に約1KBの空き領域が必要です。
+Je pense que cela fonctionne avec tous les mod?les de la s?rie PC-E500 (confirm? avec E650 version 8).
+Vous aurez besoin de plus de 11,3 Ko d’espace linguistique pour fonctionner. Plus la zone de la langue machine est large, plus les phrases plus longues peuvent ?tre ?dit?es. Veuillez r?server le plus grand nombre possible de zones de la langue de la machine. En plus de cela, environ 1 Ko d'espace libre est requis pour "S1:".
+
+　TY-DOS上では動作しません。
+
+　KNJSCRN(*1)、SCRNJPN(*2)、60Columns(*9)をインストールすると、シフトJISの全角文字の表示が可能になります。
+　さらにJFP(*3)をインストールすると、全角文字の入力もできます。JFP以外のFEPでは、キーアサインが衝突する可能性があるので、使用はお薦めしません。
+　LZ 10/9er(*4)、SQUEEZE System(*5)をインストールすると、圧縮したテキストファイルを解凍しながら読み込むことができます（圧縮しての保存はできません）。
+　KALKU(*6)をインストールしているとき、PANORAMAのテキストをKALKUに入力することができます。
+　"CLOCK:"デバイスドライバ(*7)と、その拡張コマンド(*8)があると、保存するファイルにタイムスタンプをつけることができます。
+
+*1 KNJSCRN：加古英児氏作のフリーソフトウェア。
+　JIS第1水準の漢字の表示を可能にします。
+
+*2 SCRNJPN：Nmasu氏作のフリーソフトウェア。
+　JIS第1+第2水準の漢字の表示を可能にします。
+
+*3 JFP：近 成人氏作のフリーソフトウェア。
+　漢字を含む全角文字の入力を可能にします。
+
+*4 LZ 10/9er：拙作のフリーソフトウェア
+*5 SQUEEZE System：Nmasu氏作のフリーソフトウェア。
+　圧縮したファイルを解凍しながら読み込むことができるようになります。
+
+*6 KALKU：Ｍasa氏作のフリーソフトウェア。
+　他のプログラムの使用中に電卓を使用することができます。
+
+*7 近成人氏の「リアルタイム・クロックを内蔵する」(PJ'92年12月号)で紹介されているデバイスドライバ。
+
+*8 Nmasu氏の「Clock Device Extension」、拙作「WCLOCK」ver 0.03以降など。
+
+*9 60Columns：拙作のフリーソフトウェア。
+　60*4桁半角文字と、SCRNJPNと同じフォントでの30*4桁全角文字の表示を可能にします。
+Cela ne fonctionne pas sur TY-DOS.
+
+Si KNJSCRN (* 1), SCRNJPN (* 2) et 60 colonnes (* 9) sont install?s, il est possible d’afficher les caract?res pleine largeur Shift JIS.
+De plus, si JFP (* 3) est install?, vous pouvez ?galement saisir des caract?res pleine largeur. Pour les FEP autres que JFP, il est d?conseill? de les utiliser car l'attribution de cl? peut entrer en conflit.
+Si vous installez LZ 10 / 9er (* 4) ou SQUEEZE System (* 5), vous pouvez lire le fichier texte compress? tout en le d?compressant (vous ne pouvez pas enregistrer le fichier compress?).
+Lors de l’installation de KALKU (* 6), vous pouvez saisir le texte de PANORAMA dans KALKU.
+S'il existe un pilote de p?riph?rique "CLOCK:" (* 7) et sa commande ?tendue (* 8), le fichier ? enregistrer peut ?tre horodat?.
+
+* 1 KNJSCRN: Logiciel libre ?crit par Hideko Kako.
+Active l'affichage des kanji JIS niveau 1.
+
+* 2 SCRNJPN: logiciel libre de Nmasu.
+Active l'affichage des kanji JIS niveau 1 + niveau 2.
+
+* 3 JFP: Un logiciel libre cr?? par M. Near Adult.
+Active la saisie de caract?res pleine largeur, y compris kanji.
+
+* 4 LZ 10 / 9er: logiciel libre
+* 5 SQUEEZE System: Logiciel libre de Nmasu.
+Vous pourrez lire le fichier compress? lors de son extraction.
+
+* 6 KALKU: logiciel libre de Masa.
+Vous pouvez utiliser la calculatrice en utilisant d’autres programmes.
+
+* 7 Un pilote de p?riph?rique introduit par "Int?grer une horloge en temps r?el" de M. Chikao (num?ro de PJ '92 de d?cembre).
+
+* 8 "Clock Device Extension" de Nmasu, excellent travail "WCLOCK" version 0.03 ou ult?rieure.
+
+* 9 60 colonnes: logiciel libre d'excellent travail.
+Active l'affichage de 60 * 4 caract?res ? un octet et de 30 * 4 caract?res ? un octet dans la m?me police que SCRNJPN.
+
+★☆　はじめてPANORAMAを起動する場合　☆★
+
+　はじめて起動するときは、
+
+　DSKF "S1:"
+
+　で、"S1:"の空き容量が1168バイト以上あることを確認しておいてください。
+　PANORAMAでは、"S1:"に、"PANO.CFG"というメモリブロックを作って設定を保存するので、空き容量がないと起動できません。
+　この"PANO.CFG"をバックアップしておくと、暴走などでメモリが消えてしまったときもPANORAMAの設定を戻せます。
+  なお、バージョンアップの際、PANO.CFGの構造が変更されることがあります。その場合、現在のPANO.CFGは使えなくなりますので、ご了承ください。
+　一旦作成されたPANO.CFGは、書き込み可能であれば、"S2:"や"S3:"のスロットに移動して使用することもできます。その際、"S1:"のPANO.CFGは削除してかまいません。
+  
+Lorsque vous d?marrez pour la premi?re fois,
+
+DSKF "S1:"
+
+Assurez-vous que l’espace libre de "S1:" est sup?rieur ? 1168 octets.
+Dans PANORAMA, un bloc de m?moire appel? "PANO.CFG" est cr?? dans "S1:" et le r?glage est enregistr?.
+En sauvegardant ce "PANO. CFG", vous pouvez restaurer le param?tre PANORAMA m?me si la m?moire est perdue ? cause d'une fuite en avant.
+De plus, la structure de PANO.CFG peut ?tre modifi?e au moment de la mise ? niveau. Dans ce cas, veuillez noter que le fichier PANO.CFG actuel ne peut pas ?tre utilis?.
+Une fois cr??, PANO.CFG peut ?tre d?plac? vers l’emplacement "S2:" ou "S3:" et utilis? s’il est accessible en ?criture. A ce moment, vous pouvez supprimer PANO.CFG de "S1:".
+
+
+★☆　起動＆終了方法　☆★
+
+　マシン語領域を11.3KB+編集するテキストファイルの大きさ程度に確保してください。
+　そうしたら、BASICからなら、
+
+　LOADM "PANO":CALL &BD000"[編集ファイル名]
+
+　とすると、ファイルを読み込んで編集状態に入ります。
+　ファイル名を省略した場合、なにも書かれていない新しいファイルの編集に入ります。このときは、最初にSaveするときにファイル名の入力を要求されます。
+　通常は1行目からの編集になりますが、プレファレンス（後述）の設定によっては、保存したときの行からの編集となることがあります。
+
+（例）
+  LOADM "PANO":CALL &BD000
+　PANORAMAを起動し、新規ファイルの編集に入ります。
+
+  LOADM "PANO":CALL &BD000"PANO.DOC
+　“PANO.DOC”を編集します。
+
+　終了するには、編集状態で[MENU][PF1]と操作します。
+　変更が加えられていると、
+
+　Save ok?(Y/N)
+
+　と表示されるので、保存して終了するときは[Y]、保存せずに終了するときは[N]を押してください。それ以外のキーを押すと、編集に戻ります。
+　新規ファイルの編集で、一度も保存を行なっていない場合、[Y]を押したあとで、ファイル名の入力を要求してくるので、入力して[リターン]を押してください。
+
+★ ☆ Comment commencer et finir ☆ ★
+
+S?curisez la zone de langue de la machine sur 11,3 Ko, plus la taille du fichier texte ? modifier.
+Si oui, de BASIC,
+
+LOADM "PANO": CALL & BD000 "[nom du fichier ? modifier]
+
+Ensuite, le fichier sera lu et il sera en ?tat d'?dition.
+Si vous omettez le nom du fichier, vous modifierez un nouveau fichier sans rien d’?crit. Dans ce cas, lors de la premi?re sauvegarde, il vous sera demand? de saisir un nom de fichier.
+Normalement, la modification commence ? la premi?re ligne, mais selon les param?tres de pr?f?rence (d?crits plus loin), il peut s'agir d'une modification effectu?e ? partir de la ligne lors de l'enregistrement.
+
+(Exemple)
+??LOADM "PANO": CALL & BD000
+Lancez PANORAMA et commencez ? ?diter un nouveau fichier.
+
+??CHARGE "PANO": CALL & BD000 "PANO.DOC
+?ditez "PANO.DOC".
+
+Pour quitter, dans l’?tat d’?dition, utilisez [MENU] [PF1].
+Si des modifications ont ?t? apport?es,
+
+Sauvegarder ok? (O / N)
+
+Est affich?. Pour enregistrer et quitter, appuyez sur [Y]. Pour quitter sans enregistrer, appuyez sur [N]. Appuyez sur une autre touche pour revenir ? la modification.
+Lors de l'?dition d'un nouveau fichier, s'il n'a pas encore ?t? sauvegard?, vous serez invit? ? entrer un nom de fichier apr?s avoir appuy? sur [Y], entrez-le et appuyez sur [Retour].
+
+★☆　使い方　☆★
+
+　基本的に、BASICの編集に似せてあります。
+　終了方法や、ユーザー指定幅への切り換えを覚えておけば、割と使いこなせると思います。
+　【Undo不可】と書かれた操作をしなければ、最後の編集操作はいつでもUndoできます。
+
+※[CTRL]+Q ?は、最初に[CTRL]+Qを押して、次に?に書かれたキーを押してください。
+　たとえば、[CTRL]+Q [CTRL]+Wの場合、[CTRL]を押したまま[Q][W]と操作します。
+　また、[CTRL]+X ?等も同じです。
+★ ☆ Comment utiliser ☆ ★
+
+En gros, cela ressemble ? l'?dition BASIC.
+Si vous vous souvenez de la m?thode de fin et du passage ? la largeur sp?cifi?e par l'utilisateur, je pense que vous pouvez l'utiliser relativement bien.
+La derni?re op?ration d'?dition peut ?tre annul?e ? tout moment, sauf si l'op?ration est d?crite comme [Annuler impossible].
+
+※ Pour [CTRL] + Q ?, appuyez d’abord sur [CTRL] + Q, puis sur la touche d?crite dans?.
+Par exemple, dans le cas de [CTRL] + Q [CTRL] + W, maintenez la touche [CTRL] enfonc?e et utilisez la fonction [Q] [W].
+En outre, [CTRL] + X? Etc. sont identiques.
+
+●物理行と論理行について
+
+　物理行とは、画面上で1行に表示される行のことです。ただし、LCDの幅(通常40桁)に固定されるのではなく、設定によって変更することができます。
+　論理行とは、画面の幅などには関係なく、CRまでの範囲を言います。したがって、CRがないかぎり1行の長さに限界はありません。
+　基本的にカーソルの移動などでは、物理行を基準として移動します。行番号の管理などは、論理行を基準として行なっています。
+● ? propos de la ligne physique et de la ligne logique
+
+Une ligne physique est une ligne qui appara?t sur une seule ligne ? l'?cran. Cependant, il n'est pas fix? ? la largeur de l'?cran LCD (g?n?ralement 40 chiffres), mais peut ?tre modifi? par les param?tres.
+Une ligne logique fait r?f?rence ? la plage allant jusqu'au CR, quelle que soit la largeur de l'?cran. Par cons?quent, il n'y a pas de limite ? la longueur d'une ligne sauf s'il y a un CR.
+En gros, lorsque vous d?placez le curseur, etc., il se d?place par rapport ? la ligne physique. La gestion des num?ros de ligne, etc. est bas?e sur des lignes logiques.
+
+●カーソルの移動
+
+・[↑][↓]
+　1行上下に移動。
+
+・[←][→]
+　1文字左右に移動。
+
+・[CTRL]+[↑]、[CTRL]+[↓]
+　テキストの先頭、末尾へ移動。
+
+・[SHIFT]+[←]、[SHIFT]+[→]
+　物理行の先頭、末尾へ移動。
+
+・[SHIFT]+[↑]、[SHIFT]+[↓]
+　1画面上下に移動。
+
+・[CTRL]+[←]、[CTRL]+[→]
+　画面幅がLCDの幅以下の場合、論理行の先頭、末尾へ移動。
+
+　LCDの幅より広い場合、1画面左右へ移動。
+　カーソルとは無関係に1画面ずつ移動します。したがって、改行で終わっている行などで[CTRL]+[→]を押すと、カーソルが画面からはみ出してしまうことがあります。そして、そのことを示すためにカーソルのある行の先頭で挿入モードのカーソルが点灯します（点灯している位置に実際のカーソルがあるわけではないのに注意）。そのとき、編集ははみ出している現在のカーソル位置で行なわれますので、注意してください。
+　カーソル位置に画面表示を戻したいときは、[FSE]キーを押して、放してください。
+
+・[→HEX]、[ln]
+　画面幅がLCDの幅より広い場合、カーソルに関係なく1桁左右へスクロール。
+
+・[sin]、[yx]
+　カーソルに関係なく上下スクロール。
+
+・[SHIFT]+[→HEX]、[SHIFT]+[ln]
+　[CTRL]+[←]、[CTRL]+[→]と同じ。
+
+・[SHIFT]+[sin]、[SHIFT]+[yx]
+　[SHIFT]+[↑]、[SHIFT]+[↓]と同じ。
+
+・[CTRL]+J
+　指定した行番号にジャンプします。
+　[CTRL]+Jを押すと、「Line>」とジャンプする行番号を聞いてくるので、入力して[リターン]を押してください。
+　行番号に0行を指定した場合、1行を指定したことになり、最終行よりも大きな行番号を指定した場合、最終行を指定したことになります。
+
+・[CTRL]+Q [CTRL]+[←]、[CTRL]+Q [CTRL]+[→]
+　論理行の先頭、末尾へ移動
+
+●文字の入力・削除
+
+　キーボードから入力できる文字がすべて入力できます【Undo不可】。さらに、JFPをインストールすると全角文字の入力もできます。
+
+・[リターン]【Undo不可】
+　改行を挿入します。
+　改行を1文字として扱っているので、1つの行を2行に分けることが簡単にできます。
+　オートインデント（後述）が有効になっているときは、字下げを自動的に行ないます。
+
+・[SHIFT]+[リターン]【Undo不可】
+　改行を挿入します。
+　このとき[リターン]と違って常に字下げを行ないません。
+
+・[CTRL]+I/[STO]【Undo不可】
+　タブを挿入します。
+
+・[EXP]【Undo不可】
+　コントロールコードを入力します。
+　[EXP]を押した後、[CTRL]+A～Zのキーを使って入力してください。ただし、[CTRL]+Mは入力できません。
+　[CTRL]+Z（EOF）を入力すると、次回Loadのときに、そこがファイル・エンドであると判断してしまい、プレファレンスなどでEOF以降を読み込む設定にしないとそれ以降のテキストが読み込まれなくなってしまいます。また、読み込むときにEOF自身は削除されてしまいます。
+　[CTRL]+Zを入力するときは十分注意してください。
+
+・[INS]
+　挿入／上書きモードを切り換えます。
+　起動時は、挿入モードです。
+
+・[DEL]【Undo不可】
+　現在のカーソル位置の文字を削除します。
+
+・[BS]【Undo不可】
+　ひとつ前の文字を削除します。
+　[DEL][BS]ともに改行を削除することで、複数行を1行にまとめることができます。
+
+・[CTRL]+E
+　カーソル位置から改行まで削除します。
+
+・[CTRL]+D
+　論理行の先頭からカーソル位置までを削除します
+
+・[CTRL]+Y
+　現在カーソルのある行をすべて削除します。
+　範囲指定（後述）を行なっているときは、選択範囲をすべて削除します。
+
+●カット、コピー&ペースト
+
+・[PF3]
+　カットまたはコピーする範囲の指定を開始します。
+　範囲指定を行なっているときは、選択された範囲をコピーします。
+
+・[PF4]
+　選択された範囲をカットします。
+　この操作をUndoすると、カットした内容は戻せますが、以前のペースト用バッファの内容は戻せません。
+
+・[PF5]
+　カットまたはコピーされた範囲を、選択された範囲と置き換えて（上書きして）ペーストします。
+　範囲指定されていないときは、カーソル位置に挿入されます。
+
+・[C･CE]
+　範囲指定をキャンセルします。
+
+　カット（コピ）ー&ペーストを行なうときは、まず、カット（コピ）ーをしたいテキストの先頭にカーソルを移動後、[PF3]を押してからカーソルを移動させます。。
+　すると、カーソルを移動した範囲が反転表示され、選択された状態になるので、[PF3]を押すとコピー、[PF4]を押すとカットされ、バッファに取り込まれます（なお、[CTRL]+Yを押すと選択範囲がバッファに取り込まれないで削除されます。）。
+　そして、カーソルをペーストしたい場所にもっていくか、置き換えたい場所を[PF3]とカーソルで指定してから[PF5]を押すと、バッファの内容がそこにペーストされます。
+
+●検索
+
+・[PF1]/[CTRL]+F
+　検索文字列を入力した後、検索を行ないます。
+
+・[CTRL]+G
+　現在の検索文字列で前方（テキストの末尾方向）に再検索を行ないます。
+
+・[CTRL]+T
+　現在の検索文字列で後方（テキストの先頭方向）に再検索を行ないます。
+
+　まず、[PF1]を押すと、検索文字列を聞いてくるので、入力します。そして、[↓]または[リターン]を押すと前方へ、[↑]を押すと後方へ検索を開始します（[SHIFT]+[リターン]を押すと、検索文字列の設定だけを行ないます）。そして、見つかった場合は見つかった部分が反転表示されます。
+　[CTRL]+G、[CTRL]+Tを押すと、次の候補を検索します。
+　テキストの最後まで行っても見つからなかった場合、「Not found!」と表示されるので、何かキー(*)を押すと検索開始前の位置に戻ります。
+　プレファレンスで「Wrap around」をONにしていると、見つからないと、前方検索の場合、テキストの先頭へ戻って再度検索を行ないます。後方検索の場合、テキストの末尾へ戻って再度検索を行ないます。その場合、検索結果を表示する前に「Reversed.」と表示されるので、何かキー(*)を押してください。
+
+　検索文字列中に次のようなメタキャラクタを入力すると、特別な働きをします。
+
+^       行頭（論理行の）に一致
+$       行末（論理行の）に一致
+\       メタキャラクタの意味を打ち消す
+
+　「^」は検索文字列の先頭、「$」は末尾にあるときのみメタキャラクタとして働きます。検索文字列として先頭に「^」、末尾に「$」を使いたいときは、「\^」「\$」と記述します。「\」自身を指定したいときは、「\\」とします。
+　また、「^」と「$」を両方使うこともできます。
+　以下に例を示します。
+
+^ABC     行頭の「ABC」
+A^C     「A^C」
+ABC$     行末の「ABC」
+$ABC    「$ABC」
+\^ABC   「^ABC」
+ABC\$   「ABC$」
+ABC\\$   行末の「ABC\」
+
+(*)前方検索の時は[CTRL]+[;]以外のキー、後方検索の時は[CTRL]+[,]以外のキーです。
+
+●置換
+
+・[PF2]
+　検索文字列、置換文字列を入力した後、検索を行ないます。
+
+・[CTRL]+Q [CTRL]+R
+  現在選択されている範囲を置換文字列で置き換えます。
+
+・[CTRL]+[;]
+　現在選択されている範囲を置換文字列で置き換えた後、前方へ再検索を行ないます。
+
+・[CTRL]+[,]
+　現在選択されている範囲を置換文字列で置き換えた後、後方へ再検索を行ないます。
+
+　[PF2]を押すと、まず置換前の文字列を聞いてくるので、入力して[リターン]を押します。すると、それを何に置換するかを聞いてくるので、これも入力します。そして、[↓]または[リターン]を押すと前方へ、[↑]を押すと後方へ検索を開始します（[SHIFT]+[リターン]を押すと、検索・置換文字列の設定だけを行ないます）。そして、見つかった場合は見つかった部分が反転表示されます。
+　反転表示されている状態で、[CTRL]+Q [CTRL]+Rを押すと、反転表示された部分が置換されます。[CTRL]+[;]/[CTRL]+[,]を押した場合、置換した後、自動的に次の候補を再検索します。
+　「Not found!」「Reversed.」の表示は、検索するときと同じです。
+
+(置換の例)
+　たとえば、「Windoze」を「MACCOS」に置換するとします。
+　[PF2]を押して、「Windoze」と入力して、[リターン]を押します。次に、「MACCOS」と入力して[リターン]を押します。すると、カーソル位置から最初に見つかった「Windoze」が反転表示されます。ここで[CTRL]+[;]を押すと、その「Windoze」が「MACCOS」に置換され、次の「Windoze」が反転表示されます。
+　[CTRL]+[;]を押し続けると、「Windoze」が無くなるまで置換が続けられます。Wrap aroundをONにしていると、テキストの最後まで行ってしまった場合、「Reversed.」と表示されるので、何かキーを押すと先頭に戻って再検索します。最後の「Windoze」が反転表示した段階で[CTRL]+[;]を押すと、「Not found!」と表示されるので、何かキーを押すと置換は終了します。
+
+●スクラップ機能
+
+　よく使う文字列などを10種類、[CTRL]+0～[CTRL]+9に登録して、呼び出すことができます。
+
+・[CTRL]+n (nは0～9）
+　登録された文字列を挿入します。
+
+・[CTRL]+X [CTRL]+n
+　現在選択された範囲の文字列を、[CTRL]+nで指定したキーに登録します。
+　登録された全ての文字列を合計して、最大492バイトまでの文字列が登録可能です。
+　文字列には改行を含むことが可能です。ただし、改行を含んでいると、[CTRL]+Q [CTRL]+nで使用することはできません。
+
+●引用符機能
+
+　引用符機能は、選択範囲の各行の先頭に、特定の文字を挿入したり、削除する機能です。
+　選択範囲がないときは、カーソルのある行に対して動作します。
+
+・[CTRL]+Q [CTRL]+n【Undo不可】
+　選択されたすべての行の先頭に、[CTRL]+0～[CTRL]+9に登録された文字列を挿入します。
+　パソコン通信のログでは、"＞"などを登録しておくと、発言の引用符を一発で入力できます。
+
+・[CTRL]+[-] [CTRL]+n【Undo不可】
+　選択した行の先頭に、[CTRL]+nに登録された文字列がある場合、その文字列を削除します。
+　[CTRL]+Q [CTRL]+nの逆の動作をします。
+
+・[CTRL]+[INS]
+　選択範囲の1行目の先頭の選択されていない部分を引用符とみなし、選択中の各行の先頭に挿入します。
+
+・[CTRL]+[BS]
+　選択範囲の1行目の先頭の選択されていない部分を引用符とみなし、選択中の各行から削除します。
+
+([CTRL]+[INS],[CTRL]+[BS]の使い方)
+　例えば、引用>という引用符を挿入したいときは、まず挿入したい部分の先頭行に引用>と入力します。次に、その引用>の次から挿入したい範囲の終わりまでを範囲指定します。そして[CTRL]+[INS]とすると、選択範囲の2行目から先頭に引用>が挿入されます。
+　逆に、引用>という引用符を削除するときは、削除したい範囲の先頭行の先頭の引用>の次から引用符を削除したい範囲の終わりまでを範囲指定して、[CTRL]+[BS]を押すと、各行の先頭が引用>であれば削除されます。
+
+●Undo／Redo
+
+・[CTRL]+[RCL]
+　最後に行なった操作がUndo可能であれば、その操作を取り消します（Undo）。
+　Undoを行なった段階では、Undoした操作をもう一度行ないます（Redo）。
+
+　Undoを行なうためには、Undoの対象操作で消される文字がある場合、（削除、置換など）消される文字列は256バイト以下である必要があります。
+　また、Redoを行なうときは、Undoを行なうとき、Undoによって消される文字があるときは、（挿入、置換、ImportなどをUndoしたとき）その文字列が256バイト以下である必要があります。また、Redoを行なうときの空きメモリが極端に少ないときは、Redoできない可能性があります。
+
+　Undo／Redoができない場合、"Can't undo"と表示されるので、何かキーを押してください。
+
+●その他の操作
+
+・[CTRL]+Q [CTRL]+W
+　LCDの幅・ユーザー指定幅を切り換えます。
+　なにも設定していないと、ユーザー指定の画面幅は79桁です。
+
+・[CTRL]+Q [CTRL]+E
+　60Columnsをインストールしているとき、INIT "SCRN:W?"を発行し、40桁表示と60桁表示を切り換えます。
+
+・[CTRL]+S
+　テキストを保存します。
+　起動時にファイル名を指定しなかったときは、最初にSaveするときにファイル名の入力を要求されるので、入力して[リターン]を押してください。
+　このとき、PANO.CFGにファイル名と現在の行番号が記憶されます。
+
+・[CTRL]+Q [CTRL]+[STO]
+　選択されたすべての行のすべてのタブを等価なスペースに変換します。
+　選択範囲がないときは、カーソルのある行が対象になります。
+
+　タブで整形した表などをパソコン通信などで送信する前にこのコマンドを実行すると、相手のタブ設定がいくつであっても表が崩れません。
+
+・[CTRL]+K
+　選択されたすべての行に、指定された桁数ごとに自動的に改行を挿入します。
+　選択範囲がないときは、カーソルのある行が対象になります。
+　初期設定では半角70桁に指定されているので、70桁に達する度に改行が挿入されます。途中に改行がある場合は、最初からある改行は削除しながら処理を進めます。
+　作業の途中でメモリ不足になった場合、そこで中断してしまいます。注意してください。
+　標準でワードラップ処理を行ないます。スペース、コントロールコードまたは"-"以外のASCII文字列は出来るだけ分割しないで次の行に送ります。プレファレンスの「Word wrap」でこの機能をOFFにできます。
+
+・[CTRL]+[=]
+　選択範囲の1行目の先頭の選択されていない部分を引用符とみなし、選択された全ての行について、指定した桁数ごとに改行するとともに引用符を挿入します。最初からある改行は削除しながら処理します。
+　選択範囲がないときは、カーソル行を対象とし、行の先頭からカーソル位置の直前までを引用符とみなします。
+　[CTRL]+[INS]と[CTRL]+Kを同時に行なうような感じになります。ワードラップや、メモリ不足に関しても、[CTRL]+Kに準じます。
+
+・[CTRL]+Q [CTRL]+K
+　[CTRL]+K、[CTRL]+[=]で、改行を挿入する桁数を変更します。
+　「Wrap>」と聞いてくるので、入力して[リターン]を押してください。設定はPANO.CFGに保存され、次回以降も有効になります。
+
+・[CTRL]+Q [CTRL]+D
+　ユーザー指定の画面幅を変更します。
+　「Width>」と画面幅を聞いてくるので、入力して[リターン]を押してください。すると、即座に画面幅が切り替わります。
+　新規ファイルの編集中でまだ保存していないときは、設定がPANO.CFGに保存され、次回以降も設定が有効になります。
+
+・[CTRL]+Q [CTRL]+I
+　タブ幅を変更します。
+　「Tab>」と聞いてくるので、入力して[リターン]を押してください。
+　新規ファイルの編集中でまだ保存していないときは、設定がPANO.CFGに保存され、次回以降も設定が有効になります。
+
+・[FSE]
+　押している間だけ次のような情報を表示します。
+　この表示は、キーを押している間だけ表示され、放すと消えます。
+
+ 1178/ 1203 h: 15/ 55 5580B -C-
+ (1)   (2)    (3) (4)  (5)  (6)
+
+ (1):現在の（論理行の）行番号（先頭：1）
+ (2):最終行番号（同上）
+ (3):現在のカーソルの物理行の行頭を0としたときの水平位置
+ (4):        〃      論理行の行頭を0としたときの水平位置
+     ただしこの値は255を越えるとき、(3)と同じ値のときは表示されません。
+ (5):編集に使用できる残りメモリ容量（単位はバイト）
+ (6):各種属性（有効のときは次のような記号、無効のときは-が表示されます。）
+       *…書き換えたあと保存していない。
+       C…タブ／改行／EOFを表示している。
+       U…最後に行なった操作をUndoできる。
+
+・[+/-]【Undo不可】
+　カーソル位置の直前の単語のアルファベットの大文字と小文字を入れ替えます。
+　入れ替えるのは半角文字だけで、カーソルから後ろは入れ替えられません。
+　たとえば、「thank you」の「y」の位置にカーソルを合わせて[+/-]を押すと、「THANK you」に、「h」にカーソルを合わせて押すと「Thank you」になります。
+
+・[CTRL]+Q [CTRL]+C
+　タブ／改行／EOFの表示をON/OFFします。
+
+・[TITLE]
+　オートインデントモード（行の字下げを自動的に行なう機能）の有効／無効を切り換えます。
+　オートインデントモードが有効になっている場合は、画面上の“PRINT”シンボルが点灯します。そして、[リターン]を押すと、直前の行の先頭のスペース／タブと同じ数のスペース／タブを自動的に挿入します。
+　もし字下げを行なわないで改行したい場合、[SHIFT]+[リターン]を押してください。
+
+・[◆]（[MENU]の上のキー）
+　ファンクションキーの有効／無効を切り換えます。
+
+　PANORAMAではファンクションキーを単独キーとしてコマンドの入力に使っていますが、ファンクションキーに定義した内容を入力したいこともあるでしょう。そのときは[◆]を押して下さい。
+　ファンクションキーが有効になっているときは、画面上の“E”シンボルが点灯します。
+
+・[CTRL]+Q [CTRL]+J
+　カーソル位置と選択を開始した位置（[PF3]を押した位置）を入れ替えます。
+
+・[SHIFT]+[MENU]
+　KALKUを起動します。
+　範囲選択を行なっているときは、選択された範囲をKALKUに入力します。
+　KALKUから答えを入力すると、選択範囲の後ろに挿入され、カーソルが選択範囲の先頭にあったときは式と答えが、選択範囲の後ろにあったときは答えだけが、選択された状態になります。【Undo不可】
+
+・[OFF]
+　電源OFF。
+　オートパワーオフももちろん有効です。
+
+・[MENU]/[BASIC]
+　メニューモードへ移行します。
+
+●メニューモード
+
+・[PF1]
+　PANORAMAを終了します。
+　保存を行なわなくても、メモリに現在の状態を保存するので、“-R”オプションをつけてPANORAMAを再起動すれば、終了前の状態に復帰できます。
+
+・[PF2]
+　編集ファイルを変更し、保存します。
+　すでに存在しているファイルを指定すると、
+
+　"ファイル名" Overwrite ok?(Y/N)
+
+　と表示されるので、[Y]を押すとすでに存在するファイルを削除して書き込まれます。[N]を押すとファイル名の変更は行なわれません。
+
+・[PF3]
+　現在のカーソル位置に別のテキストファイルを挿入します。
+
+・[PF4]
+　現在選択されている範囲を別のファイルに書き出します。
+　すでに存在しているファイルを指定すると、
+
+　"ファイル名" Overwrite or Append?(O/A)
+
+　と表示されるので、[O]を押すとすでに存在しているファイルを削除して書き出します。[A]を押すと、すでに存在するファイルの末尾に追加する形で書き出されます。これ以外のキーを押すと、ファイルの書き出しは行なわれません。
+
+・[PF5]
+　プレファレンス画面へ移行します。
+
+・[SHIFT]+[PF5]
+　改行コード／EOFの設定画面へ移行します。
+
+・[MENU]/[BASIC]
+　何もしないで編集モードに戻ります。
+
+●プレファレンス
+
+　メニューモードで[PF5]を押すと、次のような画面が表示され、各種設定が変更できます。
+
+ * Wrap around       ON  OFF
+   Ignore case       ON  OFF
+   Strip ctrl code   ON  OFF
+   Read after EOF    ON  OFF
+
+　「*」が最下行にあるとき、[↓]を押すと、次の画面に移ります。
+
+ * Word wrap         ON  OFF
+   Go to saved line  ON  OFF
+
+　それぞれの状態のON/OFFに応じて、ONまたはOFFが反転しています。
+　初期状態では「Word wrap」と「Go to saved line」がONで、他はOFFです。
+
+・[↑][↓]
+　「*」を上下に移動します。
+　画面の最上行／最下行からさらに移動しようとした場合、移動できれば前／次の画面に移動します。
+
+・[SPACE]/[←]/[→]
+　「*」のある項目のON/OFFを切り換えます。
+
+・[リターン]
+　設定に加えた変更を有効にしてプレファレンスから抜けます
+
+・[MENU]/[BASIC]
+　変更を無効にしてプレファレンスから抜けます。
+
+　それぞれの設定の意味は、次の通りです。
+
+・Wrap around
+　ONになっていると、検索コマンドでテキストの最後まで検索しても見つからなかった場合、テキストの先頭または末尾に戻って再度検索を行ないます。
+
+・Ignore case
+　ONにすると、検索時に半角アルファベットの大文字・小文字を無視して検索します。たとえば、"Pocket"を検索した場合、"Pocket"だけでなく、"POCKET"、"pocket"などにもヒットするようになります。
+　OFFだと、大文字・小文字を区別します。
+
+・Strip ctrl code
+　ONにすると、ファイルをロードするときに、コントロールコードを削除して読み込みます。
+
+・Read after EOF
+　ONにすると、テキストの途中にあるEOFを無視してファイルの最後まで読み込みます。
+　"COM:"のようにファイルの最後を検出できないデバイスから読み込む場合は、指定しないでください。
+
+・Word wrap
+　ONにすると、[CTRL]+K、[CTRL]+[=]で改行を挿入するときワードラップを行ないます。
+
+・Go to saved line
+　ONにすると、最後にPANOで保存したファイルを、編集開始するとき、保存したときの行番号に移動します。
+
+　Strip ctrl codeとRead after EOFは、現在編集中のファイルについては意味を持ちません（すでにロードされているのですから当然ですが）。Importするときには、設定を変更した時点で有効になります。
+　Go to saved lineはOFFにしていても、最後に保存したファイルと、そのときの行番号は記憶しています。
+
+●改行コード／EOFの変更
+
+　メニューモードで[SHIFT]+[PF5]を押すと、改行コード／EOFの変更画面になります。
+
+ * End of File     EOF   none
+   End of Line    CR+LF   CR
+
+　既存のファイルの編集中は、そのファイルの改行コード／EOFにしたがってそれぞれ反転表示されます。
+　新規ファイルの編集中は、新規ファイルに適用される改行コード／EOFが反転表示します。
+
+　ここでの操作方法は、プレファレンスのときと同じです。
+　End of Fileは、保存ファイルの末尾にEOFをつけるかどうかを指定します。
+　End of Lineは、行末の改行コードをCR+LFにするか、CRにするかを指定します。
+
+　設定を変更すると、次回以降の保存／Export時に反映されます。逆に、保存しなければ、いくら変更しても反映されません。また、新規ファイルのときは、PANO.CFGに保存され、新規ファイルのときの設定として使用されます。
+
+
+●1行入力時
+
+　ファイル名、検索文字列の入力など、1行入力でも、これまで説明した編集用キーのほとんどが使用できます。
+　なお、カット&ペーストはペーストのみが可能で、CRを含む文字列のペーストはできません。
+
+・[リターン]
+　入力を確定します。
+
+・[SHIFT]+[リターン]
+　検索・置換のとき、検索・置換文字列の設定だけを行なって、編集に戻ります。
+
+・[MENU]/[BASIC]
+　入力をキャンセルします。
+
+・[↓]
+　（検索のとき）前方検索を開始します。
+
+・[↑]
+　（検索のとき）後方検索を開始します。
+　（検索以外のとき）過去に入力した（[リターン]を押したときの）ファイル名を呼び出します。
+　入力したファイル名を3つまで記憶していて、[↑]を押す度にさかのぼって表示できます。
+
+・[C･CE]/[CTRL]+Y
+　入力行をすべてクリアします。
+
+
+★☆　起動オプション　☆★
+
+　PANOを起動するときに、次のようなオプションを指定することができます。
+　オプションは、編集ファイル名の前または後ろに指定します。
+　-S、-Eの各オプションは、ファイルロード時のみ有効で、Import時にはプレファレンスの設定が使用されます。
+
+●-W
+　-Wのあとに2～255までの数字を指定して、ユーザー指定の画面幅を指定します。
+　省略すると、[CTRL]+Q [CTRL]+Dで設定していればその値に、そうでなければ、79桁となります。
+
+●-T
+　-Tのあとに1～255までの数字を指定して、タブの幅を指定します。
+　省略すると、[CTRL]+Q [CTRL]+Iで設定していればその値に、そうでなければ、8桁になります。
+
+●-S
+　$09、$0D、$1A、$1B以外のコントロールコードをすべて削除して読み込みます。
+　このオプションの代わりに、プレファレンスのStrip ctrl codeを使うこともできます。
+
+●-S0
+　コントロールコードを削除しないで読み込みます。
+　プレファレンスのStrip ctrl codeを無効にするオプションです。
+
+●-E
+　テキストの途中にあるEOF($1A)を無視してファイルの最後まで読み込みます。
+　"COM:"のようにファイルの最後を検出できないデバイスから読み込む場合は、指定しないでください。
+　プレファレンスのRead after EOFを使うこともできます。
+
+●-E0
+　テキストの途中にEOFがあった場合、EOFから後ろを読み込みません。
+　プレファレンスのRead after EOFを無効にするオプションです。
+
+●-数字
+　指定した行番号から編集を開始します。
+
+　複数のオプションを指定するときは、「-W255T4」のように、2番目以降は「-」を省略します。
+　「-」の代わりに、「/」を使うこともできます。
+　「-数字」オプションは、-W、-T、-S、-Eオプションの後ろに置くことができないので、注意してください。「-30W255」のようにするか、「-W255 -30」のように、オプションの後ろにスペースを入れ、その後から指定するようにしてください。
+
+（例）
+  LOADM "PANO":CALL &BD000"TEST.TXT -100W73
+　“TEST.TXT”を100行目から編集します。ユーザー指定幅が73桁になります。
+
+  LOADM "PANO":CALL &BD000"-E TEST.LOG
+　“TEST.LOG”を途中のEOFを無視して読み込み、編集します。
+
+
+★☆　注意点　☆★
+
+●改行コードのないファイル
+
+　改行コードのないファイルについては、改行コードの種類を判定できないので、新規ファイルのときの改行コードが自動的に指定されます。
+　また、保存するときに改行コードがないと、いくら改行コードを指定していても意味がありません。
+
+●タイムスタンプ
+
+　BASICなど、E500のシステムでは、タイムスタンプをサポートしていません。したがって、PANOでタイムスタンプを押しても、BASICのCOPYなどでコピーすると、タイムスタンプはコピーされません。また、PANOで保存したファイルを、タイムスタンプに対応していない他のプログラムで書き換えると、タイムスタンプが消えてしまいます。
+
+●上書き入力と検索
+
+　上書きモード（カーソルが正方形）で、全角文字の上に半角文字を上書き入力すると、入力した半角文字の後ろに半角スペースが入力されます。
+　検索のとき、うまく検索ができない場合、これによって検索文字列の末尾にスペースが入っている場合があるので、確かめてみてください。
+
+●反転表示
+
+　[PF3]を押して範囲指定中、検索文字列を発見したとき、引用符処理、[CTRL]+Kの直後は文字列が反転した状態になりますが、
+
+                範囲指定中      検索後          引用符、^K処理後
+カーソル移動    範囲拡大/縮小   選択解除        選択解除
+検索            範囲拡大/縮小   発見位置を反転  範囲拡大/縮小
+[PF3]           コピー          範囲指定開始    コピー
+[PF4]           カット          選択解除        カット
+[PF5]           ペースト        ペースト        ペースト
+[CTRL]+[Y]      範囲削除        1行削除         範囲削除
+
+　…という違いがあります。
+　さらに、[CTRL]+Q [CTRL]+Jを押すと、検索後を除いて範囲指定中と同じになります。
+　また、発見文字列を置換する際は、反転状態でないと（検索直後でないと）置換でなく挿入になってしまいます。注意してください。
+
+●メモリ不足
+
+　テキストの読み込み時にメモリが足りなかった場合は、画面最下段に、“Not enough memory.”と表示されます。何かキーを押すと、読み込めた部分までで編集に入ります。
+　入力中にメモリ不足になった場合は、入力ができなくなります。
+  カット&ペースト中にメモリ不足になった場合も、“Not enough memory.”と表示されて、カット&ペーストは行なわれません。何かキーを押すと、編集に戻ります。
+  M?moire insuffisante
+
+Si vous ne disposez pas de suffisamment de m?moire pour lire du texte, "M?moire insuffisante" sera affich? en bas de l'?cran. Si vous appuyez sur n’importe quelle touche, l’?dition commencera ? la partie lue.
+Si vous manquez de m?moire lors de la saisie, vous ne pouvez pas entrer.
+M?me si le manque de m?moire se produit pendant le copier / coller, "Pas assez de m?moire" est affich? et le couper-coller n'est pas effectu?. Appuyez sur n’importe quelle touche pour revenir au montage.
+
+●ファンクションキー
+
+　PANORAMAの実行中で、ファンクションキーが無効になっているときリセットを押すと、ファンクションキーの入力ができなくなってしまうことがあります。
+　そうした場合は、
+
+　POKE &BFC3F,0
+
+　とするか、1480U以外なら、
+
+　INIT "KYBD:"
+
+  としてください。またPANORAMAを立ち上げて通常の方法で終了しても元に戻ります。
+  ● Touche de fonction
+
+Si PANORAMA est en cours et que vous appuyez sur la touche de r?initialisation lorsque la touche de fonction est d?sactiv?e, vous ne pourrez peut-?tre pas entrer la touche de fonction.
+Si tu le fais,
+
+POKE & BFC3F, 0
+
+Ou, sauf 1480U,
+
+INIT "KYBD:"
+
+S'il vous plait De plus, si vous lancez PANORAMA et que vous sortez de la mani?re habituelle, il sera restaur?.
+
+●オープンするファイル
+
+　ファイルをオープンするとき、ファイルの種類のチェックを行なっていないので、マシン語のファイルなど、テキストファイル以外のファイルもオープンできてしまいます。
+  もし、そういったファイルをオープンしてしまった場合、保存せずに速やかに終了してください。保存してしまうと、ファイルが破壊されてしまいます。
+  ● Fichier ? ouvrir
+
+Lorsque vous ouvrez le fichier, vous ne v?rifiez pas le type de fichier, vous pouvez donc ouvrir des fichiers autres que des fichiers texte, tels que des fichiers de langage machine.
+Si vous ouvrez un tel fichier, veuillez quitter imm?diatement sans enregistrer. Si vous enregistrez, le fichier sera d?truit
+
+
+★☆　POTATO TIPS　☆★
+
+　知っておくと便利な（かもしれない）ことや、技をいくつか紹介します。
+
+▲編集中、横スクロールしてしまうので、どこが画面の右端か分からない。
+
+△こういう場合に備えて、PANORAMAは、画面の右を14桁残してスクロールします。したがって、カーソルが14桁目を越えて移動するようになったらもうすぐ改行ということになります。
+　"CAPS"シンボルの右あたりが14桁目になります。
+
+▲短い行にカーソルがあると、[SHIFT]+[→]としても右画面に移動しない
+
+△[CTRL]+[→]を使うと、短い行にカーソルがあっても右画面が表示できます。ただし、短い行だとカーソルがスクロールから取り残されるのに注意してください。
+
+▲カットバッファの内容を消したいが、[PF3]を2回押しても消えない。
+
+△間違って[PF3]を連打してしまうと危ないので、そういう仕様になっています。カットバッファを消すときは、[PF3][PF4]と操作してください。
+
+▲作者にドネーションを送りたい。
+
+△どうぞ連絡ください。大歓迎です。
+
+▲ロードするファイル名を忘れた。入力するのが面倒。
+
+△ファイル名の指定にはワイルドカード（"?"と"*"）が使えます。また、[↑]を押すと、過去に入力したファイル名が出てくるので、これを利用することもできます。
+
+▲キー配列が覚え切れない。
+
+△ポケコンの裏蓋に使い方を書いた紙を貼っておくといいでしょう。また、PANORAMAと同じ作者の「Revolution E500」というフリーソフトを使うと、編集中でもPANOHLP.DOCを参照することができます。
+
+
+★☆　今後は…　☆★
+
+　このプログラムは、まだまだ発展途上です。使ってみてバグや不満な点があったり、このドキュメントを読んで分からないことがあったら、ぜひお知らせください。可能な限り対応していきたいと思います。
+　ただし、バグレポートなどを送る方は、できるだけ次の点を明記するようにしてください。
+
+・どのような状況でどんな操作をしたらどうなったのかをできるだけ詳しく
+・使用しているPANORAMAのバージョン（PANO -?で表示されます）
+・使用している機種と、バージョン番号（PEEK&FFFF0の値）
+・メモリの容量と、マシン語領域の大きさ
+・改造の有無と、もし改造しているならその種類
+・常駐プログラムを外してみて、正常に動くようになった場合はその常駐プログラムの名前
+
+　また、明らかにドキュメントを読んでいないと思われる質問等にはお答えしかねます。
+★ ☆ Dans le futur ... ☆ ★
+
+Ce programme est encore en d?veloppement. S'il vous pla?t laissez-nous savoir si vous avez des bugs ou des plaintes concernant son utilisation, ou si vous avez du mal ? lire ce document. Je voudrais correspondre autant que possible.
+Cependant, si vous envoyez un rapport de bogue, etc., veuillez sp?cifier autant que possible les points suivants.
+
+Il est aussi d?taill? que possible dans quelle situation et quel type d’op?ration il est devenu
+-La version de PANORAMA utilis?e (affich?e avec PANO-?)
+Mod?le utilis? et num?ro de version (valeur de PEEK & FFFF0)
+・ Taille de la m?moire et taille de la zone de langue de la machine
+La pr?sence ou l'absence de remodelage, et son type si remodelage
+-Si vous supprimez le programme r?sident et qu'il fonctionne correctement, le nom du programme r?sident
+
+De plus, nous ne pouvons pas r?pondre aux questions qui semblent ne pas avoir lu clairement le document.
+
+★☆　最後に　☆★
+
+　開発にはMacintoshのXASM 1.30.r2を使いました。機能が劣ることだけでなく、そのままではたった20KB程度のファイルもオープンできない点に苦しめられました。
+  それにしても……、全角文字のサポートは無茶苦茶面倒です。エディタを作ろうなんて思うんじゃなかった…。
+  ★ ☆ Dernier ☆ ★
+
+J'ai utilis? le XASM 1.30.r2 de Macintosh pour le d?veloppement. Non seulement la fonction est inf?rieure, mais elle est ?galement affect?e par le fait que des fichiers de seulement 20 Ko environ ne peuvent pas ?tre ouverts tels quels.
+Malgr? tout ..., la prise en charge des caract?res pleine largeur est un d?sordre. Je n'ai pas pens? ? faire un ?diteur ....
+
+
+★☆　THANK YOU　☆★
+
+　使い物にならないほど低性能で、バグを出してRAMをクリアしまくっていた試作版のPANORAMAを使用して、色々な意見を述べてくださった方々、E500シリーズの日本語環境を整備してくださった方々、このドキュメントを読んでPANORAMAを使おうとしている貴方、そして、製作中つねに流し続けたLED ZEPPELINのアルバム「PRESENCE」に感謝します。皆さんの力がなければPANORAMAはここまで成長しなかったでしょう。本当にありがとうございました！
+
+
+★☆　参考文献・プログラム　☆★
+
+1)PC-E550＊1490U][活用研究、工学社
+2)こぺる：FE ver 1.02
+3)Y.Ajima：WVIEW ver 1.11
+4)Ryu：TRED ver 1.11
+5)加古英児：KNJSCRN ver 1.4
+6)近 成人：JFP ver 1.07
+7)Nmasu：SQUEEZE/system ver 0.11
+8)Nmasu：SCRNJPN version 1.10
+9)Ｍasa：Kalkulator version 0.52
+10)近 成人：リアルタイム・クロックを内蔵する、PJ'92年12月号、工学社
+11)Aesop・M68：60Columns version 1.00
+12)Nmasu：Clock Device Extension ver. 0.00
+★ ☆ R?f?rence ? Programme ☆ ★
+
+1) PC-E 550 * 1490U] [Recherche utilis?e, bureau d'?tudes
+2) Koperu: FE ver 1.02
+3) Y. Ajima: version 1.11 de WVIEW
+4) Ryu: TRED ver 1.11
+5) Kako Hideko: KNJSCRN version 1.4
+6) Pr?s de l’adulte: JFP ver 1.07
+7) Nmasu: SQUEEZE / system ver 0.11
+8) Nmasu: SCRN JPN version 1.10
+9) Masa: Kalkulator version 0.52
+10) Near adult: Horloge en temps r?el int?gr?e, num?ro de PJ '92 d?cembre, Ing?nierie
+11) ?sope M68: Version ? 1,00 des 60 colonnes
+12) Nmasu: Clock Device Extension version 0.00
+
+★☆　連絡先　☆★
+
+ポケット通信：4117  Aesop・M68
+Nifty-Serve ：BXR00012
+Internet    ：BXR00012@niftyserve.or.jp

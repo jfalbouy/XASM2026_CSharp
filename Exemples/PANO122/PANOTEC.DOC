@@ -1,0 +1,271 @@
+==============================================================================
+
+                     Text editor “PANORAMA” Version 1.20
+
+                           for PC-E500/1480U series
+
+                        (C) 1995-1997 Daisuke Mizobata
+                              All rights reserved
+
+==============================================================================
+
+　ここではPANORAMAの内部動作や、使っているE500のシステムのワークエリアなどについて説明します。
+　ソースリストとあわせて、PANORAMAのプログラムを理解したり、完全なカスタマイズを実現する手助けとしてください。
+　なお、システム関係は、一部を除いて私のE550／E650で確認したものです。
+
+
+★☆　プログラムについて　☆★
+
+●テキストの読み込み
+
+　テキストは、先頭と末尾に$0Dをつけ、CR+LFコードをCRに変換しながら読み込みます。-Sオプションが指定されているときはさらにコントロールコードを削除します。そして、-Eオプションが指定されていればファイル・エンドまで、指定されていなければ、EOFコードまで読み込みます（EOFコードは-Sオプションの指定に係わらず削除されます）。
+　読み込み中CRコードの次にLFが出てくると、改行コードはCR+LFと判断されます。
+  改行コードがCR+LFの場合、読み込むときにCRに変換した改行コードは、SaveするときにはCR+LFに戻しています。
+  ● lecture de texte
+
+Le texte est lu lors de la conversion du code CR + LF en CR en ajoutant $ 0D au d?but et ? la fin. Lorsque l'option -S est sp?cifi?e, le code de contr?le est ensuite supprim?. Ensuite, si l'option -E est sp?cifi?e, la fin du fichier est lue. Si non sp?cifi?, le code EOF est lu (le code EOF est supprim? quelle que soit la sp?cification de l'option -S).
+Si LF appara?t ? c?t? du code CR pendant la lecture, il est d?termin? que le code de saut de ligne est CR + LF.
+Lorsque le code de saut de ligne est CR + LF, le code de saut de ligne converti en CR ? la lecture est renvoy? ? CR + LF lors de la sauvegarde.
+
+●編集中のテキストの管理
+
+　編集中は、テキストを先頭から現在行（CRまで）までと、現在行の次の行から末尾までの2つに分け、行を移動する度に適当に移動させながら管理しています。
+　この方法は、挿入・削除などの編集動作が高速になる、表示ルーチンが簡単といった利点がある反面、行を移動する度にいちいち転送を行なわなければならない、暴走したときにテキストを復活させるのが事実上不可能といった欠点があります。また、あまりにも長い行だと編集速度も低下してしまいます。
+  メモリマップを次に示します。
+  ● Gestion du texte en cours d'?dition
+
+Lors de l'?dition, le texte est divis? en deux, du haut ? la ligne actuelle (CR) et de la ligne suivante ? la fin de la ligne actuelle, et g?r? en d?pla?ant la ligne de mani?re appropri?e ? chaque d?placement.
+Cette m?thode a pour avantage que les op?rations d'?dition telles que l'insertion et la suppression deviennent plus rapides, la routine d'affichage est simple, mais elle doit ?tre transf?r?e ? chaque fois que la ligne est d?plac?e et le texte est restaur? lorsqu'il est ?puis?. Cela a l'inconv?nient d'?tre pratiquement impossible. De plus, les lignes trop longues ralentiront l'?dition.
+La carte m?moire est affich?e ci-dessous
+
+┠──────────┨←[MTOP] (d?but de la zone de langage de la machine)
+┃        $0D         ┃
+┠──────────┨←(FILTOP)
+┃  Zone de texte (1)┃
+┃････････････････････┃
+┃Ligne d'?dition 
+       Actuelle	  ┃
+┃(Jusqu'? 0 D $)    ┃
+┠──────────┨←(GAPTOP)
+┃      未使用        ┃
+┃  espace vide┃
+┠──────────┨←(GAPEND)
+┃ Zone de texte (2)┃
+┠──────────┨
+┃        $0D         ┃
+┠──────────┨←(FILEND)
+┃couper le tampon   ┃
+┠──────────┨←$BCE00
+┃ Annuler le tampon┃
+┠──────────┨←$BD000
+┃Body Corps du 
+       Programme     ┃
+┠──────────┨
+┃    Zone de travail┃
+┠──────────┨←$BFBFF
+
+●文字の表示
+
+　文字の表示は、IOCSの「n文字表示」を使っています。ただし、TABや改行、EOFはオリジナルフォントを使うので、TABなどの前までを「n文字表示」で一気に表示して、TABなどを「表示範囲を無視して表示」で表示するということを行なっています。
+　TABや改行の右側の空白は、「n文字消去」を使っていますが、反転表示されないので、反転表示を行なっているときはスペースを連続して空白を表示しています。
+　表示の書き換えは、上下スクロールのときは、スクロールして新たに表示される部分のみを書き直しています。文字を挿入・上書き・削除するときは、カーソル位置からCRまでを書き直すようにしています。このように、若干の無駄はありますが、40桁表示で使うぶんにはまあまあ速いと思います。
+  しかし、左右スクロールするときだけは、全画面を書き直しているのでかなり遅くなります。そこで、FEPから確定文字を流し込むときは、1文字ずつスクロールするのではなく、すべての文字が入力されるまでスクロールを抑制して、できるだけ入力を高速化するようにしています。
+  ● Affichage des caract?res
+
+L'affichage de caract?res utilise "l'affichage ? n caract?res" d'IOCS. Cependant, ?tant donn? que TAB, saut de ligne et EOF utilisent la police d'origine, tous les caract?res sont affich?s en m?me temps par "Affichage n caract?res" et TAB, etc., par "Affichage ignorant la plage d'affichage". Vous ?tes
+Le blanc ? droite de la tabulation et de la saut de ligne utilise "Effacer le caract?re n", mais comme il n'est pas mis en surbrillance, les espaces sont affich?s en continu lorsqu'ils sont en surbrillance.
+Pour r??crire l’affichage, lors du d?filement vers le haut et vers le bas, seule la partie qui vient d’?tre affich?e par d?filement est r??crite. Lorsque vous ins?rez / ?crasez / supprimez un caract?re, la partie situ?e entre la position du curseur et le CR est r??crite. De cette fa?on, il y a du gaspillage, mais je pense que c'est assez rapide pour l'affichage ? 40 chiffres.
+Cependant, lorsque vous faites d?filer l'?cran vers la gauche ou vers la droite, tout l'?cran est r??crit, ce qui est assez lent. Par cons?quent, lorsque vous entrez des caract?res fixes ? partir de FEP, le d?filement ne se fait pas d'un caract?re ? la fois, mais en supprimant le d?filement jusqu'? ce que tous les caract?res soient saisis, la saisie est aussi rapide que possible.
+
+●キー配列
+
+　普通の編集時、1行入力、[CTRL]+Qに続くキー配列は、共通のフォーマットに従って書かれています。それを説明します。
+
+　キー配列テーブルは、2バイトデーターが2つで1組となり、キーコード、処理先アドレスの順に並んでいます。
+　例えば、
+● Disposition des touches
+
+Au cours de l'?dition normale, une ligne est entr?e, la disposition de la cl? suivant [CTRL] + Q est ?crite selon le format commun. Je vais l'expliquer.
+
+La table de disposition des cl?s est une paire de donn?es de 2 octets, class?es dans l'ordre du code de cl? et de l'adresse de destination du traitement.
+Par exemple
+        dw      $010d,retkey, $2d00,ins_cr
+
+　のような場合、「$010d」と「$2d00」がキーコード、「retkey」と「ins_cr」が処理先アドレスです。
+
+　キーコードは、「CHR$ ??」のような1バイトコードの場合、「$01??」と、頭に$01をつけます。「CHR$ 0+CHR$ ??」のような2バイトコードでは、「$??00」とします。
+　[CTRL]+Q ??のキーは、??の部分のキーのみを書きます。
+  これを書き換えることで、キーカスタマイズができます。
+  psw 010d, retkey, 2d00 $, ins_cr
+
+Dans ce cas, "$ 010d" et "$ 2d00" sont le code de la cl?, et "retkey" et "ins_cr" sont les adresses de destination du traitement.
+
+Pour le code de cl?, pour les codes ? un octet tels que "CHR $ ??", ajoutez "$ 01 ??" Dans un code ? 2 octets tel que "CHR $ 0 + CHR $ ??", "$ ?? 00" est utilis?.
+La touche [CTRL] + Q ?? ?crit uniquement la cl? de la partie ??.
+Vous pouvez personnaliser la cl? en r??crivant ceci.
+
+　ただし、置換キーは、
+
+rfkey:	equ	$7100	;	置換 & 前方検索
+rbkey:	equ	$6c00	;	置換 & 後方検索
+
+        dw      $0107,findnx, $0114,findbf, rfkey,rplfwd,rbkey,rplbfr
+                                            ~~~~~        ~~~~~
+　のようにラベルでキーコードが指定されていますので、ラベルの定義部分（equ）を書き換えるようにしてください。これは、「Not found!」の表示のときに置換キーを無効にするためです。
+
+  また、[CTRL]+n(0～9)、[CTRL]+Q [CTRL]+n、[CTRL]+X [CTRL]+nの各操作は、さらに特殊な方法を使っているので、変えないようにしてください。
+  Cependant, la cl? de remplacement est
+
+rfkey: equ $ 7100; substitution et recherche en aval
+rbkey: equ $ 6c00; substitution et recherche en arri?re
+
+???????? dw 0107 $, findnx, 0114 $, findbf, rfkey, rplfwd, rbkey, rplbfr
+???????????????????????????????????????????? ~~~~~ ~~~~~
+Comme le code de cl? est sp?cifi? par l’?tiquette, veuillez r??crire la partie d?finition (equ) de l’?tiquette. Cela invalidera la cl? de substitution lorsque "Introuvable!" Est affich?.
+
+De plus, les op?rations [CTRL] + n (0 ? 9), [CTRL] + Q [CTRL] + n, [CTRL] + X [CTRL] + n utilisent des m?thodes plus sp?ciales, de sorte que S'il vous pla?t ne pas.
+
+　キー配列データーの位置と数は、
+
+編集時          ラベルcttabからctnum個
+1行入力時       ラベルcltabからclnum個
+[CTRL]+Q ??     ラベルcqtabからcqnum個
+
+　のように記録されているので、この個数を変えると新たなキーアサインを付け加えたり、余計なキーを削除したりすることができます。
+
+　編集時と1行入力時のキーには、共通するものが多いので、テーブルを共用しています。
+　実際には、
+
+cltab:
+
+;	ここに1行入力でしか使えないキーが入る
+	
+cttab:
+
+;	ここに1行入力と編集時のどちらでも使えるキーが入る
+
+clnum:	equ	(*-cltab)/4	;	1行入力で使えるキーの数
+
+;	ここに編集時しか使えないキーが入る
+
+ctnum:	equ	(*-cttab)/4	;	コントロールキーの数
+
+cqtab:
+
+;	[CTRL]+Q [CTRL]+?のキーが入る（[CTRL]+?の部分を書く）
+
+cqnum:	equ	(*-cqtab)/4
+
+
+　となっているので、該当する部分にキーを付け加えたり削除すると、??numの個数を変えてくれます。
+　新たにキーアサインを加えるときは、アサインがかち合わないように、また実際に「使える」ルーチンを指定するように注意してください。たとえば、1行入力でしか使えないキーのルーチンを、ここに1行入力と編集時のどちらでも使えるキーの部分に持ってきたりしないでください。
+　ただし、[CTRL]+Q ??のルーチンは、編集でしか使えないキーに持ってくることができます。例えば、
+
+        dw      $5200,replace
+
+　を編集時しか使えないキーの部分に持ってくると、（[CTRL]+Qなしの）[CTRL]+INSで置換（[CTRL]+Q [CTRL]+Rと同じ）ができます。
+　逆に、編集時しか使えないルーチンをを[CTRL]+Q ??に持ってくることもできます。
+
+　この説明を読んでソースリストを書き換えたことによるいかなる損害についても作者は責任を負いません。書き換えは、個人の責任で行なってください。
+
+●ファンクションキー
+
+　ファンクションキーを無効にするには、[$BFC3F]のbit 1をONにします。すると、キーを読みに行ったときに、ファンクションキーの変換を行なわないため、内部コードが返されるようになります。ただし、PANORAMAでは、ファンクションキーが無効のときでもつねにこのbitをONにしているのではなく、キー入力ルーチンを呼ぶ直前にこのbitをONにし、戻ったらすぐOFFにしています。
+　そのため、不意にリセットがかかってしまったとしても、ファンクションキーが無効になっていることは少なくなっています。
+● Touche de fonction
+
+Pour d?sactiver la touche de fonction, activez le bit 1 de [$ BFC3F]. Ensuite, lorsque la cl? est lue, le code interne est renvoy? car la conversion de la cl? de fonction n’est pas effectu?e. Cependant, dans PANORAMA, ce bit n’est pas toujours activ? lorsque la touche de fonction est invalide, mais ce bit est activ? imm?diatement avant d’appeler la routine de saisie de cl? et d?sactiv? imm?diatement apr?s le retour.
+Par cons?quent, m?me si une r?initialisation est d?clench?e de mani?re inattendue, les touches de fonction risquent moins d'?tre d?sactiv?es.
+
+●ファイルのクローズ
+
+　ファイルをクローズするとき、BREAKキーが放されるまで待ちます。これは、ファイルのクローズ中にBREAKされ、クローズを中断されるのを避けるためです。
+　もしこの処理を行なわないと、ファイルに書き込みを行なった場合、ファイルサイズが書き込まれないため、新規ファイルの場合はファイルサイズが0になってしまい、追加したファイルの場合、サイズが追加前のままになってしまいます。そうなると、ブロック・デバイスの場合、書き込まれた部分のセクタが使用中のまま残ってしまいます。
+　BREAKキーの検出は、内部RAM($FF)のビット3で判断するのではなく、[$BFCBE]のビット7を見て判断しています。これは、FCSが後者をBREAKキーの検出に使っているからです。
+　なお、ROMバージョンが古い機種では、FCSの処理中にBREAKキーの検出を行なわないようです。
+● Fermer le fichier
+
+Lorsque vous fermez le fichier, attendez que la touche BREAK soit rel?ch?e. Ceci permet d'?viter les ruptures lors de la fermeture du fichier et de la fermeture du fichier.
+Si ce processus n'est pas effectu?, la taille du fichier ne sera pas ?crite lors de l'?criture dans le fichier. La taille du fichier sera donc 0 pour un nouveau fichier et la m?me que pour le fichier ajout?. ?a devient. Si cela se produit, dans le cas d'un p?riph?rique en mode bloc, le secteur de la partie ?crite restera utilis?.
+La d?tection de la cl? BREAK n'est pas d?termin?e par le bit 3 de la RAM interne ($ FF), mais en regardant le bit 7 de [$ BFCBE]. Cela est d? au fait que FCS utilise ce dernier pour d?tecter la cl? BREAK.
+Si la version de la ROM est plus ancienne, il semble que la cl? BREAK n’ait pas ?t? d?tect?e pendant le traitement FCS.
+
+●タイムスタンプ
+
+　タイムスタンプは、Save／Exportしたファイルをクローズした後、FCSの「ドライブのディレクトリ情報の変更」($0B)を使って現在の時刻を設定しています。
+　フォーマットは、次のようになっています。
+　16Bitで表わしますが、Little-Endianなので、Bit 0-7が1バイト目、Bit 8-15が2バイト目です。
+L'horodatage d?finit l'heure actuelle ? l'aide de l'option "Modifier les informations du r?pertoire du lecteur" (0 $ US) de FCS apr?s la fermeture du fichier Save / Exported.
+Le format est le suivant.
+Bien qu'il soit repr?sent? par 16 bits, les bits 0 ? 7 sont le premier octet et les bits 8 ? 15 le deuxi?me octet car il s'agit d'un Little Endian.
+
+・時間
+　Bit 15-11：時    (0～23)
+　Bit 10- 5：分    (0～59)
+　Bit  4- 0：秒÷2 (0～29)
+
+・日付
+　Bit 15- 9：年    (0～99が1980年～2079年)
+　Bit  8- 5：月    (1～12)
+　Bit  4- 0：日    (1～31)
+
+●電源OFF
+
+　IOCSを使って電源をOFFすると、倍速化したマシンだと電源をOFFにするときに画面ににじみ？が出ることがあるようです。これは、倍速化によってIOCSがLCDをOFFにしてからOFF命令で電源を切るまでのウエイトが短くなることによって起こると思われます。対策として、LCDをOFFにしてから電源をOFFにし、電源をONにしたらLCDを再びONにするようにしています。
+  私のマシンは倍速化されていないので、この不都合は確認できませんでした。
+  Si le syst?me IOCS est mis hors tension et s'il est mis hors tension sur une machine ? double vitesse, est-ce qu'il saigne ? l'?cran? Semble ?tre dehors. Cela est consid?r? comme d? au court temps d'attente de la fermeture par IOCS de l'?cran LCD pour ?teindre le syst?me ? l'aide de la commande OFF en raison de la vitesse double. Par contre, apr?s avoir ?teint l’?cran LCD, l’appareil s’?teint et s’allume ? nouveau.
+Comme ma machine n’a pas ?t? doubl?e, je n’ai pas pu confirmer cet inconv?nient.
+  
+
+●Undo／Redo
+
+　Undo機能は、次のような方法で実現されています。
+
+　まず、Undo対象となる機能を実行する際に、
+(1)Undoされる開始アドレスと、最終行番号を記憶する。
+(2)削除、置換など文字列が消される場合、消される文字列をバッファにため、その文字数を記憶する。
+(3)Undo対象の機能を実際に行なう。
+(4)Undoされる終了アドレスを記憶する。
+
+　そして、Undo実行の際には、
+(1)Undo開始アドレスからギャップ領域とする。
+(2)そこにバッファにためた文字列を転送する。
+(3)Undo前のUndo開始～終了アドレスまでのデータを破壊していない場合、その内容をバッファにためる。破壊している場合、Redoをできなくする。
+(4)ギャップ開始／終了アドレス、Undo終了アドレスを変更する。
+
+　この方法は、思いっきり簡単ですが、あらかじめ固定されたUndoバッファの容量によってUndoできるか決まるという致命的な欠点があります。そして、Undoバッファに割り当てられたメモリは、それ以外のことに使えなくなります。
+
+
+★☆　アセンブル時の注意　☆★
+
+　オブジェクト・エンドから595バイトをワークエリアに使います。
+　必ず(オブジェクト・エンド+595)<$BFBF4になるようにしてください。
+
+　このプログラムは、Mac版のXASM 1.30.r2では大きすぎてそのままではアセンブルできません。
+　次のプログラム"PANO.inc"
+
+	include	PANO.asm
+	end
+
+　を作って、これをXASMにDrag&Dropしてください。
+　またCR+LF→CR変換をしておく必要があります。
+
+★ ☆ Notes sur le montage ☆ ★
+
+Utilisez 595 octets ? partir de la fin de l'objet pour l'espace de travail.
+Assurez-vous que (object end + 595) <$ BFBF4.
+
+Ce programme est trop volumineux pour la version Mac de XASM 1.30.r2 et ne peut pas ?tre assembl? tel quel.
+Le prochain programme "PANO.inc"
+
+inclure PANO.asm
+fin
+
+Cr?ez ceci et faites-le glisser dans XASM.
+De plus, il est n?cessaire de convertir CR + LF → CR.
+
+★☆　連絡先　☆★
+
+ポケット通信：4117  Aesop・M68
+Nifty-Serve ：BXR00012
+Internet    ：BXR00012@niftyserve.or.jp

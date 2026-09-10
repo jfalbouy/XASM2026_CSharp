@@ -1,0 +1,558 @@
+000000                   	;---------------------------------------------
+000000                   	;	tydos.asm   for PC-E500s  Ver 1.0
+000000                   	;	Jean-François Albouy	12/06/2019
+000000                   	;---------------------------------------------
+000000                   	;
+000000                   	;=== Variables et constantes =============================================
+000000                   	;-Constantes -----------
+000000                   	CR:		equ $0d
+000000                   	LF:		equ $0a
+000000                   	EOF:	equ $1a
+000000                   	;-----------------------
+000000                   	;
+000000                   	;-Mémoire interne ------
+000000                   	bl:		equ	0d4h
+000000                   	bh:		equ	0d5h
+000000                   	cl:		equ	0d6h
+000000                   	ch:		equ	0d7h
+000000                   	dl:		equ	0d8h
+000000                   	dh:		equ	0d9h
+000000                   	cx: 	equ 0d6h
+000000                   	si:		equ	0dah
+000000                   	scr:	equ 0fdh
+000000                   	;-----------------------
+000000                   	;
+000000                   	;- Mémoire externe -----
+000000                   	fcs_call:	equ	0fffe4h
+000000                   	iocs_call:	equ	0fffe8h
+000000                   	lcd_heigh:	equ 0bfc9eh
+000000                   	defdrv: 	equ 0bfc7dh
+000000                   	usrwrk:		equ 0bfd1ah
+000000                   	;-----------------------
+000000                   	;
+000000                   	;========================================================================
+000000                   	;
+0BF800                   		org	0bf800h
+0BF800                   	;
+0BF800                   		pre_on
+0BF800                   	;
+0BF800                   	;=== Main ===============================================================
+0BF800                   	;- Initialisation de la zone mémoire ---
+0BF800 08 04             	begin:	mv a,4				
+0BF802 A8 9E FC 0B       			mv [lcd_heigh],a 					;nombre de lignes à afficher
+0BF806 72 6F FB 0B 00    			and [flag],0						;flag initialisation
+0BF80B 0D EB FB 0B       			mv y,ptr_str
+0BF80F 0C EB FB 0B       			mv x,ptr_str
+0BF813 B4 25             			mv [y++],x
+0BF815 0C 8F FB 0B       			mv x,kbd							;buffer clavier
+0BF819 B4 25             			mv [y++],x
+0BF81B 0C 6F FB 0B       			mv x,flag
+0BF81F B4 25             			mv [y++],x
+0BF821 0C E8 FF 0F       			mv x,iocs_call
+0BF825 08 03             			mv a,3								;jpf
+0BF827 B0 25             			mv [y++],a 
+0BF829 B4 25             			mv [y++],x							;jpf 0fffe8h (IOCS)
+0BF82B 0C E4 FF 0F       			mv x,fcs_call
+0BF82F B0 25             			mv [y++],a 
+0BF831 B4 25             			mv [y++],x							;jpf 0fffe4h (FCS)
+0BF833 0C 07 F9 0B       			mv x,run_il
+0BF837 B0 25             			mv [y++],a
+0BF839 B4 25             			mv [y++],x							;jpf 0bf907h (traitement IL)
+0BF83B 30 80 EC          			mv a,($ec)							;lecture de BP
+0BF83E 28                			pushu a								;sauvegarde de BP sur la pile
+0BF83F AF 73 FB 0B       			mv [stacks],s						;sauvegarde pile système
+0BF843 AE 76 FB 0B       			mv [stacku],u						;sauvegarde pile utilisateur
+0BF847 09 10             			mv il,$10							;Initialize a file control system
+0BF849 08 01             			mv a,1								;release all FCB, File handle and File buffer
+0BF84B 04 CE F8          			call run_fcs						;callf FCS
+0BF84E 08 02             			mv a,2								;file handle PRN
+0BF850 04 C9 F8          			call close_fcb						;close FCB printer
+0BF853                   	;
+0BF853 66 6F FB 0B 02    	start:	test [flag],2						;test du flag
+0BF858 1A 4A             			jrnz st2
+0BF85A 66 6F FB 0B 01    			test [flag],1						;test du flag
+0BF85F 1A 11             			jrnz st1
+0BF861                   	;
+0BF861                   			;affichage du titre ---
+0BF861 0C DB F8 0B       			mv x,tydos_title					;titre à afficher
+0BF865 0D 22 00 00       			mv y,btmtydostitle - tydos_title	;longueur du texte
+0BF869 09 04             			mv il,4								;Writing a block of the file
+0BF86B 30 CC D6 00       			mv (cl),0							;cl = file handle, ici LCD
+0BF86F 04 CE F8          			call run_fcs						;callf FCS
+0BF872                   	;
+0BF872 0C FD F8 0B       	st1:	mv x,tycom_title					;titre de tycom.sys
+0BF876 0D 5B FB 0B       			mv y,file_buf
+0BF87A 09 02             			mv il,2								;lecture buffer fichier
+0BF87C 05 FC FB 0B       			callf ptr_runil						;appel de la routine de traitement
+0BF880 0C 5B FB 0B       			mv x,file_buf
+0BF884 09 01             			mv il,1								;opening a file
+0BF886 08 01             			mv a,1								;file is opening for reading-out
+0BF888 04 CE F8          			call run_fcs						;callf FCS
+0BF88B 1C 17             			jrc st2								;saut si erreur
+0BF88D 30 80 D6          			mv a,(cl)							;lire la valeur du File handle
+0BF890 28                			pushu a								;sauver la valeur sur la pile
+0BF891 09 01             			mv il,1								;Lecture du fichier TYCOM.SYS
+0BF893 05 FC FB 0B       			callf ptr_runil						;appel de la routine de traitement
+0BF897 1C 0B             			jrc st2								;saut si erreur en bf907h
+0BF899 60 00             			cmp a,0
+0BF89B 18 07             			jrz st2
+0BF89D 38                			popu a 								;récupérer le file handle
+0BF89E 09 03             			mv il,3								;execution de tycom.sys
+0BF8A0 05 FC FB 0B       			callf ptr_runil						;appel de la routine de traitement
+0BF8A4 8F 73 FB 0B       	st2:	mv s,[stacks]						;récupérer la pile système
+0BF8A8 8E 76 FB 0B       			mv u,[stacku]						;récupérer la pile utilisateur
+0BF8AC 09 10             			mv il,$10							;initializing a file control system
+0BF8AE 08 01             			mv a,1								;release all FCB, file handle and file buffer
+0BF8B0 04 CE F8          			call run_fcs						;callf FCS
+0BF8B3 38                			popu a 								;récupérer BP
+0BF8B4 30 A0 EC          			mv ($ec),a 							;restaurer la valeur d'origine
+0BF8B7 9F                			rc									
+0BF8B8 07                			retf								;retour au BASIC
+0BF8B9                   	;========================================================================
+0BF8B9                   	;
+0BF8B9                   	;----------- Routines ---------------------------------------------------
+0BF8B9                   	;--- Lecture du clavier -------------------------------------------------
+0BF8B9 09 05             				mv il,5							;reading a byte of the file
+0BF8BB 30 CC D6 01       				mv (cl),1						;cl = file handle, ici clavier
+0BF8BF 12 0D             				jr run_fcs						;callf FCS
+0BF8C1                   	;
+0BF8C1                   	;--- Ecriture à l'écran -------------------------------------------------
+0BF8C1 09 06             				mv il,6							;writing a byte of the file
+0BF8C3 30 CC D6 00       				mv (cl),0						;cl = file handle, ici l'écran
+0BF8C7 12 05             				jr run_fcs						;callf FCS
+0BF8C9                   	;
+0BF8C9                   	;--- Fermeture de fichier -----------------------------------------------
+0BF8C9 30 A0 D6          	close_fcb:	mv (cl),a 						;cl = file handle
+0BF8CC 09 02             				mv il,2							;closing a file
+0BF8CE                   	;
+0BF8CE                   	;--- Appel FCS ----------------------------------------------------------
+0BF8CE 30 71 EA F7       	run_fcs: 	and ($ea),$f7
+0BF8D2 05 F8 FB 0B       				callf ptr_fcs					;callf FCS
+0BF8D6 30 79 EA 08       				or ($ea),$08
+0BF8DA 06                				ret
+0BF8DB                   	;------------------------------------------------------------------------
+0BF8DB                   	;
+0BF8DB                   	;----------- Messages ---------------------------------------------------
+0BF8DB 0C 54 59 2D 44 4F 	tydos_title:	db $0c,'TY-DOS V1 system by T.Yamaguchi', CR, LF
+0BF8E1 53 20 56 31 20 73 	
+0BF8E7 79 73 74 65 6D 20 	
+0BF8ED 62 79 20 54 2E 59 	
+0BF8F3 61 6D 61 67 75 63 	
+0BF8F9 68 69 0D 0A       	
+0BF8FD                   	btmtydostitle:
+0BF8FD 54 59 43 4F 4D 2E 	tycom_title:	db 'TYCOM.SYS', CR
+0BF903 53 59 53 0D       	
+0BF907                   	btmtycomtitle:	
+0BF907                   	;------------------------------------------------------------------------
+0BF907                   	;
+0BF907                   	;************* routines des fonctions selon IL ******************
+0BF907                   	; les branchements aux sous-routines se font en décrémentant    *
+0BF907                   	; la valeur de IL												*
+0BF907                   	;           													* 
+0BF907                   	; IL = 1, run_il		Lecture du fichier TYCOM.SYS            *
+0BF907                   	; IL = 2, run_il2		Lecture buffer fichier		            *
+0BF907                   	; IL = 3, run_il3		Exécution de TYCOM.SYS                  *
+0BF907                   	; IL = 4, run_il4		Calcule buffer IOCS                     *
+0BF907                   	; IL = 5, run_il5		Calcul adresse de TYCOM.SYS             *
+0BF907                   	; IL = 6, run_il6 		Modification buffer IOCS Work           *
+0BF907                   	; IL = 7, run_il7 		Se positionner au début de la routine   *
+0BF907                   	; IL = 8, run_il8		Traitement erreur                       *
+0BF907                   	;****************************************************************
+0BF907                   	;
+0BF907                   	; IL = 1 : lecture TYCOM.SYS ************************************
+0BF907 7C 01             	run_il:		dec il
+0BF909 1A 68             				jrnz run_il2					;saut si IL > 1
+0BF90B 28                				pushu a							;sauver le file handle
+0BF90C 38                				popu a 
+0BF90D 28                				pushu a 
+0BF90E                   	; lecture du header du fichier ---
+0BF90E 30 A0 D6          				mv (cl),a 						;cl = file handle
+0BF911 09 07             				mv il,7							;verifying a file
+0BF913 0C 6E F9 0B       				mv x,header						;lead address of the file to be verified
+0BF917 0D 05 00 00       				mv y,btmheader - header			;5 bits to be verified "FF 00 06 01 10"
+0BF91B 08 01             				mv a,1							;physical end of file
+0BF91D 04 CE F8          				call run_fcs					;callf fcs
+0BF920 1E 06             				jrnc run_il10					;saut si pas d'erreur
+0BF922 60 0B             				cmp a,$0b 						;error in data verification
+0BF924 18 25             				jrz run_il11					;saut si cette errreur
+0BF926 12 3A             				jr run_il12						;sinon retour avec code d'erreur
+0BF928                   	;	
+0BF928                   	; lecture complet du fichier ---
+0BF928 38                	run_il10:	popu a							;récupérer le file handle
+0BF929 28                				pushu a							;sauver de nouveau la valeur
+0BF92A 30 A0 D6          				mv (cl),a 						;cl = file handle
+0BF92D 09 03             				mv il,3							;reading a block of the file
+0BF92F 0C 5B FB 0B       				mv x,file_buf					;lead address to which data is transfered
+0BF933 0D 0B 00 00       				mv y,11							;read the 11 bits of the header file
+0BF937 08 01             				mv a,1							;physical end of file
+0BF939 04 CE F8          				call run_fcs					;callf fcs
+0BF93C 1C 24             				jrc run_il12					;saut si erreur
+0BF93E 8D 5B FB 0B       				mv y,[file_buf]					;taille du fichier dans le header
+0BF942 8C 5E FB 0B       				mv x,[file_buf+3]				;adresse d'immplantation dans le header
+0BF946 38                				popu a 							;récupérer le file handle
+0BF947 08 01             				mv a,1							;valeur de retour
+0BF949 9F                				rc
+0BF94A 07                				retf
+0BF94B                   	;
+0BF94B                   	; Error in data verification ---
+0BF94B 09 09             	run_il11:	mv il,9							;moving a file pointer
+0BF94D 38                				popu a 							;récupérer le file handle
+0BF94E 30 A0 D6          				mv (cl),a 						;cl = file handle
+0BF951 30 DC DA 00 00 00 				mvp (si),0						;(si) : nombre de bits à déplacer
+0BF957 08 00             				mv a,0							;déplacement depuis le début de fichier
+0BF959 04 CE F8          				call run_fcs					;callf fcs
+0BF95C 1C 04             				jrc run_il12					;saut si erreur
+0BF95E 08 00             				mv a,0							;valeur de retour à zéro
+0BF960 9F                				rc								;reset carry nul
+0BF961 07                				retf
+0BF962 97                	run_il12:	sc								;carry = 1
+0BF963 07                				retf							;A = code de l'erreur
+0BF964                   	;
+0BF964                   	; Reading a byte of the file ---
+0BF964 09 05             	run_il13:	mv il,5
+0BF966 38                				popu a 							;récupérer le file handle
+0BF967 28                				pushu a 						;sauvegarder le file handle
+0BF968 30 A0 D6          				mv (cl),a 						;cl = file handle
+0BF96B 02 CE F8          				jp run_fcs						;jpf fcs
+0BF96E                   	;		
+0BF96E                   	; Header de tycom.sys ----------------------		
+0BF96E FF 00 06 01 10    	header:		db	$ff,$00,$06,$01,$10
+0BF973                   	btmheader:
+0BF973                   	;-------------------------------------------
+0BF973                   	;
+0BF973                   	; IL = 2 Lecture buffer fichier *********************************
+0BF973 7C 01             	run_il2:	dec il
+0BF975 15 E7 FA          				jpnz run_il3					;saut si IL > 2
+0BF978                   		;- initialisation du buffer -
+0BF978 08 01             				mv a,1							;on positionne le flag
+0BF97A A8 5B FB 0B       				mv [file_buf],a 		
+0BF97E 2D                				pushu y							;file_buf
+0BF97F 0A 20 20          				mv ba,$2020						;double espaces
+0BF982 09 09             				mv il,9							;18 espaces à copier
+0BF984 B2 25             	run_il21:	mv [y++],ba						;recopie des valeurs
+0BF986 7C 01             				dec il							;décrémenter le compteur
+0BF988 1B 06             				jrnz run_il21					;boucler tant que non nul
+0BF98A 3D                				popu y							;récuper file_buf
+0BF98B 2D                				pushu y							;sauver file_buf	
+0BF98C                   	;
+0BF98C 90 24             	run_il22:	mv a,[x++]						;tycom_title
+0BF98E 04 9C FA          				call fch1						;lecture fin de chaine
+0BF991 16 95 FA          				jpc err1						;saut si erreur
+0BF994                   	;
+0BF994 60 2D             				cmp a,'-'						;flag token
+0BF996 18 CD             				jrz run_il2994
+0BF998 60 3C             				cmp a,'<'						;redirection
+0BF99A 18 04             				jrz run_il23
+0BF99C 60 3E             				cmp a,'>'
+0BF99E 1A 07             				jrnz run_il24
+0BF9A0 48 38             	run_il23:	sub a,'8'						;a=4 ou 6
+0BF9A2 E4                				ror a							;a / 2 = 2 ou 3
+0BF9A3 A8 5B FB 0B       				mv [file_buf],a					;sauver la valeur
+0BF9A7 04 AE FA          	run_il24:	call fch2						;lecture des caractères spéciaux
+0BF9AA 1D 20             				jrc run_il22					;boucler sur la lecture de la chaine
+0BF9AC 04 9C FA          	run_il25:	call fch1						;lecture code fin de chaine
+0BF9AF 1C E4             				jrc err1						;saut si fin de chaine
+0BF9B1 04 AE FA          				call fch2						;lecture des caractères spéciaux
+0BF9B4 1D 0A             				jrc run_il25					;boucler sur la lecture de la chaine
+0BF9B6 60 2E             				cmp a,'.'						;extension de fichier
+0BF9B8 18 72             				jrz run_il296
+0BF9BA 7C 04             				dec x							;se positionner sur le dernier caractère
+0BF9BC 3D                				popu y							;file_buf
+0BF9BD 2C                				pushu x							;sauver l'adresse du dernier caractère lu
+0BF9BE                   	;
+0BF9BE                   		;- lecture driver name par défaut -
+0BF9BE 90 24             	run_il26:	mv a,[x++]
+0BF9C0 60 3A             				cmp a,':'
+0BF9C2 18 17             				jrz run_il28					
+0BF9C4 04 AE FA          				call fch2						;lecture des caractères spéciaux
+0BF9C7 1F 0B             				jrnc run_il26					;boucler sur la lecture de la chaine
+0BF9C9 0C 7D FC 0B       				mv x,defdrv						;DEFDRV : nom du lecteur actuel, 0 terminal
+0BF9CD 2D                				pushu y							;sauver file_buf
+0BF9CE 90 24             	run_il27:	mv a,[x++]						;lecture du caractère
+0BF9D0 B0 25             				mv [y++],a						;recopie de DEFDRV
+0BF9D2 60 3A             				cmp a,':'
+0BF9D4 1B 08             				jrnz run_il27					;boucler sur la lecture de la chaine
+0BF9D6 3D                				popu y							;file_buf
+0BF9D7 3C                				popu x							;dernière adresse lue dans file_buf
+0BF9D8 2D                				pushu y
+0BF9D9 12 12             				jr run_il291
+0BF9DB                   	;
+0BF9DB                   		;- lecture driver name contenu dans le nom de fichier -
+0BF9DB 3C                	run_il28:	popu x
+0BF9DC 2D                				pushu y
+0BF9DD 09 06             				mv il,6							;nombre de caractères
+0BF9DF 90 24             	run_il29:	mv a,[x++]						;lire la valeur
+0BF9E1 B0 25             				mv [y++],a 						;la recopier
+0BF9E3 60 3A             				cmp a,':'
+0BF9E5 18 06             				jrz run_il291					;saut si trouvé
+0BF9E7 7C 01             				dec il							;décrémenter le compteur
+0BF9E9 1B 0C             				jrnz run_il29					;boucler si non nul
+0BF9EB 12 A8             				jr err1
+0BF9ED                   	;
+0BF9ED                   		;- lecture du file name -
+0BF9ED 09 08             	run_il291:	mv il,8							;nombre de caractères de file name
+0BF9EF 3D                				popu y							;file_buf
+0BF9F0 2D                				pushu y
+0BF9F1 08 06             				mv a,6							;se positionner sur ':'
+0BF9F3 45 50             				add y,a 						;calcul de la nouvelle adresse
+0BF9F5 90 04             				mv a,[x]						;lire la valeur à cette nouvelle adresse
+0BF9F7 04 AE FA          				call fch2						;lecture des caractères spéciaux
+0BF9FA 1E 0E             				jrnc run_il292
+0BF9FC                   	;
+0BF9FC                   		;- lecture de l'extension-
+0BF9FC 04 DE FA          				call fch5						;recopie "?" * IL
+0BF9FF 08 2E             				mv a,'.'
+0BFA01 B0 25             				mv [y++],a						;recopier la valeur
+0BFA03 09 03             				mv il,3							;nombre de caractères à copier
+0BFA05 04 DE FA          				call fch5						;recopie "?" * IL
+0BFA08 12 4F             				jr run_il2993
+0BFA0A                   	;
+0BFA0A 90 24             	run_il292:	mv a,[x++]						;lire la valeur
+0BFA0C 60 2A             				cmp a,'*'
+0BFA0E 1A 05             				jrnz run_il293
+0BFA10 04 DE FA          				call fch5						;recopie "?" * IL
+0BFA13 12 0F             				jr run_il295
+0BFA15                   	;
+0BFA15 04 AE FA          	run_il293:	call fch2						;lecture des caractères spéciaux
+0BFA18 1C 08             				jrc run_il294					
+0BFA1A B0 25             				mv [y++],a						;recopier la valeur
+0BFA1C 7C 01             				dec il							;décrémenter le compteur
+0BFA1E 1B 16             				jrnz run_il292					;boucler tant que non nul
+0BFA20 12 02             				jr run_il295
+0BFA22                   	;
+0BFA22                   	;--- lecture de l'extension de fichier ---
+0BFA22 7C 04             	run_il294:	dec x							;décrémenter l'adresse
+0BFA24 90 24             	run_il295:	mv a,[x++]						;lire la valeur
+0BFA26 60 2E             				cmp a,'.'
+0BFA28 18 02             				jrz run_il296
+0BFA2A 7C 04             				dec x							;se positionner sur le dernier caractère lu
+0BFA2C 3D                	run_il296:	popu y							;se positionner au début du buffer fichier
+0BFA2D 2D                				pushu y							;sauver l'adresse
+0BFA2E 08 0E             				mv a,14							;taille de 'drive name + file name'
+0BFA30 45 50             				add y,a 						;calcul de l'adresse de l'extension
+0BFA32 08 2E             				mv a,'.'						
+0BFA34 B0 25             				mv [y++],a 						;recopier la valeur
+0BFA36 09 03             				mv il,3							;compteur 3 caractères
+0BFA38                   	;
+0BFA38                   		;- copie de l'extension de fichier -
+0BFA38 90 24             	run_il297:	mv a,[x++]						;lire la valeur
+0BFA3A 60 2A             				cmp a,'*'
+0BFA3C 1A 05             				jrnz run_il298
+0BFA3E 04 DE FA          				call fch5						;recopie "?" * IL
+0BFA41 12 0B             				jr run_il299
+0BFA43                   	;
+0BFA43 04 AE FA          	run_il298:	call fch2						;lecture des caractères spéciaux
+0BFA46 1C 06             				jrc run_il299
+0BFA48 B0 25             				mv [y++],a						;recopie de la valeur
+0BFA4A 7C 01             				dec il							;décrémenter le compteur
+0BFA4C 1B 16             				jrnz run_il297					;boucler tant que non nul
+0BFA4E                   	;
+0BFA4E 7C 04             	run_il299:	dec x							;se positionner sur le dernier caractère lu
+0BFA50 90 24             	run_il2991:	mv a,[x++]						;lire le caractère
+0BFA52 04 AE FA          				call fch2						;lecture des caractères spéciaux
+0BFA55 1F 07             				jrnc run_il2991					;boucler tant que non fin de ligne
+0BFA57                   	;
+0BFA57                   		;- clore le nom de fichier -
+0BFA57 7C 04             	run_il2992:	dec x							;se positionner sur le dernier caractère lu
+0BFA59 3D                	run_il2993:	popu y
+0BFA5A 2D                				pushu y							;file_buf
+0BFA5B 08 12             				mv a,18							;se positionner après l'extension
+0BFA5D 45 50             				add y,a							;calcul de la nouvelle adresse
+0BFA5F 08 00             				mv a,0							;ajout du zéro terminal
+0BFA61 B0 25             				mv [y++],a						;recopie de la valeur
+0BFA63 12 29             				jr run_il2999
+0BFA65                   	;
+0BFA65                   		;- traitement des tokens -
+0BFA65 72 5B FB 0B 00    	run_il2994:	and [file_buf],0
+0BFA6A 09 10             				mv il,16						;nombre de caractères
+0BFA6C 7C 01             	run_il2995:	dec il							;décrémenter le compteur
+0BFA6E 18 15             				jrz run_il2997
+0BFA70 90 24             				mv a,[x++]						;lire la valeur
+0BFA72 04 AE FA          				call fch2						;lecture des caractères spéciaux
+0BFA75 1C 15             				jrc run_il2998
+0BFA77                   	;
+0BFA77                   		;- conversion en majuscule -
+0BFA77 60 61             				cmp a,'a'
+0BFA79 1C 06             				jrc run_il2996
+0BFA7B 60 7B             				cmp a,'z'+1
+0BFA7D 1E 02             				jrnc run_il2996
+0BFA7F 48 20             				sub a,$20						;conversion en majuscule
+0BFA81 B0 25             	run_il2996:	mv [y++],a						;recopier la valeur
+0BFA83 13 19             				jr run_il2995					;boucler tant que non nul
+0BFA85                   	;
+0BFA85 90 24             	run_il2997:	mv a,[x++]						;lire le caractère
+0BFA87 04 AE FA          				call fch2						;lecture des caractères spéciaux
+0BFA8A 1F 07             				jrnc run_il2997
+0BFA8C 7C 04             	run_il2998:	dec x							;décrémenter l'adresse
+0BFA8E 88 5B FB 0B       	run_il2999:	mv a,[file_buf]					;se positionner sur le premier caractère
+0BFA92 3D                				popu y							;file_buf
+0BFA93 9F                				rc
+0BFA94 07                				retf
+0BFA95                   	;
+0BFA95 7C 04             	err1:		dec x							;décrémenter les adresses
+0BFA97 3D                				popu y
+0BFA98 08 81             				mv a,$81						;flag d'erreur
+0BFA9A 97                				sc
+0BFA9B 07                				retf
+0BFA9C                   	;
+0BFA9C                   	;--- Lecture des caractères de fin de chaine ---
+0BFA9C 60 0D             	fch1:		cmp a,CR						;Retour chariot
+0BFA9E 18 3C             				jrz fch4
+0BFAA0 60 FF             				cmp a,$ff						;Fin de fichier
+0BFAA2 18 38             				jrz fch4
+0BFAA4 60 00             				cmp a,0							;Fin de chaine
+0BFAA6 18 34             				jrz fch4
+0BFAA8 60 1A             				cmp a,EOF						;Fin de fichier
+0BFAAA 18 30             				jrz fch4
+0BFAAC 12 2C             				jr fch3
+0BFAAE                   	;
+0BFAAE                   	;--- Lecture des caractères spéciaux ---
+0BFAAE 60 3F             	fch2:		cmp a,'?'
+0BFAB0 18 28             				jrz fch3
+0BFAB2 60 2A             				cmp a,'*'
+0BFAB4 18 24             				jrz fch3
+0BFAB6 60 30             				cmp a,'0'
+0BFAB8 1C 22             				jrc fch4						;erreur si a < '0'
+0BFABA 60 3A             				cmp a,':'
+0BFABC 1C 1C             				jrc fch3
+0BFABE 60 40             				cmp a,'@'
+0BFAC0 1C 1A             				jrc fch4
+0BFAC2 60 5B             				cmp a,'Z'+1
+0BFAC4 1C 14             				jrc fch3
+0BFAC6 60 5F             				cmp a,'_'
+0BFAC8 18 10             				jrz fch3
+0BFACA 60 61             				cmp a,'a'
+0BFACC 1C 0E             				jrc fch4
+0BFACE 60 7B             				cmp a,'z'+1
+0BFAD0 1C 08             				jrc fch3
+0BFAD2 60 80             				cmp a,$80
+0BFAD4 1C 06             				jrc fch4
+0BFAD6 60 FF             				cmp a,$ff						;Fin de fichier
+0BFAD8 18 02             				jrz fch4
+0BFADA 9F                	fch3:		rc
+0BFADB 06                				ret
+0BFADC 97                	fch4:		sc
+0BFADD 06                				ret
+0BFADE                   	;
+0BFADE                   	;- Recopie de "?" à l'adresse pointée par Y ---
+0BFADE 08 3F             	fch5:		mv a,'?'						;IL = nombre de caractère à copier
+0BFAE0 B0 25             	fch6:		mv [y++],a						;recopie de la valeur
+0BFAE2 7C 01             				dec il							;décrémenter le compteur
+0BFAE4 1B 06             				jrnz fch6						;boucler tant que non nul
+0BFAE6 06                				ret
+0BFAE7                   	;-------------------------------------------
+0BFAE7                   	;
+0BFAE7                   	; IL = 3 Exécution de TYCOM.SYS *********************************
+0BFAE7 7C 01             	run_il3:	dec il
+0BFAE9 1A 2E             				jrnz run_il4					;saut si IL > 4
+0BFAEB 2C                				pushu x							;sauver l'adresse d'implantation
+0BFAEC 28                				pushu a							;sauver le file handle
+0BFAED 30 A0 D6          				mv (cl),a						;cl = file handle	
+0BFAF0 08 01             				mv a,1							;physical end of file
+0BFAF2 09 03             				mv il,3							;reading a block and writing in memory, y = data sise
+0BFAF4 04 CE F8          				call run_fcs					;callf FCS
+0BFAF7 1C 1D             				jrc run_il32					;saut si erreur
+0BFAF9 38                				popu a 							;récupérer le file handle
+0BFAFA 04 C9 F8          				call close_fcb					;close a file
+0BFAFD 1C 17             				jrc run_il32					;saut si erreur
+0BFAFF 0C 0D FB 0B       				mv x,run_il31					;adresse de retour après le saut à tycom.sys
+0BFB03 B4 37             				mv [--s],x						;sauver l'adresse de retour
+0BFB05 3C                				popu x							;dépiler l'adresse d'immplantation
+0BFB06 8D 70 FB 0B       				mv y,[kbd_nxt]					;adresse suivante dans buffer de saisie
+0BFB0A 2D                				pushu y							;sauver cette adresse
+0BFB0B 11 04             				jp x							;exécution de tycom.sys
+0BFB0D                   	;
+0BFB0D 3D                	run_il31:	popu y							;récupérer l'adresse suivante dans buffer clavier
+0BFB0E 8F 73 FB 0B       				mv s,[stacks]					;rétablir la pile système
+0BFB12 8E 76 FB 0B       				mv u,[stacku]					;rétablir la pile utilisateur
+0BFB16 02 53 F8          	run_il32:	jp start						;boucler au début du programme
+0BFB19                   	;--------------------------------------------
+0BFB19                   	;
+0BFB19                   	; IL = 4 modification buffer IOCS *********************************
+0BFB19 7C 01             	run_il4:	dec il
+0BFB1B 1A 18             				jrnz run_il5					;saut si IL > 5
+0BFB1D 09 06             				mv il,6
+0BFB1F 05 FC FB 0B       				callf ptr_runil					;jpf bf907h
+0BFB23 FD 54             				mv y,x							;Y = nouvelle adresse de IOCS work
+0BFB25 8C 1A FD 0B       				mv x,[usrwrk]					;USRWRK
+0BFB29 4D 54             				sub y,x							;calcul de la nouvelle taille
+0BFB2B 1C 06             				jrc run_il41
+0BFB2D 18 04             				jrz run_il41
+0BFB2F 45 54             				add y,x							;rétablir l'adresse
+0BFB31 FD 45             				mv x,y
+0BFB33 9F                	run_il41:	rc
+0BFB34 07                				retf
+0BFB35                   	;-------------------------------------------
+0BFB35                   	;
+0BFB35                   	; IL = 5 Calcul adresse de fin de TYCOM.SYS *********************
+0BFB35 7C 01             	run_il5:	dec il
+0BFB37 1A 06             				jrnz run_il6					;saut si IL > 6
+0BFB39 0C FF F7 0B       				mv x,begin-1					;x = adresse de TYDOS.SYS - 1
+0BFB3D 9F                				rc
+0BFB3E 07                				retf
+0BFB3F                   	;-------------------------------------------
+0BFB3F                   	;
+0BFB3F                   	; IL = 6 Modification buffer IOCS Work **************************
+0BFB3F 7C 01             	run_il6:	dec il
+0BFB41 1A 0A             				jrnz run_il7					;saut si IL > 7
+0BFB43 30 84 E6          				mv x,($e6)						;(E6) = (BFD17) = IOCSWRK
+0BFB46 0B 6C 02          				mv i,$26c						;nouvelle taille du buffer
+0BFB49 45 43             				add x,i							;calcul de la nouvelle adresse
+0BFB4B 9F                				rc
+0BFB4C 07                				retf
+0BFB4D                   	;-------------------------------------------
+0BFB4D                   	;
+0BFB4D                   	; IL = 7 Se positionner au début de la routine ******************
+0BFB4D 7C 01             	run_il7:	dec il
+0BFB4F 1A 06             				jrnz run_il8					;saut si IL > 8
+0BFB51 0C 07 F9 0B       				mv x,run_il						;adresse début traitement
+0BFB55 9F                				rc
+0BFB56 07                				retf
+0BFB57                   	;-------------------------------------------
+0BFB57                   	;
+0BFB57                   	; IL = 8 Traitement erreur **************************************
+0BFB57 08 80             	run_il8:	mv a,$80
+0BFB59 97                				sc
+0BFB5A 07                				retf
+0BFB5B                   	;-------------------------------------------
+0BFB5B                   	;
+0BFB5B                   	;			
+0BFB5B                   	;-Variables TYDOS ------------------------------------------------------------------
+0BFB5B 00 00 00 00 00 00 	file_buf:	ds 20							;bfb5b
+0BFB61 00 00 00 00 00 00 	
+0BFB67 00 00 00 00 00 00 	
+0BFB6D 00 00             	
+0BFB6F 00                	flag:		db 0							;bfb6f
+0BFB70 00 00 00          	kbd_nxt:	ds 3							;bfb70
+0BFB73 00 00 00          	stacks:		ds 3							;bfb73
+0BFB76 00 00 00          	stacku:		ds 3							;bfb76
+0BFB79 00 00 00 00 00 00 	data:		ds 22							;bfb79
+0BFB7F 00 00 00 00 00 00 	
+0BFB85 00 00 00 00 00 00 	
+0BFB8B 00 00 00 00       	
+0BFB8F 00 00 00 00 00 00 	kbd:		ds 92							;bfb8f
+0BFB95 00 00 00 00 00 00 	
+0BFB9B 00 00 00 00 00 00 	
+0BFBA1 00 00 00 00 00 00 	
+0BFBA7 00 00 00 00 00 00 	
+0BFBAD 00 00 00 00 00 00 	
+0BFBB3 00 00 00 00 00 00 	
+0BFBB9 00 00 00 00 00 00 	
+0BFBBF 00 00 00 00 00 00 	
+0BFBC5 00 00 00 00 00 00 	
+0BFBCB 00 00 00 00 00 00 	
+0BFBD1 00 00 00 00 00 00 	
+0BFBD7 00 00 00 00 00 00 	
+0BFBDD 00 00 00 00 00 00 	
+0BFBE3 00 00 00 00 00 00 	
+0BFBE9 00 00             	
+0BFBEB 00 00 00          	ptr_str:	ds 3							;bfbeb, [bfbeb] = bfbeb
+0BFBEE 00 00 00          	ptr_kbd:	ds 3							;bfbee, [bfbee] = bfb8f
+0BFBF1 00 00 00          	ptr_flag:	ds 3							;bfbf1, [bfbf1] = bfb6f
+0BFBF4 00 00 00 00       	ptr_iocs:	ds 4							;bfbf4, [bfbf4] = callf 0fffe8h
+0BFBF8 00 00 00 00       	ptr_fcs:	ds 4							;bfbf8, [bfbf8] = callf 0fffe4h
+0BFBFC 00 00 00 00       	ptr_runil:	ds 4							;bfbfc; [bfbfc] = callf 0bf907h
+0BFC00                   		pre_off
+0BFC00                   		end
+
+  No fatal error.  Code: 0BF800h - 0BFBFFh [     1024 byte(s)]

@@ -67,8 +67,13 @@ licence du §1. La plupart sont des *freeware* à usage non commercial.
 | `Exemples/REGISTER/` | REGISTER | (c) 1990,1992 **E. Kako** (JM2WGN) | |
 | `Exemples/ssfdc120/` | SSFDC | (c) 1997,1999 **Kenji Takamatsu** | |
 | `Exemples/MASSE/` | MASSE v1.2.0 | (c) 1994-1997 **N. Masuichi** | contient une adresse e-mail d'époque de l'auteur |
-| `Exemples/VOGUE/` | Vogue | (c) 1991/1992 **Narihito Kon** | |
+| `Exemples/VOGUE/` (+ `VOGUE/OLD/`) | Vogue (compilateur) | (c) 1991/1992 **Narihito Kon** | `OLD/` = versions antérieures des sources |
 | `Exemples/TMAP/` | Tmap v1.05 | (C) 1994 **TORO** | |
+| `Exemples/PANO122/` | Éditeur de texte PANORAMA v1.22 | **Daisuke Mizobata** | documentation d'origine en japonais |
+| `Exemples/PLINK104/` | Pocket Link System Driver v1.04 | Copyright (c) 1990,93,94 **N. Kon** | version d'origine dont dérive PLINKC |
+| `Exemples/ISH/` | ish encoder / decoder (pour TY-DOS) | port pour PC-E500 par **E. Kako** (JM2WGN) | d'après la version MS-DOS d'origine, (c) 1986-1990 **M. Ishizuka** |
+| `Exemples/TYDOS/` | TY-DOS (système) | composants d'origine (`*.SYS`, `TYDOS.DOC/.MAN`, 1989-1992) : **T. Yamaguchi** | ports/reconstructions `tycom.asm`, `tydos.asm` (2019) et manuels `.docx`/`.xlsx` : **J.-F. Albouy** |
+| `Exemples/trdos033/` | TRDOS v2.0 (2022) | **J.-F. Albouy** | d'après « DOS for PC-E500S » v0.33, (c) 1990,1992 **T. Kobayashi** ; manuels `.docx`/`.xlsx` : J.-F. Albouy |
 | `Exemples/SAMPLES/` | SAMPLE1-4 | **Kako / Kon** (distribution XASM) | exemples officiels XASM |
 
 > Les fichiers `SAMPLE5.*`, les exemples du dossier `TUTORIEL/`, `DRIVER_TEMPLATE/`,
@@ -76,6 +81,10 @@ licence du §1. La plupart sont des *freeware* à usage non commercial.
 > `REGISTER2/3`, `PLINK2`) qui portent des adaptations sont l'œuvre de
 > **J.-F. Albouy** (2026), dérivés des programmes ci-dessus et soumis aux mêmes
 > conditions non commerciales que leurs originaux respectifs.
+>
+> Les fichiers de sortie (`*.lst`, `*.obj`, `*.uu`, `*.hex`, `*.s19`, `*.map`,
+> `*.txt`) présents dans ces dossiers sont des **produits d'assemblage régénérables**,
+> conservés à titre de référence ; ils n'ajoutent aucun droit d'auteur nouveau.
 
 ---
 
@@ -84,8 +93,13 @@ licence du §1. La plupart sont des *freeware* à usage non commercial.
 En cas de redistribution, conserver ce fichier et créditer :
 
 - **N. Kon** et **E. Kako** pour XASM ;
-- l'auteur de chaque programme d'exemple redistribué (§3) ;
-- **J.-F. Albouy** pour le portage C# 2026-4.
+- l'auteur de chaque programme d'exemple redistribué (§3) : **D. Mizobata**
+  (PLINKC, PANORAMA), **E. Kako** (REGISTER, ish), **K. Takamatsu** (SSFDC),
+  **N. Masuichi** (MASSE), **N. Kon** (Vogue, PLINK), **TORO** (Tmap),
+  **M. Ishizuka** (ish, version MS-DOS d'origine), **T. Yamaguchi** (TY-DOS),
+  **T. Kobayashi** (DOS PC-E500S dont dérive TRDOS) ;
+- **J.-F. Albouy** pour le portage C# 2026-4 et ses travaux dérivés (TRDOS,
+  ports TY-DOS, exemples et documentation).
 
 ---
 

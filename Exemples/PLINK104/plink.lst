@@ -1,0 +1,891 @@
+000000                   	;----------------------------------------------------------------------
+000000                   	;
+000000                   	;	Pocket Link System Device Driver Ver. 1.04
+000000                   	;	Installation program
+000000                   	;	for PC-E500 series pocket computer
+000000                   	;	Copyright (c) 1990,93,94 N.Kon
+000000                   	;
+000000                   	;	Usage: CALL &BF000
+000000                   	;
+000000                   	;	Last change: Mar. 26th
+000000                   	;
+000000                   	;----------------------------------------------------------------------
+000000                   	;
+000000                   			pre_on
+000000                   	;
+0BF000                   			org	$bf000
+0BF000                   	;----------------------------------------------------------------------
+0BF000                   	;		各種数値定義
+0BF000                   	;----------------------------------------------------------------------
+0BF000                   	fcntl_entry:	equ	$fffe4
+0BF000                   	iocs_entry:	equ	$fffe8
+0BF000                   	iocs_fook:	equ	$bfca2
+0BF000                   	sio_rcv_vct:	equ	$bfcd5
+0BF000                   	sio_param:	equ	$bfd33
+0BF000                   	i_work1:	equ	0
+0BF000                   	i_work2:	equ	1
+0BF000                   	sect_num:	equ	2
+0BF000                   	flag:		equ	4
+0BF000                   	rxdata:		equ	5
+0BF000                   	i_work3:	equ	6
+0BF000                   	vct_rsv:	equ	7
+0BF000                   	base:		equ	$ec
+0BF000                   	bx:		equ	$d4
+0BF000                   	cx:		equ	$d6
+0BF000                   	cl:		equ	$d6
+0BF000                   	ch:		equ	$d7
+0BF000                   	dx:		equ	$d8
+0BF000                   	key_strobe_2:	equ	$f1
+0BF000                   	sio_ctrl_reg:	equ	$f7
+0BF000                   	sio_stat_reg:	equ	$f8
+0BF000                   	sio_rx_reg:	equ	$f9
+0BF000                   	sio_tx_reg:	equ	$fa
+0BF000                   	intr_mask_reg:	equ	$fb
+0BF000                   	system_stat_reg:equ	$ff
+0BF000                   	basic_work:	equ	$bfd0e
+0BF000                   	top_of_slot0:	equ	$bfc15
+0BF000                   	top_of_slot1:	equ	$bfc0f
+0BF000                   	top_of_slot2:	equ	$bfc09
+0BF000                   	size_of_slot1:	equ	$bfc12
+0BF000                   	size_of_slot2:	equ	$bfc0c
+0BF000                   	end_of_slot0:	equ	$bfcde
+0BF000                   	;----------------------------------------------------------------------
+0BF000                   	;		インストール
+0BF000                   	;----------------------------------------------------------------------
+0BF000 0C 3C F2 0B       			mv	x,msg0			;オープニングメッセージ出力
+0BF004 0D 32 00 00       			mv	y,btm0-msg0
+0BF008 30 CC D6 00       			mv	(cl),0
+0BF00C 09 04             			mv	il,4
+0BF00E 05 E4 FF 0F       			callf	fcntl_entry
+0BF012                   	;
+0BF012 30 CC D6 31       			mv	(cl),'1'		;どのメモリ・スロットにインストールするのかを決める
+0BF016 3C                			popu	x
+0BF017 90 04             	inst_loop1:	mv	a,[x]
+0BF019 60 0D             			cmp	a,$0d
+0BF01B 18 07             			jrz	inst_memory
+0BF01D 30 A0 D6          			mv	(cl),a
+0BF020 6C 04             			inc	x
+0BF022 13 0D             			jr	inst_loop1
+0BF024 2C                	inst_memory:	pushu	x
+0BF025 30 80 D6          			mv	a,(cl)
+0BF028 60 31             			cmp	a,'1'
+0BF02A 1C 08             			jrc	default
+0BF02C 60 34             			cmp	a,'3'+1
+0BF02E 1E 04             			jrnc	default
+0BF030 48 31             			sub	a,'1'
+0BF032 12 02             			jr	compress
+0BF034 08 00             	default:	mv	a,0
+0BF036 A8 3F F3 0B       	compress:	mv	[memory_slot],a
+0BF03A 30 CC D6 06       			mv	(cl),6			;メモリ圧縮
+0BF03E 30 A0 D7          			mv	(ch),a
+0BF041 09 47             			mv	il,$47
+0BF043 05 E8 FF 0F       			callf	iocs_entry
+0BF047                   	;
+0BF047 04 26 F3          			call	get_slot_top
+0BF04A 95 84 12          			mv	y,[x+$12]
+0BF04D 45 45             			add	x,y
+0BF04F 30 A4 0A          			mv	(10),x
+0BF052                   	;
+0BF052 90 04             	init_1:		mv	a,[x]			;デバイスドライバ最後尾を検索
+0BF054 60 FB             			cmp	a,0fbh
+0BF056 1A 2D             			jrnz	block_end
+0BF058 0D 40 F3 0B       			mv	y,block_top
+0BF05C 09 0C             			mv	il,12
+0BF05E 2C                			pushu	x
+0BF05F 05 0C F3 0B       			callf	stricmp
+0BF063 3C                			popu	x
+0BF064 14 6D F1          			jpz	exit2			;すでにPLINKが存在している
+0BF067 90 84 0C          			mv	a,[x+12]
+0BF06A 64 0C             			test	a,0ch			;常駐システムファイル属性のチェック
+0BF06C 18 07             			jrz	set_start
+0BF06E 95 84 11          			mv	y,[x+11h]
+0BF071 45 45             			add	x,y
+0BF073 13 23             			jr	init_1
+0BF075 30 A4 0A          	set_start:	mv	(10),x
+0BF078 90 04             	init_2:		mv	a,[x]			;メモリブロック最後尾を検索
+0BF07A 60 FF             			cmp	a,$ff
+0BF07C 18 07             			jrz	block_end
+0BF07E 95 84 11          			mv	y,[x+$11]
+0BF081 45 45             			add	x,y
+0BF083 13 0D             			jr	init_2
+0BF085 30 A4 0D          	block_end:	mv	(13),x
+0BF088 2C                			pushu	x
+0BF089 88 3F F3 0B       			mv	a,[!memory_slot]		;インストール先のメモリ・スロットの終了アドレスを求める
+0BF08D 60 01             			cmp	a,1
+0BF08F 8C 0F FC 0B       			mv	x,[!top_of_slot1]
+0BF093 8A 12 FC 0B       			mv	ba,[!size_of_slot1]
+0BF097 18 10             			jrz	inst_not_slot0
+0BF099 8C 09 FC 0B       			mv	x,[!top_of_slot2]
+0BF09D 8A 0C FC 0B       			mv	ba,[!size_of_slot2]
+0BF0A1 1E 06             			jrnc	inst_not_slot0
+0BF0A3 8C DE FC 0B       			mv	x,[!end_of_slot0]
+0BF0A7 12 0C             			jr	inst_block_end
+0BF0A9 09 0B             	inst_not_slot0:	mv	il,11
+0BF0AB FD 52             			mv	y,ba
+0BF0AD 45 55             	inst_mult_2048:	add	y,y
+0BF0AF 7C 01             			dec	il
+0BF0B1 1B 06             			jrnz	inst_mult_2048
+0BF0B3 45 45             			add	x,y
+0BF0B5 FD 54             	inst_block_end:	mv	y,x
+0BF0B7 3C                			popu	x
+0BF0B8 7C 05             			dec	y
+0BF0BA 4D 54             			sub	y,x
+0BF0BC 30 A5 10          			mv	(16),y
+0BF0BF 0D 2D 04 00       			mv	y,block_bottom - block_top
+0BF0C3 30 84 0A          			mv	x,(10)			;デバイスドライバ最終アドレスを求める
+0BF0C6 45 45             			add	x,y
+0BF0C8 30 A4 D6          			mv	(cl),x
+0BF0CB 32 B7 D8 0C       			cmp	(cl+2),(10+2)		;先頭と最終のページを比較
+0BF0CF 1A B0             			jrnz	exit5			;異なるページにまたがっている
+0BF0D1 30 D7 05 10       			cmpp	(16),y
+0BF0D5 1C A0             			jrc	exit3			;必要なメモリが確保できなかったらメニューへ飛ぶ
+0BF0D7                   	;
+0BF0D7 8C A2 FC 0B       			mv	x,[iocs_fook]		;デバイスリンクに組み込む
+0BF0DB AC 62 F3 0B       			mv	[header],x
+0BF0DF 30 84 0A          			mv	x,(10)
+0BF0E2 09 22             			mv	il,$22
+0BF0E4 45 41             			add	x,il
+0BF0E6 AC A2 FC 0B       			mv	[iocs_fook],x
+0BF0EA                   	;
+0BF0EA 0C 6D F7 0B       			mv	x,modify_table		;３バイト系のアドレス補正を行なう
+0BF0EE 95 24             	init_3:		mv	y,[x++]
+0BF0F0 6C 05             			inc	y
+0BF0F2 18 15             			jrz	modify2
+0BF0F4 2C                			pushu	x
+0BF0F5 94 05             			mv	x,[y]
+0BF0F7 2D                			pushu	y
+0BF0F8 0D 40 F3 0B       			mv	y,block_top
+0BF0FC 4D 45             			sub	x,y
+0BF0FE 30 85 0A          			mv	y,(10)
+0BF101 45 45             			add	x,y
+0BF103 3D                			popu	y
+0BF104 B4 05             			mv	[y],x
+0BF106 3C                			popu	x
+0BF107 13 1B             			jr	init_3
+0BF109                   	;
+0BF109 0C C1 F7 0B       	modify2:	mv	x,modify_table2		;２バイト系のアドレス補正を行なう
+0BF10D 95 24             	mod_loop2:	mv	y,[x++]
+0BF10F 6C 05             			inc	y
+0BF111 18 10             			jrz	modify_end
+0BF113 92 05             			mv	ba,[y]
+0BF115 0B 40 F3          			mv	i,block_top
+0BF118 4C 23             			sub	ba,i
+0BF11A 30 83 0A          			mv	i,(10)
+0BF11D 44 23             			add	ba,i
+0BF11F B2 05             			mv	[y],ba
+0BF121 13 16             			jr	mod_loop2
+0BF123 30 84 0D          	modify_end:	mv	x,(13)
+0BF126 30 85 0A          			mv	y,(10)
+0BF129 4D 45             			sub	x,y
+0BF12B 30 A4 10          			mv	(16),x
+0BF12E 30 84 0D          			mv	x,(13)
+0BF131 FD 54             			mv	y,x
+0BF133 0A 2D 04          			mv	ba,block_bottom - block_top
+0BF136 45 52             			add	y,ba
+0BF138 6C 04             			inc	x
+0BF13A 6C 05             			inc	y
+0BF13C 08 01             			mv	a,1
+0BF13E                   	;
+0BF13E 91 34             	init_6:		mv	il,[--x]		;メモリブロックを後方へずらす
+0BF140 B1 35             			mv	[--y],il
+0BF142 30 4B 10          			sub	(16),a
+0BF145 1F 09             			jrnc	init_6
+0BF147 30 4B 11          			sub	(17),a
+0BF14A 1F 0E             			jrnc	init_6
+0BF14C 30 4B 12          			sub	(18),a
+0BF14F 1F 13             			jrnc	init_6
+0BF151                   	;
+0BF151 0B 2D 04          			mv	i,block_bottom - block_top
+0BF154 30 85 0A          			mv	y,(10)
+0BF157 0C 40 F3 0B       			mv	x,block_top
+0BF15B 90 24             	init_5:		mv	a,[x++]			;デバイスドライバを転送する
+0BF15D B0 25             			mv	[y++],a
+0BF15F 7C 03             			dec	i
+0BF161 1B 08             			jrnz	init_5
+0BF163                   	;
+0BF163                   	;;;;;;;;;;; KNJSCRN より拝借！
+0BF163                   	;
+0BF163 0C 6E F2 0B       	exit1:		mv	x,msg1		;DISPLAY "SUCCESS" MESSAGE
+0BF167 0D 07 00 00       			mv	y,btm1-msg1
+0BF16B 12 1C             			jr	exit4
+0BF16D                   	;
+0BF16D 0C 75 F2 0B       	exit2:		mv	x,msg2		;DISPLAY "EXIST ERROR" MESSAGE
+0BF171 0D 1E 00 00       			mv	y,btm2-msg2
+0BF175 12 12             			jr	exit4
+0BF177                   	;
+0BF177 0C 93 F2 0B       	exit3:		mv	x,msg3		;DISPLAY "MEMORY ERROR" MESSAGE
+0BF17B 0D 1C 00 00       			mv	y,btm3-msg3
+0BF17F 12 08             			jr	exit4
+0BF181                   	;
+0BF181 0C AF F2 0B       	exit5:		mv	x,msg5		;DISPLAY "BRIDGED OVER" MESSAGE
+0BF185 0D 2F 00 00       			mv	y,btm5-msg5
+0BF189                   	;
+0BF189 30 CC D6 00       	exit4:		mv	(cl),0
+0BF18D 09 04             			mv	il,4
+0BF18F 05 E4 FF 0F       			callf	fcntl_entry
+0BF193 8C 0E FD 0B       	remake_slot:	mv	x,[basic_work]	;BASIC WORK Address
+0BF197 90 84 72          			mv	a,[x+72h]
+0BF19A A8 3F F3 0B       			mv	[memory_slot],a
+0BF19E                   	;
+0BF19E 0D 73 00 00       	remake_text:	mv	y,73h
+0BF1A2 45 54             			add	y,x		;BTEXT$ Address
+0BF1A4 2D                			pushu	y
+0BF1A5 04 26 F3          			call	get_slot_top	;[memory_slot]で示されるメモリ・スロットの先頭アドレスを求める
+0BF1A8 95 84 12          			mv	y,[x+12h]
+0BF1AB 45 45             			add	x,y
+0BF1AD 3D                			popu	y
+0BF1AE 90 04             	text1:		mv	a,[x]		;SEARCH  block 'TEXT.BAS'
+0BF1B0 60 FB             			cmp	a,0fbh
+0BF1B2 1A 55             			jrnz	text_err
+0BF1B4 09 0B             			mv	il,11
+0BF1B6 2D                			pushu	y
+0BF1B7 2C                			pushu	x
+0BF1B8 6C 04             			inc	x
+0BF1BA 05 0C F3 0B       			callf	stricmp
+0BF1BE 3C                			popu	x
+0BF1BF 18 08             			jrz	text2
+0BF1C1 95 84 11          			mv	y,[x+11h]
+0BF1C4 45 45             			add	x,y		;next block
+0BF1C6 3D                			popu	y
+0BF1C7 13 1B             			jr	text1
+0BF1C9 3D                	text2:		popu	y
+0BF1CA 30 A4 CB          			mv	(0cbh),x	;set "TEXT.BAS"  Address
+0BF1CD                   	;
+0BF1CD 8C 0E FD 0B       	remake_data:	mv	x,[basic_work]	;BASIC WORK Address
+0BF1D1 90 84 7E          			mv	a,[x+7eh]
+0BF1D4 A8 3F F3 0B       			mv	[memory_slot],a
+0BF1D8                   	;
+0BF1D8 0D 7F 00 00       			mv	y,7fh		;BDATA$ Address
+0BF1DC 45 54             			add	y,x
+0BF1DE 2D                			pushu	y
+0BF1DF 04 26 F3          			call	get_slot_top
+0BF1E2 95 84 12          			mv	y,[x+12h]
+0BF1E5 45 45             			add	x,y
+0BF1E7 3D                			popu	y
+0BF1E8 90 04             	data1:		mv	a,[x]		;SEARCH  block 'DATA.BAS'
+0BF1EA 60 FB             			cmp	a,0fbh
+0BF1EC 1A 1B             			jrnz	data_err
+0BF1EE 09 0B             			mv	il,11
+0BF1F0 2D                			pushu	y
+0BF1F1 2C                			pushu	x
+0BF1F2 6C 04             			inc	x
+0BF1F4 05 0C F3 0B       			callf	stricmp
+0BF1F8 3C                			popu	x
+0BF1F9 18 08             			jrz	data2
+0BF1FB 95 84 11          			mv	y,[x+11h]
+0BF1FE 45 45             			add	x,y		;next block
+0BF200 3D                			popu	y
+0BF201 13 1B             			jr	data1
+0BF203 3D                	data2:		popu	y
+0BF204 30 A4 CE          			mv	(0ceh),x	;set "DATA.BAS"  Address
+0BF207 9F                	remake_end:	rc
+0BF208 07                			retf
+0BF209                   	;
+0BF209                   	text_err:				;remake failed. fatal error
+0BF209 0C DE F2 0B       	data_err:	mv	x,msg4		;"Fatal error:"
+0BF20D 0D 2E 00 00       			mv	y,btm4-msg4
+0BF211 30 CC D6 00       			mv	(cl),0
+0BF215 09 04             			mv	il,4
+0BF217 05 E4 FF 0F       			callf	fcntl_entry
+0BF21B                   	;
+0BF21B 2F                			pushu	imr
+0BF21C 30 CC F0 FF       	kw1:		mv	(0f0h),$ff	;KEY WAIT   until any key
+0BF220 30 71 F1 F8       			and	(0f1h),$f8
+0BF224 00                			nop
+0BF225 00                			nop
+0BF226 30 80 F2          			mv	a,($f2)
+0BF229 60 00             			cmp	a,$00		;no key ??
+0BF22B 19 11             			jrz	kw1
+0BF22D 30 CC F0 00       			mv	(0f0h),$00
+0BF231 30 71 F1 F8       			and	(0f1h),$f8
+0BF235 3F                			popu	imr
+0BF236                   	;
+0BF236 8C FD FF 0F       			mv	x,[0ffffdh]	;jmp to MENU
+0BF23A 11 04             			jp	x
+0BF23C                   	;
+0BF23C 50 4C 49 4E 4B 20 	msg0:	db	'PLINK Ver. 1.04 (C)1990,93,94 N.Kon',13,10,'Installing...'
+0BF242 56 65 72 2E 20 31 	
+0BF248 2E 30 34 20 28 43 	
+0BF24E 29 31 39 39 30 2C 	
+0BF254 39 33 2C 39 34 20 	
+0BF25A 4E 2E 4B 6F 6E 0D 	
+0BF260 0A 49 6E 73 74 61 	
+0BF266 6C 6C 69 6E 67 2E 	
+0BF26C 2E 2E             	
+0BF26E                   	btm0:
+0BF26E 64 6F 6E 65 2E 0D 	msg1:	db	'done.',13,10
+0BF274 0A                	
+0BF275                   	btm1:
+0BF275 65 72 72 6F 72 21 	msg2:	db	'error!',13,10,'PLINK already exist.',13,10
+0BF27B 0D 0A 50 4C 49 4E 	
+0BF281 4B 20 61 6C 72 65 	
+0BF287 61 64 79 20 65 78 	
+0BF28D 69 73 74 2E 0D 0A 	
+0BF293                   	btm2:
+0BF293 65 72 72 6F 72 21 	msg3:	db	'error!',13,10,'Not enough memory.',13,10
+0BF299 0D 0A 4E 6F 74 20 	
+0BF29F 65 6E 6F 75 67 68 	
+0BF2A5 20 6D 65 6D 6F 72 	
+0BF2AB 79 2E 0D 0A       	
+0BF2AF                   	btm3:
+0BF2AF 65 72 72 6F 72 21 	msg5:	db	'error!',13,10,'Bridged over between different pages.',13,10
+0BF2B5 0D 0A 42 72 69 64 	
+0BF2BB 67 65 64 20 6F 76 	
+0BF2C1 65 72 20 62 65 74 	
+0BF2C7 77 65 65 6E 20 64 	
+0BF2CD 69 66 66 65 72 65 	
+0BF2D3 6E 74 20 70 61 67 	
+0BF2D9 65 73 2E 0D 0A    	
+0BF2DE                   	btm5:
+0BF2DE 66 61 74 61 6C 20 	msg4:	db	'fatal error. HELP!!',13,10,'Push any key to reboot.',13,10
+0BF2E4 65 72 72 6F 72 2E 	
+0BF2EA 20 48 45 4C 50 21 	
+0BF2F0 21 0D 0A 50 75 73 	
+0BF2F6 68 20 61 6E 79 20 	
+0BF2FC 6B 65 79 20 74 6F 	
+0BF302 20 72 65 62 6F 6F 	
+0BF308 74 2E 0D 0A       	
+0BF30C                   	btm4:
+0BF30C 30 E0 24 00       	stricmp:	mv	(0),[x++]	;compare string (length = IL bytes )
+0BF310 90 25             			mv	a,[y++]
+0BF312 30 61 00 00       			cmp	(0),0
+0BF316 18 0A             			jrz	stricmp1
+0BF318 30 63 00          			cmp	(0),a
+0BF31B 1A 08             			jrnz	stricmp2
+0BF31D 7C 01             			dec	il
+0BF31F 1B 15             			jrnz	stricmp
+0BF321 07                			retf
+0BF322 30 63 00          	stricmp1:	cmp	(0),a
+0BF325 07                	stricmp2:	retf
+0BF326                   	;;;;;;;;;;;　ここまで
+0BF326 88 3F F3 0B       	get_slot_top:	mv	a,[memory_slot]		;インストール先のメモリ・スロットの先頭アドレスを求める
+0BF32A 8C 15 FC 0B       			mv	x,[top_of_slot0]
+0BF32E 60 00             			cmp	a,0
+0BF330 18 0C             			jrz	inst_1
+0BF332 8C 0F FC 0B       			mv	x,[top_of_slot1]
+0BF336 60 01             			cmp	a,1
+0BF338 18 04             			jrz	inst_1
+0BF33A 8C 09 FC 0B       			mv	x,[top_of_slot2]
+0BF33E 06                	inst_1:		ret
+0BF33F 00                	memory_slot:	ds	1
+0BF340                   	;----------------------------------------------------------------------
+0BF340                   	;		デバイスドライバのファイルヘッダ
+0BF340                   	;----------------------------------------------------------------------
+0BF340 FB 50 4C 49 4E 4B 	block_top:	db	$fb,'PLINK   SYS'	;デバイスブロック名
+0BF346 20 20 20 53 59 53 	
+0BF34C 25                			db	$25			;メモリブロックの属性
+0BF34D 00 00 00 00       			dw	0,0			;日付と時間
+0BF351 2D 04 00          			dp	block_bottom - block_top;メモリブロックのバイト数
+0BF354 00 00             			dw	0
+0BF356 2D 04 00          			dp	block_bottom - block_top;ファイル実体のバイト数
+0BF359 2D 04 00          			dp	block_bottom - block_top;メモリブロックのバイト数
+0BF35C 00 00 00 00 00 00 			dp	0,0
+0BF362                   	;----------------------------------------------------------------------
+0BF362                   	;		デバイスドライバのヘッダ
+0BF362                   	;----------------------------------------------------------------------
+0BF362 00 00 00          	header:		ds	3		;次のデバイスドライバヘッダのアドレス
+0BF365 0A                			db	10		;デバイスナンバ
+0BF366 83                			db	$83		;デバイスの属性（Ｅ：と同じ）
+0BF367 80 F3 0B          	modify_top:	dp	entry		;デバイスドライバ本体のアドレス
+0BF36A 4C 3A 00          			db	'L:',0		;デバイス名
+0BF36D                   	;----------------------------------------------------------------------
+0BF36D                   	;		Media parameter block
+0BF36D                   	;----------------------------------------------------------------------
+0BF36D F0                	mpb:		db	$f0		;メディアディスクリプタ（適当でよい）
+0BF36E 80 00             			dw	128		;１セクタのバイト数
+0BF370 03                			db	4-1		;(１セクタのバイト数/32) -1
+0BF371 02                			db	2		;log2 (１セクタのバイト数/32)
+0BF372 00                			db	0		;???
+0BF373 01                			db	1		;???
+0BF374 00 00             			dw	0		;ＦＡＴエリアの先頭セクタ番号
+0BF376 08                			db	8		;???
+0BF377 80 00             			dw	128		;最大収容可能ファイル数
+0BF379 2C 00             			dw	44		;ＤＡＴＡエリアの先頭セクタ番号
+0BF37B D5 03             			dw	980+1		;ＤＡＴＡエリアの総セクタ数+1
+0BF37D 0C                			db	12		;ＦＡＴエリアの総セクタ数
+0BF37E 0C 00             			dw	12		;ＤＩＲエリアの先頭セクタ番号
+0BF380                   	;----------------------------------------------------------------------
+0BF380                   	;		本体
+0BF380                   	;----------------------------------------------------------------------
+0BF380 2F                	entry:		pushu	imr		;割り込みを止めてＳＩＯ受信ベクタを書き替える
+0BF381 2C                			pushu	x
+0BF382 30 47 EC F0       			pmdf	(base),$f0
+0BF386 8C D5 FC 0B       			mv	x,[sio_rcv_vct]
+0BF38A A4 07             			mv	(bp+vct_rsv),x	
+0BF38C                   	mod_p000:	;********** Added by automatic address modifier
+0BF38C 0C 4E F5 0B       			mv	x,rcv
+0BF390 AC D5 FC 0B       			mv	[sio_rcv_vct],x
+0BF394 3C                			popu	x
+0BF395 3F                			popu	imr
+0BF396 D0 06 33 FD 0B    			mv	(bp+i_work3),[sio_param]   ;設定内容読み込み
+0BF39B 71 06 FD          			and	(bp+i_work3),$fd	   ;これで強制８ビット化
+0BF39E 22 C0 06 F7       			ex	(bp+i_work3),(sio_ctrl_reg);ＳＩＯの設定＆以前の内容保存
+0BF3A2 30 79 F1 60       			or	(key_strobe_2),$60		;ＤＴＲ、ＲＲをＯＮにする
+0BF3A6                   	;
+0BF3A6                   	mod_q000:	;********** Added by automatic address modifier
+0BF3A6 04 C7 F3          			call	main
+0BF3A9                   	;
+0BF3A9 30 C8 F7 06       			mv	(sio_ctrl_reg),(bp+i_work3)	;ＳＩＯパラメータを元に戻す
+0BF3AD 65 04 02          			test	(bp+flag),2
+0BF3B0 18 06             			jrz	jump00		;［ＢＲＫ］は押されていたか？
+0BF3B2                   	mod_q001:	;********** Added by automatic address modifier
+0BF3B2 04 57 F5          			call	buffer_clr	;押されていたときの処理
+0BF3B5 08 FF             			mv	a,$ff
+0BF3B7 97                			sc
+0BF3B8 2F                	jump00:		pushu	imr		;ＳＩＯ受信ベクタを元に戻す
+0BF3B9 2C                			pushu	x
+0BF3BA 84 07             			mv	x,(bp+vct_rsv)
+0BF3BC AC D5 FC 0B       			mv	[sio_rcv_vct],x
+0BF3C0 30 47 EC 10       			pmdf	(base),$10
+0BF3C4 3C                			popu	x
+0BF3C5 3F                			popu	imr
+0BF3C6 07                			retf
+0BF3C7                   	;----------------------------------------------------------------------
+0BF3C7                   	;		各処理の本体
+0BF3C7                   	;----------------------------------------------------------------------
+0BF3C7 CC 04 00          	main:		mv	(bp+flag),0	;フラグをクリアする
+0BF3CA FD 01             			mv	a,il		;コマンド解析
+0BF3CC 60 10             			cmp	a,$10
+0BF3CE 1A 02             			jrnz	cmd11
+0BF3D0 9F                			rc			;コマンド１０ｈの処理
+0BF3D1 06                			ret
+0BF3D2 60 11             	cmd11:		cmp	a,$11
+0BF3D4 1A 06             			jrnz	cmd12
+0BF3D6 9F                			rc			;コマンド１１ｈの処理
+0BF3D7                   	mod_p001:	;********** Added by automatic address modifier
+0BF3D7 0C 6D F3 0B       			mv	x,mpb
+0BF3DB 06                			ret
+0BF3DC 60 12             	cmd12:		cmp	a,$12
+0BF3DE 18 80             			jrz	read_sect	;コマンド１２ｈの処理
+0BF3E0 60 13             			cmp	a,$13
+0BF3E2 18 B2             			jrz	write_sect	;コマンド１３ｈの処理
+0BF3E4 60 14             			cmp	a,$14
+0BF3E6 18 AE             			jrz	write_sect	;コマンド１４ｈの処理
+0BF3E8 60 15             			cmp	a,$15
+0BF3EA 18 74             			jrz	read_sect	;コマンド１５ｈの処理
+0BF3EC 60 16             			cmp	a,$16
+0BF3EE 1A 05             			jrnz	cmd17
+0BF3F0 0A 00 00          			mv	ba,0		;コマンド１６ｈの処理
+0BF3F3 9F                			rc
+0BF3F4 06                			ret
+0BF3F5 60 17             	cmd17:		cmp	a,$17
+0BF3F7 1A 2E             			jrnz	cmd3f
+0BF3F9                   	mod_p002:	;********** Added by automatic address modifier
+0BF3F9 8A 68 F7 0B       			mv	ba,[sect_number]	;コマンド１７ｈの処理
+0BF3FD 30 D6 02 D4       			cmpw	(bx),ba
+0BF401 18 19             			jrz	same_sect	;バッファと同じセクタだった
+0BF403                   	mod_q002:	;********** Added by automatic address modifier
+0BF403 04 72 F5          			call	check_sect
+0BF406 30 82 D4          			mv	ba,(bx)
+0BF409                   	mod_p003:	;********** Added by automatic address modifier
+0BF409 AA 68 F7 0B       			mv	[sect_number],ba
+0BF40D A2 02             			mv	(bp+sect_num),ba
+0BF40F                   	mod_p004:	;********** Added by automatic address modifier
+0BF40F 0C E5 F5 0B       			mv	x,sect_1
+0BF413                   	mod_p005:	;********** Added by automatic address modifier
+0BF413 0D 66 F6 0B       			mv	y,sect_2	;コピーも作る
+0BF417 09 81             			mv	il,129
+0BF419                   	mod_q003:	;********** Added by automatic address modifier
+0BF419 04 E1 F4          			call	rcv_sect	;指定セクタを読み込む
+0BF41C 30 CD D6 80 00    	same_sect:	mvw	(cx),128
+0BF421                   	mod_p006:	;********** Added by automatic address modifier
+0BF421 0C E5 F5 0B       			mv	x,sect_1
+0BF425 9F                			rc
+0BF426 06                			ret
+0BF427 60 3F             	cmd3f:		cmp	a,$3f
+0BF429 1A 2B             			jrnz	cmd40
+0BF42B 90 04             			mv	a,[x]		;コマンド３Ｆｈの処理
+0BF42D 60 44             			cmp	a,'D'
+0BF42F 1A 14             			jrnz	cmd3f_i
+0BF431                   	mod_q004:	;********** Added by automatic address modifier
+0BF431 04 72 F5          			call	check_sect	;”Ｄ”コマンド
+0BF434 CD 02 FF FF       			mvw	(bp+sect_num),-1
+0BF438                   	mod_q005:	;********** Added by automatic address modifier
+0BF438 04 97 F5          			call	send_cache	;ＣＡＣＨＥの中身を追い出す
+0BF43B 08 44             			mv	a,'D'
+0BF43D                   	mod_q006:	;********** Added by automatic address modifier
+0BF43D 04 28 F5          			call	send_one	;”Ｄ”コマンドを送る
+0BF440                   	mod_q007:	;********** Added by automatic address modifier
+0BF440 04 57 F5          	cmd3f_2:	call	buffer_clr	;バッファをきれいにする
+0BF443 9F                			rc
+0BF444 06                			ret
+0BF445 60 49             	cmd3f_i:	cmp	a,'I'
+0BF447 1B 09             			jrnz	cmd3f_2
+0BF449 09 82             			mv	il,130		;”Ｉ”コマンド
+0BF44B 08 00             			mv	a,0		;００ｈを１３０個送信する
+0BF44D                   	mod_q008:	;********** Added by automatic address modifier
+0BF44D 04 28 F5          	cmd3f_i1:	call	send_one
+0BF450 7C 01             			dec	il
+0BF452 1B 07             			jrnz	cmd3f_i1
+0BF454 13 16             			jr	cmd3f_2
+0BF456 60 40             	cmd40:		cmp	a,$40
+0BF458 1A 02             			jrnz	cmd_err
+0BF45A 9F                	jump01:		rc			;コマンド４０ｈの処理
+0BF45B 06                			ret
+0BF45C 08 03             	cmd_err:	mv	a,3		;無効なコマンド
+0BF45E 97                			sc
+0BF45F 06                			ret
+0BF460                   	;----------------------------------------------------------------------
+0BF460                   	;		セクタの連続読み込み
+0BF460                   	;----------------------------------------------------------------------
+0BF460 22 C9 02 D4       	read_sect:	mvw	(bp+sect_num),(bx)
+0BF464 FD 54             			mv	y,x
+0BF466 09 80             			mv	il,128
+0BF468                   	mod_p007:	;********** Added by automatic address modifier
+0BF468 8A 68 F7 0B       			mv	ba,[sect_number]
+0BF46C D6 02 02          			cmpw	(bp+sect_num),ba    ;バッファリングしているセクタと
+0BF46F 1A 0E             			jrnz	read_sect1	    ;ヒットしたか？
+0BF471                   	mod_p008:	;********** Added by automatic address modifier
+0BF471 0D E5 F5 0B       			mv	y,sect_1
+0BF475 90 25             	read_sect2:	mv	a,[y++]
+0BF477 B0 24             			mv	[x++],a
+0BF479 7C 01             			dec	il
+0BF47B 1B 08             			jrnz	read_sect2
+0BF47D 12 03             			jr	read_sect3
+0BF47F                   	mod_q009:	;********** Added by automatic address modifier
+0BF47F 04 E1 F4          	read_sect1:	call	rcv_sect
+0BF482 30 82 D4          	read_sect3:	mv	ba,(bx)
+0BF485 6C 02             			inc	ba
+0BF487 30 A2 D4          			mv	(bx),ba
+0BF48A 30 82 D8          			mv	ba,(dx)
+0BF48D 7C 02             			dec	ba
+0BF48F 30 A2 D8          			mv	(dx),ba
+0BF492 1B 34             			jrnz	read_sect
+0BF494 9F                			rc
+0BF495 06                			ret
+0BF496                   	;----------------------------------------------------------------------
+0BF496                   	;		セクタの連続書き込み
+0BF496                   	;----------------------------------------------------------------------
+0BF496 22 C9 02 D4       	write_sect:	mvw	(bp+sect_num),(bx)
+0BF49A 09 80             			mv	il,128
+0BF49C                   	mod_p009:	;********** Added by automatic address modifier
+0BF49C 8A 68 F7 0B       			mv	ba,[sect_number]
+0BF4A0 D6 02 02          			cmpw	(bp+sect_num),ba    ;バッファリングしているセクタと
+0BF4A3 1A 0E             			jrnz	write_sect1	    ;ヒットしたか？
+0BF4A5                   	mod_p010:	;********** Added by automatic address modifier
+0BF4A5 0D E5 F5 0B       			mv	y,sect_1
+0BF4A9 90 24             	write_sect2:	mv	a,[x++]
+0BF4AB B0 25             			mv	[y++],a
+0BF4AD 7C 01             			dec	il
+0BF4AF 1B 08             			jrnz	write_sect2
+0BF4B1 12 03             			jr	write_sect3
+0BF4B3                   	mod_q010:	;********** Added by automatic address modifier
+0BF4B3 04 CA F4          	write_sect1:	call	send_sect
+0BF4B6 30 82 D4          	write_sect3:	mv	ba,(bx)
+0BF4B9 6C 02             			inc	ba
+0BF4BB 30 A2 D4          			mv	(bx),ba
+0BF4BE 30 82 D8          			mv	ba,(dx)
+0BF4C1 7C 02             			dec	ba
+0BF4C3 30 A2 D8          			mv	(dx),ba
+0BF4C6 1B 32             			jrnz	write_sect
+0BF4C8 9F                			rc
+0BF4C9 06                			ret
+0BF4CA                   	;----------------------------------------------------------------------
+0BF4CA                   	;		１セクタ送信
+0BF4CA                   	;----------------------------------------------------------------------
+0BF4CA 29                	send_sect:	pushu	il
+0BF4CB                   	mod_q011:	;********** Added by automatic address modifier
+0BF4CB 04 97 F5          			call	send_cache	;ＣＡＣＨＥの処理
+0BF4CE 39                			popu	il
+0BF4CF                   	mod_p011:	;********** Added by automatic address modifier
+0BF4CF 0D E7 F6 0B       			mv	y,cache
+0BF4D3 90 24             	send_sect_2:	mv	a,[x++]		;ＣＡＣＨＥへ書き込む
+0BF4D5 B0 25             			mv	[y++],a
+0BF4D7 7C 01             			dec	il
+0BF4D9 1B 08             			jrnz	send_sect_2
+0BF4DB                   	mod_p012:	;********** Added by automatic address modifier
+0BF4DB 7A 6C F7 0B FF    			or	[cache_stat],$ff;かならず追い出しをすること
+0BF4E0 06                			ret
+0BF4E1                   	;----------------------------------------------------------------------
+0BF4E1                   	;		１セクタ受信
+0BF4E1                   	;----------------------------------------------------------------------
+0BF4E1 2F                	rcv_sect:	pushu	imr
+0BF4E2 29                			pushu	il
+0BF4E3 30 CC FB A0       			mv	(intr_mask_reg),$a0
+0BF4E7                   	mod_q012:	;********** Added by automatic address modifier
+0BF4E7 04 97 F5          			call	send_cache	;ＣＡＣＨＥの処理
+0BF4EA 39                			popu	il
+0BF4EB 1E 27             			jrnc	read_cache	;ＣＡＣＨＥから読めばよいときジャンプ
+0BF4ED 29                			pushu	il
+0BF4EE 2C                			pushu	x
+0BF4EF                   	mod_p013:	;********** Added by automatic address modifier
+0BF4EF 0C E7 F6 0B       			mv	x,cache		;ＣＡＣＨＥに読み込む
+0BF4F3 08 52             			mv	a,'R'
+0BF4F5                   	mod_q013:	;********** Added by automatic address modifier
+0BF4F5 04 28 F5          			call	send_one	;読みだしコマンド送信
+0BF4F8 80 02             			mv	a,(bp+sect_num)
+0BF4FA                   	mod_q014:	;********** Added by automatic address modifier
+0BF4FA 04 28 F5          			call	send_one	;セクタ番号の下位１バイト送信
+0BF4FD 80 03             			mv	a,(bp+sect_num+1)
+0BF4FF                   	mod_q015:	;********** Added by automatic address modifier
+0BF4FF 04 28 F5          			call	send_one	;セクタ番号の上位１バイト送信
+0BF502 09 81             			mv	il,129		;１２９バイト受信
+0BF504                   	mod_q016:	;********** Added by automatic address modifier
+0BF504 04 39 F5          	rcv_sect_1:	call	receive_one
+0BF507 B0 24             			mv	[x++],a
+0BF509 7C 01             			dec	il
+0BF50B 1B 09             			jrnz	rcv_sect_1
+0BF50D 3C                			popu	x
+0BF50E                   	mod_p014:	;********** Added by automatic address modifier
+0BF50E 72 6C F7 0B 00    			and	[cache_stat],0	;ＣＡＣＨＥは追い出さなくてよい
+0BF513 39                			popu	il
+0BF514 B6 37             	read_cache:	mv	[--s],u		;ＣＡＣＨＥから読み込む
+0BF516                   	mod_p015:	;********** Added by automatic address modifier
+0BF516 0E E7 F6 0B       			mv	u,cache
+0BF51A 90 26             	read_cache_1:	mv	a,[u++]
+0BF51C B0 24             			mv	[x++],a
+0BF51E B0 25             			mv	[y++],a
+0BF520 7C 01             			dec	il
+0BF522 1B 0A             			jrnz	read_cache_1
+0BF524 96 27             			mv	u,[s++]
+0BF526 3F                			popu	imr
+0BF527 06                			ret
+0BF528                   	;----------------------------------------------------------------------
+0BF528                   	;		１バイト送信
+0BF528                   	;----------------------------------------------------------------------
+0BF528 30 65 F8 08       	send_one:	test	(sio_stat_reg),$8
+0BF52C 19 06             			jrz	send_one	;Tx ready になるまで待つ
+0BF52E 65 04 02          			test	(bp+flag),2
+0BF531 18 02             			jrz	send_one_2	;送信中止モードなら００ｈを送信することになる
+0BF533 08 00             			mv	a,0
+0BF535 30 A0 FA          	send_one_2:	mv	(sio_tx_reg),a	;送信
+0BF538 06                			ret
+0BF539                   	;----------------------------------------------------------------------
+0BF539                   	;		１バイト受信
+0BF539                   	;----------------------------------------------------------------------
+0BF539 30 65 FF 08       	receive_one:	test	(system_stat_reg),8
+0BF53D 1A 0B             			jrnz	receive_one_err	;［ＢＲＫ］が押された
+0BF53F 65 04 01          			test	(bp+flag),1
+0BF542 19 0B             			jrz	receive_one	;１バイト受信するまで待つ
+0BF544 80 05             			mv	a,(bp+rxdata)
+0BF546 71 04 FE          			and	(bp+flag),$fe	;フラグをリセットする
+0BF549 06                			ret
+0BF54A 79 04 02          	receive_one_err:or	(bp+flag),2	;送信中止モードにする
+0BF54D 06                			ret
+0BF54E                   	;----------------------------------------------------------------------
+0BF54E                   	;		受信割込み処理ルーチン
+0BF54E                   	;----------------------------------------------------------------------
+0BF54E 30 80 F9          	rcv:		mv	a,(sio_rx_reg)
+0BF551 A0 05             			mv	(bp+rxdata),a
+0BF553 79 04 01          			or	(bp+flag),1	;受信完了フラグを立てる
+0BF556 07                			retf
+0BF557                   	;----------------------------------------------------------------------
+0BF557                   	;		バッファ・クリア
+0BF557                   	;----------------------------------------------------------------------
+0BF557 09 81             	buffer_clr:	mv	il,129
+0BF559 0A 00 00          			mv	ba,0
+0BF55C                   	mod_p016:	;********** Added by automatic address modifier
+0BF55C 0C E5 F5 0B       			mv	x,sect_1
+0BF560 B2 24             	buffer_clr_1:	mv	[x++],ba	    ;バッファを００ｈで埋める
+0BF562 7C 03             			dec	i
+0BF564 1B 06             			jrnz	buffer_clr_1
+0BF566 0B FF FF          			mv	i,-1
+0BF569                   	mod_p017:	;********** Added by automatic address modifier
+0BF569 AB 68 F7 0B       			mv	[sect_number],i	    ;セクタ番号の初期化
+0BF56D                   	mod_p018:	;********** Added by automatic address modifier
+0BF56D AB 6A F7 0B       			mv	[cache_number],i    
+0BF571 06                			ret
+0BF572                   	;----------------------------------------------------------------------
+0BF572                   	;		コマンド17h用のバッファの一致検査
+0BF572                   	;----------------------------------------------------------------------
+0BF572                   	mod_p019:	;********** Added by automatic address modifier
+0BF572 0C E5 F5 0B       	check_sect:	mv	x,sect_1
+0BF576 09 81             			mv	il,129
+0BF578 E0 24 00          	check_sect_3:	mv	(bp+i_work1),[x++]
+0BF57B 90 84 80          			mv	a,[x+128]
+0BF57E 63 00             			cmp	(bp+i_work1),a	;バッファ内容の比較
+0BF580 18 10             			jrz	check_sect_4
+0BF582                   	mod_p020:	;********** Added by automatic address modifier
+0BF582 D1 02 68 F7 0B    			mvw	(bp+sect_num),[sect_number]
+0BF587                   	mod_p021:	;********** Added by automatic address modifier
+0BF587 0C E5 F5 0B       			mv	x,sect_1
+0BF58B 09 81             			mv	il,129
+0BF58D                   	mod_q017:	;********** Added by automatic address modifier
+0BF58D 04 CA F4          			call	send_sect	;バッファを追い出す
+0BF590 09 01             			mv	il,1
+0BF592 7C 01             	check_sect_4:	dec	il
+0BF594 1B 1E             			jrnz	check_sect_3
+0BF596 06                			ret
+0BF597                   	;----------------------------------------------------------------------
+0BF597                   	;		Cacheとの一致検査
+0BF597                   	;----------------------------------------------------------------------
+0BF597 2F                	send_cache:	pushu	imr
+0BF598 30 CC FB A0       			mv	(intr_mask_reg),$a0
+0BF59C 2C                			pushu	x
+0BF59D                   	mod_p022:	;********** Added by automatic address modifier
+0BF59D 0C E7 F6 0B       			mv	x,cache
+0BF5A1                   	mod_p023:	;********** Added by automatic address modifier
+0BF5A1 8A 6A F7 0B       			mv	ba,[cache_number]
+0BF5A5 A2 00             			mv	(bp+i_work1),ba
+0BF5A7 D6 02 02          			cmpw	(bp+sect_num),ba
+0BF5AA                   	mod_p024:	;********** Added by automatic address modifier
+0BF5AA D9 6A F7 0B 02    			mvw	[cache_number],(bp+sect_num)
+0BF5AF 18 31             			jrz	no_read		;アクセスしようとしたセクタはＣＡＣＨＥと同じである
+0BF5B1 6C 02             			inc	ba
+0BF5B3 18 29             			jrz	_read		;ＣＡＣＨＥは初期状態である
+0BF5B5                   	mod_p025:	;********** Added by automatic address modifier
+0BF5B5 62 6C F7 0B 00    			cmp	[cache_stat],0
+0BF5BA 18 22             			jrz	_read		;ＣＡＣＨＥを追い出す必要はない
+0BF5BC 08 57             			mv	a,'W'
+0BF5BE                   	mod_q018:	;********** Added by automatic address modifier
+0BF5BE 04 28 F5          			call	send_one	;書き込むコマンド送信
+0BF5C1 80 00             			mv	a,(bp+i_work1)
+0BF5C3                   	mod_q019:	;********** Added by automatic address modifier
+0BF5C3 04 28 F5          			call	send_one	;セクタ番号の下位１バイト送信
+0BF5C6 80 01             			mv	a,(bp+i_work2)
+0BF5C8                   	mod_q020:	;********** Added by automatic address modifier
+0BF5C8 04 28 F5          			call	send_one	;セクタ番号の上位１バイト送信
+0BF5CB 09 81             			mv	il,129
+0BF5CD 90 24             	send_cache_2:	mv	a,[x++]
+0BF5CF                   	mod_q021:	;********** Added by automatic address modifier
+0BF5CF 04 28 F5          			call	send_one	;１２９バイトのＣＡＣＨＥデータを送信
+0BF5D2 7C 01             			dec	il
+0BF5D4 1B 09             			jrnz	send_cache_2
+0BF5D6 08 FF             			mv	a,$ff
+0BF5D8                   	mod_q022:	;********** Added by automatic address modifier
+0BF5D8 04 28 F5          			call	send_one	;正常終了の印を送信
+0BF5DB                   	mod_q023:	;********** Added by automatic address modifier
+0BF5DB 04 39 F5          			call	receive_one
+0BF5DE 97                	_read:		sc			;ＣＡＣＨＥからは読み込めないという印
+0BF5DF 3C                	send_cache_3:	popu	x
+0BF5E0 3F                			popu	imr
+0BF5E1 06                			ret
+0BF5E2 9F                	no_read:	rc			;ＣＡＣＨＥから読み込んで宜しいという印
+0BF5E3 13 06             			jr	send_cache_3
+0BF5E5                   	;----------------------------------------------------------------------
+0BF5E5                   	;		ワークエリア
+0BF5E5                   	;----------------------------------------------------------------------
+0BF5E5 00 00 00 00 00 00 	sect_1:		ds	129,0
+0BF5EB 00 00 00 00 00 00 	
+0BF5F1 00 00 00 00 00 00 	
+0BF5F7 00 00 00 00 00 00 	
+0BF5FD 00 00 00 00 00 00 	
+0BF603 00 00 00 00 00 00 	
+0BF609 00 00 00 00 00 00 	
+0BF60F 00 00 00 00 00 00 	
+0BF615 00 00 00 00 00 00 	
+0BF61B 00 00 00 00 00 00 	
+0BF621 00 00 00 00 00 00 	
+0BF627 00 00 00 00 00 00 	
+0BF62D 00 00 00 00 00 00 	
+0BF633 00 00 00 00 00 00 	
+0BF639 00 00 00 00 00 00 	
+0BF63F 00 00 00 00 00 00 	
+0BF645 00 00 00 00 00 00 	
+0BF64B 00 00 00 00 00 00 	
+0BF651 00 00 00 00 00 00 	
+0BF657 00 00 00 00 00 00 	
+0BF65D 00 00 00 00 00 00 	
+0BF663 00 00 00          	
+0BF666 00 00 00 00 00 00 	sect_2:		ds	129,0
+0BF66C 00 00 00 00 00 00 	
+0BF672 00 00 00 00 00 00 	
+0BF678 00 00 00 00 00 00 	
+0BF67E 00 00 00 00 00 00 	
+0BF684 00 00 00 00 00 00 	
+0BF68A 00 00 00 00 00 00 	
+0BF690 00 00 00 00 00 00 	
+0BF696 00 00 00 00 00 00 	
+0BF69C 00 00 00 00 00 00 	
+0BF6A2 00 00 00 00 00 00 	
+0BF6A8 00 00 00 00 00 00 	
+0BF6AE 00 00 00 00 00 00 	
+0BF6B4 00 00 00 00 00 00 	
+0BF6BA 00 00 00 00 00 00 	
+0BF6C0 00 00 00 00 00 00 	
+0BF6C6 00 00 00 00 00 00 	
+0BF6CC 00 00 00 00 00 00 	
+0BF6D2 00 00 00 00 00 00 	
+0BF6D8 00 00 00 00 00 00 	
+0BF6DE 00 00 00 00 00 00 	
+0BF6E4 00 00 00          	
+0BF6E7 00 00 00 00 00 00 	cache:		ds	129,0
+0BF6ED 00 00 00 00 00 00 	
+0BF6F3 00 00 00 00 00 00 	
+0BF6F9 00 00 00 00 00 00 	
+0BF6FF 00 00 00 00 00 00 	
+0BF705 00 00 00 00 00 00 	
+0BF70B 00 00 00 00 00 00 	
+0BF711 00 00 00 00 00 00 	
+0BF717 00 00 00 00 00 00 	
+0BF71D 00 00 00 00 00 00 	
+0BF723 00 00 00 00 00 00 	
+0BF729 00 00 00 00 00 00 	
+0BF72F 00 00 00 00 00 00 	
+0BF735 00 00 00 00 00 00 	
+0BF73B 00 00 00 00 00 00 	
+0BF741 00 00 00 00 00 00 	
+0BF747 00 00 00 00 00 00 	
+0BF74D 00 00 00 00 00 00 	
+0BF753 00 00 00 00 00 00 	
+0BF759 00 00 00 00 00 00 	
+0BF75F 00 00 00 00 00 00 	
+0BF765 00 00 00          	
+0BF768 FF FF             	sect_number:	dw	-1
+0BF76A FF FF             	cache_number:	dw	-1
+0BF76C 00                	cache_stat:	db	0
+0BF76D                   	;
+0BF76D                   	block_bottom:
+0BF76D                   	;----------------------------------------------------------------------
+0BF76D                   	;		アドレス補正テーブル
+0BF76D                   	;----------------------------------------------------------------------
+0BF76D 66 F3 0B          	modify_table:	dp	modify_top - 1
+0BF770                   	;*** Automatic address modifier map list (3bytes)
+0BF770 8C F3 0B          			dp	!mod_p000
+0BF773 D7 F3 0B          			dp	!mod_p001
+0BF776 F9 F3 0B          			dp	!mod_p002
+0BF779 09 F4 0B          			dp	!mod_p003
+0BF77C 0F F4 0B          			dp	!mod_p004
+0BF77F 13 F4 0B          			dp	!mod_p005
+0BF782 21 F4 0B          			dp	!mod_p006
+0BF785 68 F4 0B          			dp	!mod_p007
+0BF788 71 F4 0B          			dp	!mod_p008
+0BF78B 9C F4 0B          			dp	!mod_p009
+0BF78E A5 F4 0B          			dp	!mod_p010
+0BF791 CF F4 0B          			dp	!mod_p011
+0BF794 DB F4 0B          			dp	!mod_p012
+0BF797 EF F4 0B          			dp	!mod_p013
+0BF79A 0E F5 0B          			dp	!mod_p014
+0BF79D 16 F5 0B          			dp	!mod_p015
+0BF7A0 5C F5 0B          			dp	!mod_p016
+0BF7A3 69 F5 0B          			dp	!mod_p017
+0BF7A6 6D F5 0B          			dp	!mod_p018
+0BF7A9 72 F5 0B          			dp	!mod_p019
+0BF7AC 83 F5 0B          			dp	!mod_p020 + 1
+0BF7AF 87 F5 0B          			dp	!mod_p021
+0BF7B2 9D F5 0B          			dp	!mod_p022
+0BF7B5 A1 F5 0B          			dp	!mod_p023
+0BF7B8 AA F5 0B          			dp	!mod_p024
+0BF7BB B5 F5 0B          			dp	!mod_p025
+0BF7BE FF FF 0F          			dp	-1
+0BF7C1                   	;*** Automatic address modifier map list (2bytes)
+0BF7C1                   	modify_table2:
+0BF7C1 A6 F3 0B          			dp	!mod_q000
+0BF7C4 B2 F3 0B          			dp	!mod_q001
+0BF7C7 03 F4 0B          			dp	!mod_q002
+0BF7CA 19 F4 0B          			dp	!mod_q003
+0BF7CD 31 F4 0B          			dp	!mod_q004
+0BF7D0 38 F4 0B          			dp	!mod_q005
+0BF7D3 3D F4 0B          			dp	!mod_q006
+0BF7D6 40 F4 0B          			dp	!mod_q007
+0BF7D9 4D F4 0B          			dp	!mod_q008
+0BF7DC 7F F4 0B          			dp	!mod_q009
+0BF7DF B3 F4 0B          			dp	!mod_q010
+0BF7E2 CB F4 0B          			dp	!mod_q011
+0BF7E5 E7 F4 0B          			dp	!mod_q012
+0BF7E8 F5 F4 0B          			dp	!mod_q013
+0BF7EB FA F4 0B          			dp	!mod_q014
+0BF7EE FF F4 0B          			dp	!mod_q015
+0BF7F1 04 F5 0B          			dp	!mod_q016
+0BF7F4 8D F5 0B          			dp	!mod_q017
+0BF7F7 BE F5 0B          			dp	!mod_q018
+0BF7FA C3 F5 0B          			dp	!mod_q019
+0BF7FD C8 F5 0B          			dp	!mod_q020
+0BF800 CF F5 0B          			dp	!mod_q021
+0BF803 D8 F5 0B          			dp	!mod_q022
+0BF806 DB F5 0B          			dp	!mod_q023
+0BF809 FF FF 0F          			dp	-1
+0BF80C                   	;
+0BF80C                   			end
+
+  No fatal error.  Code: 0BF000h - 0BF80Bh [     2060 byte(s)]

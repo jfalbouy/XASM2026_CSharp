@@ -1,0 +1,273 @@
+000000                   	;--------------------------------------------------
+000000                   	;	DOS for PC-E500S  					Ver 0.33
+000000                   	;		(c)1990,1992   T.Kobayashi - JF ALBOUY
+000000                   	;
+000000                   	; EX_TYCOM.ASM  					 04/12/2022
+000000                   	; 
+000000                   	; LOADM "F:EX_TYCOM.OBJ"
+000000                   	; Installation par call &BF200
+000000                   	;
+000000                   	; A installer avec TRDOS.OBJ
+000000                   	;--------------------------------------------------
+000000                   	;Adresses non définies
+000000                   	;check_scrut:equ  $0BE872
+000000                   	;$$0BE872
+000000                   	;$BE890
+000000                   	;$BEA1F
+000000                   	;$BEC64
+000000                   	;$BEC69
+000000                   	;$BEC70
+000000                   	;$BF04C
+000000                   	;$BF11A
+000000                   	;$BF15F
+000000                   	;$BF17B
+000000                   					;BF2E0
+000000                   					;BF3EB
+000000                   	;$BFBF1
+000000                   	;$BFBFC
+000000                   	;$BFCBE
+000000                   	;$F379
+000000                   	;
+000000                   	;--- Constantes -----------------------------------
+000000                   	CR:		equ $0d
+000000                   	LF:		equ $0a
+000000                   	EOF:	equ $1a
+000000                   	;---Mémoire interne ---
+000000                   	bl:	equ	0d4h
+000000                   	bh:	equ	0d5h
+000000                   	cl:	equ	0d6h
+000000                   	ch:	equ	0d7h
+000000                   	dl:	equ	0d8h
+000000                   	dh:	equ	0d9h
+000000                   	cx: equ 0d6h
+000000                   	;
+000000                   	scr: equ $fd
+000000                   	;--- Routines ---
+000000                   	fcs_call:  	equ	0fffe4h
+000000                   	iocs_call: 	equ	0fffe8h
+000000                   	keyrep: 	equ 0bfcbfh
+000000                   	;---------------------------------------------------
+000000                   	;
+0BF200                   		org	0bf200h
+0BF200                   	;
+0BF200                   		pre_on
+0BF200                   	;
+0BF200 09 00             	start: 	mv il,0						;searching for the drive name
+0BF202 0C EC F3 0B       			mv x,drive					;drive name address
+0BF206 05 E8 FF 0F       			callf iocs_call
+0BF20A 0C BD F3 0B       			mv x,fileName2				;file name address
+0BF20E 1C 13             			jrc st1						;saut si error
+0BF210                   	;
+0BF210 09 4A             			mv il,$4a
+0BF212 05 E8 FF 0F       			callf iocs_call
+0BF216 0B 20 00          			mv i,32						;nombre de caractères	
+0BF219 45 43             			add x,i						;calcul de la nouvelle adresse
+0BF21B AC 81 F3 0B       			mv [mem+1],x				;copie de la nouvelle adresse
+0BF21F 0C B3 F3 0B       			mv x,fileName1
+0BF223 09 02             	st1:	mv il,2						;checking the header address
+0BF225 0D 01 F4 0B       			mv y,endprg
+0BF229 05 FC FB 0B       			callf $BFBFC
+0BF22D 0C 01 F4 0B       			mv x,endprg
+0BF231 04 80 F3          			call mem
+0BF234 1C 99             			jrc BF2CF
+0BF236 30 D8 EB F3 0B D6 			mv [fileHandle],(cx)		;sauve le file handle
+0BF23C 30 80 D6          			mv a,(cx)
+0BF23F 09 01             			mv il,1
+0BF241 05 FC FB 0B       			callf $BFBFC
+0BF245 1C 7C             			jrc BF2C3
+0BF247                   	;
+0BF247 60 01             			cmp a,1
+0BF249 1A 78             			jrnz BF2C3
+0BF24B                   	;
+0BF24B                   			;reading a block of file
+0BF24B B4 37             			mv [--s],x					;empiler l'adresse dans la pile système
+0BF24D 30 D0 D6 EB F3 0B 			mv (cx),[fileHandle]		;cl = file number
+0BF253 09 03             			mv il,3
+0BF255 08 01             			mv a,1						;physical end of file
+0BF257 05 E4 FF 0F       			callf fcs_call
+0BF25B 1C 64             			jrc BF2C1					;saut si error
+0BF25D                   	;
+0BF25D                   			;closing a file	
+0BF25D 30 D0 D6 EB F3 0B 			mv (cx),[fileHandle]		;cl = file number
+0BF263 09 02             			mv il,2
+0BF265 05 E4 FF 0F       			callf fcs_call
+0BF269                   	;
+0BF269 8A 5F F1 0B       			mv ba,[$BF15F]
+0BF26D 60 31             			cmp a,'1'
+0BF26F 1A 5E             			jrnz BF2CF
+0BF271 DD                			ex a,b
+0BF272 60 31             			cmp a,'1'
+0BF274 1A 59             			jrnz BF2CF
+0BF276                   	;
+0BF276                   			;modification du code
+0BF276 08 03             			mv a,3						;code de JPF
+0BF278 0C FB F2 0B       			mv x,BF2FB
+0BF27C 0D 8C E8 0B       			mv y,$0BE88C
+0BF280 B0 25             			mv [y++],a 					;copie du code JPF
+0BF282 B4 25             			mv [y++],x					;copie de l'adresse
+0BF284 0B 79 F3          			mv i,$F379
+0BF287 AB 1F EA 0B       			mv [$BEA1F],i
+0BF28B                   	;
+0BF28B                   			;modification du code
+0BF28B 08 03             			mv a,3						;code de JPF
+0BF28D 0C 57 F3 0B       			mv x,BF357
+0BF291 0D 64 EC 0B       			mv y,$BEC64
+0BF295 B0 25             			mv [y++],a 					;copie du code JPF
+0BF297 B4 25             			mv [y++],x					;copie de l'adresse
+0BF299 0B 33 33          			mv i,$3333
+0BF29C AB 5F F1 0B       			mv [$BF15F],i 
+0BF2A0                   	;
+0BF2A0                   			;Copie de 4 caractères
+0BF2A0 0C 7B F1 0B       			mv x,$BF17B
+0BF2A4 0D E7 F3 0B       			mv y,exit
+0BF2A8 09 04             			mv il,4
+0BF2AA 90 25             	BF2AA:	mv a,[y++]
+0BF2AC B0 24             			mv [x++],a 
+0BF2AE 7C 01             			dec il
+0BF2B0 1B 08             			jrnz BF2AA					;boucler tant que non NUL
+0BF2B2                   	;
+0BF2B2                   			;Copie de 32 caractères
+0BF2B2 FD 54             			mv y,x						;y = adresse de fin de copie
+0BF2B4 6C 05             			inc y						;adresse suivante pour copie
+0BF2B6 09 20             			mv il,32					;compteur
+0BF2B8 90 25             	BF2B8:	mv a,[y++]
+0BF2BA B0 24             			mv [x++],a
+0BF2BC 7C 01             			dec il
+0BF2BE 1B 08             			jrnz BF2B8					;boucler tant que non NUL
+0BF2C0 07                			retf
+0BF2C1                   	;
+0BF2C1                   			;closing a file
+0BF2C1 94 27             	BF2C1:	mv x,[s++]					;dépiler l'adresse
+0BF2C3 30 D0 D6 EB F3 0B 	BF2C3:	mv (cx),[fileHandle]		;file handle
+0BF2C9 09 02             			mv il,2						;closing a file
+0BF2CB 05 E4 FF 0F       			callf fcs_call
+0BF2CF 0C C8 F3 0B       	BF2CF:	mv x,ErrorFile
+0BF2D3 04 E0 F2          			call BF2E0
+0BF2D6 8C F1 FB 0B       			mv x,[$BFBF1]
+0BF2DA 08 02             			mv a,2						;copie du code JP
+0BF2DC B0 04             			mv [x],a
+0BF2DE 9F                			rc
+0BF2DF 07                			retf
+0BF2E0                   	;
+0BF2E0                   			;writing a block of the file
+0BF2E0 30 CC D6 00       	BF2E0:	mv (cx),0					;file handle
+0BF2E4 2C                			pushu x						;sauver l'adresse
+0BF2E5 0D 00 00 00       			mv y,0						;compteur
+0BF2E9 90 24             	BF2E9:	mv a,[x++]					;lire un caractère
+0BF2EB 6C 05             			inc y						;incrémenter le compteur
+0BF2ED 60 00             			cmp a,0
+0BF2EF 1B 08             			jrnz BF2E9					;boucler tant que non fin de chaine
+0BF2F1 7C 05             			dec y						;fixer le nombre de caractères lu
+0BF2F3 3C                			popu x						;récupérer l'adresse de la chaine
+0BF2F4 09 04             			mv il,4						;writing the bloc
+0BF2F6 05 E4 FF 0F       			callf 	fcs_call
+0BF2FA 07                			retf
+0BF2FB                   	;	
+0BF2FB 60 05             	BF2FB:	cmp a,5
+0BF2FD 14 90 E8          			jpz $BE890
+0BF300 60 04             			cmp a,4
+0BF302 14 17 F3          			jpz BF317
+0BF305 60 0F             			cmp a,15
+0BF307 14 17 F3          			jpz BF317
+0BF30A 60 60             			cmp a,$60
+0BF30C 14 43 F3          			jpz BF343
+0BF30F 60 61             			cmp a,$61
+0BF311 14 4F F3          			jpz BF34F
+0BF314 02 72 E8          			jp $BE872
+0BF317                   	;
+0BF317                   			;setting of display state
+0BF317 30 71 FD 0F       	BF317:	and (scr),$0f
+0BF31B 30 CD D6 00 00    			mvw (cx),0
+0BF320 08 00             			mv a,0							;OFF display
+0BF322 09 50             			mv il,$50
+0BF324 05 E8 FF 0F       			callf iocs_call
+0BF328                   	;	
+0BF328                   			;power OFF
+0BF328 30 CD D6 08 00    			mvw (cx),8
+0BF32D 09 41             			mv il,$41
+0BF32F 05 E8 FF 0F       			callf iocs_call
+0BF333                   	;
+0BF333                   			;setting of display state
+0BF333 30 CD D6 00 00    			mvw (cx),0
+0BF338 08 01             			mv a,1							;ON display
+0BF33A 09 50             			mv il,$50
+0BF33C 05 E8 FF 0F       			callf iocs_call
+0BF340 02 72 E8          			jp $BE872
+0BF343                   	;		
+0BF343 30 71 FD 0F       	BF343:	and (scr),15
+0BF347 6A BF FC 0B 10    			xor [keyrep],$10
+0BF34C 02 72 E8          			jp $BE872
+0BF34F 6A BF FC 0B 80    	BF34F:	xor [keyrep],$80
+0BF354 02 72 E8          			jp $BE872
+0BF357                   	;		
+0BF357 30 A0 20          	BF357:	mv ($20),a
+0BF35A 60 02             			cmp a,2
+0BF35C 18 09             			jrz BF367
+0BF35E 60 08             			cmp a,8
+0BF360 15 1A F1          			jpnz $BF11A
+0BF363 03 69 EC 0B       			jpf $BEC69
+0BF367                   	;
+0BF367 0C DE F3 0B       	BF367:	mv x,nDriver
+0BF36B 04 4C F0          			call $BF04C
+0BF36E 66 BE FC 0B 80    	BF36E:	test [$BFCBE],$80
+0BF373 1B 07             			jrnz BF36E
+0BF375 03 70 EC 0B       			jpf $BEC70
+0BF379 04 80 F3          			call mem
+0BF37C 16 1A F1          			jpc $BF11A
+0BF37F 06                			ret
+0BF380                   	;
+0BF380                   			;opening a file
+0BF380 0D F1 F3 0B       	mem:	mv y,lstDrive
+0BF384 2D                	mem1:	pushu y
+0BF385 2C                			pushu x 						;lead address of file name
+0BF386 09 01             			mv il,1
+0BF388 08 01             			mv a,1							;file is opened for reading-out
+0BF38A 05 E4 FF 0F       			callf fcs_call
+0BF38E                   	;
+0BF38E 3C                			popu x
+0BF38F 3D                			popu y
+0BF390 1E 15             			jrnc mem4						;retour si no error
+0BF392                   	;
+0BF392                   			;reading a byte of the file : the drive name
+0BF392 09 05             			mv il,5							;initialiser le compteur
+0BF394 2C                			pushu x 						;sauver l'adresse du file name
+0BF395 90 25             	mem2:	mv a,[y++]						;parcourir les caractères
+0BF397 60 00             			cmp a,0
+0BF399 18 0A             			jrz mem3						;saut si fin de chaine
+0BF39B 60 3A             			cmp a,':'						;caractère du drive
+0BF39D 18 09             			jrz mem5						;saut pour lire le file name
+0BF39F B0 24             			mv [x++],a 						;sauver le caractère
+0BF3A1 7C 01             			dec il							;décrémenter le compteur
+0BF3A3 1B 10             			jrnz mem2						;boucler tant que non tout lu
+0BF3A5 3C                	mem3:	popu x							;récupérer l'adresse
+0BF3A6 97                			sc 
+0BF3A7 06                	mem4:	ret
+0BF3A8                   	;		
+0BF3A8 B0 24             	mem5:	mv [x++],a						;copier le ":"
+0BF3AA 08 20             			mv a,32
+0BF3AC 7C 01             			dec il
+0BF3AE 1B 08             			jrnz mem5						;boucler tant que le drive name est non NUL
+0BF3B0 3C                			popu x							;récupérer l'adresse
+0BF3B1 13 2F             			jr mem1
+0BF3B3                   	;		
+0BF3B3                   	;		
+0BF3B3 54 59 43 4F 4D 2E 	fileName1:	db 'TYCOM.SYS',CR
+0BF3B9 53 59 53 0D       	
+0BF3BD 54 59 43 4F 4D 31 	fileName2:	db 'TYCOM1.SYS',CR
+0BF3C3 2E 53 59 53 0D    	
+0BF3C8 54 59 43 4F 4D 2E 	ErrorFile:	db 'TYCOM.SYS  read error',0
+0BF3CE 53 59 53 20 20 72 	
+0BF3D4 65 61 64 20 65 72 	
+0BF3DA 72 6F 72 00       	
+0BF3DE 20 44 72 69 76 65 	nDriver:	db ' Driver ',0
+0BF3E4 72 20 00          	
+0BF3E7 45 58 49 54       	exit:		db 'EXIT'
+0BF3EB 00                	fileHandle:	db 0
+0BF3EC 44 4F 53 3A 00    	drive:		db 'DOS:',0
+0BF3F1 53 31 3A 53 32 3A 	lstDrive:	db 'S1:S2:S3:D:E:F:',0
+0BF3F7 53 33 3A 44 3A 45 	
+0BF3FD 3A 46 3A 00       	
+0BF401                   	endprg:	
+0BF401                   			end
+
+  No fatal error.  Code: 0BF200h - 0BF400h [      513 byte(s)]

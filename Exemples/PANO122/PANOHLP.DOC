@@ -1,0 +1,297 @@
+★☆　起動方法　☆★
+
+●BASIC
+　LOADM "PANO":CALL &BD000"[編集ファイル名] [オプション]
+
+●HMF
+　PANO [編集ファイル名] [オプション]
+
+●オプション（nは数字）
+　-n    指定した行番号から編集を開始
+　-Wn   ユーザー指定の画面幅を指定
+　-Tn   タブの幅を指定
+　-S    コントロールコードを全て削除して読み込む
+　-S0   コントロールコードを削除しないで読み込む
+　-E    EOF($1A)を無視してファイルの最後まで読み込む
+　-E0   EOFで読み込みを終了する
+
+※ファイル名を省略すると新規ファイルの編集になる
+※オプションはファイル名の前でも可
+
+
+★☆　使い方　☆★
+
+●カーソルの移動
+
+・[↑][↓]              1行上下に移動
+・[←][→]              1文字左右に移動
+・[CTRL]+[↑]           テキストの先頭、末尾へ移動
+　[CTRL]+[↓]
+・[SHIFT]+[←]          物理行の先頭、末尾へ移動
+　[SHIFT]+[→]
+・[SHIFT]+[↑]          1画面上下に移動
+　[SHIFT]+[↓]
+　[SHIFT]+[sin]
+　[SHIFT]+[yx]
+・[CTRL]+[←]           40桁以下の場合、論理行の先頭、末尾へ移動
+　[CTRL]+[→]           41桁以上の場合、1画面左右へ移動
+　[SHIFT]+[→HEX]
+　[SHIFT]+[ln]
+・[→HEX]、[ln]         1桁左右にスクロール
+・[sin]、[yx]           1桁上下にスクロール
+・[CTRL]+Q [CTRL]+[←]  論理行の先頭、末尾へ移動
+　[CTRL]+Q [CTRL]+[→]
+・[CTRL]+J              指定した行番号にジャンプ
+
+●文字の入力・削除
+
+・[リターン]            改行を挿入
+・[SHIFT]+[リターン]    字下げをせずに改行を挿入
+・[CTRL]+I/[STO]        タブを挿入
+・[EXP]                 コントロールコード入力
+・[INS]                 挿入／上書きモード切り換え
+・[DEL]                 現在のカーソル位置の文字を削除
+・[BS]                  ひとつ前の文字を削除
+・[CTRL]+E              カーソル位置から改行まで削除
+・[CTRL]+D              論理行の先頭からカーソル位置まで削除
+・[CTRL]+Y              現在カーソルのある行をすべて削除
+                        選択範囲を全て削除
+
+●カット、コピー&ペースト
+
+・[PF3]                 範囲指定を開始
+                        選択範囲をコピー
+・[PF4]                 選択範囲をカット
+・[PF5]                 選択範囲に上書きしてペースト
+                        選択範囲がなければ、カーソル位置にペースト
+・[C･CE]                範囲指定をキャンセル
+
+●検索
+
+・[PF1]/[CTRL]+F        検索文字列入力後、検索
+・[CTRL]+G              前方再検索
+・[CTRL]+T              後方再検索
+
+●置換
+
+・[PF2]                 検索、置換文字列入力後、検索
+・[CTRL]+Q [CTRL]+R     置換
+・[CTRL]+[;]            置換後、前方再検索
+・[CTRL]+[,]            置換後、後方再検索
+
+●スクラップ機能
+
+・[CTRL]+n (nは0～9）   登録された文字列を挿入
+・[CTRL]+X [CTRL]+n     文字列を[CTRL]+nに登録
+
+●引用符機能
+
+・[CTRL]+Q [CTRL]+n     選択された各行の先頭に引用符を挿入
+・[CTRL]+[-] [CTRL]+n   選択された各行の先頭から引用符を削除
+・[CTRL]+[INS]          選択範囲の1行目の引用符を各行の先頭に挿入
+・[CTRL]+[BS]           選択範囲の1行目の引用符を各行の先頭から削除
+
+●Undo／Redo
+・[CTRL]+[RCL]          Undo／Redoを行なう
+
+●その他の操作
+
+・[CTRL]+Q [CTRL]+W     LCD幅⇔ユーザー指定幅切り換え
+・[CTRL]+Q [CTRL]+E     60Columns切り換え
+・[CTRL]+Q [CTRL]+D     ユーザー指定の画面幅を変更
+・[CTRL]+Q [CTRL]+I     タブ幅を変更
+・[CTRL]+Q [CTRL]+C     タブ／改行／EOF表示ON/OFF
+・[CTRL]+Q [CTRL]+[STO] タブを等価なスペースに変換
+・[CTRL]+K              指定桁数ごとに改行を挿入
+・[CTRL]+[=]            改行と引用符挿入
+・[CTRL]+Q [CTRL]+K     [CTRL]+K,[=]で改行を挿入する桁数を指定
+・[CTRL]+S              テキスト保存
+・[+/-]                 大文字⇔小文字入れ替え
+・[FSE]                 情報表示
+・[◆]（[MENU]の上）    ファンクションキー切り換え
+・[TITLE]               オートインデントモード切り換え
+・[CTRL]+Q [CTRL]+J     カーソル位置⇔選択開始位置
+・[SHIFT]+[MENU]        KALKUを起動する
+・[OFF]                 電源OFF
+・[MENU]/[BASIC]        メニューモードへ移行
+
+●メニューモード
+
+・[PF1]                 終了
+・[PF2]                 編集ファイル変更と保存
+・[PF3]                 別ファイルを挿入
+・[PF4]                 選択範囲を別ファイルへ書き出し
+・[PF5]                 プレファレンスへ移行
+・[MENU]/[BASIC]        編集モードに戻る
+
+●プレファレンス
+
+・[↑][↓]              上下の項目へ移動
+・[SPACE]/[←]/[→]     現在の項目のON/OFFを切り換え
+・[RETURN]              変更を有効にして抜ける
+・[MENU]/[BASIC]        変更を無効にして抜ける
+
+●1行入力時
+
+・[リターン]            入力を確定
+・[SHIFT]+[リターン]    検索・置換文字列の設定を行なって編集に戻る
+・[MENU]/[BASIC]        入力をキャンセル
+・[↓]                  前方検索開始
+・[↑]                  後方検索開始/過去に入力したファイル名呼び出し
+・[C･CE]/[CTRL]+Y       入力行を全てクリア
+
+
+
+* 
+* 
+* 
+* 
+* 
+* 
+
+★ ☆ Kid? h?h? ☆ ★ ● b?shikku LOADM" PANO": CALL& BD 000"[hensh? fairu-mei] [opushon] ● HMF PANO [hensh? fairu-mei] [opushon] ● opushon (n wa s?ji) - n shitei shita gy? bang? kara hensh? o kaishi - Wn y?z? shitei no gamen haba o shitei - Tn tabu no haba o shitei - S kontor?ruk?do o subete sakujo shite yomikomu - S 0 kontor?ruk?do o sakujo shinaide yomikomu - E EOF ($ 1 A) o mushi shite fairu no saigomade yomikomu - E 0 EOF de yomikomi o sh?ry? suru※ fairu-mei o sh?ryaku suruto shinki fairu no hensh? ni naru※ opushon wa fairu-mei no mae demo ka ★ ☆ tsukaikata ☆ ★ ● k?soru no id?[?][?] 1-gy? j?ge ni id?[?][?] 1 moji say? ni id?[CTRL]+[?] tekisuto no sent?, matsubi e id? [CTRL]+[?][SHIFT]+[?] butsuri gy? no sent?, matsubi e id? [SHIFT]+[?][SHIFT]+[?] 1 gamen j?ge ni id? [SHIFT]+[?] [SHIFT] + [shin] [SHIFT] + [yx][CTRL]+[?] 40-keta ika no baai, ronri gy? no sent?, matsubi e id? [CTRL]+[?] 41-keta ij? no baai, 1 gamen say? e id? [SHIFT]+[? HEX] [SHIFT] + [ln][? HEX],[ln] 1-keta say? ni sukur?ru[shin],[yx] 1-keta j?ge ni sukur?ru[CTRL] + Q [CTRL]+[?] ronri gy? no sent?, matsubi e id? [CTRL] + Q [CTRL]+[?][CTRL] + J shitei shita gy? bang? ni janpu ● moji no ny?ryoku sakujo[rit?n] kaigy? o s?ny?[SHIFT] + [rit?n] ji sage o sezu ni kaigy? o s?ny?[CTRL] + I/ [STO] tabu o s?ny?[EXP] kontor?ruk?do ny?ryoku[in] s?ny?/ uwagaki m?do kirikae[DEL] genzai no k?soru ichi no moji o sakujo[BS] hitotsu mae no moji o sakujo[CTRL] + E k?soru ichi kara kaigy? made sakujo[CTRL] + D ronri gy? no sent? kara k?soru ichi made sakujo[CTRL] + Y genzai k?soru no aru gy? o subete sakujo sentaku han'i o subete sakujo ● katto, kop?& p?suto[PF 3] han'i shitei o kaishi sentaku han'i o kop?[PF 4] sentaku han'i o katto[PF 5] sentaku han'i ni uwagaki shite p?suto sentaku han'i ga nakereba, k?soru ichi ni p?suto[C CE] han'i shitei o kyanseru ● kensaku[PF 1]/ [CTRL] + F kensaku mojiretsu ny?ryoku-go, kensaku[CTRL] + G zenp? sai kensaku[CTRL] + T k?h? sai kensaku ● chikan[PF 2] kensaku, chikan mojiretsu ny?ryoku-go, kensaku[CTRL] + Q [CTRL] + R chikan[CTRL]+[;] chikan-go, zenp? sai kensaku[CTRL]+[,] chikan-go, k?h? sai kensaku ● sukurappu kin?[CTRL] + n (n wa 0 ~ 9) t?roku sa reta mojiretsu o s?ny?[CTRL] + X [CTRL] + n mojiretsu o [CTRL] + n ni t?roku ● in'y? fu kin?[CTRL] + Q [CTRL] + n sentaku sa reta kakk? no sent? ni in'y? fu o s?ny?[CTRL]+[-] [CTRL] + n sentaku sa reta kakk? no sent? kara in'y? fu o sakujo[CTRL] + [in] sentaku han'i no 1-gy?-me no in'y? fu o kakugy? no sent? ni s?ny?[CTRL] + [BS] sentaku han'i no 1-gy?-me no in'y? fu o kakugy? no sent? kara sakujo ● Undo/ Redo[CTRL] + [RCL] Undo/ Redo o okonau ● sonohoka no s?sa[CTRL] + Q [CTRL] + W LCD haba ⇔ y?z? shitei haba kirikae[CTRL] + Q [CTRL] + E 60 Columns kirikae[CTRL] + Q [CTRL] + D y?z? shitei no gamen haba o henk?[CTRL] + Q [CTRL] + I tabu haba o henk?[CTRL] + Q [CTRL] + C tabu/ kaigy?/ EOF hy?ji ON/ OFF[CTRL] + Q [CTRL] + [STO] tabu o t?kana sup?su ni henkan[CTRL] + K shitei ketas?-goto ni kaigy? o s?ny?[CTRL]+[=] kaigy? to in'y? fu s?ny?[CTRL] + Q [CTRL] + K [CTRL] + K,[=] de kaigy? o s?ny? suru ketas? o shitei[CTRL] + S tekisuto hozon[+/-] daimonji ⇔ komoji irekae[FSE] j?h? hy?ji[◆]([MENU] no ue) fankushonk? kirikae[TITLE] ?toindentom?do kirikae[CTRL] + Q [CTRL] + J k?soru ichi ⇔ sentaku kaishi ichi[SHIFT] + [MENU] KALKU o kid? suru[OFF] dengen OFF[MENU]/ [b?shikku] meny?m?do e ik? ● meny?m?do[PF 1] sh?ry?[PF 2] hensh? fairu henk? to hozon[PF 3] betsu fairu o s?ny?[PF 4] sentaku han'i o betsu fairu e kakidashi[PF 5] purefarensu e ik?[MENU]/ [b?shikku] hensh? m?do ni modoru ● purefarensu[?][?] j?ge no k?moku e id?[SPACE]/[?]/[?] genzai no k?moku no ON/ OFF o kirikae[RETURN] henk? o y?k? ni shite nukeru[MENU]/ [b?shikku] henk? o muk? ni shite nukeru ● 1-gy? ny?ryoku-ji[rit?n] ny?ryoku o kakutei[SHIFT] + [rit?n] kensaku chikan mojiretsu no settei o okonatte hensh? ni modoru[MENU]/ [b?shikku] ny?ryoku o kyanseru[?] zenp? kensaku kaishi[?] k?h? kensaku kaishi/ kako ni ny?ryoku shita fairu-mei yobidashi[C CE]/ [CTRL] + Y ny?ryoku gy? o subete kuria
+Afficher plus
+3239/5000
+★ ☆ Comment d?marrer ☆ ★
+
+● BASIC
+LOADM "PANO": CALL & BD000 "[nom du fichier ?dit?] [option]
+
+● HMF
+PANO [modifier le nom du fichier] [option]
+
+● Option (n est un nombre)
+-N Commence la modification ? partir du num?ro de ligne sp?cifi?
+-Wn Sp?cifie la largeur d'?cran sp?cifi?e par l'utilisateur
+-Tn Sp?cifier la largeur de l'onglet
+-S Supprimer tous les codes de contr?le et charger
+-S0 Charger sans supprimer le code de contr?le
+-E Ignorer jusqu'? la fin du fichier, en ignorant EOF ($ 1A)
+-E0 Terminer la lecture avec EOF
+
+Si vous omettez le nom du fichier, vous allez ?diter un nouveau fichier.
+L'option est ?galement possible avant le nom du fichier
+
+
+★ ☆ Comment utiliser ☆ ★
+
+● D?placer le curseur
+
+・ [↑] [↓] D?place une ligne de haut en bas
+・ [←] [→] D?place un caract?re de gauche ? droite
+[CTRL] + [↑] Aller au d?but et ? la fin du texte
+[CTRL] + [↓]
+・ [SHIFT] + [←] Aller au d?but et ? la fin de la ligne physique
+[SHIFT] + [→]
+・ [SHIFT] + [↑] Permet de monter et descendre d'un ?cran
+[MAJ] + [↓]
+[SHIFT] + [p?ch?]
+[SHIFT] + [yx]
+・ [CTRL] + [←] Passe au d?but ou ? la fin de la ligne logique si elle comporte 40 chiffres ou moins.
+[CTRL] + [→] Se d?place vers la gauche et la droite d'un ?cran lorsque 41 chiffres ou plus
+[SHIFT] + [→ HEX]
+[MAJ] + [ln]
+・ [→ HEX], [ln] 1 chiffre ? gauche et ? droite
+・ [Sin], [yx] faire d?filer un chiffre vers le haut et le bas
+・ [CTRL] + Q [CTRL] + [←] Aller au d?but et ? la fin de la ligne logique
+[CTRL] + Q [CTRL] + [→]
+・ [CTRL] + J Aller au num?ro de ligne sp?cifi?
+
+● Entrer / supprimer des caract?res
+
+[Retour] Ins?rer un saut de ligne
+・ [SHIFT] + [Retour] Ins?rer un saut de ligne sans retrait
+Ins?rer les onglets [CTRL] + I / [STO]
+・ [EXP] saisie du code de commande
+・ [INS] Basculement en mode insertion / ?crasement
+・ [DEL] Supprime le caract?re ? la position actuelle du curseur
+・ [BS] efface le caract?re pr?c?dent
+・ [CTRL] + E Supprimer de la position du curseur pour changer de ligne
+[CTRL] + D Supprimer du d?but de la ligne logique jusqu'? la position du curseur
+・ [CTRL] + Y Supprimer toutes les lignes o? se trouve actuellement le curseur.
+????????????????????????Supprimer toute la s?lection
+
+● couper, copier et coller
+
+・ [PF3] Sp?cification de la plage de d?part
+????????????????????????Copier la s?lection
+・ [PF4] coupe la zone s?lectionn?e
+・ [PF5] Ecrase et colle la s?lection
+????????????????????????Coller ? la position du curseur s'il n'y a pas de s?lection
+Annuler la sp?cification de la plage [C ・ CE]
+
+● Rechercher
+
+・ [PF1] / [CTRL] + F Recherche apr?s la saisie de la cha?ne de recherche
+・ [CTRL] + G ? nouveau la recherche en aval
+・ [CTRL] + T Recherche en arri?re
+
+● remplacement
+
+・ [PF2] Recherche, recherche apr?s saisie de la cha?ne de remplacement
+Replacement [CTRL] + Q [CTRL] + R remplacement
+・ [CTRL] + [;] Apr?s la substitution, recherche ? nouveau
+・ [CTRL] + [,] Apr?s la substitution, recherche ? nouveau
+
+● fonction de rebut
+
+・ [CTRL] + n (n est compris entre 0 et 9) Ins?rer la cha?ne enregistr?e
+・ [CTRL] + X [CTRL] + n Enregistrer une cha?ne de caract?res sous le format [CTRL] + n
+
+● Fonction de cotation
+
+・ [CTRL] + Q [CTRL] + n Ins?rer un guillemet au d?but de chaque ligne s?lectionn?e
+[CTRL] + [-] [CTRL] + n Supprimer les guillemets au d?but de chaque ligne s?lectionn?e
+・ [CTRL] + [INS] Ins?re le guillemet de la premi?re ligne de la s?lection au d?but de chaque ligne.
+・ [CTRL] + [BS] Supprime le guillemet de la premi?re ligne de la s?lection au d?but de chaque ligne.
+
+● Annuler / R?tablir
+・ [CTRL] + [RCL] Ex?cuter undo / refaire
+
+● Autres op?rations
+
+・ [CTRL] + Q [CTRL] + W Largeur LCD LCD commutation de largeur sp?cifi?e par l'utilisateur
+・ [CTRL] + Q [CTRL] + E 60Commutation des colonnes
+・ [CTRL] + Q [CTRL] + D Modifier la largeur d'?cran sp?cifi?e par l'utilisateur
+・ [CTRL] + Q [CTRL] + je change la largeur de l'onglet
+・ [CTRL] + Q [CTRL] + C Onglet / saut de ligne / affichage EOF ON / OFF
+? Onglet [CTRL] + Q [CTRL] + [STO] convertis en espace ?quivalent
+[CTRL] + K Ins?re un saut de ligne pour chaque nombre d?sign? de chiffres
+[CTRL] + [=] Insertion de saut de ligne et de guillemet
+・ [CTRL] + Q [CTRL] + K [CTRL] + K, [=] sp?cifient le nombre de chiffres pour ins?rer un saut de ligne
+・ [CTRL] + S Enregistrer le texte
+・ [+/-] ?change en majuscules / minuscules
+・ Affichage d'informations [FSE]
+・ [◆] (ci-dessus [MENU]) changement de touche de fonction
+・ [TITLE] Changement de mode d'indentation automatique
+・ [CTRL] + Q [CTRL] + J position du curseur ⇔ position de d?part de la s?lection
+・ [SHIFT] + [MENU] D?marrer KALKU
+・ [OFF] ?teindre
+Passez en mode de menu [MENU] / [BASIC]
+
+● mode de menu
+
+・ [PF1] fin
+・ [PF2] Editer le changement de fichier et sauvegarder
+・ [PF3] Ins?rer un autre fichier
+・ [PF4] Exporter la zone s?lectionn?e dans un autre fichier
+・ D?placer vers les pr?f?rences [PF5]
+Revenir en mode d'?dition [MENU] / [BASIC]
+
+● Pr?f?rences
+
+・ [↑] [↓] Se d?placer vers les ?l?ments sup?rieur et inf?rieur
+・ [ESPACE] / [←] / [→] Activer / d?sactiver l'?l?ment actuel
+[RETURN] Activer les modifications et quitter
+・ [MENU] / [BASIC] D?sactiver le changement et quitter
+
+● en entrant 1 ligne
+
+・ [Retour] Confirmer la saisie
+・ [MAJ] + [Retour] D?finir la cha?ne de recherche / remplacement et revenir ? l'?dition
+Annuler l'entr?e [MENU] / [BASIC]
+・ [↓] D?but de la recherche directe
+・ []] D?but de la recherche en arri?re / Rappel du nom de fichier entr? dans le pass?
+・ [C ? CE] / [CTRL] + Y efface toutes les lignes d'entr?e
+
+

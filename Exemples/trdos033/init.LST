@@ -1,0 +1,101 @@
+000000                   	;--------------------------------------------------
+000000                   	;	DOS for PC-E500S  					Ver 0.33
+000000                   	;		(c)1990,1992   T.Kobayashi - JF ALBOUY
+000000                   	;
+000000                   	; INIT.ASM  						   04/12/2022
+000000                   	; 
+000000                   	; LOADM "F:INIT.OBJ"
+000000                   	; Installation par call &BF400
+000000                   	;
+000000                   	; A installer avec TRDOS.OBJ
+000000                   	;--------------------------------------------------
+000000                   	;--- Constantes -----------------------------------
+000000                   	CR:		equ $0d
+000000                   	LF:		equ $0a
+000000                   	EOF:	equ $1a
+000000                   	;---Mémoire interne ---
+000000                   	bl:	equ	0d4h
+000000                   	bh:	equ	0d5h
+000000                   	cl:	equ	0d6h
+000000                   	ch:	equ	0d7h
+000000                   	dl:	equ	0d8h
+000000                   	dh:	equ	0d9h
+000000                   	cx: equ 0d6h
+000000                   	;
+000000                   	;--- Routines ---
+000000                   	fcs_call:  equ	0fffe4h
+000000                   	iocs_call: equ	0fffe8h
+000000                   	;---------------------------------------------------
+000000                   	;
+0BF400                   		org	0bf400h
+0BF400                   	;
+0BF400                   		pre_on
+0BF400                   	;
+0BF400                   	;--------------------------------------------------
+0BF400                   	;			Parcours ligne de commande
+0BF400                   	;
+0BF400                   	;--------------------------------------------------
+0BF400 3C                	start: 	popu x						;récupérer adresse ligne de commande
+0BF401 2C                			pushu x						;sauvegarder pour retour de la routine
+0BF402 90 04             	st1:	mv a,[x]					;lire le caractère en cours
+0BF404 60 3A             			cmp a,':'	
+0BF406 18 1C             			jrz st2						;saut si trouvé ':'
+0BF408 60 22             			cmp a, '""'					
+0BF40A 19 0A             			jrz st1						;saut si trouvé "
+0BF40C 60 0D             			cmp a,CR
+0BF40E 1B 0E             			jrnz st1					;boucler tant que non fin de ligne
+0BF410                   			;erreur dans la ligne de commande
+0BF410 09 04             	st11:	mv il,4						;écriture un bloc dans un fichier
+0BF412 30 CC D6 00       			mv (cx),00h					;file handle
+0BF416 0C 76 F4 0B       			mv x,data					;adresse de la chaine à afficher
+0BF41A 0D 10 00 00       			mv y,16						;commpteur, 16 caractères pour le file name	
+0BF41E 05 E4 FF 0F       			callf fcs_call				;5 bits / Drive name + 8 bits / file name + 3 bits / extension
+0BF422 97                			sc
+0BF423 07                			retf
+0BF424                   			
+0BF424 3C                	st2:	popu x						;adresse de la ligne de commande
+0BF425 0D 86 F4 0B       			mv y,endprg					;addresse de fin de programme
+0BF429 09 06             			mv il,6						;écriture un bit dans le fichier
+0BF42B 90 24             	st3:	mv a,[x++]					;lire un caractère de la ligne de commande
+0BF42D 60 20             			cmp a,' '
+0BF42F 19 06             			jrz st3						;boucler tant que SPACE
+0BF431 60 22             			cmp a,'""'
+0BF433 19 0A             			jrz st3						;boucler tant que "
+0BF435 60 3A             			cmp a,':'
+0BF437 18 0C             			jrz st4						;saut si lecture drive
+0BF439 B0 25             			mv [y++],a					;copie du caractère dans le buffer
+0BF43B 7C 01             			dec il						;décrémenter le compteur
+0BF43D 1B 14             			jrnz st3					;boucler tant que non NUL
+0BF43F 90 24             			mv a,[x++]					;lire ":" après DRIVE
+0BF441 60 3A             			cmp a,':'
+0BF443 1A 00             			jrnz st4
+0BF445 B0 25             	st4:	mv [y++],a					;copie le caractère ':' dans le buffer
+0BF447 08 00             			mv a,0
+0BF449 B0 25             			mv [y++],a 					;copie du zéro terminal
+0BF44B B4 37             			mv [--s],x					;empilement dans la pile système
+0BF44D 90 24             	st5:	mv a,[x++]
+0BF44F 60 22             			cmp a, '""'
+0BF451 18 0A             			jrz st7						;boucler tant que "
+0BF453 60 0D             			cmp a,CR
+0BF455 18 04             			jrz st6						;saut si fin de ligne
+0BF457 60 00             			cmp a,0
+0BF459 1B 0E             			jrnz st5					;boucler tant que non NUL
+0BF45B 7C 04             	st6:	dec x						;adresse de fin de chaine
+0BF45D 2C                	st7:	pushu x						;sauvegarde l'addresse
+0BF45E 0B 00 00          			mv i,0						;création du fichier
+0BF461 0C 86 F4 0B       			mv x,endprg					;adresse du file name
+0BF465 05 E8 FF 0F       			callf iocs_call			
+0BF469 94 27             			mv x,[s++]					;dépiler l'adresse de la fin de chaine 
+0BF46B 1D 5D             			jrc st11					;boucler en début de programme
+0BF46D 0B 3F 00          			mv i,$3f					;formating LCD driver
+0BF470 05 E8 FF 0F       			callf iocs_call
+0BF474 9F                			rc
+0BF475 07                			retf
+0BF476                   	;
+0BF476 42 61 64 20 64 72 	data:	db 'Bad drive name',CR,LF
+0BF47C 69 76 65 20 6E 61 	
+0BF482 6D 65 0D 0A       	
+0BF486                   	endprg:	
+0BF486                   			end
+
+  No fatal error.  Code: 0BF400h - 0BF485h [      134 byte(s)]

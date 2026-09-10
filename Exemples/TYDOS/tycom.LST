@@ -1,0 +1,1244 @@
+000000                   	;---------------------------------------------
+000000                   	;	tycom.asm   for PC-E500s  Ver 1.0
+000000                   	;	Jean-François Albouy	12/06/2019
+000000                   	;---------------------------------------------
+000000                   	;
+000000                   	;=== Variables et constantes =============================================
+000000                   	;-Constantes -----------
+000000                   	CR:		equ $0d
+000000                   	LF:		equ $0a
+000000                   	EOF:	equ $1a
+000000                   	;-----------------------
+000000                   	;
+000000                   	;-Mémoire interne ------
+000000                   	src_work:	equ	$00
+000000                   	p_kbd:		equ $01			;adresse
+000000                   	p_kbdend:	equ $04			;adresse
+000000                   	;			equ $07			;valeur 8 bits ou adresse
+000000                   	p_filehdle:	equ $08			;file handle
+000000                   	;			equ $0d			;valeur 8 ou 16 bits
+000000                   	;			equ $0f			;adresse, $0601, $be7b6
+000000                   	;			equ $13			;directory number : 0,1,2,4,8,16; 4 = fin de programme
+000000                   	;			equ $14			;0,1,2
+000000                   	p_flag:		equ $15
+000000                   	stack_u:	equ $18
+000000                   	stack_s:	equ $1b
+000000                   	;			equ $1e
+000000                   	;			equ $1f			;DEL=$0100,TYPE ou MAKE=$0101,REN ou COPY=$0201
+000000                   	token:		equ $21			;'P'=1, 'W'=2, 'N'=4, ' '=0
+000000                   	;
+000000                   	bl:			equ	$d4
+000000                   	bh:			equ	$d5
+000000                   	bx:			equ	$d4
+000000                   	cl:			equ	$d6
+000000                   	ch:			equ	$d7
+000000                   	cx:			equ	$d6
+000000                   	dl:			equ	$d8
+000000                   	dh:			equ	$d9
+000000                   	dx:			equ	$d8
+000000                   	si:			equ	$da
+000000                   	di:			equ	$dd
+000000                   	;
+000000                   	scr:		equ $fd
+000000                   	;-----------------------
+000000                   	;
+000000                   	;- Touches -------------
+000000                   	key_ctrlc:	equ $03
+000000                   	key_basic:	equ $05
+000000                   	key_BS:		equ	$08
+000000                   	key_cce:	equ $0c
+000000                   	key_right:	equ $1c
+000000                   	key_left:	equ	$1d
+000000                   	key_up:		equ $1e
+000000                   	;
+000000                   	;- Mémoire programme ---
+000000                   	bufferkbd1:		equ begin - $473	;0be38dh - 1024 octets
+000000                   	bufferkbd2:		equ begin - $72		;0be78eh - 19 bits
+000000                   	string1:		equ begin - $5e		;0be7a2h - 19 bits 
+000000                   	filename1:		equ begin - $4a		;0be7b6h - 19 bits
+000000                   	adresse1:		equ begin - $36		;0be7cah - 14 bits
+000000                   	filename2:		equ begin - $28		;0be7d8h - 6 bits
+000000                   	filename3:		equ begin - $22		;0be7deh - 14 bits
+000000                   	filename4:		equ begin - $14		;0be7ech - 6 bits
+000000                   	string2:		equ begin - $0e		;0be7f2h - 12 bits	
+000000                   	adresse2:		equ begin - 2		;0be7feh - 2 bits
+000000                   	;
+000000                   	ptr_str:	equ 0bfbebh
+000000                   	ptr_kbd:	equ 0bfbeeh
+000000                   	ptr_flag:	equ 0bfbf1h
+000000                   	ptr_iocs:	equ 0bfbf4h
+000000                   	ptr_fcs:	equ 0bfbf8h
+000000                   	ptr_runil:	equ 0bfbfch
+000000                   	;-----------------------
+000000                   	;
+000000                   	;- Mémoire externe -----
+000000                   	defdrv: 	equ 0bfc7dh
+000000                   	csrx:		equ 0bfc9bh
+000000                   	csry:		equ 0bfc9ch
+000000                   	lcd_width:	equ 0bfc9dh
+000000                   	lcd_heigh:	equ 0bfc9eh
+000000                   	softint:	equ 0bfcbeh
+000000                   	usrwrk:		equ 0bfd1ah
+000000                   	fcs_call:	equ	0fffe4h
+000000                   	iocs_call:	equ	0fffe8h
+000000                   	;-----------------------
+000000                   	;
+000000                   	;==== Fin variables et constantes========================================
+000000                   	;
+0BE800                   		org	0be800h
+0BE800                   	;
+0BE800                   		pre_on
+0BE800                   	;
+0BE800                   	;=== Main ===============================================================
+0BE800                   	;- Initialisation de la zone mémoire ------------------------------------
+0BE800 30 80 EC          	begin:	mv a,($ec)							;lecture de BP
+0BE803 28                			pushu a								;sauvegarde de BP sur la pile
+0BE804 30 CC EC 60       			mv ($ec),$60						;nouvelle valeur pour BP
+0BE808 A6 18             			mv (bp+stack_u),u					;sauvegarde de la pile utilisateur
+0BE80A A7 1B             			mv (bp+stack_s),s					;sauvegarde de la pile système
+0BE80C CC 13 00          			mv (bp+$13),0						;initialisation
+0BE80F D2 15 F1 FB 0B    			mvp (bp+p_flag),[ptr_flag]			;$bfb6f
+0BE814 04 58 F0          			call endkbd							;calcule la fin de buffer clavier
+0BE817 98 00 15          			mv a, [(bp+p_flag)]					;flag
+0BE81A 64 01             			test a,1							;
+0BE81C 1A 21             			jrnz _be83f							;saut si ex-tycom.sys déjà exécuté => a=1
+0BE81E 85 01             			mv y,(bp+p_kbd)						;début adresse buffer clavier
+0BE820                   	;
+0BE820                   	;--- Copie de CR + LF dans le buffer clavier ---
+0BE820 08 0D             	_be820:	mv a,CR								;remplissage du buffer avec CR
+0BE822 B0 25             			mv [y++],a
+0BE824 D7 05 04          			cmpp (bp+p_kbdend),y
+0BE827 1F 09             			jrnc _be820							;boucler jusqu'à la fin du buffer
+0BE829                   	;
+0BE829 0C 55 F1 0B       			mv x,tycom_tle						;adresse du titre "tycom.sys"
+0BE82D 04 4C F0          			call wrtScrn						;affichage de la chaine
+0BE830 04 E7 F0          	_be830:	call close_allfiles					;close all file handle
+0BE833 08 0B             			mv a,$0b							;flag execution tycom.sys
+0BE835 B8 80 15 0A       			mv [(bp+p_flag)+10],a 				;sauvegarde de la valeur
+0BE839 08 01             			mv a,1				
+0BE83B B8 80 15 0B       	_be83b:	mv [(bp+p_flag)+11],a 				;file handle = KEYBD
+0BE83F 71 13 EF          	_be83f:	and (bp+$13),$ef
+0BE842 08 1A             			mv a,EOF
+0BE844 04 5F E9          			call wrtByteScrn					;écriture d'un bit à l'écran
+0BE847 04 01 F1          			call OpenSCRN_KYBD					;open SCRN et KYBD
+0BE84A 98 00 15          			mv a, [(BP+p_flag)]					;lecture du flag
+0BE84D 64 01             			test a,1
+0BE84F 18 08             			jrz _be859							;saut si première exécution
+0BE851 04 D5 F0          			call fullmark						;affichage curseur
+0BE854 04 86 F0          			call cmdline						;affichage invite de commande
+0BE857 12 19             			jr check_scrut						;traitement fin de programme
+0BE859                   	;
+0BE859 78 01             	_be859:	or a,1								;set le flag tycom = 1
+0BE85B B8 00 15          			mv [(BP+p_flag)],a 
+0BE85E 79 13 10          			or (BP+13h),10h
+0BE861 04 68 F0          			call _bf068							;calcule adresse fin buffer claver
+0BE864                   	;
+0BE864                   	;--- recopie texte "AUTOEXEC" ---
+0BE864 0C C9 F1 0B       			mv x,auto_tle						;adresse du texte de 'AUTOEXEC'		
+0BE868 90 24             	_be868:	mv a,[x++]							;lire un caractère
+0BE86A 60 00             			cmp a,0
+0BE86C 18 54             			jrz _be8c2							;saut si fin de chaine
+0BE86E B0 25             			mv [y++],a 							;sinon copier la valeur
+0BE870 13 0A             			jr _be868							;boucler la lecture de la chaine
+0BE872                   	;
+0BE872                   	check_scrut:								;_be872
+0BE872 65 13 04          			test (bp+$13),4						
+0BE875 18 0B             			jrz _be882
+0BE877 98 00 15          			mv a, [(BP+p_flag)]					;lecture flag
+0BE87A 78 02             			or a,2								;modification du flag
+0BE87C B8 00 15          			mv [(BP+p_flag)],a 					;sauvegarde de la nouvelle valeur
+0BE87F 02 A0 F0          			jp exit_tycom						;exit tycom
+0BE882                   	;---Fin initialisation --------------------------------------------------------		
+0BE882                   	;
+0BE882                   	;--- Routines -----------------------------------------------------------------
+0BE882 04 47 E9          	_be882:	call read_byte						;lecture clavier
+0BE885 60 00             			cmp a,0
+0BE887 1A 0C             			jrnz _be895							;saut si valeur sur 2 bits
+0BE889 04 47 E9          			call read_byte						;lecture clavier
+0BE88C 60 05             			cmp a,key_basic						;touche BASIC
+0BE88E 1B 1E             			jrnz check_scrut					;saut si différent de BASIC
+0BE890 79 13 04          			or (bp+$13),4
+0BE893 13 23             			jr check_scrut						;traitement fin de programme
+0BE895                   	;
+0BE895 60 0A             	_be895:	cmp a,10							;touche CTRL + P 
+0BE897 19 27             			jrz check_scrut						;traitement fin de programme
+0BE899 60 1A             			cmp a,EOF							;touche CTRL + Z
+0BE89B 1A 21             			jrnz _be8be							;saut si différent de EOF
+0BE89D 98 80 15 0A       			mv a,[(bp+p_flag)+10]				;flag d'exécution de tycom
+0BE8A1 60 0B             			cmp a,$0b							;touche CTRL + Q
+0BE8A3 18 17             			jrz _be8bc							;saut si égal
+0BE8A5 84 15             			mv x,(bp+p_flag)		
+0BE8A7 45 40             			add x,a
+0BE8A9 91 24             			mv il,[x++]							;lecture file handle
+0BE8AB 7C 00             			dec a 								
+0BE8AD B8 80 15 0A       			mv [(bp+p_flag)+10],a 				;sauvegarde nouveau flag de tycom
+0BE8B1 30 A1 D6          			mv (cl),il 							;file handle
+0BE8B4 09 02             			mv il,2								;closing a file
+0BE8B6 04 B4 F0          			call fcs_err						;appel FCS-traitement-erreur
+0BE8B9 04 68 F0          			call _bf068							;calcule fin buffer clavier
+0BE8BC 13 4C             	_be8bc:	jr check_scrut						;traitement fin de programme
+0BE8BE                   	;
+0BE8BE 60 0D             	_be8be:	cmp a,CR
+0BE8C0 1A 06             			jrnz _be8c8							;saut si différent de CR
+0BE8C2                   	;
+0BE8C2                   	_be8c2:										
+0BE8C2 04 D9 F0          			call curoff							;effacement curseur
+0BE8C5 02 70 E9          			jp _be970							;traitement saisie clavier
+0BE8C8                   	;
+0BE8C8 60 03             	_be8c8:	cmp a,key_ctrlc						;touche CTRL + C
+0BE8CA 19 5A             			jrz check_scrut						;traitement fin de programme
+0BE8CC 60 0C             			cmp a,key_cce						;touche C-CE
+0BE8CE 1A 08             			jrnz _be8d8							;saut si différent
+0BE8D0 04 5F E9          			call wrtByteScrn					;write a byte
+0BE8D3 04 86 F0          			call cmdline						;affichage invite de commande
+0BE8D6 13 66             			jr check_scrut						;traitement fin de programme
+0BE8D8 60 08             	_be8d8:	cmp a,key_BS						;touche BS
+0BE8DA 18 04             			jrz _be8e0							;saut si égal
+0BE8DC 60 1D             			cmp a,key_left						;touche Flèche Gauche
+0BE8DE 1A 2E             			jrnz _be90e							;saut si différent
+0BE8E0 D7 05 01          	_be8e0:	cmpp (bp+p_kbd),y					;saut si fin buffer clavier atteint
+0BE8E3 18 2D             			jrz _be912
+0BE8E5 7C 05             			dec y
+0BE8E7 88 9B FC 0B       			mv a,[csrx]							;lecture position du curseur
+0BE8EB 60 00             			cmp a,0								;comparaison à l'origine
+0BE8ED 18 12             			jrz _be901							;saut si zéro
+0BE8EF 89 9D FC 0B       			mv il,[lcd_width]
+0BE8F3 4E 01             			sub a,il
+0BE8F5 08 08             			mv a,8
+0BE8F7 1E 05             			jrnc _be8fe							;saut si curseur > colonne max écran
+0BE8F9 04 5F E9          			call wrtByteScrn					;write a byte
+0BE8FC 13 8C             			jr check_scrut						;traitement fin de programme
+0BE8FE 04 5F E9          	_be8fe:	call wrtByteScrn					;write a byte
+0BE901 04 31 E9          	_be901:	call _be931							;idem flèche gauche
+0BE904 08 20             			mv a,' '
+0BE906 04 5F E9          			call wrtByteScrn					;write a byte
+0BE909 04 31 E9          			call _be931							;idem flèche haute
+0BE90C 13 9C             			jr check_scrut						;traitement fin de programme
+0BE90E                   	;
+0BE90E 60 01             	_be90e:	cmp a,1
+0BE910 1A 0F             			jrnz _be921
+0BE912 90 25             	_be912:	mv a,[y++]
+0BE914 60 0D             			cmp a,CR
+0BE916 18 05             			jrz _be91d
+0BE918 04 5F E9          			call wrtByteScrn					;write a byte
+0BE91B 13 0B             			jr _be912
+0BE91D 7C 05             	_be91d:	dec y
+0BE91F 13 AF             			jr check_scrut						;traitement fin de programme
+0BE921 60 20             	_be921:	cmp a,' '
+0BE923 1D B3             			jrc check_scrut						;traitement fin de programme
+0BE925 D7 05 04          			cmpp (bp+p_kbdend),y
+0BE928 19 B8             			jrz check_scrut						;traitement fin de programme
+0BE92A B0 25             			mv [y++],a 							;sauvegarde du caractère
+0BE92C 04 5F E9          			call wrtByteScrn					;write a byte
+0BE92F 13 BF             			jr check_scrut						;traitement fin de programme
+0BE931                   	;
+0BE931 08 1E             	_be931:	mv a,key_up							;touche 'fleche haute'
+0BE933 04 5F E9          			call wrtByteScrn					;write a byte
+0BE936 D0 07 9D FC 0B    			mv (bp+7),[lcd_width]
+0BE93B 7D 07             	_be93b:	dec (bp+7)
+0BE93D 18 07             			jrz _be946
+0BE93F 08 1C             			mv a,key_right						;touche 'fleche droite'
+0BE941 04 5F E9          			call wrtByteScrn					;write a byte
+0BE944 13 0B             			jr _be93b
+0BE946 06                	_be946:	ret
+0BE947                   	;
+0BE947                   	;--- Lecture entrée ---
+0BE947                   	read_byte:
+0BE947 98 80 15 0A       			mv a,[(bp+p_flag)+10]
+0BE94B 84 15             			mv x,(bp+p_flag)
+0BE94D 45 40             			add x,a
+0BE94F 90 24             			mv a,[x++]							;a = file handle
+0BE951 30 A0 D6          	_be951:	mv (cl),a							;sauver dans le registre
+0BE954 09 05             			mv il,5								;appel de la fonction
+0BE956 08 01             			mv a,1								;lecture jusqu'à la fin physique
+0BE958 02 B4 F0          			jp fcs_err							;appel FCS-traitement-erreur
+0BE95B                   	;
+0BE95B                   	;--- Reading a byte from the keyb ---
+0BE95B                   	_be95b:	
+0BE95B 08 01             			mv a,1								;file handle clavier
+0BE95D 13 0E             			jr _be951
+0BE95F                   	;
+0BE95F                   	;--- Write a byte on the screen ---
+0BE95F                   	wrtByteScrn:	
+0BE95F 09 06             			mv il,6								;_be95f
+0BE961 30 CC D6 00       			mv (cl),0							;file handle SCRN
+0BE965 02 BC F0          			jp fcs_spl
+0BE968                   	;
+0BE968                   	;--- Close a file ---
+0BE968                   	closeFile:	
+0BE968 30 A0 D6          			mv (cl),a							;file handle, _be968
+0BE96B 09 02             			mv il,2								;close a file
+0BE96D 02 C1 F0          			jp test_int
+0BE970                   	;
+0BE970 98 00 15          	_be970:	mv a, [(BP+p_flag)]					;lecture du flag
+0BE973 70 F3             			and a,$f3							;modification du flag
+0BE975 B8 00 15          			mv [(bp+p_flag)],a 					;sauvegarde de la nouvelle valeur
+0BE978 2D                			pushu y								;empiler l'adresse du ptr clavier en cours
+0BE979                   	;
+0BE979                   	;--- Copie de CR dans le buffer clavier ---
+0BE979 08 0D             	_be979:	mv a,CR
+0BE97B B0 25             			mv [y++],a 
+0BE97D D7 05 04          			cmpp (bp+p_kbdend),y
+0BE980 1F 09             			jrnc _be979							;boucler tant que la fin n'est pas atteinte
+0BE982                   	;
+0BE982 3D                			popu y								;dépiler ptr clavier
+0BE983 04 3E F1          			call wrtCRLF						;copie CR + LF
+0BE986 90 35             			mv a,[--y]							;se postionner sur le dernier caractère
+0BE988 60 3A             			cmp a,':'
+0BE98A 1A 5C             			jrnz _be9e8							;saut si différent de ':'
+0BE98C 84 01             			mv x,(bp+p_kbd)						;lire l'adresse du buffer clavier
+0BE98E 90 24             	_be98e:	mv a,[x++]							;lire la valeur
+0BE990 60 0D             			cmp a,CR							;comparer à CR
+0BE992 18 06             			jrz _be99a							;saut si égal
+0BE994 60 21             			cmp a,' '+1
+0BE996 1C 50             			jrc _be9e8							;lecture buffer clavier
+0BE998 13 0C             			jr _be98e							;sinon boucler
+0BE99A                   	;
+0BE99A 84 01             	_be99a:	mv x,(bp+p_kbd)						;adresse du kybd buffer
+0BE99C 0D EC E7 0B       			mv y,filename4						;adresse du device par défaut
+0BE9A0 09 06             			mv il,6								;nombre de caractères du device par défaut
+0BE9A2 7C 01             	_be9a2:	dec il								;décrémenter 
+0BE9A4 18 42             			jrz _be9e8
+0BE9A6 90 24             			mv a,[x++]							;lire la valeur
+0BE9A8 B0 25             			mv [y++],a 							;la copier
+0BE9AA 60 3A             			cmp a,':'							;marqueur de fin
+0BE9AC 1B 0C             			jrnz _be9a2							;boucler tant que non lu
+0BE9AE 08 00             			mv a,0								;caractère terminal
+0BE9B0 B0 25             			mv [y++],a 							;finir la chaine par un zéro terminal
+0BE9B2                   	;
+0BE9B2                   	;--- lecture buffer clavier dans tydos.sys ---
+0BE9B2 0C EC E7 0B       			mv x,filename4							
+0BE9B6 0D D8 E7 0B       			mv y,filename2
+0BE9BA 09 02             			mv il,2
+0BE9BC 05 FC FB 0B       			callf ptr_runil
+0BE9C0                   	;
+0BE9C0                   	;--- recherche de fichiers ---
+0BE9C0 0C D8 E7 0B       			mv x,filename2						;lead address of file name character string to be searched
+0BE9C4 09 0C             			mv il,12							;searching for corresponding file name
+0BE9C6 08 00             			mv a,0								;search for the back of the direction number
+0BE9C8 30 CD D4 00 00    			mvw (bx),0							;directory number to start searching
+0BE9CD 0D EC E7 0B       			mv y,filename4						;lead address to return the result
+0BE9D1 04 B4 F0          			call fcs_err						;appel FCS-traitement-erreur
+0BE9D4 0C EC E7 0B       			mv x,filename4						;lead address of file name character string	
+0BE9D8 0D 7D FC 0B       			mv y,defdrv							;drive name par défaut
+0BE9DC 09 06             			mv il,6								;nombre de caractère du drive name
+0BE9DE 90 24             	_be9de:	mv a,[x++]							;lire la valeur
+0BE9E0 B0 25             			mv [y++],a							;la recopier
+0BE9E2 7C 01             			dec il								;décrémenter le compteur
+0BE9E4 1B 08             			jrnz _be9de							;boucler tant que non zéro
+0BE9E6 12 CA             			jr _beab2							;jp $be83f
+0BE9E8                   	;
+0BE9E8                   	;--- lecture buffer clavier dans tydos.sys ---
+0BE9E8 84 01             	_be9e8:	mv x,(bp+p_kbd)						;kybd
+0BE9EA 0D EC E7 0B       			mv y,filename4						;lead address of file name character string	
+0BE9EE 09 02             			mv il,2
+0BE9F0 05 FC FB 0B       			callf ptr_runil
+0BE9F4 BC 80 15 01       			mv [(bp+p_flag)+1],x				;sauver kbd_next
+0BE9F8 1C B8             			jrc _beab2							;jp $be83f
+0BE9FA 60 00             			cmp a,0
+0BE9FC 18 B4             			jrz _beab2							;jp $be83f
+0BE9FE                   	;
+0BE9FE                   	;---Recopie chaine ---
+0BE9FE 0C F2 E7 0B       			mv x,string2						;adresse de la chaine
+0BEA02 0D CA E7 0B       			mv y,adresse1
+0BEA06 90 24             	_bea06:	mv a,[x++]							;copie des caractères
+0BEA08 B0 25             			mv [y++],a
+0BEA0A 60 00             			cmp a,0
+0BEA0C 1B 08             			jrnz _bea06							;boucler tant que a est différent de zéro
+0BEA0E                   	;
+0BEA0E CC 00 FF          			mv (bp+src_work),255				;positionner le flag
+0BEA11 04 6E EB          			call check_instr					;lecture des instructions
+0BEA14 1C 0F             			jrc _bea25
+0BEA16                   	;
+0BEA16                   	;--- Opening a file ---
+0BEA16 09 01             			mv il,1
+0BEA18 08 01             			mv a,1
+0BEA1A 0C EC E7 0B       			mv x,filename4						;lead address of file name character string	
+0BEA1E 04 B4 F0          			call fcs_err						;appel FCS-traitement-erreur
+0BEA21 22 C8 00 D6       			mv (bp+src_work),(cl)				;sauvegarde File handle
+0BEA25 F2 80 07 15 01    	_bea25:	mvp (bp+7),[(bp+p_flag)+1]
+0BEA2A                   	;
+0BEA2A                   	;--- Lecture buffer clavier dans tydos.sys ---
+0BEA2A 84 07             	_bea2a:	mv x,(bp+7)
+0BEA2C 09 02             			mv il,2
+0BEA2E 0D EC E7 0B       			mv y,filename4						;lead address of file name character string	
+0BEA32 05 FC FB 0B       			callf ptr_runil
+0BEA36 A4 07             			mv (bp+7),x							;sauvegarde de kbd_next
+0BEA38 1C 3C             			jrc _bea76
+0BEA3A 60 02             			cmp a,2
+0BEA3C 1D 14             			jrc _bea2a
+0BEA3E 60 03             			cmp a,3
+0BEA40 18 1A             			jrz _bea5c
+0BEA42 08 01             			mv a,1
+0BEA44 04 68 E9          			call closeFile
+0BEA47 09 01             			mv il,1
+0BEA49 08 01             			mv a,1
+0BEA4B 0C EC E7 0B       			mv x,filename4						;lead address of file name character string	
+0BEA4F 04 B4 F0          			call fcs_err						;appel FCS-traitement-erreur
+0BEA52 98 00 15          			mv a, [(BP+p_flag)]
+0BEA55 78 08             			or a,8
+0BEA57 B8 00 15          			mv [(bp+p_flag)],a
+0BEA5A 13 32             			jr _bea2a
+0BEA5C                   	;
+0BEA5C                   	;--- Creating a file ---
+0BEA5C 08 00             	_bea5c:	mv a,0
+0BEA5E 04 68 E9          			call closeFile						;close file SCRN
+0BEA61 09 00             			mv il,0
+0BEA63 08 00             			mv a,0
+0BEA65 0C EC E7 0B       			mv x,filename4						;lead address of file name character string	
+0BEA69 04 B4 F0          			call fcs_err						;appel FCS-traitement-erreur
+0BEA6C 98 00 15          			mv a, [(BP+p_flag)]					;lecture du flag
+0BEA6F 78 04             			or a,4								;modification du flag
+0BEA71 B8 00 15          			mv [(bp+p_flag)],a					;sauvegarde du flag
+0BEA74 13 4C             			jr _bea2a							;boucler lecture buffer clavier
+0BEA76                   	;
+0BEA76 04 E2 EA          	_bea76:	call _beae2							;lecture des instructions
+0BEA79 1C 37             			jrc _beab2							;jp $be83f
+0BEA7B 80 00             			mv a,(bp+src_work)
+0BEA7D 09 01             			mv il,1								;lecture fichier tycom.sys
+0BEA7F 05 FC FB 0B       			callf ptr_runil
+0BEA83 60 00             			cmp a,0
+0BEA85 18 31             			jrz _beab8
+0BEA87                   	;
+0BEA87 A4 07             			mv (bp+7),x
+0BEA89 A5 0F             			mv (bp+15),y
+0BEA8B 45 54             			add y,x
+0BEA8D 2D                			pushu y
+0BEA8E 09 04             			mv il,4								;calcule buffer IOCS
+0BEA90 05 FC FB 0B       			callf ptr_runil
+0BEA94 D7 04 07          			cmpp (bp+7),x
+0BEA97 1C 1C             			jrc _beab5
+0BEA99 3D                			popu y
+0BEA9A 7C 05             			dec y
+0BEA9C 09 05             			mv il,5								;calcule adresse tycom.sys
+0BEA9E 05 FC FB 0B       			callf ptr_runil
+0BEAA2 4D 45             			sub x,y
+0BEAA4 1C 0F             			jrc _beab5
+0BEAA6 84 07             			mv x,(bp+7)
+0BEAA8 85 07             			mv y,(bp+7)
+0BEAAA 80 00             			mv a,(bp+src_work)
+0BEAAC 09 03             			mv il,3								;exécution de tycom.sys
+0BEAAE 05 FC FB 0B       			callf ptr_runil
+0BEAB2 02 3F E8          	_beab2:	jp _be83f
+0BEAB5 02 1A F1          	_beab5: jp exit_cmd
+0BEAB8                   	;
+0BEAB8 30 C8 D6 00       	_beab8:	mv (cl),(bp+src_work)
+0BEABC 30 DC DA 00 00 00 			mvp (si),0
+0BEAC2 09 09             			mv il,9								;moving a file ptr
+0BEAC4 08 00             			mv a,0
+0BEAC6 04 B4 F0          			call fcs_err						;appel FCS-traitement-erreur
+0BEAC9 98 80 15 0A       			mv a,[(bp+p_flag)+10]
+0BEACD 60 0F             			cmp a,15
+0BEACF 18 0E             			jrz _beadf
+0BEAD1 84 15             			mv x,(bp+p_flag)
+0BEAD3 6C 00             			inc a
+0BEAD5 45 40             			add x,a 
+0BEAD7 B8 80 15 0A       			mv [(bp+p_flag)+10],a
+0BEADB 80 00             			mv a,(bp+src_work)
+0BEADD B0 04             			mv [x],a 
+0BEADF 02 3F E8          	_beadf:	jp _be83f
+0BEAE2                   	;
+0BEAE2                   	;--- Lecture des instructions ---
+0BEAE2 79 13 08          	_beae2:	or (bp+$13),8						;nombre d'instructions à lire
+0BEAE5 04 6E EB          			call check_instr					;lecture des instructions
+0BEAE8 1E 4C             			jrnc _beb36
+0BEAEA 7D 07             			dec (bp+7)							;décrémenter le compteur
+0BEAEC 1A 05             			jrnz _beaf3
+0BEAEE 79 13 04          			or (bp+$13),4						;instructions BASIC
+0BEAF1 12 41             			jr _beb34
+0BEAF3 7D 07             	_beaf3:	dec (bp+7)							;décrémenter le compteur
+0BEAF5 1A 05             			jrnz _beafc				
+0BEAF7 04 2A EC          			call DIR_instr						;instruction DIR
+0BEAFA 12 38             			jr _beb34
+0BEAFC 7D 07             	_beafc:	dec (bp+7)							;décrémenter le compteur
+0BEAFE 1A 05             			jrnz _beb05
+0BEB00 04 8F EE          			call COPY_instr						;instruction COPY
+0BEB03 12 2F             			jr _beb34
+0BEB05 7D 07             	_beb05:	dec (bp+7)							;décrémenter le compteur
+0BEB07 1A 05             			jrnz _beb0e
+0BEB09 04 B9 ED          			call TYPE_instr						;instruction TYPE
+0BEB0C 12 26             			jr _beb34
+0BEB0E 7D 07             	_beb0e:	dec (bp+7)							;décrémenter le compteur
+0BEB10 1A 05             			jrnz _beb17
+0BEB12 04 E7 EF          			call DEL_instr						;instruction DEL
+0BEB15 12 1D             			jr _beb34
+0BEB17 7D 07             	_beb17:	dec (bp+7)							;décrémenter le compteur
+0BEB19 1A 05             			jrnz _beb20
+0BEB1B 04 63 EE          			call REN_instr						;instruction REN
+0BEB1E 12 14             			jr _beb34
+0BEB20 7D 07             	_beb20:	dec (bp+7)							;décrémenter le compteur
+0BEB22 1A 07             			jrnz _beb2b
+0BEB24 08 0C             			mv a,12								;instruction C-CE
+0BEB26 04 5F E9          			call wrtByteScrn					;write a byte
+0BEB29 12 09             			jr _beb34
+0BEB2B 7D 07             	_beb2b:	dec (bp+7)							;décrémenter le compteur
+0BEB2D 1A 05             			jrnz _beb34
+0BEB2F 04 80 EF          			call MAKE_instr						;instruction MAKE
+0BEB32 12 00             			jr _beb34
+0BEB34 97                	_beb34:	sc
+0BEB35 06                	_beb35:	ret
+0BEB36 06                	_beb36: ret
+0BEB37                   	;
+0BEB37                   	;--- comparaison de deux chaines ---
+0BEB37                   	cmp_str:	
+0BEB37 CC 07 00          			mv (bp+7),0							;init le compteur
+0BEB3A 84 0F             	_beb3a:	mv x,(bp+15)
+0BEB3C 6D 07             			inc (bp+7)							;incrémenter le compteur
+0BEB3E 90 25             	_beb3e:	mv a,[y++]							;lire la valeur
+0BEB40 60 21             			cmp a,'!'
+0BEB42 1C 1E             			jrc _beb62							;saut si inférieur
+0BEB44 A0 08             			mv (bp+p_filehdle),a 				;sauver la valeur
+0BEB46 90 24             			mv a,[x++]							;lire la valeur
+0BEB48 60 61             			cmp a,'a'
+0BEB4A 1C 06             			jrc _beb52							;saut si inférieur
+0BEB4C 60 7B             			cmp a,'z'+1
+0BEB4E 1E 02             			jrnc _beb52							;saut si supérieur
+0BEB50 48 20             			sub a,$20							;convertir en majuscule
+0BEB52 63 08             	_beb52:	cmp (bp+p_filehdle),a 				;comparer la valeur
+0BEB54 19 18             			jrz _beb3e							;boucler si identique
+0BEB56 90 25             	_beb56:	mv a,[y++]							;lire la valeur suivante
+0BEB58 60 21             			cmp a,' '+1
+0BEB5A 1F 06             			jrnc _beb56							;boucler si supérieur
+0BEB5C 60 20             	_beb5c:	cmp a,' '
+0BEB5E 19 26             			jrz _beb3a							;boucler tant que SPACE
+0BEB60 97                			sc
+0BEB61 06                			ret
+0BEB62                   	;
+0BEB62 90 24             	_beb62:	mv a,[x++]							;lire la valeur
+0BEB64 60 20             			cmp a,' '
+0BEB66 18 04             			jrz _beb6c							;fin si SPACE
+0BEB68 90 05             			mv a,[y]							;lire la valeur
+0BEB6A 13 10             			jr _beb5c							;boucler sur la lecture
+0BEB6C 9F                	_beb6c:	rc
+0BEB6D 06                			ret
+0BEB6E                   	;
+0BEB6E                   	;--- Lecture des instructions ---
+0BEB6E                   	check_instr:								;_beb6e
+0BEB6E 0D 7B F1 0B       			mv y,instruct_tle					;adresse des instructions
+0BEB72 DC 0F CA E7 0B    			mvp (bp+15),adresse1
+0BEB77 04 37 EB          			call cmp_str
+0BEB7A 1C 07             			jrc _beb83
+0BEB7C 80 00             			mv a,(bp+src_work)									
+0BEB7E 04 68 E9          			call closeFile						;close a file
+0BEB81 97                			sc
+0BEB82 06                			ret
+0BEB83 9F                	_beb83:	rc
+0BEB84 06                			ret
+0BEB85                   	;
+0BEB85                   	check_token:								;_beb85
+0BEB85 CC 21 00          			mv (bp+token),0
+0BEB88 CC 07 00          			mv (bp+7),0							;init compteur
+0BEB8B 9C 80 15 01       	_beb8b:	mv x,[(bp+p_flag)+1]				;kbd_next
+0BEB8F 0D 8E E7 0B       			mv y,bufferkbd2
+0BEB93 09 02             			mv il,2								;lecture buffer clavier tydos.sys
+0BEB95 05 FC FB 0B       			callf ptr_runil
+0BEB99 BC 80 15 01       			mv [(bp+p_flag)+1],x
+0BEB9D 0C 8E E7 0B       			mv x,bufferkbd2
+0BEBA1 1C 35             			jrc _bebd8
+0BEBA3 60 00             			cmp a,0
+0BEBA5 1A 21             			jrnz _bebc8
+0BEBA7 90 24             	_beba7:	mv a,[x++]							;lire la valeur
+0BEBA9 60 20             			cmp a,' '
+0BEBAB 19 22             			jrz _beb8b							;saut si SPACE
+0BEBAD 60 50             			cmp a,'P'							;option PAUSE
+0BEBAF 1A 05             			jrnz _bebb6							;saut si différent
+0BEBB1 79 21 01          			or (bp+token),1						;flag instruction
+0BEBB4 13 0F             			jr _beba7							;saut vers l'exécution
+0BEBB6 60 57             	_bebb6:	cmp a,'W'							;option WINDOW
+0BEBB8 1A 05             			jrnz _bebbf							;saut si différent
+0BEBBA 79 21 02          			or (bp+token),2						;flag instruction
+0BEBBD 13 18             			jr _beba7							;saut vers l'exécution
+0BEBBF 60 4E             	_bebbf:	cmp a,'N'							;option NO
+0BEBC1 1B 1C             			jrnz _beba7							;saut si différent
+0BEBC3 79 21 04          			or (bp+token),4						;flag instruction
+0BEBC6 13 21             			jr _beba7							;saut vers l'exécution
+0BEBC8                   	;
+0BEBC8 60 01             	_bebc8:	cmp a,1
+0BEBCA 1B 41             			jrnz _beb8b
+0BEBCC B7 07 20          			cmp (bp+7),(bp+$20)
+0BEBCF 18 2F             			jrz err83							;error $83
+0BEBD1 04 08 EC          			call check_str									
+0BEBD4 1C 2E             			jrc err84							;error $84
+0BEBD6 13 4D             			jr _beb8b							;boucler sur la routine
+0BEBD8                   	;
+0BEBD8 B7 07 1F          	_bebd8:	cmp (bp+7),(bp+$1f)
+0BEBDB 1C 23             			jrc err83							;error $83
+0BEBDD 1A 1F             			jrnz _bebfe
+0BEBDF 80 20             			mv a,(bp+$20)
+0BEBE1 4A 1F             			sub a,(bp+$1f)
+0BEBE3 60 01             	_bebe3:	cmp a,1
+0BEBE5 1A 17             			jrnz _bebfe
+0BEBE7 0C C5 F1 0B       			mv x, wild2_tle
+0BEBEB 0D 8E E7 0B       			mv y,bufferkbd2
+0BEBEF 09 02             			mv il,2								;lecture buffer clavier
+0BEBF1 05 FC FB 0B       			callf ptr_runil
+0BEBF5 0C 8E E7 0B       			mv x,bufferkbd2
+0BEBF9 04 08 EC          			call check_str
+0BEBFC 1C 06             			jrc err84							;error $84
+0BEBFE 9F                	_bebfe:	rc
+0BEBFF 06                			ret
+0BEC00                   	;
+0BEC00                   	;--- Retourne erreur $83 ---
+0BEC00                   	err83:	
+0BEC00 08 83             			mv a,$83							;_bec00
+0BEC02 97                			sc
+0BEC03 06                			ret
+0BEC04                   	;
+0BEC04                   	;--- Retourne erreur $84 ---
+0BEC04                   	err84:										;_bec04
+0BEC04 08 84             			mv a,$84
+0BEC06 97                			sc
+0BEC07 06                			ret
+0BEC08                   	;
+0BEC08                   	check_str:									;_bec08
+0BEC08 6D 07             			inc (bp+7)							;incrémenter le compteur
+0BEC0A 61 07 01          			cmp (bp+7),1
+0BEC0D 1A 06             			jrnz _bec15							;saut tant que différent de 1
+0BEC0F 0D B6 E7 0B       			mv y,filename1						;traitement pour 1
+0BEC13 12 09             			jr _bec1e
+0BEC15 61 07 02          	_bec15:	cmp (bp+7),2			
+0BEC18 1A 0E             			jrnz _bec28							;saut si différent de 1 et 2
+0BEC1A 0D A2 E7 0B       			mv y,string1						;traitement pour 2
+0BEC1E 90 24             	_bec1e:	mv a,[x++]							;lire la valeur
+0BEC20 B0 25             			mv [y++],a							;la copier
+0BEC22 60 00             			cmp a,0								;comparaison avec zéro terminal
+0BEC24 1B 08             			jrnz _bec1e							;boucler tant que non zéro terminal
+0BEC26 9F                			rc
+0BEC27 06                			ret
+0BEC28 97                	_bec28:	sc
+0BEC29 06                			ret
+0BEC2A                   	;
+0BEC2A                   	DIR_instr:									;_bec2a
+0BEC2A CD 1F 00 01       			mvw (bp+$1f),$0100
+0BEC2E 04 85 EB          			call check_token
+0BEC31 1C 96             			jrc _becc9
+0BEC33 CD 0D 00 00       			mvw (bp+$0d),0
+0BEC37 0C E6 F1 0B       			mv x,direct_tle						;adresse chaine "directory"
+0BEC3B 04 4C F0          			call wrtScrn						;affichage de la chaine
+0BEC3E 0C B6 E7 0B       			mv x,filename1						;adresse de la chaine
+0BEC42 04 4C F0          			call wrtScrn						;affichage de la chaine
+0BEC45 04 3E F1          			call wrtCRLF						;copie CR + LF
+0BEC48 CC 14 02          			mv (bp+$14),2
+0BEC4B 04 ED EC          	_bec4b:	call search_file					;search file
+0BEC4E 1C 44             			jrc _bec94
+0BEC50 0C F2 E7 0B       			mv x,string2						;adresse de la chaine
+0BEC54 04 4C F0          			call wrtScrn						;affichage de la chaine
+0BEC57 0C EC E7 0B       			mv x,filename4						;adresse du nom de fichier lu
+0BEC5B 08 01             			mv a,1
+0BEC5D 09 01             			mv il,1								;opening a file
+0BEC5F 04 BC F0          			call fcs_spl						;call FCS 
+0BEC62 1E 0E             			jrnc _bec72							;saut si pas d'erreur
+0BEC64 60 08             			cmp a,8								;erreur : fichier déjà ouvert
+0BEC66 15 1A F1          			jpnz exit_cmd
+0BEC69 0C B0 F1 0B       			mv x,wild1_tle						;adresse de la chaine
+0BEC6D 04 4C F0          			call wrtScrn						;copie de la chaine '??????'
+0BEC70 12 0E             			jr _bec80
+0BEC72 30 80 D6          	_bec72:	mv a,(cl)							;copie du file handle
+0BEC75 28                			pushu a 							;sauvegarde de la valeur
+0BEC76 04 4B ED          			call file_info						;in return y = file size
+0BEC79 04 59 ED          			call deci_conv
+0BEC7C 38                			popu a 								;récupérer le file handle
+0BEC7D 04 68 E9          			call closeFile						;fermer le fichier
+0BEC80 65 21 02          	_bec80:	test (bp+token),2					;token = 'W'
+0BEC83 18 04             			jrz _bec89
+0BEC85 6D 14             			inc (bp+$14)
+0BEC87 12 06             			jr _bec8f
+0BEC89 04 3E F1          	_bec89:	call wrtCRLF						;copie CR + LF
+0BEC8C 47 14 02          			pmdf (bp+$14),2
+0BEC8F 04 CC EC          	_bec8f:	call _beccc
+0BEC92 13 49             			jr _bec4b							;boucler sur la recherche de fin de fichier
+0BEC94 60 0A             	_bec94:	cmp a,10
+0BEC96 18 31             			jrz _becc9							;saut si le drive n'existe pas
+0BEC98 65 14 01          			test (bp+$14),1
+0BEC9B 18 08             			jrz _beca5
+0BEC9D 04 3E F1          			call wrtCRLF						;copie CR + LF
+0BECA0 6D 14             			inc (bp+$14)
+0BECA2 04 CC EC          			call _beccc
+0BECA5 65 21 04          	_beca5:	test (bp+token),4					;token = 'N'
+0BECA8 1A 1E             			jrnz _becc8
+0BECAA 09 0F             			mv il,15							;reading a free capacity of drive
+0BECAC 08 00             			mv a,0
+0BECAE 0C B6 E7 0B       			mv x,filename1						;drive name character string
+0BECB2 04 B4 F0          			call fcs_err						;appel FCS-traitement-erreur
+0BECB5 30 85 DA          			mv y,(si)							;free capacity
+0BECB8 04 59 ED          			call deci_conv
+0BECBB 0C D9 F1 0B       			mv x,bytes_tle
+0BECBF 04 4C F0          			call wrtScrn						;affichage de la chaine
+0BECC2 47 14 02          			pmdf (bp+$14),2
+0BECC5 04 CC EC          			call _beccc
+0BECC8 06                	_becc8:	ret
+0BECC9                   	;
+0BECC9 02 1A F1          	_becc9:	jp exit_cmd							;le drive n'existe pas
+0BECCC                   	;
+0BECCC 65 21 01          	_beccc:	test (bp+token),1					;token = 'P' ?
+0BECCF 18 1B             			jrz _becec
+0BECD1 98 00 15          			mv a, [(BP+p_flag)]					;lecture flag
+0BECD4 64 0C             			test a,12
+0BECD6 1A 14             			jrnz _becec
+0BECD8 88 9E FC 0B       			mv a,[lcd_heigh]					;par défaut, valeur 4
+0BECDC E6                			rol a								;a = 8
+0BECDD 63 14             			cmp (bp+$14),a
+0BECDF 1A 0B             			jrnz _becec
+0BECE1 04 47 E9          			call read_byte						;lecture clavier
+0BECE4 08 0C             			mv a,12								;C-CE
+0BECE6 04 5F E9          			call wrtByteScrn					;efface l'écran
+0BECE9 CC 14 00          			mv (bp+$14),0
+0BECEC 06                	_becec:	ret
+0BECED                   	;
+0BECED                   	;--- Searching for corresponding file name ---
+0BECED                   	search_file:								;_beced
+0BECED 30 C9 D4 0D       			mvw (bx),(bp+13)					;directory number
+0BECF1 09 0C             			mv il,12
+0BECF3 08 00             			mv a,0								;search for the back of the directory number
+0BECF5 0C B6 E7 0B       			mv x,filename1						;lead address of file name to be searched
+0BECF9 0D EC E7 0B       			mv y,filename4						;lead address to return the result
+0BECFD 04 BC F0          			call fcs_spl						;call FCS
+0BED00 1C 0F             			jrc _bed11							;saut si erreur
+0BED02 30 83 D4          			mv i,(bx)							;directory number of the file detected
+0BED05 6C 03             			inc i								;incrémenter la valeur
+0BED07 A3 0D             			mv (bp+13),i						;et la sauver
+0BED09 0C FE E7 0B       			mv x,adresse2
+0BED0D 71 13 F7          			and (bp+$13),$f7
+0BED10 06                			ret
+0BED11 65 13 08          	_bed11:	test (bp+$13),8
+0BED14 18 02             			jrz _bed18
+0BED16 08 0A             			mv a,10
+0BED18 06                	_bed18:	ret
+0BED19                   	;
+0BED19 0C EC E7 0B       	_bed19:	mv x,filename4						;adresse de la chaine
+0BED1D 04 4C F0          			call wrtScrn						;affichage de la chaine
+0BED20 02 3E F1          			jp wrtCRLF
+0BED23                   	;
+0BED23 0C A2 E7 0B       	_bed23:	mv x,string1
+0BED27 DC 0F EC E7 0B    			mvp (bp+15),filename4				;save address name before renaming
+0BED2C 0D D8 E7 0B       			mv y,filename2
+0BED30 90 24             	_bed30:	mv a,[x++]
+0BED32 2C                			pushu x
+0BED33 84 0F             			mv x,(bp+15)						;lire l'adresse
+0BED35 E0 24 08          			mv (bp+p_filehdle),[x++]			;sauver la caractère
+0BED38 A4 0F             			mv (bp+15),x						;sauver la nouvelle adresse
+0BED3A 3C                			popu x
+0BED3B 60 3F             			cmp a,'?'
+0BED3D 1A 05             			jrnz _bed44
+0BED3F E8 25 08          			mv [y++],(bp+p_filehdle)
+0BED42 13 14             			jr _bed30
+0BED44 B0 25             	_bed44:	mv [y++],a							;copier le caractère
+0BED46 60 00             			cmp a,0
+0BED48 1B 1A             			jrnz _bed30							;boucler tant que non fin de chaine
+0BED4A 06                			ret
+0BED4B                   	;
+0BED4B                   	file_info:
+0BED4B 09 0A             			mv il,10							;reading various information of a file
+0BED4D 30 A0 D6          			mv (cl),a 							;file handle
+0BED50 08 00             			mv a,0								;reading of file size, ptr value
+0BED52 04 B4 F0          			call fcs_err						;appel FCS-traitement-erreur
+0BED55 30 85 DD          			mv y,(di)							;file size
+0BED58 06                			ret
+0BED59                   	;
+0BED59                   	deci_conv:
+0BED59 A5 07             			mv (bp+7),y							;sauvegarde de la valeur à afficher
+0BED5B 08 20             			mv a,' '
+0BED5D 04 5F E9          			call wrtByteScrn					;write a space
+0BED60 0C A7 ED 0B       			mv x,data1							;codes de conversion
+0BED64 CD 0F 01 06       			mvw (bp+15),$0601					;6 valeurs à lire
+0BED68 95 24             	_bed68:	mv y,[x++]
+0BED6A 2C                			pushu x
+0BED6B 84 07             			mv x,(bp+7)
+0BED6D 08 FF             			mv a,255
+0BED6F 6C 00             	_bed6f:	inc a
+0BED71 4D 45             			sub x,y
+0BED73 1F 06             			jrnc _bed6f
+0BED75 45 45             			add x,y
+0BED77 A4 07             			mv (bp+7),x
+0BED79 3C                			popu x
+0BED7A 60 00             			cmp a,0
+0BED7C 1A 05             			jrnz _bed83
+0BED7E 61 0F 01          			cmp (bp+15),1
+0BED81 18 0E             			jrz _bed91
+0BED83 40 30             	_bed83:	add a,'0'							;conversion ASCII
+0BED85 04 5F E9          			call wrtByteScrn					;write a byte
+0BED88 CC 0F 00          			mv (bp+15),0
+0BED8B 7D 10             			dec (bp+16)
+0BED8D 1B 27             			jrnz _bed68
+0BED8F 12 10             			jr _beda1
+0BED91 7D 10             	_bed91:	dec (bp+16)
+0BED93 18 07             			jrz _bed9c
+0BED95 08 20             			mv a,' '
+0BED97 04 5F E9          			call wrtByteScrn					;write a space
+0BED9A 13 34             			jr _bed68
+0BED9C 08 30             	_bed9c:	mv a,'0'							;conversion ASCII
+0BED9E 04 5F E9          			call wrtByteScrn					;write a byte
+0BEDA1 08 20             	_beda1:	mv a,' '
+0BEDA3 04 5F E9          			call wrtByteScrn					;write a space
+0BEDA6 06                			ret
+0BEDA7                   	;
+0BEDA7                   	;--- Zone de données ---_beda7
+0BEDA7 A0 86 01 10 27 00 	data1:	dp 100000,10000,1000,100,10,1
+0BEDAD E8 03 00 64 00 00 	
+0BEDB3 0A 00 00 01 00 00 	
+0BEDB9                   	;
+0BEDB9                   	;--- Instruction TYPE ---
+0BEDB9                   	TYPE_instr:									;_bedb9
+0BEDB9 CD 1F 01 01       			mvw (bp+$1f),$0101
+0BEDBD 04 85 EB          			call check_token
+0BEDC0 1C 6E             			jrc _bee30
+0BEDC2 0C B6 E7 0B       			mv x,filename1						;lead address of file name character string
+0BEDC6 08 01             			mv a,1								;physical end of file
+0BEDC8 09 01             			mv il,1								;opening a file
+0BEDCA 04 B4 F0          			call fcs_err						;appel FCS-traitement-erreur
+0BEDCD 22 C8 07 D6       			mv (bp+7),(cl)						;sauvegarde file handle
+0BEDD1 04 33 EE          			call _bee33
+0BEDD4 A0 1E             			mv (bp+$1e),a 
+0BEDD6 80 07             			mv a,(bp+7)							;lecture file handle
+0BEDD8 04 4B ED          			call file_info						;lecture file size
+0BEDDB 6C 05             			inc y
+0BEDDD 04 3F EE          	_beddd:	call _bee3f
+0BEDE0 7C 05             			dec y
+0BEDE2 18 47             			jrz _bee2b
+0BEDE4 80 07             			mv a,(bp+7)							;lecture file handle
+0BEDE6 04 51 E9          			call _be951							;read byte
+0BEDE9 DD                			ex a,b
+0BEDEA 60 00             			cmp a,0
+0BEDEC 19 11             			jrz _beddd
+0BEDEE DD                			ex a,b
+0BEDEF 60 0A             			cmp a,LF
+0BEDF1 19 16             			jrz _beddd
+0BEDF3 28                			pushu a 
+0BEDF4 04 5F E9          			call wrtByteScrn					;write a byte
+0BEDF7 38                			popu a 
+0BEDF8 60 0D             			cmp a,CR
+0BEDFA 1A 05             			jrnz _bee01
+0BEDFC 08 0A             			mv a,LF
+0BEDFE 04 5F E9          			call wrtByteScrn					;write a byte
+0BEE01 09 08             	_bee01:	mv il,8								;non destructing reading a file
+0BEE03 30 CC D6 01       			mv (cl),1							;file handle = clavier
+0BEE07 08 01             			mv a,1								;physical end of file
+0BEE09 04 B4 F0          			call fcs_err						;appel FCS-traitement-erreur
+0BEE0C DD                			ex a,b								;nombre de bits lus
+0BEE0D 60 00             			cmp a,0
+0BEE0F 18 18             			jrz _bee29							;saut si erreur
+0BEE11 DD                			ex a,b								;caractère lu
+0BEE12 04 47 E9          			call read_byte						;lecture clavier
+0BEE15 60 13             			cmp a,$13
+0BEE17 18 09             			jrz _bee22
+0BEE19 60 03             			cmp a,3								;touche CTRL + C
+0BEE1B 1A 0C             			jrnz _bee29
+0BEE1D 04 3E F1          			call wrtCRLF						;copie CR + LF
+0BEE20 12 09             			jr _bee2b
+0BEE22 04 47 E9          	_bee22:	call read_byte						;lecture clavier
+0BEE25 60 11             			cmp a,$11							;touche CTRL + Q
+0BEE27 1B 07             			jrnz _bee22
+0BEE29 13 4E             	_bee29:	jr _beddd
+0BEE2B 80 07             	_bee2b:	mv a,(bp+7)
+0BEE2D 02 68 E9          			jp closeFile
+0BEE30 02 1A F1          	_bee30:	jp exit_cmd
+0BEE33                   	;
+0BEE33 30 98 80 E6 08    	_bee33:	mv a,[($e6)+8]
+0BEE38 89 9C FC 0B       			mv il,[csry]
+0BEE3C 46 01             			add a,il
+0BEE3E 06                			ret
+0BEE3F                   	;
+0BEE3F 98 00 15          	_bee3f:	mv a, [(BP+p_flag)]					;lecture flag
+0BEE42 64 0C             			test a,12
+0BEE44 1A 1C             			jrnz _bee62
+0BEE46 65 21 01          			test (bp+token),1
+0BEE49 18 17             			jrz _bee62
+0BEE4B 04 33 EE          			call _bee33
+0BEE4E 4A 1E             			sub a,(bp+$1e)
+0BEE50 1E 04             			jrnc _bee56
+0BEE52 18 0E             			jrz _bee62
+0BEE54 40 08             			add a,8
+0BEE56 60 03             	_bee56:	cmp a,3
+0BEE58 1C 08             			jrc _bee62
+0BEE5A 04 33 EE          			call _bee33
+0BEE5D A0 1E             			mv (bp+$1e),a
+0BEE5F 04 47 E9          			call read_byte						;lecture clavier
+0BEE62 06                	_bee62:	ret
+0BEE63                   	;
+0BEE63                   	;--- Instruction REN ---
+0BEE63                   	REN_instr:									;_bee63
+0BEE63 CD 1F 01 02       			mvw (bp+$1f),$0201
+0BEE67 04 85 EB          			call check_token					;lecture des options de la ligne de commande
+0BEE6A 1C 20             			jrc _bee8c							;saut si erreur
+0BEE6C CD 0D 00 00       			mvw (bp+13),0
+0BEE70                   	_bee70:
+0BEE70 04 ED EC          			call search_file					;search file
+0BEE73 1C 12             			jrc _bee87							;saut si erreur
+0BEE75 04 23 ED          			call _bed23
+0BEE78 0C EC E7 0B       			mv x,filename4						;lead address of file name character string before renaming
+0BEE7C 0D DE E7 0B       			mv y,filename3						;lead address of file name character string after renaming
+0BEE80 09 0D             			mv il,13							;rename file
+0BEE82 04 B4 F0          			call fcs_err						;appel FCS-traitement-erreur
+0BEE85 13 17             			jr _bee70
+0BEE87 60 0A             	_bee87:	cmp a,10							;drive doesn't exist
+0BEE89 18 01             			jrz _bee8c
+0BEE8B 06                			ret
+0BEE8C 02 1A F1          	_bee8c:	jp exit_cmd							;traitement-erreur
+0BEE8F                   	;--- Instruction COPY ---
+0BEE8F                   	COPY_instr: 								;_bee8f
+0BEE8F 04 F7 F0          			call closeSCRN_KYBD					;close SCRN et KYBD
+0BEE92 CD 1F 01 02       			mvw (bp+$1f),$0201
+0BEE96 04 85 EB          			call check_token
+0BEE99 1C E2             			jrc _bef7d
+0BEE9B CD 0D 00 00       			mvw (bp+13),0						;init flag
+0BEE9F 71 13 FC          			and (bp+$13),$fc
+0BEEA2 0D A0 F1 0B       			mv y,device1_tle					;adresse des devices
+0BEEA6 DC 0F B6 E7 0B    			mvp (bp+15),filename1				;sauvegarde nom fichier
+0BEEAB 04 37 EB          			call cmp_str						;recherche du device
+0BEEAE 1C 03             			jrc _beeb3
+0BEEB0 79 13 02          			or (bp+$13),2
+0BEEB3 0D A0 F1 0B       	_beeb3:	mv y,device1_tle
+0BEEB7 DC 0F A2 E7 0B    			mvp (bp+15),string1
+0BEEBC 04 37 EB          			call cmp_str
+0BEEBF 1C 03             			jrc _beec4
+0BEEC1 79 13 01          			or (bp+$13),1
+0BEEC4 04 ED EC          	_beec4:	call search_file					;search file
+0BEEC7 1C AD             			jrc _bef76							;saut si erreur
+0BEEC9 0C EC E7 0B       			mv x,filename4						;lead address of file name character string			
+0BEECD 08 01             			mv a,1								;reading-out
+0BEECF 09 01             			mv il,1								;opening a file
+0BEED1 04 B4 F0          			call fcs_err						;appel FCS-traitement-erreur
+0BEED4 22 C8 07 D6       			mv (bp+7),(cl)						;sauvegarde file handle
+0BEED8 04 23 ED          			call _bed23
+0BEEDB 0C D8 E7 0B       			mv x,filename2						;lead address of file name character string	
+0BEEDF 08 00             			mv a,0								;write protect
+0BEEE1 09 00             			mv il,0								;creating a file
+0BEEE3 04 B4 F0          			call fcs_err
+0BEEE6 22 C8 08 D6       			mv (bp+p_filehdle),(cl)				;sauvegarde du file handle
+0BEEEA 65 13 02          			test (bp+$13),2
+0BEEED 18 16             			jrz _bef05				
+0BEEEF 80 07             	_beeef:	mv a,(bp+7)							;lecture file handle
+0BEEF1 04 51 E9          			call _be951							;lecture sur fichier
+0BEEF4 28                			pushu a 
+0BEEF5 30 C8 D6 08       			mv (cl),(bp+p_filehdle)				;lecture du file handle
+0BEEF9 09 06             			mv il,6								;writing a byte in the file
+0BEEFB 04 B4 F0          			call fcs_err						;appel FCS-traitement-erreur
+0BEEFE 38                			popu a 
+0BEEFF 60 1A             			cmp a,EOF
+0BEF01 1B 14             			jrnz _beeef
+0BEF03 12 75             			jr _bef7a
+0BEF05 80 07             	_bef05:	mv a,(bp+7)							;lecture du file handle
+0BEF07 04 4B ED          			call file_info
+0BEF0A 6C 05             			inc y								;file size
+0BEF0C 7C 05             			dec y
+0BEF0E 18 1F             			jrz _bef2f							;saut si taille nulle
+0BEF10 A5 0F             			mv (bp+15),y						;sauvegarde du file size
+0BEF12 65 13 01          			test (bp+$13),1
+0BEF15 18 1E             			jrz _bef35							;copie par bloc
+0BEF17 80 07             	_bef17:	mv a,(bp+7)							;lecture du file handle
+0BEF19 04 51 E9          			call _be951							;lecture sur fichier
+0BEF1C 28                	_bef1c:	pushu a 
+0BEF1D 30 C8 D6 08       			mv (cl),(bp+p_filehdle)				;copie du file handle
+0BEF21 09 06             			mv il,6								;writing a byte
+0BEF23 04 B4 F0          			call fcs_err						;appel FCS-traitement-erreur
+0BEF26 38                			popu a 
+0BEF27 60 1A             			cmp a,EOF
+0BEF29 18 08             			jrz _bef33							;saut si fin de fichier
+0BEF2B 7C 05             			dec y
+0BEF2D 1B 18             	_bef2d:	jrnz _bef17
+0BEF2F 08 1A             	_bef2f:	mv a,EOF
+0BEF31 13 17             			jr _bef1c
+0BEF33 13 71             	_bef33:	jr _beec4
+0BEF35                   	;
+0BEF35 0C 8D E3 0B       	_bef35:	mv x,bufferkbd1						;lead address to which data is transfered
+0BEF39 0D 01 04 00       			mv y,$00401							;1025 octets
+0BEF3D D7 05 0F          			cmpp (bp+15),y						;comparer la taille de fichiers
+0BEF40 1E 02             			jrnc _bef44							;au max file size est 1025 octets
+0BEF42 85 0F             			mv y,(bp+15)						;number of bytes to be read
+0BEF44 09 03             	_bef44:	mv il,3								;reading a block of the file
+0BEF46 30 C8 D6 07       			mv (cl),(bp+7)						;file handle
+0BEF4A 08 01             			mv a,1								;physical end of file
+0BEF4C 04 B4 F0          			call fcs_err						;appel FCS-traitement-erreur
+0BEF4F 84 0F             			mv x,(bp+15)						
+0BEF51 4D 45             			sub x,y
+0BEF53 A4 0F             			mv (bp+15),x						;number of bytes to be written
+0BEF55 09 04             			mv il,4								;writing a block of the file
+0BEF57 30 C8 D6 08       			mv (cl),(bp+p_filehdle)				;file handle
+0BEF5B 0C 8D E3 0B       			mv x,bufferkbd1						;lead address of data
+0BEF5F 04 B4 F0          			call fcs_err						;appel FCS-traitement-erreur
+0BEF62 84 0F             			mv x,(bp+15)						;nombre de bits
+0BEF64 6C 04             			inc x
+0BEF66 7C 04             			dec x
+0BEF68 1B 35             			jrnz _bef35
+0BEF6A 80 07             			mv a,(bp+7)							;file handle
+0BEF6C 04 68 E9          			call closeFile						;close a file
+0BEF6F 80 08             			mv a,(bp+p_filehdle)				;file handle
+0BEF71 04 68 E9          			call closeFile						;close a file
+0BEF74 13 B2             			jr _beec4
+0BEF76                   	;
+0BEF76 60 0A             	_bef76:	cmp a,10
+0BEF78 18 03             			jrz _bef7d
+0BEF7A 02 01 F1          	_bef7a:	jp OpenSCRN_KYBD
+0BEF7D 02 1A F1          	_bef7d:	jp exit_cmd
+0BEF80                   	;
+0BEF80                   	;--- Instruction MAKE ---
+0BEF80                   	MAKE_instr:									;_bef80
+0BEF80 CD 1F 01 01       			mvw (bp+$1f),$0101
+0BEF84 04 85 EB          			call check_token
+0BEF87 1C 44             			jrc _befcd							;saut si erreur
+0BEF89 CC 07 FF          			mv (bp+7),255
+0BEF8C 0C B6 E7 0B       			mv x,filename1						;lead address of file name character string
+0BEF90 08 00             			mv a,0								;physical end of file
+0BEF92 09 00             			mv il,0								;creating a file
+0BEF94 04 B4 F0          			call fcs_err						;appel FCS-traitement-erreur
+0BEF97 22 C8 07 D6       			mv (bp+7),(cl)						;sauver file handle
+0BEF9B 04 47 E9          	_bef9b:	call read_byte						;lecture clavier
+0BEF9E 1C 28             			jrc _befc8
+0BEFA0 60 1A             			cmp a,EOF
+0BEFA2 18 24             			jrz _befc8							;saut si fin de fichier
+0BEFA4 60 00             			cmp a,0
+0BEFA6 1A 07             			jrnz _befaf
+0BEFA8 04 47 E9          			call read_byte						;lecture clavier
+0BEFAB 1C 1B             			jrc _befc8
+0BEFAD 13 14             			jr _bef9b
+0BEFAF                   	;
+0BEFAF 60 0D             	_befaf:	cmp a,CR
+0BEFB1 18 07             			jrz _befba
+0BEFB3 04 D9 EF          			call _befd9
+0BEFB6 1C 15             			jrc _befcd
+0BEFB8 13 1F             			jr _bef9b
+0BEFBA 04 D9 EF          	_befba:	call _befd9
+0BEFBD 1C 0E             			jrc _befcd
+0BEFBF 08 0A             			mv a,LF
+0BEFC1 04 D9 EF          			call _befd9
+0BEFC4 1C 07             			jrc _befcd
+0BEFC6 13 2D             			jr _bef9b
+0BEFC8 04 D9 EF          	_befc8:	call _befd9
+0BEFCB 12 03             			jr _befd0							;closing file
+0BEFCD 02 1A F1          	_befcd:	jp exit_cmd
+0BEFD0 30 C8 D6 07       	_befd0:	mv (cl),(bp+7)						;file handle
+0BEFD4 09 02             			mv il,2								;closing a file
+0BEFD6 02 B4 F0          			jp fcs_err							;appel FCS-traitement-erreur
+0BEFD9                   	;
+0BEFD9 28                	_befd9:	pushu a 
+0BEFDA 04 5F E9          			call wrtByteScrn					;write a byte
+0BEFDD 38                			popu a 
+0BEFDE 30 C8 D6 07       			mv (cl),(bp+7)						;lecture file handle
+0BEFE2 09 06             			mv il,6								;writing a file
+0BEFE4 02 B4 F0          			jp fcs_err							;appel FCS-traitement-erreur
+0BEFE7                   	;
+0BEFE7                   	;--- Instruction DEL ---
+0BEFE7                   	DEL_instr:									;_befe7
+0BEFE7 CD 1F 00 01       			mvw (bp+$1f),$0100
+0BEFEB 04 85 EB          			call check_token
+0BEFEE 1C 3E             			jrc _bf02e
+0BEFF0 CD 0D 00 00       			mvw (bp+13),0
+0BEFF4 04 ED EC          	_beff4:	call search_file					;search file
+0BEFF7 1C 30             			jrc _bf029							;saut si erreur
+0BEFF9 04 19 ED          			call _bed19							;affichage chaine
+0BEFFC 65 21 04          			test (bp+token),4					;token='N'
+0BEFFF 1A 1D             			jrnz _bf01e
+0BF001 98 00 15          			mv a, [(BP+p_flag)]					;lecture flag
+0BF004 64 0C             			test a,12
+0BF006 1A 16             			jrnz _bf01e
+0BF008 0C 31 F0 0B       			mv x,data2							;adresse 'delete ok'
+0BF00C 04 4C F0          			call wrtScrn						;affichage de la chaine
+0BF00F 04 47 E9          			call read_byte						;lecture clavier
+0BF012 60 0D             			cmp a,CR
+0BF014 18 08             			jrz _bf01e							;saut si ok
+0BF016 60 59             			cmp a,'Y'
+0BF018 18 04             			jrz _bf01e							;saut si ok
+0BF01A 60 79             			cmp a,'y'
+0BF01C 1B 2A             			jrnz _beff4							;lecture fichier suivant
+0BF01E 09 0E             	_bf01e:	mv il,14							;deleting a file
+0BF020 0C EC E7 0B       			mv x,filename4						;lead address of file name character string	
+0BF024 04 B4 F0          			call fcs_err						;appel FCS-traitement-erreur
+0BF027 13 35             			jr _beff4
+0BF029 60 0A             	_bf029:	cmp a,10							;le drive n'existe pas
+0BF02B 18 01             			jrz _bf02e
+0BF02D 06                			ret
+0BF02E 02 1A F1          	_bf02e:	jp exit_cmd
+0BF031                   	;
+0BF031                   	;--- Data ---_bf031
+0BF031 64 65 6C 65 74 65 	data2:	db 'delete OK(OK:',$27,'Y',$27,'or',$27,'CR',$27,')?',CR,LF,0
+0BF037 20 4F 4B 28 4F 4B 	
+0BF03D 3A 27 59 27 6F 72 	
+0BF043 27 43 52 27 29 3F 	
+0BF049 0D 0A 00          	
+0BF04C                   	;
+0BF04C                   	;--- Copie d'une chaine avec zéro terminal ---
+0BF04C                   	wrtScrn: 									;_bf04c
+0BF04C 90 24             			mv a,[x++]
+0BF04E 60 00             			cmp a,0
+0BF050 18 05             			jrz _bf057
+0BF052 04 5F E9          			call wrtByteScrn					;write a byte
+0BF055 13 0B             			jr wrtScrn
+0BF057 06                	_bf057:	ret
+0BF058                   	;
+0BF058                   	;--- Calcul adresse fin de buffer clavier ---
+0BF058                   	endkbd:										;_bf058
+0BF058 D2 01 EE FB 0B    			mvp (bp+p_kbd),[ptr_kbd]			;copie adresse ptr claver
+0BF05D 8C EB FB 0B       			mv x,[ptr_str]						;copie adresse de la chaine
+0BF061 7C 04             			dec x
+0BF063 7C 04             			dec x								;se positionner deux adresses avant la fin de buffer
+0BF065 A4 04             			mv (bp+p_kbdend),x					;sauver l'adresse
+0BF067 06                			ret
+0BF068                   	;
+0BF068                   	;
+0BF068 04 58 F0          	_bf068:	call endkbd
+0BF06B 98 80 15 0A       			mv a,[(bp+p_flag)+10]
+0BF06F 60 0B             			cmp a,11
+0BF071 18 10             			jrz _bf083							;saut si appel depuis tycom.sys
+0BF073 85 18             			mv y,(bp+stack_u)					;adresse pile utilisateur
+0BF075 7C 05             			dec y
+0BF077 7C 05             			dec y										
+0BF079 A5 04             			mv (bp+p_kbdend),y					;sauvegarde de l'adresse fin buffer clavier
+0BF07B 08 80             			mv a,$80							;256 octets
+0BF07D 4D 50             			sub y,a 							;calcule nouvelle adresse keyb
+0BF07F A5 01             			mv (bp+p_kbd),y						;sauvegarde de l'adresse
+0BF081 FD 65             			mv u,y								;nouvelle valeur de la pile utilisateur
+0BF083 85 01             	_bf083:	mv y,(bp+p_kbd)
+0BF085 06                			ret
+0BF086                   	;
+0BF086                   	;--- Affichage invite de commande ---
+0BF086                   	cmdline:									;_bf086
+0BF086 04 68 F0          			call _bf068
+0BF089 04 4D F1          			call _bf14d							;lecture présence curseur
+0BF08C 0C 7D FC 0B       			mv x,defdrv							;drive par défaut
+0BF090 90 24             	_bf090:	mv a,[x++]							;lecture de la valeur	
+0BF092 60 3A             			cmp a,':'
+0BF094 18 05             			jrz _bf09b							;saut si ':'
+0BF096 04 5F E9          			call wrtByteScrn					;write a byte
+0BF099 13 0B             			jr _bf090							;boucler sur la lecture des valeurs
+0BF09B 08 3E             	_bf09b:	mv a,'>'							;charger la valeur à afficher
+0BF09D 02 5F E9          			jp wrtByteScrn						;write a byte
+0BF0A0                   	;
+0BF0A0                   	;--- Exit tycom.sys ---
+0BF0A0                   	exit_tycom:									;_bf0a0
+0BF0A0 86 18             			mv u,(bp+stack_u)					;rétablir la pile utilisateur
+0BF0A2 87 1B             			mv s,(bp+stack_s)					;rétablir la pile système
+0BF0A4 04 3E F1          			call wrtCRLF						;copie CR + LF
+0BF0A7 04 D9 F0          			call curoff							;effacement curseur
+0BF0AA 38                			popu a 								;dépiler BP
+0BF0AB 30 A0 EC          			mv ($ec),a							;rétablir la valeur de BP
+0BF0AE 30 79 EA 08       			or ($ea),8
+0BF0B2 9F                			rc
+0BF0B3 07                			retf
+0BF0B4                   	;
+0BF0B4                   	;--- Appel FCS avec traitement des erreurs ---
+0BF0B4                   	fcs_err:	
+0BF0B4 05 F8 FB 0B       			callf ptr_fcs						;_bf0b4
+0BF0B8 16 1A F1          			jpc exit_cmd						;traitement des erreurs
+0BF0BB 06                			ret
+0BF0BC                   	;
+0BF0BC                   	;--- Appel FCS simple ---
+0BF0BC                   	fcs_spl:
+0BF0BC 05 F8 FB 0B       			callf ptr_fcs						;_bf0bc
+0BF0C0 06                			ret
+0BF0C1                   	;--------------------------
+0BF0C1                   	test_int:									;_bf0c1:	
+0BF0C1 66 BE FC 0B 80    			test [softint],$80
+0BF0C6 1B 07             			jrnz test_int
+0BF0C8 30 71 EA F7       			and ($ea),$f7
+0BF0CC 05 F8 FB 0B       			callf ptr_fcs
+0BF0D0 30 79 EA 08       			or ($ea),8
+0BF0D4 06                			ret
+0BF0D5                   	;--------------------------
+0BF0D5                   	;
+0BF0D5                   	;--- Affichage du curseur ---
+0BF0D5                   	fullmark:									;_bf0d5
+0BF0D5 08 8A             			mv a,$8a							;full mark cursor
+0BF0D7 12 02             			jr _bf0db							;traitement
+0BF0D9                   	;
+0BF0D9                   	curoff:										;_bf0d9
+0BF0D9 08 00             			mv a,0								;le curseur n'est pas affiché
+0BF0DB 30 CD D6 00 00    	_bf0db:	mvw (cx),0							;file handle SCRN
+0BF0E0 09 45             			mv il,$45							;fixe le type de cuseur
+0BF0E2 05 F4 FB 0B       			callf ptr_iocs
+0BF0E6 06                			ret
+0BF0E7                   	;
+0BF0E7                   	close_allfiles:								;_bf0e7
+0BF0E7 CC 07 0F          			mv (bp+7),15						;fixe le compteur
+0BF0EA 80 07             	_be0ea:	mv a,(bp+7)							;transfert dans a
+0BF0EC 04 68 E9          			call closeFile
+0BF0EF 7D 07             			dec (bp+7)							;décrémenter le compteur
+0BF0F1 61 07 01          			cmp (bp+7),1
+0BF0F4 1B 0C             			jrnz _be0ea							;boucler tant que supérieur à zéro
+0BF0F6 06                			ret
+0BF0F7                   	;
+0BF0F7                   	;--- close the files SCRN et KYBD ---
+0BF0F7                   	closeSCRN_KYBD:	
+0BF0F7 08 00             			mv a,0								;file handle SCRN, _bf0f7
+0BF0F9 04 68 E9          			call closeFile						;close the SCRN
+0BF0FC 08 01             			mv a,1								;file handle KYBD
+0BF0FE 02 68 E9          			jp closeFile						;close the KYBD
+0BF101                   	;
+0BF101                   	;--- Open the files SCRN et KYBD ---
+0BF101                   	OpenSCRN_KYBD:	
+0BF101 04 F7 F0          			call closeSCRN_KYBD					;close the files SCRN et KYBD, _bf101
+0BF104 09 01             			mv il,1
+0BF106 08 02             			mv a,2								;open the SCRN
+0BF108 0C B9 F1 0B       			mv x,scrn_tle
+0BF10C 04 C1 F0          			call test_int
+0BF10F 09 01             			mv il,1
+0BF111 08 01             			mv a,1								;open the KYBD
+0BF113 0C BF F1 0B       			mv x,keybd_tle
+0BF117 02 C1 F0          			jp test_int
+0BF11A                   	;
+0BF11A                   	exit_cmd:	
+0BF11A 04 01 F1          			call OpenSCRN_KYBD					;open SCRN et KYBD
+0BF11D 86 18             			mv u,(bp+stack_u)					;rétablir la pile utilisateur
+0BF11F 87 1B             			mv s,(bp+stack_s)					;rétablir la pile système
+0BF121 04 4D F1          			call _bf14d
+0BF124 65 13 10          			test (bp+$13),16
+0BF127 15 30 E8          			jpnz _be830
+0BF12A 0C D2 F1 0B       			mv x,error_tle						;message d'erreur
+0BF12E 0D 07 00 00       			mv y,7								;nombre de caractères
+0BF132 09 04             			mv il,4								;write a block of the file
+0BF134 30 CC D6 00       			mv (cl),0							;file handle SCRN
+0BF138 04 C1 F0          			call test_int						;écriture du message
+0BF13B 02 30 E8          			jp _be830							;boucler en début de programme
+0BF13E                   	;
+0BF13E                   	;--- Ecriture CR + LF ---
+0BF13E                   	wrtCRLF:	
+0BF13E 65 13 10          			test (bp+$13),16					;_bf13e
+0BF141 1A 11             			jrnz _bf154
+0BF143 08 0D             			mv a,CR
+0BF145 04 5F E9          			call wrtByteScrn					;write a byte
+0BF148 08 0A             			mv a,LF
+0BF14A 02 5F E9          			jp wrtByteScrn						;write a byte
+0BF14D                   	;
+0BF14D 66 9B FC 0B FF    	_bf14d:	test [csrx],255
+0BF152 1B 16             			jrnz wrtCRLF
+0BF154 06                	_bf154:	ret
+0BF155                   	;	
+0BF155                   	;--- Zone des variables -------------------------------------------------
+0BF155 54 59 2D 43 4F 4D 	tycom_tle:		db 'TY-COM V1.11 '								;_bf155
+0BF15B 20 56 31 2E 31 31 	
+0BF161 20                	
+0BF162                   	btmtycomtle:	
+0BF162 63 6F 6D 6D 61 6E 	cmdline_tle:	db 'command line processor',CR,LF,0				;_bf162
+0BF168 64 20 6C 69 6E 65 	
+0BF16E 20 70 72 6F 63 65 	
+0BF174 73 73 6F 72 0D 0A 	
+0BF17A 00                	
+0BF17B 42 41 53 49 43 20 	instruct_tle:	db 'BASIC DIR COPY TYPE DEL REN CLS MAKE',0		;_bf17b
+0BF181 44 49 52 20 43 4F 	
+0BF187 50 59 20 54 59 50 	
+0BF18D 45 20 44 45 4C 20 	
+0BF193 52 45 4E 20 43 4C 	
+0BF199 53 20 4D 41 4B 45 	
+0BF19F 00                	
+0BF1A0 43 4F 4D 3A 20 43 	device1_tle: 	db 'COM: CAS: KYBD:',0							;_bf1a0
+0BF1A6 41 53 3A 20 4B 59 	
+0BF1AC 42 44 3A 00       	
+0BF1B0 20 3F 3F 3F 3F 3F 	wild1_tle:		db ' ?????? ',0									;_bf1b0
+0BF1B6 3F 20 00          	
+0BF1B9 53 43 52 4E 3A 00 	scrn_tle: 		db 'SCRN:',0									;_bf1b9
+0BF1BF 4B 59 42 44 3A 00 	keybd_tle:		db 'KYBD:',0									;_bf1bf
+0BF1C5 2A 2E 2A 20       	wild2_tle:		db '*.* '										;_bf1c5
+0BF1C9 41 55 54 4F 45 58 	auto_tle:   	db 'AUTOEXEC',0									;_bf1c9
+0BF1CF 45 43 00          	
+0BF1D2 65 72 72 6F 72 0D 	error_tle:		db 'error',CR,LF								;_bf1d2
+0BF1D8 0A                	
+0BF1D9 62 79 74 65 73 20 	bytes_tle:		db 'bytes free',CR,LF,0							;_bf1d9
+0BF1DF 66 72 65 65 0D 0A 	
+0BF1E5 00                	
+0BF1E6 64 69 72 65 63 74 	direct_tle:		db 'directory=',0								;_bf1e6
+0BF1EC 6F 72 79 3D 00    	
+0BF1F1                   	;--- Fin zone des variables ---------------------------------------------
+0BF1F1                   	;
+0BF1F1                   		pre_off
+0BF1F1                   		end
+
+  No fatal error.  Code: 0BE800h - 0BF1F0h [     2545 byte(s)]

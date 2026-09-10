@@ -1,0 +1,97 @@
+★☆　テキストエディタ“PANORAMA” パッキングリスト　☆★
+
+　このアーカイブには、次のファイルが含まれています。
+
+・README.DOC
+　今ご覧のファイル
+
+・PANO.DOC
+　ドキュメント
+
+・PANOHLP.DOC
+　起動方法や、キー配列を抜き出したものです。ポケコンに入れるなり、プリントアウトするなりして活用してください。
+
+・PANO        CRC32=C275CEF9, 10629bytes
+　PANORAMA本体
+
+　さらに、ソースリスト付属版には、次のファイルも含まれています。
+
+・PANO.ASM
+　ソースリスト（XASM Ver 1.3xでアセンブル可能）
+
+・PANOTEC.DOC
+　プログラムの動作などに関する解説
+
+
+★☆　旧バージョンをお使いの方へ　☆★
+
+　旧バージョンでは、"CLOCK:"デバイスドライバだけでタイムスタンプを変更できましたが、今回のバージョンでは、Nmasu氏のClock Device Extensionをインストールするか、拙作のWCLOCK ver 0.03などの同機能を組み込んだ"CLOCK:"ドライバを使う必要があります。
+
+　Ver 1.15以前のバージョンを使っている方は、Ver 1.22を起動する前に、"S1:"の"PANO.CFG"というファイルを削除してください。Ver 1.22では、PANO.CFGの構造が新しくなっているので、旧バージョンのCFGが入っていると起動できません。その後、[Pref]などのPANO終了後も残る設定をやり直してください。
+　また、再び旧バージョンに戻す際も、同じ操作を行なってください。
+★ ☆ Pour ceux qui utilisent l'ancienne version ☆ ★
+
+Dans les versions pr?c?dentes, "CLOCK:" ne pouvait modifier l'horodatage qu'avec le pilote de p?riph?rique, mais dans cette version, installez l'extension de p?riph?rique d'horloge de Nmasu ou incorporez la m?me fonction que la version 0.03 de WCLOCK d'origine. " Vous devez utiliser le pilote "CLOCK:".
+
+Si vous utilisez la version 1.15 ou ant?rieure, supprimez le fichier "PANO.CFG" de "S1:" avant de lancer la version 1.22. Dans la version 1.22, la structure de PANO.CFG est nouvelle. Elle ne peut donc pas ?tre d?marr?e si une version plus ancienne de CFG est incluse. Apr?s cela, veuillez refaire les r?glages qui restent apr?s PANO, tels que [Pref].
+De plus, veuillez effectuer la m?me op?ration lorsque vous revenez ? l'ancienne version.
+
+★☆　使用・配布条件　☆★
+
+●使用条件
+　このプログラムは、フリーソフトウェアとさせていただきます。使用に対して何ら対価を要求いたしません。
+　電子メール、掲示板、その他の方法で作者に連絡の可能な方は、できれば感想などを寄せてください（「ダウンロードしました！」だけでもOKです。）。
+
+  このプログラムを使用したことによって受けたいかなる損害、逸失利益についても、作者は免責とさせていただきます。
+  ● Conditions d'utilisation
+Ce programme est un logiciel libre. Nous ne demandons aucune indemnit? pour l'utilisation.
+Si vous parvenez ? contacter l'auteur par courrier ?lectronique, babillard ?lectronique ou tout autre moyen, veuillez nous envoyer vos commentaires si possible (m?me si vous venez de le t?l?charger!).
+
+L'auteur n'est pas responsable des dommages ou pertes de profits r?sultant de l'utilisation de ce programme.
+
+●配布条件
+　このプログラムを配布される方は、以下の条件を守ってください。
+
+1.このプログラムおよびドキュメントの著作権は、作者、溝端大介が保持しています。著作権表示を改変しての転載、作者の著作権を侵害する恐れのあるBBS等への転載は厳禁とします。
+
+2.個人的に改変することは自由ですが、改変したプログラムを第三者に配布する場合、事前に作者の承諾を得た上、ソースリストを添付して配布してください。
+
+3.このプログラムの配布に際して、作者並びに第三者は配布の対価を要求することはできません。実費以上の金額を徴収することは、避けてください。
+
+4.このプログラムを配布する場合は、アーカイブに含まれている全てのファイルを、改変せずに配布してください。
+
+5.雑誌・FD・CD-ROMなど、ネットワーク以外の媒体を通じて不特定多数に配布する場合、事前に書面または電子メール経由で作者に連絡してください。BBSなど、ネットワークを通じて配布する場合は、事前・事後ともに作者に連絡を取る必要はありません。
+● Conditions de distribution
+Si vous distribuez ce programme, veuillez respecter les conditions suivantes.
+
+1. Le copyright de ce programme et de ce document est d?tenu par l'auteur, Daisuke Mizobata. La reproduction par modification de la notice de copyright, ainsi que la reproduction au format BBS, etc., pouvant enfreindre les droits d'auteur, sont strictement interdites.
+
+2. La modification personnelle est gratuite, mais lors de la distribution du programme modifi? ? un tiers, veuillez pr?alablement obtenir le consentement de l'auteur, puis joindre et distribuer la liste des sources.
+
+3. Lors de la distribution de ce programme, l'auteur et des tiers ne peuvent pas demander de paiement pour la distribution. S'il vous pla?t ?viter de collecter le montant plus que le co?t r?el.
+
+4. Lors de la distribution de ce programme, distribuez tous les fichiers contenus dans les archives sans modification.
+
+5. Lors de la distribution ? un num?ro non sp?cifi? via un support autre que le r?seau, tel que des magazines, des FD, des CD-ROM, veuillez contacter l'auteur ? l'avance par ?crit ou par courrier ?lectronique. Lors de la distribution via un r?seau tel que BBS, il n'est pas n?cessaire de contacter l'auteur ? l'avance et apr?s.
+
+
+★☆　NEW FEATURES　☆★
+
+●Version 1.22  : 97. 4. 6
+・TABを等価なスペースに変換できるようになった([CTRL]+Q [CTRL]+[STO])。
+・[CTRL]+[INS]／[CTRL]+[BS]をUndo可能にした。
+・[CTRL]+K／[CTRL]+[=]で、LCD幅より広い幅で改行付けをしたとき、TAB幅の計算がうまくいかないバグを直した。
+・[CTRL]+K／[CTRL]+[=]のワードラップに関するバグフィクス。
+・40桁⇔60桁を切り換えたあと、$00-$1Fの文字が正しく表示されなくなるバグを直した。
+Version 1.22: 97. 4. 6
+-Convertir TAB en espace ?quivalent ([CTRL] + Q [CTRL] + [STO]).
+? moins que [CTRL] + [INS] / [CTRL] + [BS] ait ?t? activ?.
+- Correction du bug selon lequel le calcul de la largeur de tabulation ne fonctionnait pas bien lors de l'ajout d'un saut de ligne plus large que la largeur de l'?cran LCD de [CTRL] + K / [CTRL] + [=].
+Correction de bug li?e au mot wrap de [CTRL] + K / [CTRL] + [=].
+-On a corrig? le bogue selon lequel les caract?res $ 00- $ 1F ne sont pas affich?s correctement apr?s le changement de 40 chiffres / 60 chiffres.
+
+★☆　連絡先　☆★
+
+ポケット通信：4117  Aesop・M68
+Nifty-Serve ：BXR00012
+Internet    ：BXR00012@niftyserve.or.jp

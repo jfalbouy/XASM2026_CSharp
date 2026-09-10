@@ -1,0 +1,126 @@
+000000                   	;--------------------------------------------------
+000000                   	;	DOS for PC-E500S  					Ver 0.33
+000000                   	;		(c)1990,1992   T.Kobayashi - JF ALBOUY
+000000                   	;
+000000                   	; PATH.ASM  						   05/12/2022
+000000                   	; 
+000000                   	; LOADM "F:PATH.OBJ"
+000000                   	; Installation par call &BF400
+000000                   	;
+000000                   	; A installer avec TRDOS.OBJ
+000000                   	;--------------------------------------------------
+000000                   	;--- Constantes -----------------------------------
+000000                   	CR:		equ $0d
+000000                   	LF:		equ $0a
+000000                   	EOF:	equ $1a
+000000                   	adr:	equ mem+1
+000000                   	;---Mémoire interne ---
+000000                   	bl:	equ	0d4h
+000000                   	bh:	equ	0d5h
+000000                   	cl:	equ	0d6h
+000000                   	ch:	equ	0d7h
+000000                   	dl:	equ	0d8h
+000000                   	dh:	equ	0d9h
+000000                   	cx: equ 0d6h
+000000                   	;
+000000                   	;--- Routines ---
+000000                   	fcs_call:  equ	0fffe4h
+000000                   	iocs_call: equ	0fffe8h
+000000                   	;---------------------------------------------------
+000000                   	;
+0BF400                   		org	0bf400h
+0BF400                   	;
+0BF400                   		pre_on
+0BF400                   	;
+0BF400 09 00             	start:	mv il,0						;Searching for the drive name
+0BF402 0C AD F4 0B       			mv x,data1					;adresse du drive
+0BF406 05 E8 FF 0F       			callf iocs_call				; retour : cl = device number, ch = drive number
+0BF40A 1C 8D             			jrc error					;saut si error
+0BF40C 09 4A             			mv il,$4a					
+0BF40E 05 E8 FF 0F       			callf iocs_call
+0BF412 0B 20 00          			mv i,32
+0BF415 45 43             			add x,i
+0BF417 FD 54             			mv y,x
+0BF419 AC 59 F4 0B       			mv [mem+1],x
+0BF41D 3C                			popu x
+0BF41E 09 20             			mv il,32
+0BF420 90 24             	st1:	mv a,[x++]					;lecture d'un caractère
+0BF422 60 20             			cmp a,' '				
+0BF424 19 06             			jrz st1						;saut si SPACE
+0BF426 60 0D             			cmp a,CR
+0BF428 18 2B             			jrz st2						;saut si fin de ligne
+0BF42A 60 22             			cmp a,'"'
+0BF42C 18 02             			jrz st3						;saut si "
+0BF42E 7C 04             			dec x						;se positionner sur le caractère précédent
+0BF430 90 24             	st3:	mv a,[x++]					;lire le dernier caractère
+0BF432 60 22             			cmp a,'"'
+0BF434 18 0E             			jrz st4						;saut si "
+0BF436 60 0D             			cmp a,CR
+0BF438 18 08             			jrz st5						;saut si fin de ligne
+0BF43A B0 25             			mv [y++],a 					;stockage du caractère
+0BF43C 7C 01             			dec il						;décrémenter le compteur
+0BF43E 18 3E             			jrz st6						;saut si zéro
+0BF440 13 12             			jr st3						;boucler tant que non NUL
+0BF442 7C 04             	st5:	dec x						;se positionner sur le dernier caractère
+0BF444 2C                	st4:	pushu x						;sauver l'adresse
+0BF445 08 00             			mv a,0
+0BF447 7C 01             			dec il
+0BF449 1A 02             			jrnz st7					;saut si non fin de ligne
+0BF44B 6C 01             			inc il						;rétablir la valeur
+0BF44D B0 25             	st7:	mv [y++],a					;copier le zéro terminal
+0BF44F 7C 03             			dec i 
+0BF451 1B 06             			jrnz st7					;boucler tant que non NUL
+0BF453 9F                			rc
+0BF454 07                			retf
+0BF455                   	;
+0BF455                   			;fin de ligne
+0BF455 7C 04             	st2:	dec x						;se positionner sur le dernier caractère
+0BF457 2C                			pushu x						;sauver l'adresse
+0BF458                   	; mem:	db 13
+0BF458                   			; db 0,0,0
+0BF458                   	;
+0BF458                   			;Writing a block of the file
+0BF458 0C 00 00 00       	mem:	mv x,0						;adresse de la chaine, variable en cours d'éxécution
+0BF45C 0D 20 00 00       			mv y,32						;nombre de caractères
+0BF460 09 04             			mv il,4						;write a block
+0BF462 30 CC D6 00       			mv (cx),0					;file handle
+0BF466 05 E4 FF 0F       			callf fcs_call
+0BF46A 0C CD F4 0B       			mv x,data4					;adresse de la chaine
+0BF46E 0D 02 00 00       			mv y,2						;nombre de caractères
+0BF472 09 04             			mv il,4						;write a block
+0BF474 30 CC D6 00       			mv (cx),0					;file handle
+0BF478 05 E4 FF 0F       			callf fcs_call
+0BF47C 9F                			rc
+0BF47D 07                			retf
+0BF47E                   			
+0BF47E 90 24             	st6:	mv a,[x++]					;lire un caractère
+0BF480 60 22             			cmp a,'"'
+0BF482 18 06             			jrz st8						;saut si "
+0BF484 60 0D             			cmp a,CR
+0BF486 1B 0A             			jrnz st6					;boucler tant que non fin de ligne
+0BF488 7C 04             			dec x						;se positionner sur le dernier caractère
+0BF48A 2C                	st8:	pushu x						;sauver l'adresse
+0BF48B 08 00             			mv a,0
+0BF48D B0 35             			mv [--y],a 					;empiler la valeur de a 
+0BF48F 0C B2 F4 0B       			mv x,data2					;adresse message erreur
+0BF493 0D 0B 00 00       			mv y,11						;nombre de caractères
+0BF497 12 08             			jr st9						;afficher la chaine de caractères
+0BF499                   			
+0BF499 0C BD F4 0B       	error:	mv x,data3					;adresse message erreur
+0BF49D 0D 12 00 00       			mv y,18						;nombre de caractères
+0BF4A1 09 04             	st9:	mv il,4						;write a block
+0BF4A3 30 CC D6 00       			mv (cx),0					;file handle
+0BF4A7 05 E4 FF 0F       			callf fcs_call
+0BF4AB 97                			sc
+0BF4AC 07                			retf
+0BF4AD                   			
+0BF4AD 44 4F 53 3A 00    	data1:	db 'DOS:',0
+0BF4B2 44 61 74 61 20 6F 	data2:	db 'Data over',CR,LF
+0BF4B8 76 65 72 0D 0A    	
+0BF4BD 54 52 2D 44 4F 53 	data3:	db 'TR-DOS not found'
+0BF4C3 20 6E 6F 74 20 66 	
+0BF4C9 6F 75 6E 64       	
+0BF4CD 0D 0A             	data4:  db CR,LF
+0BF4CF                   			end
+
+  No fatal error.  Code: 0BF400h - 0BF4CEh [      207 byte(s)]

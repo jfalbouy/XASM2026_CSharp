@@ -1,0 +1,961 @@
+000000                   	;---------------------------------------------
+000000                   	;	TRDOSJEF141222   for PC-E500s  Ver 2.0
+000000                   	;	Jean-François Albouy	15/12/2022
+000000                   	;---------------------------------------------
+000000                   	;
+000000                   	;--- Constantes ---------------
+000000                   	;-Mémoire interne --- 
+000000                   	bl:			equ	0d4h
+000000                   	bh:			equ	0d5h
+000000                   	cl:			equ	0d6h
+000000                   	ch:			equ	0d7h
+000000                   	dl:			equ	0d8h
+000000                   	dh:			equ	0d9h
+000000                   	cx: 		equ 0d6h
+000000                   	si:			equ	0dah
+000000                   	bp: 		equ 0ech
+000000                   	;
+000000                   	buffer:		equ 0
+000000                   	flagInstal:	equ 9
+000000                   	blockAdr:	equ 10
+000000                   	lstblocAdr:	equ 13
+000000                   	freeSpace:	equ 16
+000000                   	;--------------------
+000000                   	;
+000000                   	;-Utilisation --- 
+000000                   	keyb: 		equ 0a0h				;key data check (CTRL+Z)
+000000                   	;
+000000                   	;- Mémoire externe --
+000000                   	s2_top:		equ	0bfc0fh		;top  of "S2:"
+000000                   	s2_siz:		equ	0bfc12h		;size of "S2:"
+000000                   	s1_top:		equ	0bfc15h		;top  of "S1:"
+000000                   	s1_siz:		equ	0bfc18h		;size of "S1:"
+000000                   	s1_btm:		equ	0bfcdeh		;bottom of "S1:"
+000000                   	d_link:		equ	0bfca2h		;device link pointer
+000000                   	baswrk:		equ	0bfd0eh		;BASIC WORK Address
+000000                   	keyvct:		equ	0bfccch		;key interrupt vector
+000000                   	height:		equ 0bfc9eh
+000000                   	defdrv:		equ 0bfc7dh
+000000                   	fcs_call:	equ	0fffe4h
+000000                   	iocs_call:	equ	0fffe8h
+000000                   	usrwrk:		equ 0bfd1ah
+000000                   	reset:		equ 0ffffdh		;jump to MENU
+000000                   	;
+000000                   	KOL:		equ 0f0h
+000000                   	KOH:		equ 0f1h
+000000                   	txtbas:		equ 0cbh
+000000                   	datbas:		equ 0ceh
+000000                   	;--------------------
+000000                   	;-----------------------------
+000000                   	;
+000000                   	;
+0BE000                   			org	0be000h
+0BE000                   	;
+0BE000                   			pre_on
+0BE000                   	;
+0BE000                   	;-----------------------------------------------------------
+0BE000                   	;       DEVICE-DRIVER INSTALLER
+0BE000                   	;-----------------------------------------------------------
+0BE000                   	; Affichage du titre ---
+0BE000                   	affTitle:
+0BE000 05 D9 E2 0B       			callf init_lcd				;init LCD driver ~ cls
+0BE004 0C E2 E1 0B       			mv	x,msg0					;DISPLAY *TITLE* MESSAGE
+0BE008 05 BF E2 0B       			callf print					;affichage du message
+0BE00C                   	;
+0BE00C                   	; Recherche du drive name ---
+0BE00C 09 00             			mv il,0						;création de fichier
+0BE00E 0C 23 E3 0B       			mv x,dvname					;adresse de DOS:TRDOS:
+0BE012 05 E8 FF 0F       			callf iocs_call				;appel de la fonction
+0BE016 17 1B E1          			jpnc exit2					;saut si déjà installé
+0BE019                   	;
+0BE019                   	; Lecture de l'entrée de IOCS ---
+0BE019 30 CC D6 00       			mv (cx),0					;CL = device number, CH = drive number
+0BE01D 8C A2 FC 0B       			mv x,[d_link]				;lecture du IOCS header
+0BE021 6C 04             			inc x
+0BE023 7C 04             	link1:	dec x
+0BE025 90 84 03          			mv a,[x+3]					;lecture du device number
+0BE028 30 63 D6          			cmp (cx),a					;comparaison à la valeur recherchée
+0BE02B 1E 03             			jrnc link2					;saut si inférieur à zéro
+0BE02D 30 A0 D6          			mv (cx),a 					;sinon copie de la valeur lue
+0BE030 94 04             	link2:	mv x,[x]					;lecture du prochain IOCS header
+0BE032 6C 04             			inc x						;incrémentation pour check fin de parcours
+0BE034 1B 13             			jrnz link1					;boucler tant que la fin n'est pas atteinte
+0BE036 30 6D D6          			inc (cx)					;incrémentation du device number
+0BE039 30 D8 1E E3 0B D6 			mv [drvNumber],(cx)			;stockage de la valeur pour ce nouveau programme
+0BE03F                   	;
+0BE03F                   	;Condense la mémoire S1: ---
+0BE03F 30 CD D6 06 00    			mvw	(cx),6					;compress the space in each memory block of "S1:"
+0BE044 09 47             			mv	il,47h					;lancement de la procédure
+0BE046 05 E8 FF 0F       			callf iocs_call				;compress memory
+0BE04A                   	;
+0BE04A                   	;Verifie l'emplacement d'installation
+0BE04A 8C 15 FC 0B       			mv	x,[s1_top]				;top of "S1:"
+0BE04E 95 84 12          			mv	y,[x+18]				;data block or lead address, pointe sur FB ou FF
+0BE051 45 45             			add	x,y						;pointer sur le début du block
+0BE053 30 A4 0A          			mv	(blockAdr),x			;sauvegarde de l'adresse du début du bloc
+0BE056 90 04             	loop1:	mv	a,[x]					;SEARCH  end of 'device driver'
+0BE058 60 FB             			cmp	a,0fbh					;lecture de l'identification du nom de block
+0BE05A 1A 1E             			jrnz	chksize				;saut si fin de lecture des blocks
+0BE05C 90 84 0C          			mv	a,[x+12]				;lecture de l'attribut du driver: $25 (Protected)
+0BE05F 64 0C             			test	a,12				;check ATTR (Device & Protect)
+0BE061 18 07             			jrz loop2
+0BE063 95 84 11          			mv	y,[x+17]				;lire la longueur du block jusqu'au prochain bloc
+0BE066 45 45             			add	x,y						;se positionner sur le début du prochain bloc
+0BE068 13 14             			jr loop1
+0BE06A 30 A4 0A          	loop2:	mv (blockAdr),x 
+0BE06D 90 04             	loop3:	mv a,[x]
+0BE06F 60 FB             			cmp	a,0fbh					;lecture de l'identification du nom de block
+0BE071 1A 07             			jrnz	chksize				;saut si fin de lecture des blocks
+0BE073 95 84 11          			mv y,[x+17]
+0BE076 45 45             			add x,y
+0BE078 13 0D             			jr loop3
+0BE07A                   	;	
+0BE07A 30 A4 0D          	chksize: mv	(lstblocAdr),x			;sauvegarde de l'adresse du dernier bloc
+0BE07D 8D DE FC 0B       			mv	y,[s1_btm]				;end of "S1:" + 1
+0BE081 7C 05             			dec y
+0BE083 4D 54             			sub	y,x						;calcul de la mémoire disponible
+0BE085 30 A5 10          			mv	(freeSpace),y			;sauvegarde de la taille de la mémoire restante
+0BE088 0D 7F 04 00       			mv y,block_bottom-block_top
+0BE08C 30 D7 05 10       			cmpp (freeSpace),y
+0BE090 1C 7D             			jrc	exit1					;"ERROR: NOT enough memory!!"
+0BE092                   	;
+0BE092                   	;Réallocation des adresses avant copie du nouveau driver
+0BE092 0C 78 E7 0B       			mv	x,modify_table			;se positionner sur la table des vecteurs
+0BE096 95 24             	init_3:	mv	y,[x++]					;lire une adresse dans la table	
+0BE098 6C 05             			inc	y						;-1 indique la fin de la table sinon adresse réelle à modifier
+0BE09A 18 15             			jrz	modify_end				;saut si fin de table
+0BE09C 2C                			pushu	x					;sauvegarde de l'indice prochain dans la table
+0BE09D 94 05             			mv	x,[y]					;lire l'adresse à modifier
+0BE09F 2D                			pushu y						;sauvegarde de l'adresse lue dans la table
+0BE0A0 0D F9 E2 0B       			mv	y,block_top				;se positionner sur le début du nouveau header driver
+0BE0A4 4D 45             			sub	x,y						;nombre d'octets de décalage
+0BE0A6 30 85 0A          			mv	y,(blockAdr)			;récupérer l'adresse de début du programme	
+0BE0A9 45 45             			add	x,y						;calcul de la nouvelle adresse fonction de son implantation
+0BE0AB 3D                			popu y						;
+0BE0AC B4 05             			mv	[y],x					;implantation de l'adresse recalculée
+0BE0AE 3C                			popu x						;se positionner sur l'indice suivant
+0BE0AF 13 1B             			jr	init_3					;boucler tant que non fin de table
+0BE0B1                   	;
+0BE0B1                   	modify_end:
+0BE0B1 8C A2 FC 0B       			mv x,[d_link]
+0BE0B5 AC 20 E3 0B       			mv [adrs],x
+0BE0B9 30 84 0D          			mv	x,(lstblocAdr)			;adresse du dernier block header
+0BE0BC 30 85 0A          			mv	y,(blockAdr)			;adresse du premier IOCS header
+0BE0BF 4D 45             			sub	x,y						;longueur du bloc à déplacer
+0BE0C1 30 A4 DA          			mv	(si),x					;sauvegarde de la taille
+0BE0C4 FD 45             			mv	x,y						;adresse source
+0BE0C6 0B 7F 04          			mv	i,block_bottom - block_top	;taille du driver
+0BE0C9 45 53             			add	y,i						;adresse de destination
+0BE0CB 30 CD D6 06 00    			mvw	(cx),6					;transfert de bloc
+0BE0D0 09 43             			mv	il,43h					;appel de la fonction
+0BE0D2 05 E8 FF 0F       			callf	iocs_call			;x et y sont incrémentés de 1
+0BE0D6 30 DC DA 7F 04 00 			mvp	(si),block_bottom-block_top	;taille du driver
+0BE0DC 30 85 0A          			mv	y,(blockAdr)				;adresse source du IOCS header
+0BE0DF 0C F9 E2 0B       			mv	x,block_top				;adresse du header du nouveau bloc
+0BE0E3 30 CD D6 06 00    			mvw	(cx),6					;transfert du bloc driver
+0BE0E8 09 43             			mv il,43h					;appel de la fonction
+0BE0EA 05 E8 FF 0F       			callf	iocs_call			;appel de la fonction
+0BE0EE 30 84 0A          			mv	x,(blockAdr)			;adresse source du IOCS header
+0BE0F1 09 22             			mv	il,22h
+0BE0F3 45 41             			add	x,il					;adresse source du IOCS header
+0BE0F5 AC A2 FC 0B       			mv	[d_link],x				;modification de l'adresse
+0BE0F9 05 D9 E2 0B       			callf init_lcd
+0BE0FD                   	;		
+0BE0FD 30 61 09 01       			cmp (flagInstal),1
+0BE101 18 06             			jrz exit
+0BE103                   	;		
+0BE103 0C 04 E2 0B       			mv x,msg1					;programme installé
+0BE107 12 28             			jr exit4
+0BE109                   	;		
+0BE109 0C 4A E2 0B       	exit:	mv x,msg1+70				;ms2 = BE24A ?			
+0BE10D 12 22             			jr exit4
+0BE10F                   	;		
+0BE10F 30 61 09 01       	exit1:	cmp (flagInstal),1
+0BE113 18 06             			jrz exit2
+0BE115                   	;		
+0BE115 0C 10 E2 0B       			mv x,msg3					;not enough memory
+0BE119 12 16             			jr exit4	
+0BE11B                   	;		
+0BE11B 0C 59 E2 0B       	exit2:	mv x,msg1+85
+0BE11F 12 10             			jr exit4
+0BE121                   	;		
+0BE121 30 61 09 01       			cmp (flagInstal),1
+0BE125 18 06             			jrz exit3
+0BE127                   	;		
+0BE127 0C 24 E2 0B       			mv x,msg2					;BE224, programme déjà installé
+0BE12B 12 04             			jr exit4
+0BE12D                   	;		
+0BE12D 0C 6D E2 0B       	exit3:	mv x,msg1+105				;BE26D
+0BE131 05 BF E2 0B       	exit4:	callf print					;BE2BF
+0BE135                   	;
+0BE135                   	remake_slot:
+0BE135 8C 0E FD 0B       			mv	x,[baswrk]				;BASIC WORK Address
+0BE139 90 84 72          			mv	a,[x+114]
+0BE13C 60 00             			cmp	a,0						;BTEXT$ is "S1:" ????
+0BE13E 1A 30             			jrnz	remake_data
+0BE140                   	;
+0BE140                   	remake_text:
+0BE140 0D 73 00 00       			mv	y,115
+0BE144 45 54             			add	y,x						;BTEXT$ Address
+0BE146 2D                			pushu	y
+0BE147 8C 15 FC 0B       			mv	x,[s1_top]				;top of "S1:"
+0BE14B 95 84 12          			mv	y,[x+18]
+0BE14E 45 45             			add	x,y
+0BE150 3D                			popu y
+0BE151 90 04             	text1:	mv	a,[x]					;SEARCH  block 'TEXT.BAS'
+0BE153 60 FB             			cmp	a,0fbh
+0BE155 1A 56             			jrnz txtError
+0BE157 09 0B             			mv	il,11
+0BE159 2D                			pushu	y
+0BE15A 2C                			pushu	x
+0BE15B 6C 04             			inc	x
+0BE15D 05 A5 E2 0B       			callf	stricmp				;BE2A5
+0BE161 3C                			popu	x
+0BE162 18 08             			jrz	text2
+0BE164 95 84 11          			mv	y,[x+17]
+0BE167 45 45             			add	x,y						;next block
+0BE169 3D                			popu y
+0BE16A 13 1B             			jr	text1
+0BE16C 3D                	text2:	popu y
+0BE16D 30 A4 CB          			mv	(txtbas),x				;set "TEXT.BAS"  Address
+0BE170                   	;
+0BE170                   	remake_data:
+0BE170 8C 0E FD 0B       			mv	x,[baswrk]				;BASIC WORK Address
+0BE174 90 84 7E          			mv	a,[x+126]
+0BE177 60 00             			cmp	a,0						;BDATA$ is "S2:" ????
+0BE179 1A 30             			jrnz remake_end				;BE1AB
+0BE17B                   	;
+0BE17B 0D 7F 00 00       			mv	y,127					;BDATA$ Address
+0BE17F 45 54             			add	y,x
+0BE181 2D                			pushu	y
+0BE182 8C 15 FC 0B       			mv	x,[s1_top]				;top of "S1:"
+0BE186 95 84 12          			mv	y,[x+18]
+0BE189 45 45             			add	x,y
+0BE18B 3D                			popu y
+0BE18C 90 04             	data1:	mv	a,[x]					;SEARCH  block 'DATA.BAS'
+0BE18E 60 FB             			cmp	a,0fbh
+0BE190 1A 1B             			jrnz	txtError			;BE1AD
+0BE192 09 0B             			mv	il,11
+0BE194 2D                			pushu	y
+0BE195 2C                			pushu	x
+0BE196 6C 04             			inc	x
+0BE198 05 A5 E2 0B       			callf	stricmp				;BE2A5
+0BE19C 3C                			popu	x
+0BE19D 18 08             			jrz	data2					;BE1A7
+0BE19F 95 84 11          			mv	y,[x+17]
+0BE1A2 45 45             			add	x,y						;next block
+0BE1A4 3D                			popu	y
+0BE1A5 13 1B             			jr	data1
+0BE1A7 3D                	data2:	popu	y
+0BE1A8 30 A4 CE          			mv	(datbas),x				;set "DATA.BAS"  Address
+0BE1AB                   	remake_end:
+0BE1AB 9F                			rc
+0BE1AC 07                			retf
+0BE1AD                   	;
+0BE1AD                   	txtError:	
+0BE1AD 30 61 09 01       			cmp (flagInstal),01
+0BE1B1 18 06             			jrz kw2
+0BE1B3 0C 34 E2 0B       			mv x,msg4				;BE1BD, push any key
+0BE1B7 12 04             			jr kw3
+0BE1B9 0C D9 E2 0B       	kw2:	mv x,init_lcd				
+0BE1BD 05 BF E2 0B       	kw3:	callf print				;BE2BF
+0BE1C1 2F                			pushu	imr
+0BE1C2                   	;
+0BE1C2                   	keywait:	
+0BE1C2 30 CC F0 FF       			mv	(KOL),$ff			;KEY WAIT   until any key
+0BE1C6 30 71 F1 F8       			and	(KOH),$f8			;111110000b
+0BE1CA 00                			nop
+0BE1CB 00                			nop
+0BE1CC 30 80 F2          			mv	a,($f2)				;11110010b
+0BE1CF 60 00             			cmp	a,$00				;no key ??
+0BE1D1 19 11             			jrz	keywait
+0BE1D3 30 CC F0 00       			mv	(KOL),$00
+0BE1D7 30 71 F1 F8       			and	(KOH),$f8			;11111000b
+0BE1DB 3F                			popu	imr
+0BE1DC                   	;
+0BE1DC 8C FD FF 0F       			mv	x,[reset]			;jmp to MENU
+0BE1E0 11 04             			jp	x
+0BE1E2                   	;
+0BE1E2                   	;-----------------------------------------------------------------------------------
+0BE1E2                   	;ZONE DES MESSAGES
+0BE1E2 54 52 2D 44 4F 53 	msg0:	db	'TR-DOS V0.33 by T.Kobayashi(Ryu)',13,10
+0BE1E8 20 56 30 2E 33 33 	
+0BE1EE 20 62 79 20 54 2E 	
+0BE1F4 4B 6F 62 61 79 61 	
+0BE1FA 73 68 69 28 52 79 	
+0BE200 75 29 0D 0A       	
+0BE204                   	btm0:
+0BE204 49 6E 73 74 61 6C 	msg1:	db	'Installed.',13,10
+0BE20A 6C 65 64 2E 0D 0A 	
+0BE210                   	btm1:
+0BE210 4E 6F 74 20 65 6E 	msg3:	db	'Not enough memory.',13,10
+0BE216 6F 75 67 68 20 6D 	
+0BE21C 65 6D 6F 72 79 2E 	
+0BE222 0D 0A             	
+0BE224                   	btm3:
+0BE224 61 6C 72 65 61 64 	msg2:	db	'already exist.',13,10
+0BE22A 79 20 65 78 69 73 	
+0BE230 74 2E 0D 0A       	
+0BE234                   	btm2:
+0BE234 2D 2D 2D 20 50 55 	msg4:	db	'--- PUSH ANY KEY ---',13,10
+0BE23A 53 48 20 41 4E 59 	
+0BE240 20 4B 45 59 20 2D 	
+0BE246 2D 2D 0D 0A       	
+0BE24A                   	btm4:	
+0BE24A                   	;
+0BE24A                   	msg5:	
+0BE24A 8F ED 92 93 82 B5 		db $8F, $ED, $92, $93, $82, $B5, $82, $DC, $82, $B5, $82, $BD, $2E, $0D, $0A
+0BE250 82 DC 82 B5 82 BD 	
+0BE256 2E 0D 0A          	
+0BE259 83 81 83 82 83 8A 		db $83, $81, $83, $82, $83, $8A, $82, $AA, $91, $AB, $82, $E8, $82, $DC, $82, $B9, $82, $F1, $0D, $0A
+0BE25F 82 AA 91 AB 82 E8 	
+0BE265 82 DC 82 B9 82 F1 	
+0BE26B 0D 0A             	
+0BE26D 8A F9 82 C9 8F ED 		db $8A, $F9, $82, $C9, $8F, $ED, $92, $93, $82, $B5, $82, $C4, $82, $A2, $82, $DC, $82, $B7, $0D, $0A
+0BE273 92 93 82 B5 82 C4 	
+0BE279 82 A2 82 DC 82 B7 	
+0BE27F 0D 0A             	
+0BE281 2D 2D 2D 20 89 BD 		db $2D, $2D, $2D, $20, $89, $BD, $82, $A9, $83, $4C, $81, $5B, $82, $F0, $89, $9F, $82
+0BE287 82 A9 83 4C 81 5B 	
+0BE28D 82 F0 89 9F 82    	
+0BE292 82 B5 C4 82 AD 82 		db $82, $B5, $C4, $82, $AD, $82, $BE, $82, $B3, $82, $A2, $20, $2D, $2D, $2D, $0D, $0A
+0BE298 BE 82 B3 82 A2 20 	
+0BE29E 2D 2D 2D 0D 0A    	
+0BE2A3                   	;
+0BE2A3 0D 00             	ckm: db $0D, $00
+0BE2A5                   	;-----------------------------------------------------------------------------------
+0BE2A5                   	;
+0BE2A5                   	;
+0BE2A5                   	;--------------------------------------------------
+0BE2A5                   	; Comparaison de deux chaines de caractères
+0BE2A5                   	;
+0BE2A5                   	; il : longueur de la chaine
+0BE2A5                   	;  x : adresse de la chaine 1
+0BE2A5                   	;  y : adresse de la chaine 2
+0BE2A5                   	;--------------------------------------------------
+0BE2A5                   	;
+0BE2A5                   	stricmp:
+0BE2A5 30 E0 24 00       			mv	(buffer),[x++]				;stockage du caractère en mémoire interne
+0BE2A9 90 25             			mv	a,[y++]
+0BE2AB 30 61 00 00       			cmp	(buffer),0					;vérification fin de chaine par zéro
+0BE2AF 18 0A             			jrz	stricmp1					;saut si fin de chaine	
+0BE2B1 30 63 00          			cmp	(buffer),a					;comparaison des caractères
+0BE2B4 1A 08             			jrnz stricmp2					;retour si différent
+0BE2B6 7C 01             			dec	il							;décrémenter le compteur
+0BE2B8 1B 15             			jrnz stricmp					;boucler sur le traitement
+0BE2BA 07                			retf
+0BE2BB                   	stricmp1:
+0BE2BB 30 63 00          			cmp	(buffer),a			;stocker le zéro terminal
+0BE2BE                   	stricmp2:
+0BE2BE 07                			retf
+0BE2BF                   	;
+0BE2BF                   	;--------------------------------------------------
+0BE2BF                   	; Affichage d'une chaine de caractères
+0BE2BF                   	;
+0BE2BF                   	;  x : adresse de la chaine à afficher
+0BE2BF                   	;  y : nombre de caractères
+0BE2BF                   	;--------------------------------------------------
+0BE2BF                   	;
+0BE2BF 2C                	print:	pushu x							;stockage de l'adresse
+0BE2C0 0D 00 00 00       			mv y,0							;compteur à zéro
+0BE2C4 6C 05             	print1:	inc y							;incrémenter le compteur
+0BE2C6 90 24             			mv a,[x++]						;lecture du caractère
+0BE2C8 60 0A             			cmp a,$0a						;checke fin de chaine
+0BE2CA 1B 08             			jrnz print1						;boucler sur tous les caractères
+0BE2CC 3C                			popu x							;récupérer l'adresse de la chaine
+0BE2CD 30 CD D6 00 00    			mvw (cx),0						;cl = file handle
+0BE2D2 09 04             			mv il,4							;afficher la chaine
+0BE2D4 05 E4 FF 0F       			callf fcs_call
+0BE2D8 07                			retf
+0BE2D9                   	;
+0BE2D9                   	;--------------------------------------------------
+0BE2D9                   	;				Format processing 
+0BE2D9                   	;
+0BE2D9                   	;Card is initialized in RAM file
+0BE2D9                   	;Format is called out with INIT in BASIC program
+0BE2D9                   	;--------------------------------------------------
+0BE2D9                   	;
+0BE2D9                   	init_lcd:
+0BE2D9 09 3F             			mv il,$3f						;commande Format
+0BE2DB 30 CD D6 00 00    			mvw (cx),0						;cl = file handle
+0BE2E0 0C A3 E2 0B       			mv x,ckm						;adresse de la chaine CR + LF
+0BE2E4 05 E8 FF 0F       			callf iocs_call					;Reset
+0BE2E8 90 C7 07          			mv a,[s-7]						;empiler
+0BE2EB 60 0C             			cmp a,$0c						;checke erreur
+0BE2ED 1E 05             			jrnc lcd1						;saut si pas d'erreur
+0BE2EF 30 CC 09 01       			mv (flagInstal),01				;flag = 1 si erreur
+0BE2F3 07                			retf
+0BE2F4 30 CC 09 00       	lcd1:	mv (flagInstal),00				;flag = 0 si non erreur
+0BE2F8 07                			retf
+0BE2F9                   	;
+0BE2F9                   	;-----------------------------------------------------------
+0BE2F9                   	;       DEVICE-DRIVER
+0BE2F9                   	;-----------------------------------------------------------
+0BE2F9                   	block_top:
+0BE2F9 FB 54 52 2D 44 4F 				db	0fbh,'TR-DOS  SYS'			;block name
+0BE2FF 53 20 20 53 59 53 	
+0BE305 25                				db	25h							;block attr
+0BE306 00 00 00 00       				dw	0,0							;date,time
+0BE30A 7F 04 00          				dp	block_bottom - block_top	;block size
+0BE30D 00 00             				dw	0
+0BE30F 7F 04 00          				dp	block_bottom - block_top	;file size
+0BE312 7F 04 00          				dp	block_bottom - block_top	;block size
+0BE315 00 00 00 00 00 00 				dp	0,0
+0BE31B 00 00 00          	header:		dp	0
+0BE31E 0B                	drvNumber:	db	11
+0BE31F                   	p0:
+0BE31F 63                	attr:		db	063h
+0BE320 11 E4 0B          	adrs:		dp	iocs_entry
+0BE323 44 4F 53 3A 54 52 	dvname:		db	'DOS:TRDOS:',0
+0BE329 44 4F 53 3A 00    	
+0BE32E                   	;-----------------------------------------------------------
+0BE32E                   	;
+0BE32E 66 B4 E6 0B 01    	p51:	test [flag],1
+0BE333 1A 79             			jrnz _0be3ae
+0BE335 30 D8 C4 E6 0B EC 	p48:	mv [oldbp],($ec)		;_be335
+0BE33B 2C                			pushu x
+0BE33C 2D                			pushu y
+0BE33D 2B                			pushu i
+0BE33E 2A                			pushu ba
+0BE33F AF B8 E6 0B       	p1:		mv [stacks],s
+0BE343 AE BB E6 0B       	p2:		mv [stacku],u 
+0BE347 72 B4 E6 0B 00    	p3:		and [flag],0
+0BE34C 08 04             			mv a,4
+0BE34E A8 9E FC 0B       			mv [height],a 
+0BE352 0C CE E6 0B       	p44:	mv x,drvNames
+0BE356 0D 7D FC 0B       			mv y,defdrv
+0BE35A 09 06             			mv il,6
+0BE35C 90 24             	_be35c:	mv a,[x++]
+0BE35E B0 25             			mv [y++],a 
+0BE360 7C 01             			dec il 
+0BE362 1B 08             			jrnz _be35c
+0BE364                   	;
+0BE364 08 01             			mv a,1
+0BE366 09 10             			mv il,$10
+0BE368 05 E4 FF 0F       			callf fcs_call
+0BE36C 30 CC D6 02       			mv (cx),2
+0BE370 09 02             			mv il,2
+0BE372 05 E4 FF 0F       			callf fcs_call
+0BE376                   	p4:
+0BE376 0C 78 E7 0B       	_be376:	mv x,modify_table
+0BE37A 0D EB FB 0B       			mv y,$bfbeb
+0BE37E 30 DC DA 15 00 00 			mvp (si),$15
+0BE384 30 CC D6 06       			mv (cx),6
+0BE388 09 43             			mv il,$43
+0BE38A 05 E8 FF 0F       			callf iocs_call
+0BE38E 66 B4 E6 0B 02    	p5:		test [flag],2
+0BE393 1A 44             			jrnz _be3d9
+0BE395                   	;
+0BE395 66 B4 E6 0B 01    	p6:		test [flag],1
+0BE39A 1A 12             			jrnz _0be3ae
+0BE39C                   	;
+0BE39C 0C 74 E6 0B       	p7:		mv x,title
+0BE3A0 0D 28 00 00       			mv y,$28
+0BE3A4 30 CC D6 00       			mv (cx),0
+0BE3A8 09 04             			mv il,4
+0BE3AA 05 E4 FF 0F       			callf fcs_call
+0BE3AE                   	p8:
+0BE3AE                   	_0be3ae: 
+0BE3AE 0C F4 E6 0B       			mv x,_be6f4
+0BE3B2 0D A0 E6 0B       	p9:		mv  y,_be6a0
+0BE3B6 2D                			pushu y
+0BE3B7 05 22 E5 0B       	p10:	callf _be522
+0BE3BB 3C                			popu x
+0BE3BC 08 01             			mv a,1
+0BE3BE 09 01             			mv il,1
+0BE3C0 05 E4 FF 0F       			callf fcs_call
+0BE3C4 1C 13             			jrc _be3d9
+0BE3C6                   	;
+0BE3C6 30 80 D6          			mv a,(cx)
+0BE3C9 28                			pushu a 
+0BE3CA 05 50 E4 0B       	p11:	callf checkFile
+0BE3CE 1C 09             			jrc _be3d9
+0BE3D0                   	;
+0BE3D0 60 00             			cmp a,0
+0BE3D2 18 05             			jrz _be3d9
+0BE3D4 38                			popu a 
+0BE3D5 05 B0 E4 0B       	p12:	callf readBlock
+0BE3D9 08 01             	_be3d9:	mv a,1
+0BE3DB 09 10             			mv il,$10
+0BE3DD 05 E4 FF 0F       			callf fcs_call
+0BE3E1 05 F9 E3 0B       	p45:	callf cpyDRV
+0BE3E5 8F B8 E6 0B       	p13:	mv s,[stacks]
+0BE3E9 8E BB E6 0B       	p14:	mv u,[stacku]
+0BE3ED 3A                			popu ba
+0BE3EE 3B                			popu i 
+0BE3EF 3D                			popu y
+0BE3F0 3C                			popu x
+0BE3F1 30 D0 EC C4 E6 0B 	p49:	mv ($ec),[oldbp]			;_be3f1
+0BE3F7 9F                			rc
+0BE3F8 07                			retf
+0BE3F9                   	;
+0BE3F9 0C 7D FC 0B       	cpyDRV: mv x,defdrv
+0BE3FD 0D CE E6 0B       	p46:	mv y,drvNames
+0BE401 09 06             			mv il,6
+0BE403 90 24             	_be403:	mv a,[x++]
+0BE405 B0 25             			mv [y++],a
+0BE407 7C 01             			dec il
+0BE409 1B 08             			jrnz _be403
+0BE40B 72 B4 E6 0B 00    	p47:	and [flag],0
+0BE410 07                			retf
+0BE411                   	;			
+0BE411                   	iocs_entry:
+0BE411 2A                			pushu ba
+0BE412 0A 40 00          			mv ba,$40
+0BE415 4C 32             			sub i,ba
+0BE417 3A                			popu ba
+0BE418 1D EC             			jrc p51
+0BE41A 19 23             			jrz cpyDRV
+0BE41C 7C 01             	entry1:	dec il
+0BE41E 18 30             			jrz checkFile
+0BE420 7C 01             			dec il
+0BE422 18 FE             			jrz _be522
+0BE424 7C 01             			dec il
+0BE426 18 88             			jrz readBlock
+0BE428 7C 01             			dec il
+0BE42A 18 CD             			jrz _be4f9
+0BE42C 7C 01             			dec il
+0BE42E 18 CF             			jrz _be4ff
+0BE430 7C 01             			dec il
+0BE432 18 C5             			jrz _be4f9
+0BE434 7C 01             			dec il
+0BE436 18 CD             			jrz _be505
+0BE438 7C 01             			dec il
+0BE43A 19 63             			jrz _be3d9
+0BE43C 7C 01             			dec il
+0BE43E 18 CB             			jrz _be50b
+0BE440 7C 01             			dec il
+0BE442 18 CC             			jrz _be510
+0BE444 7C 01             			dec il
+0BE446 18 CE             			jrz _be516
+0BE448 7C 01             			dec il
+0BE44A 18 D0             			jrz _be51c
+0BE44C 08 80             			mv a,$80
+0BE44E 97                			sc
+0BE44F 07                			retf
+0BE450                   	;
+0BE450                   	;--------------------------------------------------
+0BE450                   	;				Verifying a file
+0BE450                   	;
+0BE450                   	;cl = file handle
+0BE450                   	;x = lead address to be verified
+0BE450                   	;y = nb bytes to be verified
+0BE450                   	;--------------------------------------------------
+0BE450                   	;
+0BE450                   	checkFile:	
+0BE450 28                			pushu a		
+0BE451 30 A0 D6          			mv (cx),a					;file handle
+0BE454 08 01             			mv a,1						;physical end of file
+0BE456 0C 9B E6 0B       	p15:	mv x,fileHeader				;header to be verified
+0BE45A 0D 05 00 00       			mv y,5						;5 bytes to read
+0BE45E 09 07             			mv il,7						;check file
+0BE460 05 E4 FF 0F       			callf fcs_call
+0BE464                   	;
+0BE464 1E 1F             			jrnc _be485					;jump if no carry	
+0BE466 60 0C             			cmp a,0ch					;lecture bit insuffisant
+0BE468 18 04             			jrz _be46e					;retour si correspondance	
+0BE46A 60 0B             			cmp a,0bh					;error in data verification
+0BE46C 1A 40             			jrnz _be4ae					;set carry and return
+0BE46E                   	;
+0BE46E                   			;moving a file pointer
+0BE46E 38                	_be46e:	popu a
+0BE46F 30 A0 D6          			mv (cx),a 					;cl = file handle
+0BE472 30 DC DA 00 00 00 			mvp (si),0					;number of bytes to move
+0BE478 08 00             			mv a,0						;from the file top
+0BE47A 09 09             			mv il,9						;move the file pointer
+0BE47C 05 E4 FF 0F       			callf fcs_call
+0BE480                   	;
+0BE480 1C 2C             			jrc _be4ae					;jump if error
+0BE482 08 00             			mv a,0						;flag zero if no error
+0BE484 07                			retf
+0BE485                   	;
+0BE485                   			;reading a block of the file
+0BE485 38                	_be485:	popu a
+0BE486 30 A0 D6          			mv (cx),a 					;cl = file handle
+0BE489 08 01             			mv a,1						;physical end of the file
+0BE48B 0C A0 E6 0B       	p16:	mv x,_be6a0					;buffer to store the data
+0BE48F 0D 0B 00 00       			mv y,11						;11 bytes to read
+0BE493 09 03             			mv il,3						;read the bloc
+0BE495 05 E4 FF 0F       			callf fcs_call
+0BE499 1C 13             			jrc _be4ae					;jp if error
+0BE49B                   	;
+0BE49B 8C A6 E6 0B       	p17:	mv x,[_be6a6]
+0BE49F AC C5 E6 0B       	p18:	mv [_be6c5],x
+0BE4A3 8C A3 E6 0B       	p19:	mv x,[_be6a3]
+0BE4A7 8D A0 E6 0B       	p20:	mv y,[_be6a0]
+0BE4AB 08 01             			mv a,1
+0BE4AD 07                			retf
+0BE4AE 97                	_be4ae: sc
+0BE4AF 07                			retf
+0BE4B0                   	;--------------------------------------------------
+0BE4B0                   	;
+0BE4B0                   	;--------------------------------------------------
+0BE4B0                   	;		     Reading a block of a file
+0BE4B0                   	;
+0BE4B0                   	;cl = file handle
+0BE4B0                   	;x = lead address to be verified
+0BE4B0                   	;y = nb bytes to be verified
+0BE4B0                   	;--------------------------------------------------
+0BE4B0                   	;
+0BE4B0                   	readBlock:	
+0BE4B0 2C                			pushu x
+0BE4B1 28                			pushu a
+0BE4B2 30 A0 D6          			mv (cx),a					;file handle
+0BE4B5 08 01             			mv a,1						;physical end of the file
+0BE4B7 09 03             			mv il,3						;read the bloc
+0BE4B9 05 E4 FF 0F       			callf fcs_call
+0BE4BD 1C 2E             			jrc _be4ed					;jump if error
+0BE4BF                   	;
+0BE4BF                   			;close file
+0BE4BF 38                			popu a
+0BE4C0 30 A0 D6          			mv (cx),a					;file handle
+0BE4C3 09 02             			mv il,2						;close file
+0BE4C5 05 E4 FF 0F       			callf fcs_call
+0BE4C9 1C 22             			jrc _be4ed					;jump if error
+0BE4CB                   	;
+0BE4CB 0C ED E4 0B       	p21:	mv x,_be4ed
+0BE4CF B4 37             			mv [--s],x					;empiler l'adresse de retour
+0BE4D1 3C                			popu x
+0BE4D2 8D B5 E6 0B       	p22:	mv y,[_be6b5]
+0BE4D6 2D                			pushu y
+0BE4D7 30 D0 EC C4 E6 0B 	p50:	mv ($ec),[oldbp]			;restaurer bp, _be4d7
+0BE4DD 8D C5 E6 0B       	p23:	mv y,[_be6c5]
+0BE4E1 6C 05             			inc y
+0BE4E3 18 04             			jrz _be4e9
+0BE4E5                   	;
+0BE4E5 7C 05             			dec y
+0BE4E7 11 05             			jp y
+0BE4E9                   	;		
+0BE4E9 FD 54             	_be4e9:	mv y,x
+0BE4EB 11 05             			jp y
+0BE4ED                   	p24:
+0BE4ED 8F B8 E6 0B       	_be4ed:	mv s,[stacks]				;restaurer la pile système
+0BE4F1 8E BB E6 0B       	p25:	mv u,[stacku]				;restaurer la pile utilisateur
+0BE4F5 03 76 E3 0B       	p26:	jpf _be376
+0BE4F9                   	;
+0BE4F9 8C 1A FD 0B       	_be4f9:	mv x,[usrwrk]				;récupérer l'adresse LM
+0BE4FD 9F                			rc
+0BE4FE 07                			retf
+0BE4FF                   	;
+0BE4FF 0C FF FB 0B       	_be4ff:	mv x,$0bfbff
+0BE503 9F                			rc
+0BE504 07                			retf
+0BE505                   	;
+0BE505 0C 1C E4 0B       	_be505:	mv x,entry1
+0BE509 9F                			rc
+0BE50A 07                			retf
+0BE50B                   	;
+0BE50B 0A 33 00          	_be50b:	mv ba,$33
+0BE50E 9F                			rc
+0BE50F 07                			retf
+0BE510                   	;
+0BE510                   	p52:
+0BE510 0C B4 E6 0B       	_be510:	mv x,flag
+0BE514 9F                			rc
+0BE515 07                			retf
+0BE516                   	;
+0BE516                   	p53:
+0BE516 0C 07 E7 0B       	_be516:	mv x,keyBuffer+7
+0BE51A 9F                			rc
+0BE51B 07                			retf
+0BE51C                   	;
+0BE51C                   	p54:
+0BE51C 0C 63 E7 0B       	_be51c:	mv x,p55					;keyBuffer	+ $63
+0BE520 9F                			rc
+0BE521 07                			retf
+0BE522                   	;
+0BE522                   	;--------------------------------------------------
+0BE522                   	; Remplissage buffer avec 18 espaces
+0BE522                   	;
+0BE522 08 01             	_be522:	mv a,1
+0BE524 A8 A0 E6 0B       	p28:	mv [_be6a0],a
+0BE528 2D                			pushu y
+0BE529 0A 20 20          			mv ba,2020h
+0BE52C 09 09             			mv il,9						;compteur
+0BE52E B2 25             	_be52e:	mv [y++],ba
+0BE530 7C 01             			dec il
+0BE532 1B 06             			jrnz _be52e					;boucler tant que non nul
+0BE534                   	;
+0BE534 3D                			popu y
+0BE535 2D                			pushu y
+0BE536 90 24             	_be536:	mv a,[x++]
+0BE538 05 4D E6 0B       	p29:	callf checkKey1
+0BE53C 1C D6             			jrc _be614
+0BE53E                   	;
+0BE53E 60 2D             			cmp a,'-'
+0BE540 18 E2             			jrz _be624
+0BE542 60 2F             			cmp a,'/'
+0BE544 18 DE             			jrz _be624
+0BE546 60 3C             			cmp a,'<'
+0BE548 18 04             			jrz _be54e
+0BE54A 60 3E             			cmp a,'>'
+0BE54C 1A 07             			jrnz _be555
+0BE54E 48 38             	_be54e:	sub a,$38
+0BE550 E4                			ror a
+0BE551 A8 A0 E6 0B       	p30:	mv [_be6a0],a
+0BE555                   	p31:
+0BE555 05 57 E6 0B       	_be555:	callf checkKey2
+0BE559 1D 25             			jrc _be536
+0BE55B                   	;
+0BE55B 3D                			popu y
+0BE55C 7C 04             			dec x
+0BE55E 2C                			pushu x
+0BE55F 90 24             	_be55f:	mv a,[x++]
+0BE561 60 3A             			cmp a,':'
+0BE563 18 18             			jrz _be57d
+0BE565 05 57 E6 0B       	p32:	callf checkKey2
+0BE569 1F 0C             			jrnc _be55f
+0BE56B                   	;
+0BE56B 0C 7D FC 0B       			mv x,defdrv
+0BE56F 2D                			pushu y
+0BE570 90 24             	_be570:	mv a,[x++]
+0BE572 B0 25             			mv [y++],a
+0BE574 60 3A             			cmp a,':'
+0BE576 1B 08             			jrnz _be570
+0BE578 3D                			popu y
+0BE579 3C                			popu x
+0BE57A 2D                			pushu y
+0BE57B 12 12             			jr _be58f
+0BE57D                   	;
+0BE57D                   	;Recopie Drive Name -------------
+0BE57D 3C                	_be57d:	popu x
+0BE57E 2D                			pushu y
+0BE57F 09 06             			mv il,6						;6 caractères du Drive incluant ':'
+0BE581 90 24             	_be581:	mv a,[x++]
+0BE583 B0 25             			mv [y++],a
+0BE585 60 3A             			cmp a,':'
+0BE587 18 06             			jrz _be58f					;saut si ':'
+0BE589 7C 01             			dec il
+0BE58B 1B 0C             			jrnz _be581					;boucler tant que non nul
+0BE58D 12 85             			jr _be614
+0BE58F                   	;
+0BE58F 09 08             	_be58f:	mv il,8						;8 caractères pour le nom de fichier
+0BE591 3D                			popu y
+0BE592 2D                			pushu y
+0BE593 08 06             			mv a,6						
+0BE595 45 50             			add y,a						;se positionner sur l'emplacement
+0BE597 90 04             			mv a,[x]
+0BE599 05 57 E6 0B       	p33:	callf checkKey2
+0BE59D 1E 10             			jrnc _be5af					;saut si non carry
+0BE59F                   	;
+0BE59F 05 1B E6 0B       	p34:	callf QuesMark
+0BE5A3 08 2E             			mv a,'.'
+0BE5A5 B0 25             			mv [y++],a
+0BE5A7 09 03             			mv il,3
+0BE5A9 05 1B E6 0B       	p35:	callf QuesMark
+0BE5AD 12 54             			jr _be603
+0BE5AF 90 24             	_be5af: mv a,[x++]
+0BE5B1 60 2A             			cmp a,'*'
+0BE5B3 1A 06             			jrnz _be5bb
+0BE5B5 05 1B E6 0B       	p36:	callf QuesMark
+0BE5B9 12 10             			jr _be5cb
+0BE5BB                   	;
+0BE5BB                   	p37:
+0BE5BB 05 57 E6 0B       	_be5bb:	callf checkKey2
+0BE5BF 1C 08             			jrc _be5c9
+0BE5C1 B0 25             			mv [y++],a
+0BE5C3 7C 01             			dec il
+0BE5C5 1B 18             			jrnz _be5af
+0BE5C7                   	;
+0BE5C7 12 02             			jr _be5cb
+0BE5C9 7C 04             	_be5c9:	dec x
+0BE5CB 90 24             	_be5cb:	mv a,[x++]
+0BE5CD 60 2E             			cmp a,'.'
+0BE5CF 18 02             			jrz _be5d3
+0BE5D1 7C 04             			dec x
+0BE5D3 3D                	_be5d3:	popu y
+0BE5D4 2D                			pushu y
+0BE5D5 08 0E             			mv a,$0e
+0BE5D7 45 50             			add y,a
+0BE5D9 08 2E             			mv a,'.'
+0BE5DB B0 25             			mv [y++],a
+0BE5DD 09 03             			mv il,3
+0BE5DF 90 24             	_be5df:	mv a,[x++]
+0BE5E1 60 2A             			cmp a,'*'
+0BE5E3 1A 06             			jrnz _be5eb
+0BE5E5 05 1B E6 0B       	p38:	callf QuesMark
+0BE5E9 12 0C             			jr _be5f7
+0BE5EB                   	;
+0BE5EB                   	p39:
+0BE5EB 05 57 E6 0B       	_be5eb:	callf checkKey2
+0BE5EF 1C 06             			jrc _be5f7
+0BE5F1 B0 25             			mv [y++],a
+0BE5F3 7C 01             			dec il
+0BE5F5 1B 18             			jrnz _be5df
+0BE5F7                   	;
+0BE5F7 7C 04             	_be5f7:	dec x
+0BE5F9 90 24             	_be5f9:	mv a,[x++]
+0BE5FB 05 57 E6 0B       	p40:	callf checkKey2
+0BE5FF 1F 08             			jrnc _be5f9
+0BE601 7C 04             			dec x
+0BE603 3D                	_be603:	popu y
+0BE604 2D                			pushu y
+0BE605 08 12             			mv a,18
+0BE607 45 50             			add y,a
+0BE609 08 00             			mv a,0
+0BE60B B0 25             			mv [y++],a
+0BE60D 88 A0 E6 0B       	p43:	mv a,[_be6a0]
+0BE611 3D                			popu y
+0BE612 9F                			rc
+0BE613 07                			retf
+0BE614                   	;
+0BE614 7C 04             	_be614:	dec x
+0BE616 3D                			popu y
+0BE617 08 81             			mv a,$81
+0BE619 97                			sc
+0BE61A 07                			retf
+0BE61B                   	;
+0BE61B                   	;------------------------------------
+0BE61B                   	;	 Remplissage buffer avec ?
+0BE61B                   	;
+0BE61B                   	QuesMark:	
+0BE61B 08 3F             			mv a,'?'
+0BE61D B0 25             	_be61d:	mv [y++],a
+0BE61F 7C 01             			dec il
+0BE621 1B 06             			jrnz _be61d
+0BE623 07                			retf
+0BE624                   	;------------------------------------
+0BE624                   	;
+0BE624                   	;------------------------------------
+0BE624                   	;	 Conversion majuscule
+0BE624                   	;
+0BE624 09 0F             	_be624:	mv il,15				;compteur
+0BE626 90 24             	_be626:	mv a,[x++]
+0BE628 05 57 E6 0B       	p41:	callf checkKey2
+0BE62C 1C 18             			jrc _be646
+0BE62E 60 61             			cmp a,'a'				;$61
+0BE630 1C 06             			jrc _be638
+0BE632 60 7A             			cmp a,'z'				;$7b
+0BE634 1E 02             			jrnc _be638
+0BE636 48 20             			sub a,$20				;conversion en majuscule
+0BE638 B0 25             	_be638:	mv [y++],a
+0BE63A 7C 01             			dec il
+0BE63C 1B 18             			jrnz _be626
+0BE63E 90 24             	_be63e:	mv a,[x++]
+0BE640 05 57 E6 0B       	p42:	callf checkKey2
+0BE644 1F 08             			jrnc _be63e
+0BE646 7C 04             	_be646:	dec x
+0BE648 08 00             			mv a,0
+0BE64A 3D                			popu y
+0BE64B 9F                			rc
+0BE64C 07                			retf
+0BE64D                   	;
+0BE64D                   	checkKey1:	
+0BE64D 60 20             			cmp a,' '
+0BE64F 1C 20             			jrc _be671
+0BE651 60 FF             			cmp a,$ff
+0BE653 18 1C             			jrz _be671
+0BE655 12 18             			jr _be66f
+0BE657                   	checkKey2:	
+0BE657 60 21             			cmp a,'!'
+0BE659 1C 16             			jrc _be671
+0BE65B 60 2B             			cmp a,'+'
+0BE65D 1C 10             			jrc _be66f
+0BE65F 60 30             			cmp a,'0'
+0BE661 1C 0E             			jrc _be671
+0BE663 60 3A             			cmp a,':'
+0BE665 1C 08             			jrc _be66f
+0BE667 60 3F             			cmp a,'?'
+0BE669 1C 06             			jrc _be671
+0BE66B 60 FF             			cmp a,$ff
+0BE66D 18 02             			jrz _be671
+0BE66F 9F                	_be66f:	rc
+0BE670 07                			retf
+0BE671 97                	_be671:	sc
+0BE672 07                			retf
+0BE673                   	;
+0BE673 00                	attrb:		db 0
+0BE674 54 52 2D 44 4F 53 	title:		db 'TR-DOS V0.33 (C)1993 T.Kobayashi(Ryu)',13,10
+0BE67A 20 56 30 2E 33 33 	
+0BE680 20 28 43 29 31 39 	
+0BE686 39 33 20 54 2E 4B 	
+0BE68C 6F 62 61 79 61 73 	
+0BE692 68 69 28 52 79 75 	
+0BE698 29 0D 0A          	
+0BE69B FF 00 06 01 10    	fileHeader: db $ff,$00,$06,$01,$10
+0BE6A0 00 00 00          	_be6a0:		dp 0
+0BE6A3 00 00 00          	_be6a3:		dp 0
+0BE6A6 00 00 00          	_be6a6: 	dp 0
+0BE6A9 00 00 00 00 00 00 	_be6a9: 	ds 11,0
+0BE6AF 00 00 00 00 00    	
+0BE6B4 00                	flag:   	db 0		;BE6B4h
+0BE6B5 00 00 00          	_be6b5: 	dp 0
+0BE6B8 00 00 00          	stacks:		dp 0		;BE6B8h
+0BE6BB 00 00 00          	stacku:		dp 0		;BE6BBh
+0BE6BE 00 00 00 00 00 00 	_be6be: 	ds 6,0
+0BE6C4 00                	oldbp:		db 0		;BE6C4h
+0BE6C5 00 00 00 00 00 00 	_be6c5: 	ds 9,0
+0BE6CB 00 00 00          	
+0BE6CE 53 31 3A 20 20 20 	drvNames: 	db 'S1:   S1:S2:S3:D:E:F:'
+0BE6D4 53 31 3A 53 32 3A 	
+0BE6DA 53 33 3A 44 3A 45 	
+0BE6E0 3A 46 3A          	
+0BE6E3 00 00 00 00 00 00 	_be6e3: 	ds 17,0
+0BE6E9 00 00 00 00 00 00 	
+0BE6EF 00 00 00 00 00    	
+0BE6F4 53 31 3A 45 58 5F 	_be6f4: 	db 'S1:EX_TYCOM',13
+0BE6FA 54 59 43 4F 4D 0D 	
+0BE700 00 00 00 00 00 00 	keyBuffer: 	ds 99,0
+0BE706 00 00 00 00 00 00 	
+0BE70C 00 00 00 00 00 00 	
+0BE712 00 00 00 00 00 00 	
+0BE718 00 00 00 00 00 00 	
+0BE71E 00 00 00 00 00 00 	
+0BE724 00 00 00 00 00 00 	
+0BE72A 00 00 00 00 00 00 	
+0BE730 00 00 00 00 00 00 	
+0BE736 00 00 00 00 00 00 	
+0BE73C 00 00 00 00 00 00 	
+0BE742 00 00 00 00 00 00 	
+0BE748 00 00 00 00 00 00 	
+0BE74E 00 00 00 00 00 00 	
+0BE754 00 00 00 00 00 00 	
+0BE75A 00 00 00 00 00 00 	
+0BE760 00 00 00          	
+0BE763 00 00 00          	p55:		dp 0
+0BE766 00 00 00          	p56:		dp 0
+0BE769 00 00 00 00 00 00 	p57:		ds 11,0
+0BE76F 00 00 00 00 00    	
+0BE774 00 00 00 00       	p58:		ds 4,0
+0BE778                   	block_bottom:
+0BE778                   	;
+0BE778                   	;-----------------------------------------------------------
+0BE778                   	;       DEVICE-DRIVER RELOCATE-TABLE
+0BE778                   	;-----------------------------------------------------------
+0BE778                   	modify_table:		;BE778
+0BE778 1F E3 0B 3F E3 0B 		dp	p0,p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18
+0BE77E 43 E3 0B 47 E3 0B 	
+0BE784 76 E3 0B 8E E3 0B 	
+0BE78A 95 E3 0B 9C E3 0B 	
+0BE790 AE E3 0B B2 E3 0B 	
+0BE796 B7 E3 0B CA E3 0B 	
+0BE79C D5 E3 0B E5 E3 0B 	
+0BE7A2 E9 E3 0B 56 E4 0B 	
+0BE7A8 8B E4 0B 9B E4 0B 	
+0BE7AE 9F E4 0B          	
+0BE7B1 A3 E4 0B A7 E4 0B 		dp	p19,p20,p21,p22,p23,p24,p25,p26,_be505,p28,p29,p30,p31,p32,p33
+0BE7B7 CB E4 0B D2 E4 0B 	
+0BE7BD DD E4 0B ED E4 0B 	
+0BE7C3 F1 E4 0B F5 E4 0B 	
+0BE7C9 05 E5 0B 24 E5 0B 	
+0BE7CF 38 E5 0B 51 E5 0B 	
+0BE7D5 55 E5 0B 65 E5 0B 	
+0BE7DB 99 E5 0B          	
+0BE7DE 9F E5 0B A9 E5 0B 		dp	p34,p35,p36,p37,p38,p39,p40,p41,p42,p43,p44,p45,p46,p47
+0BE7E4 B5 E5 0B BB E5 0B 	
+0BE7EA E5 E5 0B EB E5 0B 	
+0BE7F0 FB E5 0B 28 E6 0B 	
+0BE7F6 40 E6 0B 0D E6 0B 	
+0BE7FC 52 E3 0B E1 E3 0B 	
+0BE802 FD E3 0B 0B E4 0B 	
+0BE808 36 E3 0B F3 E3 0B 		dp	p48+1,p49+2,p50+2,p51,p52,p53,p54,p55-1,p56-1,p57-1,p58
+0BE80E D9 E4 0B 2E E3 0B 	
+0BE814 10 E5 0B 16 E5 0B 	
+0BE81A 1C E5 0B 62 E7 0B 	
+0BE820 65 E7 0B 68 E7 0B 	
+0BE826 74 E7 0B          	
+0BE829 FF FF 0F          		dp	-1
+0BE82C                   	;
+0BE82C                   		end
+
+  No fatal error.  Code: 0BE000h - 0BE82Bh [     2092 byte(s)]

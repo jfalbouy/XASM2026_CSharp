@@ -1,0 +1,2711 @@
+000000                   	;
+000000                   	;		ish file decoder for TY-DOS (PC-E500/1480U)   Ver 1.02
+000000                   	;			Programmed  by  E. Kako (JM2WGN)
+000000                   	;
+000000                   	;		ORIGIANAL MS-DOS VERSION
+000000                   	;			Copyright (c) 1986 - 1990  by  M. ishizuka
+000000                   	;			All rights reserved.
+000000                   	;
+000000                   	;		USAGE : ishd filename     ...  restore ish_file
+000000                   	;
+000000                   	CR:	equ	0dh
+000000                   	LF:	equ	0ah
+000000                   	F_CALL:	equ	0fffe4h
+000000                   	CR_DRV:	equ	0bfc7dh
+000000                   	;
+0BC000                   		org	0bc000h
+0BC000                   		pre_on
+0BC000                   	;
+0BC000 3C                		popu	x		;get cmdlin adrs
+0BC001 30 80 EC          		mv	a,(0ech)
+0BC004 A8 02 D2 0B       		mv	[base],a	;BP save
+0BC008                   	;
+0BC008 08 00             		mv	a,0
+0BC00A A8 03 D2 0B       		mv	[mode],a
+0BC00E 2C                		pushu	x
+0BC00F 0C 59 CD 0B       		mv	x,msg1		;(title message)
+0BC013 04 33 CD          		call	write
+0BC016                   	;
+0BC016 3C                		popu	x
+0BC017 0D 06 D2 0B       		mv	y,fname
+0BC01B 04 6C C3          		call	arg		;argument check
+0BC01E 1C 02             		jrc	no_arg
+0BC020 12 0B             		jr	start
+0BC022                   	;
+0BC022 2C                	no_arg:	pushu	x		;cmdlin_btm save
+0BC023 0C 7B CD 0B       		mv	x,msg2		;(help message)
+0BC027 04 33 CD          		call	write
+0BC02A 02 4C C3          		jp	exit
+0BC02D                   	;
+0BC02D 2C                	start:	pushu	x		;cmdlin_btm save
+0BC02E 0C 94 CD 0B       		mv	x,msg3		;(opening message)
+0BC032 04 33 CD          		call	write
+0BC035 09 0B             		mv	il,0bh
+0BC037 0C 06 D2 0B       		mv	x,fname
+0BC03B 0D 3D D2 0B       		mv	y,finfo
+0BC03F 08 00             		mv	a,0
+0BC041 05 E4 FF 0F       		callf	F_CALL		;file_iocs_12
+0BC045 1E 28             		jrnc	lbl1
+0BC047                   	;
+0BC047 0C 06 D2 0B       		mv	x,fname
+0BC04B 90 24             		mv	a,[x++]
+0BC04D 60 43             		cmp	a,'C'
+0BC04F 1A 14             		jrnz	f_n_f
+0BC051 90 24             		mv	a,[x++]
+0BC053 60 4F             		cmp	a,'O'
+0BC055 1A 0E             		jrnz	f_n_f
+0BC057 90 24             		mv	a,[x++]
+0BC059 60 4D             		cmp	a,'M'
+0BC05B 1A 08             		jrnz	f_n_f
+0BC05D 90 24             		mv	a,[x++]
+0BC05F 60 3A             		cmp	a,':'
+0BC061 1A 02             		jrnz	f_n_f
+0BC063 12 0A             		jr	lbl1
+0BC065                   	f_n_f:
+0BC065 0C B0 CD 0B       		mv	x,msg4		;(file not found)
+0BC069 04 33 CD          		call	write
+0BC06C 02 4C C3          		jp	exit
+0BC06F                   	;
+0BC06F 0C 06 D2 0B       	lbl1:	mv	x,fname		;fopen 'fname' for input as handle0
+0BC073 09 01             		mv	il,1
+0BC075 08 01             		mv	a,1
+0BC077 05 E4 FF 0F       		callf	F_CALL		;file_iocs_1
+0BC07B 30 80 D6          		mv	a,(0d6h)
+0BC07E A8 04 D2 0B       		mv	[handl0],a
+0BC082                   	;
+0BC082 08 01             		mv	a,1
+0BC084 A8 03 D2 0B       		mv	[mode],a
+0BC088 0C 00 00 00       		mv	x,0
+0BC08C AC 6A D2 0B       		mv	[reading_line],x
+0BC090                   	;
+0BC090                   	search_line:
+0BC090 04 B6 C4          		call	get_line	;analyze header line
+0BC093 1E 03             		jrnc	srch1
+0BC095 02 4C C3          		jp	all_extract
+0BC098 88 63 D3 0B       	srch1:	mv	a,[i_buf]
+0BC09C 60 00             		cmp	a,0
+0BC09E 1B 10             		jrnz	search_line
+0BC0A0                   	;
+0BC0A0 0C 6F D3 0B       		mv	x,i_buf+12	;get filename 'file2'
+0BC0A4 0D 30 D2 0B       		mv	y,file2
+0BC0A8 09 08             		mv	il,8
+0BC0AA 90 24             	lbl2:	mv	a,[x++]
+0BC0AC B0 25             		mv	[y++],a
+0BC0AE 7C 01             		dec	il
+0BC0B0 1B 08             		jrnz	lbl2
+0BC0B2 08 2E             		mv	a,'.'
+0BC0B4 B0 25             		mv	[y++],a
+0BC0B6 09 03             		mv	il,3
+0BC0B8 90 24             	lbl2a:	mv	a,[x++]
+0BC0BA B0 25             		mv	[y++],a
+0BC0BC 7C 01             		dec	il
+0BC0BE 1B 08             		jrnz	lbl2a
+0BC0C0 08 00             		mv	a,0
+0BC0C2 B0 25             		mv	[y++],a
+0BC0C4                   	;
+0BC0C4 09 06             		mv	il,6		;filename in iocs format
+0BC0C6 0C 7D FC 0B       		mv	x,CR_DRV
+0BC0CA 0D 1B D2 0B       		mv	y,file1
+0BC0CE 90 24             	lbl2b:	mv	a,[x++]
+0BC0D0 B0 25             		mv	[y++],a
+0BC0D2 7C 01             		dec	il
+0BC0D4 1B 08             		jrnz	lbl2b
+0BC0D6 09 0D             		mv	il,13
+0BC0D8 0C 30 D2 0B       		mv	x,file2
+0BC0DC 90 24             	lbl2c:	mv	a,[x++]
+0BC0DE B0 25             		mv	[y++],a
+0BC0E0 7C 01             		dec	il
+0BC0E2 1B 08             		jrnz	lbl2c
+0BC0E4                   	;
+0BC0E4 0C 30 D2 0B       		mv	x,file2
+0BC0E8 FD 54             		mv	y,x
+0BC0EA 09 0D             		mv	il,13
+0BC0EC 90 24             	lbl2d:	mv	a,[x++]
+0BC0EE 60 20             		cmp	a,' '
+0BC0F0 18 02             		jrz	lbl2e
+0BC0F2 B0 25             		mv	[y++],a
+0BC0F4 7C 01             	lbl2e:	dec	il
+0BC0F6 1B 0C             		jrnz	lbl2d
+0BC0F8                   	;
+0BC0F8 0C 30 D2 0B       		mv	x,file2		;(restoring filename)
+0BC0FC 04 33 CD          		call	write
+0BC0FF 0C C6 CD 0B       		mv	x,msg5
+0BC103 04 33 CD          		call	write
+0BC106                   	;
+0BC106                   	lbl3:
+0BC106 09 0B             		mv	il,0bh		;file exist check
+0BC108 0C 1B D2 0B       		mv	x,file1
+0BC10C 0D 3D D2 0B       		mv	y,finfo
+0BC110 08 00             		mv	a,0
+0BC112 05 E4 FF 0F       		callf	F_CALL		;file_iocs_12
+0BC116 1C 0A             		jrc	lbl3a
+0BC118                   	;
+0BC118 0C CA CD 0B       		mv	x,msg6		;(already exist)
+0BC11C 04 33 CD          		call	write
+0BC11F 02 7C C1          		jp	srch_next
+0BC122                   	;
+0BC122                   	lbl3a:
+0BC122 8C 65 D3 0B       		mv	x,[i_buf+2]	;ish format check
+0BC126 AC 45 D2 0B       		mv	[size],x
+0BC12A 6C 04             		inc	x
+0BC12C 6C 04             		inc	x
+0BC12E AC 48 D2 0B       		mv	[restsize],x
+0BC132 8A 69 D3 0B       		mv	ba,[i_buf+6]
+0BC136 60 45             		cmp	a,69
+0BC138 1A 17             		jrnz	use_upper_ver
+0BC13A 8A 6B D3 0B       		mv	ba,[i_buf+8]
+0BC13E 60 44             		cmp	a,68
+0BC140 1A 0F             		jrnz	use_upper_ver
+0BC142 8A 6D D3 0B       		mv	ba,[i_buf+10]
+0BC146 60 08             		cmp	a,8
+0BC148 1A 07             		jrnz	use_upper_ver
+0BC14A DD                		ex	a,b
+0BC14B 60 08             		cmp	a,8
+0BC14D 1A 02             		jrnz	use_upper_ver
+0BC14F 12 0A             		jr	lbl3b
+0BC151                   	;
+0BC151                   	use_upper_ver:
+0BC151 0C DB CD 0B       		mv	x,msg7		;(use upper version)
+0BC155 04 33 CD          		call	write
+0BC158 02 7C C1          		jp	srch_next
+0BC15B                   	;
+0BC15B                   	lbl3b:
+0BC15B 09 0F             		mv	il,0fh		;file size check
+0BC15D 0C 7D FC 0B       		mv	x,CR_DRV
+0BC161 08 00             		mv	a,0
+0BC163 05 E4 FF 0F       		callf	F_CALL		;file_iocs_15
+0BC167 30 85 DA          		mv	y,(0dah)
+0BC16A 8C 45 D2 0B       		mv	x,[size]
+0BC16E 4D 45             		sub	x,y
+0BC170 1C 1D             		jrc	lbl4
+0BC172                   	;
+0BC172 0C F0 CD 0B       		mv	x,msg8		;(disk full)
+0BC176 04 33 CD          		call	write
+0BC179 02 7C C1          		jp	srch_next
+0BC17C                   	;
+0BC17C                   	srch_next:
+0BC17C 04 B6 C4          		call	get_line
+0BC17F 1E 03             		jrnc	srch_n
+0BC181 02 4C C3          		jp	all_extract
+0BC184 88 63 D3 0B       	srch_n:	mv	a,[i_buf]
+0BC188 60 00             		cmp	a,0
+0BC18A 19 10             		jrz	srch_next
+0BC18C 02 90 C0          		jp	search_line
+0BC18F                   	;
+0BC18F                   	lbl4:
+0BC18F 8C 45 D2 0B       		mv	x,[size]	;(_____)
+0BC193 6C 04             		inc	x
+0BC195 0D 42 00 00       		mv	y,66
+0BC199 09 00             		mv	il,0
+0BC19B 6C 03             	lbl4a:	inc	i
+0BC19D 4D 45             		sub	x,y
+0BC19F 1F 06             		jrnc	lbl4a
+0BC1A1 FD 43             		mv	x,i
+0BC1A3 AC 63 D2 0B       		mv	[total_lines],x
+0BC1A7 09 00             		mv	il,0
+0BC1A9 6C 03             	lbl4b:	inc	i
+0BC1AB 4D 45             		sub	x,y
+0BC1AD 18 02             		jrz	lbl4b2
+0BC1AF 1F 08             		jrnc	lbl4b
+0BC1B1 45 45             	lbl4b2:	add	x,y
+0BC1B3 30 A4 00          		mv	(0),x
+0BC1B6 30 D8 69 D2 0B 00 		mv	[rest_lines],(0)
+0BC1BC FD 53             		mv	y,i
+0BC1BE AD 66 D2 0B       		mv	[total_pages],y
+0BC1C2 FD 45             		mv	x,y
+0BC1C4 08 5F             	lbl4c:	mv	a,'_'
+0BC1C6 04 4E CD          		call	write2
+0BC1C9 7C 04             		dec	x
+0BC1CB 1B 09             		jrnz	lbl4c
+0BC1CD 08 1D             	lbl4d:	mv	a,29		;cursor move left
+0BC1CF 04 4E CD          		call	write2
+0BC1D2 7C 05             		dec	y
+0BC1D4 1B 09             		jrnz	lbl4d
+0BC1D6                   	;
+0BC1D6                   	lbl5:
+0BC1D6 04 B6 C4          		call	get_line
+0BC1D9 1E 0A             		jrnc	lbl5a
+0BC1DB 0C 57 CE 0B       		mv	x,msg14		;body is not found
+0BC1DF 04 33 CD          		call	write
+0BC1E2 02 4C C3          		jp	all_extract
+0BC1E5 88 63 D3 0B       	lbl5a:	mv	a,[i_buf]
+0BC1E9 60 00             		cmp	a,0
+0BC1EB 19 17             		jrz	lbl5
+0BC1ED                   	;
+0BC1ED 0C 1B D2 0B       		mv	x,file1		;create 'file1' for output as handle1
+0BC1F1 09 00             		mv	il,0
+0BC1F3 08 00             		mv	a,0
+0BC1F5 05 E4 FF 0F       		callf	F_CALL		;file_iocs_1
+0BC1F9 1C 09             		jrc	lbl5b
+0BC1FB 30 80 D6          		mv	a,(0d6h)
+0BC1FE A8 05 D2 0B       		mv	[handl1],a
+0BC202 12 0E             		jr	lbl6
+0BC204                   	;
+0BC204 A8 05 D2 0B       	lbl5b:	mv	[handl1],a
+0BC208 0C 6C CE 0B       		mv	x,msg15		;('file1' cannot create)
+0BC20C 04 33 CD          		call	write
+0BC20F 02 4C C3          		jp	all_extract
+0BC212                   	;
+0BC212                   	;
+0BC212 08 00             	lbl6:	mv	a,0
+0BC214 A8 AF D3 0B       		mv	[crc_g_f],a
+0BC218                   	;
+0BC218                   	;
+0BC218                   	read_page_0:
+0BC218 08 01             		mv	a,1
+0BC21A A8 6D D2 0B       		mv	[wanted],a
+0BC21E 08 00             		mv	a,0
+0BC220 A8 6E D2 0B       		mv	[deterr],a
+0BC224 04 BE C7          		call	buffer_init
+0BC227 12 1C             		jr	read_page_2
+0BC229                   	;
+0BC229                   	read_page_0a:
+0BC229 08 01             		mv	a,1
+0BC22B A8 6D D2 0B       		mv	[wanted],a
+0BC22F 08 00             		mv	a,0
+0BC231 A8 6E D2 0B       		mv	[deterr],a
+0BC235 04 BE C7          		call	buffer_init
+0BC238                   	;
+0BC238                   	read_page_1:
+0BC238 04 B6 C4          		call	get_line
+0BC23B 1E 08             		jrnc	read_page_2
+0BC23D 08 FF             		mv	a,255
+0BC23F A8 63 D3 0B       		mv	[i_buf],a
+0BC243 12 0F             		jr	readpz
+0BC245                   	;
+0BC245                   	read_page_2:
+0BC245 88 63 D3 0B       		mv	a,[i_buf]
+0BC249 30 D0 00 6D D2 0B 		mv	(0),[wanted]
+0BC24F 30 63 00          		cmp	(0),a
+0BC252 18 46             		jrz	no_error
+0BC254                   	;
+0BC254 04 FE C7          	readpz:	call	det1		;error has detected !!!!!
+0BC257 1E 03             		jrnc	readpy
+0BC259 02 10 C3          		jp	fatal_err
+0BC25C                   	;
+0BC25C 88 6D D2 0B       	readpy:	mv	a,[wanted]
+0BC260 60 45             		cmp	a,69
+0BC262 1A 0D             		jrnz	readp0
+0BC264 04 52 C8          		call	write_page
+0BC267 1F 51             		jrnc	read_page_0
+0BC269 09 01             		mv	il,1
+0BC26B A9 82 D2 0B       		mv	[already_read],il
+0BC26F 12 6A             		jr	final
+0BC271 60 43             	readp0:	cmp	a,67
+0BC273 1A 08             		jrnz	readp1
+0BC275 08 45             		mv	a,69
+0BC277 A8 6D D2 0B       		mv	[wanted],a
+0BC27B 13 38             		jr	read_page_2
+0BC27D 8C 66 D2 0B       	readp1:	mv	x,[total_pages]
+0BC281 7C 04             		dec	x
+0BC283 1A 0D             		jrnz	readp2			;last page and ..
+0BC285 30 D0 00 69 D2 0B 		mv	(0),[rest_lines]	;              last line
+0BC28B 30 63 00          		cmp	(0),a
+0BC28E 1A 02             		jrnz	readp2
+0BC290 08 42             		mv	a,66
+0BC292 6C 00             	readp2:	inc	a
+0BC294 A8 6D D2 0B       		mv	[wanted],a
+0BC298 13 55             		jr	read_page_2
+0BC29A                   	;
+0BC29A                   	no_error:
+0BC29A 04 DE C7          		call	set_buffer	;error is not detected !!!
+0BC29D 88 6D D2 0B       		mv	a,[wanted]
+0BC2A1 60 45             		cmp	a,69
+0BC2A3 1A 0D             		jrnz	no_e0
+0BC2A5 04 52 C8          		call	write_page
+0BC2A8 1F 81             		jrnc	read_page_0a
+0BC2AA 09 00             		mv	il,0
+0BC2AC A9 82 D2 0B       		mv	[already_read],il
+0BC2B0 12 29             		jr	final
+0BC2B2 60 43             	no_e0:	cmp	a,67
+0BC2B4 1A 08             		jrnz	no_e1
+0BC2B6 08 45             		mv	a,69
+0BC2B8 A8 6D D2 0B       		mv	[wanted],a
+0BC2BC 13 86             		jr	read_page_1
+0BC2BE 8C 66 D2 0B       	no_e1:	mv	x,[total_pages]
+0BC2C2 7C 04             		dec	x
+0BC2C4 1A 0D             		jrnz	no_e2			;last page and ..
+0BC2C6 30 D0 00 69 D2 0B 		mv	(0),[rest_lines]	;              last line
+0BC2CC 30 63 00          		cmp	(0),a
+0BC2CF 1A 02             		jrnz	no_e2
+0BC2D1 08 42             		mv	a,66
+0BC2D3 6C 00             	no_e2:	inc	a
+0BC2D5 A8 6D D2 0B       		mv	[wanted],a
+0BC2D9 13 A3             		jr	read_page_1
+0BC2DB                   	;
+0BC2DB 60 00             	final:	cmp	a,0
+0BC2DD 18 08             		jrz	fina0		;wrote all  successfully
+0BC2DF 60 01             		cmp	a,1
+0BC2E1 18 1B             		jrz	fina1		;file write error
+0BC2E3 60 02             		cmp	a,2
+0BC2E5 18 20             		jrz	fina2		;crc error detect
+0BC2E7                   	;
+0BC2E7                   	fina0:
+0BC2E7 0C FD CD 0B       		mv	x,msg9		;(restored successfully.)
+0BC2EB 04 33 CD          		call	write
+0BC2EE 88 05 D2 0B       		mv	a,[handl1]
+0BC2F2 30 A0 D6          		mv	(0d6h),a
+0BC2F5 09 02             		mv	il,2		;fclose 'file1'
+0BC2F7 05 E4 FF 0F       		callf	F_CALL
+0BC2FB 02 34 C3          		jp	final_final
+0BC2FE                   	;
+0BC2FE                   	fina1:
+0BC2FE 0C 1D CE 0B       		mv	x,msg10		;(file write error)
+0BC302 04 33 CD          		call	write
+0BC305 12 13             		jr	tag_del
+0BC307                   	fina2:
+0BC307 0C 33 CE 0B       		mv	x,msg11		;(crc error detect)
+0BC30B 04 33 CD          		call	write
+0BC30E 12 0A             		jr	tag_del
+0BC310                   	;
+0BC310                   	fatal_err:
+0BC310 0C 53 CE 0B       		mv	x,msg13
+0BC314 04 33 CD          		call	write
+0BC317 04 3A CC          		call	disp_errors
+0BC31A                   	;
+0BC31A                   	tag_del:
+0BC31A 88 05 D2 0B       		mv	a,[handl1]
+0BC31E 30 A0 D6          		mv	(0d6h),a
+0BC321 09 02             		mv	il,2		;fclose 'file1'
+0BC323 05 E4 FF 0F       		callf	F_CALL
+0BC327 0C 1B D2 0B       		mv	x,file1
+0BC32B 09 0E             		mv	il,0eh
+0BC32D 05 E4 FF 0F       		callf	F_CALL		;delete 'file1'
+0BC331 02 34 C3          		jp	final_final
+0BC334                   	;
+0BC334                   	;
+0BC334                   	final_final:
+0BC334 88 63 D3 0B       		mv	a,[i_buf]
+0BC338 60 FF             		cmp	a,255
+0BC33A 18 10             		jrz	all_extract
+0BC33C 88 82 D2 0B       		mv	a,[already_read]
+0BC340 60 01             		cmp	a,1		;a=1 .. already read a line
+0BC342 18 05             		jrz	f_f_1
+0BC344 04 B6 C4          		call	get_line
+0BC347 1C 03             		jrc	all_extract
+0BC349 02 98 C0          	f_f_1:	jp	srch1
+0BC34C                   	;
+0BC34C                   	;
+0BC34C                   	all_extract:
+0BC34C                   	;
+0BC34C                   	;
+0BC34C 88 03 D2 0B       	exit:	mv	a,[mode]
+0BC350 60 00             		cmp	a,0
+0BC352 18 0D             		jrz	exit1
+0BC354 88 04 D2 0B       		mv	a,[handl0]	;close file 'fname'
+0BC358 30 A0 D6          		mv	(0d6h),a
+0BC35B 09 02             		mv	il,2
+0BC35D 05 E4 FF 0F       		callf	F_CALL		;file_iocs_2
+0BC361                   	;
+0BC361 88 02 D2 0B       	exit1:	mv	a,[base]
+0BC365 30 A0 EC          		mv	(0ech),a	;BP restore
+0BC368 08 00             		mv	a,0
+0BC36A 9F                		rc			;reset CF
+0BC36B 07                		retf
+0BC36C                   	;
+0BC36C                   	;
+0BC36C                   	;
+0BC36C                   	;
+0BC36C                   	;
+0BC36C                   	;
+0BC36C                   	;
+0BC36C 0D 06 D2 0B       	arg:	mv	y,fname		;analyze argument characters
+0BC370 30 CC 00 12       		mv	(0),18
+0BC374 08 20             		mv	a,' '
+0BC376 B0 25             	arg0:	mv	[y++],a		;fill space
+0BC378 30 7D 00          		dec	(0)
+0BC37B 1B 07             		jrnz	arg0
+0BC37D 08 00             		mv	a,0
+0BC37F B0 25             		mv	[y++],a
+0BC381 0D 06 D2 0B       		mv	y,fname
+0BC385 30 CC 00 00       	arg1:	mv	(0),0
+0BC389 90 24             		mv	a,[x++]		;skip space codes
+0BC38B 60 00             		cmp	a,0
+0BC38D 18 1E             		jrz	arg1a
+0BC38F 60 0D             		cmp	a,CR
+0BC391 18 1A             		jrz	arg1a
+0BC393 60 1A             		cmp	a,01ah
+0BC395 18 16             		jrz	arg1a
+0BC397 60 FF             		cmp	a,0ffh
+0BC399 18 12             		jrz	arg1a
+0BC39B 60 3C             		cmp	a,'<'
+0BC39D 18 0E             		jrz	arg1a
+0BC39F 60 3E             		cmp	a,'>'
+0BC3A1 18 0A             		jrz	arg1a
+0BC3A3 60 22             		cmp	a,'"'
+0BC3A5 19 22             		jrz	arg1
+0BC3A7 60 20             		cmp	a,' '
+0BC3A9 19 26             		jrz	arg1
+0BC3AB 12 19             		jr	arg2a
+0BC3AD 02 98 C4          	arg1a:	jp	argerr
+0BC3B0 90 24             	arg2:	mv	a,[x++]		;search drive or filename
+0BC3B2 60 00             		cmp	a,0
+0BC3B4 18 62             		jrz	arg4z
+0BC3B6 60 0D             		cmp	a,CR
+0BC3B8 18 5E             		jrz	arg4z
+0BC3BA 60 1A             		cmp	a,01ah
+0BC3BC 18 5A             		jrz	arg4z
+0BC3BE 60 FF             		cmp	a,0ffh
+0BC3C0 18 56             		jrz	arg4z
+0BC3C2 60 20             		cmp	a,' '
+0BC3C4 18 52             		jrz	arg4z
+0BC3C6 60 3A             	arg2a:	cmp	a,':'
+0BC3C8 18 11             		jrz	arg2c
+0BC3CA 60 2E             		cmp	a,'.'
+0BC3CC 18 4C             		jrz	arg4
+0BC3CE B0 25             		mv	[y++],a
+0BC3D0 30 6D 00          		inc	(0)
+0BC3D3 30 61 00 09       		cmp	(0),9
+0BC3D7 1B 29             		jrnz	arg2
+0BC3D9 12 BD             		jr	argerr
+0BC3DB B0 25             	arg2c:	mv	[y++],a		;found drive
+0BC3DD 30 61 00 00       		cmp	(0),0
+0BC3E1 18 B5             		jrz	argerr
+0BC3E3 30 61 00 06       		cmp	(0),6
+0BC3E7 1E AF             		jrnc	argerr
+0BC3E9 0D 0C D2 0B       		mv	y,fname+6
+0BC3ED 30 CC 00 00       	arg3:	mv	(0),0
+0BC3F1 90 24             		mv	a,[x++]		;search filename
+0BC3F3 60 00             		cmp	a,0
+0BC3F5 18 6B             		jrz	arg5z
+0BC3F7 60 0D             		cmp	a,CR
+0BC3F9 18 67             		jrz	arg5z
+0BC3FB 60 1A             		cmp	a,01ah
+0BC3FD 18 63             		jrz	arg5z
+0BC3FF 60 FF             		cmp	a,0ffh
+0BC401 18 5F             		jrz	arg5z
+0BC403 60 20             		cmp	a,' '
+0BC405 18 5B             		jrz	arg5z
+0BC407 60 2E             		cmp	a,'.'
+0BC409 18 59             		jrz	arg5
+0BC40B B0 25             		mv	[y++],a
+0BC40D 30 6D 00          		inc	(0)
+0BC410 30 61 00 09       		cmp	(0),9
+0BC414 1B 29             		jrnz	arg3
+0BC416 12 80             		jr	argerr
+0BC418 7C 04             	arg4z:	dec	x
+0BC41A 30 61 00 00       	arg4:	cmp	(0),0		;found filename without drive
+0BC41E 18 78             		jrz	argerr
+0BC420 08 00             		mv	a,0
+0BC422 28                		pushu	a
+0BC423 90 35             	arg4a:	mv	a,[--y]
+0BC425 28                		pushu	a		;string copy drive to filename
+0BC426 30 7D 00          		dec	(0)
+0BC429 30 61 00 00       		cmp	(0),0
+0BC42D 1B 0C             		jrnz	arg4a
+0BC42F 0D 06 D2 0B       		mv	y,fname
+0BC433 30 CC 00 06       		mv	(0),6
+0BC437 08 20             		mv	a,' '
+0BC439 B0 25             	arg4b:	mv	[y++],a
+0BC43B 30 7D 00          		dec	(0)
+0BC43E 1B 07             		jrnz	arg4b
+0BC440 38                	arg4c:	popu	a
+0BC441 60 00             		cmp	a,0
+0BC443 18 04             		jrz	arg4d
+0BC445 B0 25             		mv	[y++],a
+0BC447 13 09             		jr	arg4c
+0BC449 2C                	arg4d:	pushu	x		;store default drive
+0BC44A 0C 7D FC 0B       		mv	x,CR_DRV
+0BC44E 0D 06 D2 0B       		mv	y,fname
+0BC452 30 CC 00 06       		mv	(0),6
+0BC456 90 24             	arg4e:	mv	a,[x++]
+0BC458 B0 25             		mv	[y++],a
+0BC45A 30 7D 00          		dec	(0)
+0BC45D 1B 09             		jrnz	arg4e
+0BC45F 3C                		popu	x
+0BC460 12 02             		jr	arg5
+0BC462 7C 04             	arg5z:	dec	x
+0BC464 08 2E             	arg5:	mv	a,'.'
+0BC466 0D 14 D2 0B       		mv	y,fname+14
+0BC46A B0 25             		mv	[y++],a
+0BC46C 30 CC 00 00       		mv	(0),0
+0BC470 90 24             	arg6:	mv	a,[x++]		;search extention
+0BC472 60 00             		cmp	a,0
+0BC474 18 1D             		jrz	arg_ok
+0BC476 60 0D             		cmp	a,CR
+0BC478 18 19             		jrz	arg_ok
+0BC47A 60 1A             		cmp	a,01ah
+0BC47C 18 15             		jrz	arg_ok
+0BC47E 60 FF             		cmp	a,0ffh
+0BC480 18 11             		jrz	arg_ok
+0BC482 60 20             		cmp	a,' '
+0BC484 18 0D             		jrz	arg_ok
+0BC486 B0 25             		mv	[y++],a
+0BC488 30 6D 00          		inc	(0)
+0BC48B 30 61 00 04       		cmp	(0),4
+0BC48F 1B 21             		jrnz	arg6
+0BC491 12 05             		jr	argerr
+0BC493 04 9D C4          	arg_ok:	call	argskp
+0BC496 9F                		rc
+0BC497 06                		ret
+0BC498 04 9D C4          	argerr:	call	argskp		;no argument or illegal one
+0BC49B 97                		sc
+0BC49C 06                		ret
+0BC49D 7C 04             	argskp:	dec	x
+0BC49F 90 24             	argsk1:	mv	a,[x++]
+0BC4A1 60 00             		cmp	a,0
+0BC4A3 18 0E             		jrz	argsk2
+0BC4A5 60 0D             		cmp	a,CR
+0BC4A7 18 0A             		jrz	argsk2
+0BC4A9 60 1A             		cmp	a,01ah
+0BC4AB 18 06             		jrz	argsk2
+0BC4AD 60 FF             		cmp	a,0ffh
+0BC4AF 18 02             		jrz	argsk2
+0BC4B1 13 14             		jr	argsk1
+0BC4B3 7C 04             	argsk2:	dec	x
+0BC4B5 06                		ret
+0BC4B6                   	;
+0BC4B6                   	;
+0BC4B6                   	get_line:			;get 1 ish_line
+0BC4B6 09 00             	st0:	mv	il,0
+0BC4B8 AB 11 D3 0B       		mv	[line_buf_ptr],i
+0BC4BC                   	;
+0BC4BC 04 87 C5          	st1:	call	f_read		;skip control code
+0BC4BF 1C BE             		jrc	f_err
+0BC4C1 60 1A             		cmp	a,01ah
+0BC4C3 18 BE             		jrz	f_eof
+0BC4C5 DD                		ex	a,b
+0BC4C6 60 00             		cmp	a,0
+0BC4C8 18 B9             		jrz	f_eof
+0BC4CA DD                		ex	a,b
+0BC4CB 60 0D             		cmp	a,CR
+0BC4CD 1A 0A             		jrnz	st1a
+0BC4CF 8C 6A D2 0B       		mv	x,[reading_line]
+0BC4D3 6C 04             		inc	x
+0BC4D5 AC 6A D2 0B       		mv	[reading_line],x
+0BC4D9 60 21             	st1a:	cmp	a,21h
+0BC4DB 1D 21             		jrc	st1
+0BC4DD                   	;
+0BC4DD FD 10             	st2:	mv	il,a		;store data
+0BC4DF 0C 13 D3 0B       		mv	x,line_buf
+0BC4E3 8A 11 D3 0B       		mv	ba,[line_buf_ptr]
+0BC4E7 45 42             		add	x,ba
+0BC4E9 6C 02             		inc	ba
+0BC4EB 60 50             		cmp	a,80
+0BC4ED 18 35             		jrz	st3
+0BC4EF AA 11 D3 0B       		mv	[line_buf_ptr],ba
+0BC4F3 B1 04             		mv	[x],il
+0BC4F5                   	;
+0BC4F5 04 87 C5          		call	f_read
+0BC4F8 1C 85             		jrc	f_err
+0BC4FA 60 1A             		cmp	a,01ah
+0BC4FC 18 85             		jrz	f_eof
+0BC4FE DD                		ex	a,b
+0BC4FF 60 00             		cmp	a,0
+0BC501 18 80             		jrz	f_eof
+0BC503 DD                		ex	a,b
+0BC504 60 0D             		cmp	a,CR
+0BC506 1A 0A             		jrnz	st2a
+0BC508 8C 6A D2 0B       		mv	x,[reading_line]
+0BC50C 6C 04             		inc	x
+0BC50E AC 6A D2 0B       		mv	[reading_line],x
+0BC512 60 21             	st2a:	cmp	a,21h
+0BC514 1F 39             		jrnc	st2
+0BC516                   	;
+0BC516 8A 11 D3 0B       		mv	ba,[line_buf_ptr]
+0BC51A 60 4F             		cmp	a,79
+0BC51C 18 29             		jrz	st4
+0BC51E 60 4E             		cmp	a,78
+0BC520 18 41             		jrz	st5
+0BC522 13 6E             		jr	st0
+0BC524                   	;
+0BC524 04 87 C5          	st3:	call	f_read		;skip non-control code
+0BC527 1C 56             		jrc	f_err
+0BC529 60 1A             		cmp	a,01ah
+0BC52B 18 56             		jrz	f_eof
+0BC52D DD                		ex	a,b
+0BC52E 60 00             		cmp	a,0
+0BC530 18 51             		jrz	f_eof
+0BC532 DD                		ex	a,b
+0BC533 60 21             		cmp	a,21h
+0BC535 1F 13             		jrnc	st3
+0BC537 60 0D             		cmp	a,CR
+0BC539 1A 0A             		jrnz	st3a
+0BC53B 8C 6A D2 0B       		mv	x,[reading_line]
+0BC53F 6C 04             		inc	x
+0BC541 AC 6A D2 0B       		mv	[reading_line],x
+0BC545 13 91             	st3a:	jr	st0
+0BC547                   	;
+0BC547 04 97 C5          	st4:	call	ish_decode	;decode & crc check
+0BC54A 1D 96             		jrc	st0
+0BC54C 09 41             		mv	il,65
+0BC54E 04 35 C7          		call	calc_crc_1
+0BC551 8A A9 D3 0B       		mv	ba,[c1]
+0BC555 30 D1 00 A6 D3 0B 		mvw	(0),[crc1]
+0BC55B 30 D6 02 00       		cmpw	(0),ba
+0BC55F 1B AB             		jrnz	st0
+0BC561 9F                		rc
+0BC562 06                		ret
+0BC563                   	st5:
+0BC563 04 70 C6          		call	decode_jis7
+0BC566 1D B2             		jrc	st0
+0BC568 09 3B             		mv	il,59
+0BC56A 04 35 C7          		call	calc_crc_1
+0BC56D 8A A9 D3 0B       		mv	ba,[c1]
+0BC571 30 D1 00 A0 D3 0B 		mvw	(0),[i_buf+61]
+0BC577 30 D6 02 00       		cmpw	(0),ba
+0BC57B 1B C7             		jrnz	st0
+0BC57D 9F                		rc
+0BC57E 06                		ret
+0BC57F                   	;
+0BC57F 08 00             	f_err:	mv	a,0
+0BC581 97                		sc
+0BC582 06                		ret
+0BC583                   	;
+0BC583 08 01             	f_eof:	mv	a,1
+0BC585 97                		sc
+0BC586 06                		ret
+0BC587                   	;
+0BC587 88 04 D2 0B       	f_read:	mv	a,[handl0]	;read from 'fname'
+0BC58B 30 A0 D6          		mv	(0d6h),a
+0BC58E 09 05             		mv	il,5
+0BC590 08 00             		mv	a,0
+0BC592 05 E4 FF 0F       		callf	F_CALL		;file_iocs_5
+0BC596 06                		ret
+0BC597                   	;
+0BC597                   	;
+0BC597                   	ish_decode:
+0BC597 0C 13 D3 0B       		mv	x,line_buf	;jis8code->7bit
+0BC59B 09 4F             		mv	il,79
+0BC59D 0A 00 00          		mv	ba,0
+0BC5A0 0D 82 CE 0B       	dec1:	mv	y,decode_table
+0BC5A4 90 04             		mv	a,[x]
+0BC5A6 45 52             		add	y,ba
+0BC5A8 90 05             		mv	a,[y]
+0BC5AA 60 FF             		cmp	a,0ffh
+0BC5AC 18 08             		jrz	dec_err
+0BC5AE B0 24             		mv	[x++],a
+0BC5B0 7C 01             		dec	il
+0BC5B2 1B 14             		jrnz	dec1
+0BC5B4 12 02             		jr	dec2
+0BC5B6                   	dec_err:
+0BC5B6 97                		sc
+0BC5B7 06                		ret
+0BC5B8                   	;
+0BC5B8 0C 13 D3 0B       	dec2:	mv	x,line_buf	;7bit->8bit
+0BC5BC 0D 63 D3 0B       		mv	y,i_buf
+0BC5C0 09 0A             		mv	il,10
+0BC5C2                   	;
+0BC5C2 30 E0 24 00       	dec3:	mv	(0),[x++]
+0BC5C6 30 71 00 7F       		and	(0),7fh
+0BC5CA 90 04             		mv	a,[x]
+0BC5CC 70 01             		and	a,01h
+0BC5CE E4                		ror	a
+0BC5CF 30 7F 00          		or	a,(0)
+0BC5D2 B0 25             		mv	[y++],a
+0BC5D4                   	;
+0BC5D4 30 E0 24 00       		mv	(0),[x++]
+0BC5D8 30 71 00 7E       		and	(0),7eh
+0BC5DC 30 E5 00          		ror	(0)
+0BC5DF 90 04             		mv	a,[x]
+0BC5E1 70 03             		and	a,03h
+0BC5E3 E4                		ror	a
+0BC5E4 E4                		ror	a
+0BC5E5 30 7F 00          		or	a,(0)
+0BC5E8 B0 25             		mv	[y++],a
+0BC5EA                   	;
+0BC5EA 30 E0 24 00       		mv	(0),[x++]
+0BC5EE 30 71 00 7C       		and	(0),7ch
+0BC5F2 30 E5 00          		ror	(0)
+0BC5F5 30 E5 00          		ror	(0)
+0BC5F8 90 04             		mv	a,[x]
+0BC5FA 70 07             		and	a,07h
+0BC5FC E4                		ror	a
+0BC5FD E4                		ror	a
+0BC5FE E4                		ror	a
+0BC5FF 30 7F 00          		or	a,(0)
+0BC602 B0 25             		mv	[y++],a
+0BC604                   	;
+0BC604 30 E0 24 00       		mv	(0),[x++]
+0BC608 30 71 00 78       		and	(0),78h
+0BC60C 30 E5 00          		ror	(0)
+0BC60F 30 E5 00          		ror	(0)
+0BC612 30 E5 00          		ror	(0)
+0BC615 90 04             		mv	a,[x]
+0BC617 70 0F             		and	a,0fh
+0BC619 EE                		swap	a
+0BC61A 30 7F 00          		or	a,(0)
+0BC61D B0 25             		mv	[y++],a
+0BC61F                   	;
+0BC61F 90 24             		mv	a,[x++]
+0BC621 70 70             		and	a,70h
+0BC623 EE                		swap	a
+0BC624 30 E0 04 00       		mv	(0),[x]
+0BC628 30 71 00 1F       		and	(0),1fh
+0BC62C 30 E7 00          		rol	(0)
+0BC62F 30 E7 00          		rol	(0)
+0BC632 30 E7 00          		rol	(0)
+0BC635 30 7F 00          		or	a,(0)
+0BC638 B0 25             		mv	[y++],a
+0BC63A                   	;
+0BC63A 90 24             		mv	a,[x++]
+0BC63C 70 60             		and	a,60h
+0BC63E E6                		rol	a
+0BC63F E6                		rol	a
+0BC640 E6                		rol	a
+0BC641 30 E0 04 00       		mv	(0),[x]
+0BC645 30 71 00 3F       		and	(0),3fh
+0BC649 30 E7 00          		rol	(0)
+0BC64C 30 E7 00          		rol	(0)
+0BC64F 30 7F 00          		or	a,(0)
+0BC652 B0 25             		mv	[y++],a
+0BC654                   	;
+0BC654 90 24             		mv	a,[x++]
+0BC656 70 40             		and	a,40h
+0BC658 E6                		rol	a
+0BC659 E6                		rol	a
+0BC65A 30 E0 24 00       		mv	(0),[x++]
+0BC65E 30 71 00 7F       		and	(0),7fh
+0BC662 30 E7 00          		rol	(0)
+0BC665 30 7F 00          		or	a,(0)
+0BC668 B0 25             		mv	[y++],a
+0BC66A                   	;
+0BC66A 7C 01             		dec	il
+0BC66C 1B AC             		jrnz	dec3
+0BC66E 9F                		rc
+0BC66F 06                		ret
+0BC670                   	;
+0BC670                   	;
+0BC670                   	decode_jis7:
+0BC670 0C 13 D3 0B       		mv	x,line_buf	;jis7code->13bit(6.5bit)
+0BC674 09 4E             		mv	il,78
+0BC676 0A 00 00          		mv	ba,0
+0BC679 0D 82 CF 0B       	dec7_1:	mv	y,jis7_table
+0BC67D 90 04             		mv	a,[x]
+0BC67F 45 52             		add	y,ba
+0BC681 90 05             		mv	a,[y]
+0BC683 60 FF             		cmp	a,0ffh
+0BC685 18 08             		jrz	dec7_err
+0BC687 B0 24             		mv	[x++],a
+0BC689 7C 01             		dec	il
+0BC68B 1B 14             		jrnz	dec7_1
+0BC68D 12 02             		jr	dec7_2
+0BC68F                   	dec7_err:
+0BC68F 97                		sc
+0BC690 06                		ret
+0BC691                   	dec7_2:
+0BC691 0C 13 D3 0B       		mv	x,line_buf	;13bit(6.5bit)->8bit
+0BC695 0D 63 D3 0B       		mv	y,i_buf
+0BC699                   	;
+0BC699 30 E0 24 00       		mv	(0),[x++]	;No.1  byte   (6+2 bit)
+0BC69D 30 71 00 3F       		and	(0),03fh
+0BC6A1 90 04             		mv	a,[x]
+0BC6A3 70 03             		and	a,03h
+0BC6A5 E4                		ror	a
+0BC6A6 E4                		ror	a
+0BC6A7 30 7F 00          		or	a,(0)
+0BC6AA B0 25             		mv	[y++],a
+0BC6AC                   	;
+0BC6AC 30 E0 24 00       		mv	(0),[x++]	;No.2  byte   (4+4 bit)
+0BC6B0 30 71 00 3C       		and	(0),03ch
+0BC6B4 30 E5 00          		ror	(0)
+0BC6B7 30 E5 00          		ror	(0)
+0BC6BA 90 04             		mv	a,[x]
+0BC6BC 70 0F             		and	a,0fh
+0BC6BE EE                		swap	a
+0BC6BF 30 7F 00          		or	a,(0)
+0BC6C2 B0 25             		mv	[y++],a
+0BC6C4                   	;
+0BC6C4 90 24             		mv	a,[x++]		;No.3  byte   (2+6 bit)
+0BC6C6 70 30             		and	a,030h
+0BC6C8 30 E0 24 00       		mv	(0),[x++]
+0BC6CC 30 71 00 3F       		and	(0),03fh
+0BC6D0 30 E5 00          		ror	(0)
+0BC6D3 30 E5 00          		ror	(0)
+0BC6D6 30 7F 00          		or	a,(0)
+0BC6D9 EE                		swap	a
+0BC6DA B0 25             		mv	[y++],a
+0BC6DC                   	;
+0BC6DC 30 CC 02 3C       		mv	(2),60		;No.4 .. 63 byte  (13bit)
+0BC6E0 04 13 C7          		call	get13
+0BC6E3 30 CC 03 0D       		mv	(3),13
+0BC6E7                   	;
+0BC6E7 30 CC 04 00       	dec13:	mv	(4),0
+0BC6EB 30 CC 05 08       		mv	(5),8
+0BC6EF 30 F5 01          	dec13a:	shr	(1)
+0BC6F2 30 F5 00          		shr	(0)
+0BC6F5 30 F5 04          		shr	(4)
+0BC6F8 30 7D 03          		dec	(3)
+0BC6FB 1A 07             		jrnz	dec13b
+0BC6FD 04 13 C7          		call	get13
+0BC700 30 CC 03 0D       		mv	(3),13
+0BC704 30 7D 05          	dec13b:	dec	(5)
+0BC707 1B 1A             		jrnz	dec13a
+0BC709                   	;
+0BC709 30 E8 25 04       		mv	[y++],(4)
+0BC70D 30 7D 02          		dec	(2)
+0BC710 1B 2B             		jrnz	dec13
+0BC712 06                		ret
+0BC713                   	;
+0BC713 30 E0 24 00       	get13:	mv	(0),[x++]	;(6.5bit + 6.5bit -> 13bit)
+0BC717 30 E0 24 01       		mv	(1),[x++]	;   91   *   91   -> 8192
+0BC71B 30 6D 00          		inc	(0)
+0BC71E 0A 00 00          		mv	ba,0
+0BC721 09 5B             		mv	il,91
+0BC723 44 23             	mul_a:	add	ba,i
+0BC725 30 7D 00          		dec	(0)
+0BC728 1B 07             		jrnz	mul_a
+0BC72A 4C 23             		sub	ba,i
+0BC72C 30 81 01          		mv	il,(1)
+0BC72F 44 23             		add	ba,i
+0BC731 30 A2 00          		mv	(0),ba
+0BC734 06                		ret
+0BC735                   	;
+0BC735                   	;
+0BC735                   	calc_crc_1:			;calculate crc
+0BC735 0C 63 D3 0B       		mv	x,i_buf
+0BC739 90 24             		mv	a,[x++]
+0BC73B 68 FF             		xor	a,0ffh
+0BC73D A8 A9 D3 0B       		mv	[c1],a
+0BC741 90 24             		mv	a,[x++]
+0BC743 68 FF             		xor	a,0ffh
+0BC745 A8 AA D3 0B       		mv	[c2],a
+0BC749 04 67 C7          		call	csub1
+0BC74C 04 97 C7          		call	csub2
+0BC74F 04 97 C7          		call	csub2
+0BC752 88 A9 D3 0B       		mv	a,[c1]
+0BC756 68 FF             		xor	a,0ffh
+0BC758 A8 A9 D3 0B       		mv	[c1],a
+0BC75C 88 AA D3 0B       		mv	a,[c2]
+0BC760 68 FF             		xor	a,0ffh
+0BC762 A8 AA D3 0B       		mv	[c2],a
+0BC766 06                		ret
+0BC767                   	;
+0BC767 0D 02 D0 0B       	csub1:	mv	y,crc_data_table
+0BC76B 0A 00 00          		mv	ba,0
+0BC76E 88 A9 D3 0B       		mv	a,[c1]
+0BC772 44 22             		add	ba,ba
+0BC774 45 52             		add	y,ba
+0BC776 30 E1 25 00       		mvw	(0),[y++]
+0BC77A 90 24             		mv	a,[x++]
+0BC77C 30 6B 00          		xor	(0),a
+0BC77F 88 AA D3 0B       		mv	a,[c2]
+0BC783 30 6B 01          		xor	(1),a
+0BC786 30 D8 A9 D3 0B 01 		mv	[c1],(1)
+0BC78C 30 D8 AA D3 0B 00 		mv	[c2],(0)
+0BC792 7C 01             		dec	il
+0BC794 1B 2F             		jrnz	csub1
+0BC796 06                		ret
+0BC797 0D 02 D0 0B       	csub2:	mv	y,crc_data_table
+0BC79B 0A 00 00          		mv	ba,0
+0BC79E 88 A9 D3 0B       		mv	a,[c1]
+0BC7A2 44 22             		add	ba,ba
+0BC7A4 45 52             		add	y,ba
+0BC7A6 30 E1 25 00       		mvw	(0),[y++]
+0BC7AA 88 AA D3 0B       		mv	a,[c2]
+0BC7AE 30 6B 01          		xor	(1),a
+0BC7B1 30 D8 A9 D3 0B 01 		mv	[c1],(1)
+0BC7B7 30 D8 AA D3 0B 00 		mv	[c2],(0)
+0BC7BD 06                		ret
+0BC7BE                   	;
+0BC7BE                   	;
+0BC7BE                   	buffer_init:
+0BC7BE 0C B0 D3 0B       		mv	x,dec_buf
+0BC7C2 08 00             		mv	a,0
+0BC7C4 30 CC 00 01       		mv	(0),1
+0BC7C8 30 E8 24 00       	bfint1:	mv	[x++],(0)
+0BC7CC 09 42             		mv	il,66
+0BC7CE B0 24             	bfint2:	mv	[x++],a
+0BC7D0 7C 01             		dec	il
+0BC7D2 1B 06             		jrnz	bfint2
+0BC7D4 30 6D 00          		inc	(0)
+0BC7D7 30 61 00 46       		cmp	(0),70
+0BC7DB 1B 15             		jrnz	bfint1
+0BC7DD 06                		ret
+0BC7DE                   	;
+0BC7DE                   	;
+0BC7DE                   	set_buffer:
+0BC7DE 0C 63 D3 0B       		mv	x,i_buf
+0BC7E2 0D B0 D3 0B       		mv	y,dec_buf
+0BC7E6 0A 43 00          		mv	ba,67
+0BC7E9 91 04             		mv	il,[x]
+0BC7EB 45 52             	stbuf1:	add	y,ba
+0BC7ED 7C 01             		dec	il
+0BC7EF 1B 06             		jrnz	stbuf1
+0BC7F1 4D 52             		sub	y,ba
+0BC7F3 09 43             		mv	il,67
+0BC7F5 90 24             	stbuf2:	mv	a,[x++]
+0BC7F7 B0 25             		mv	[y++],a
+0BC7F9 7C 01             		dec	il
+0BC7FB 1B 08             		jrnz	stbuf2
+0BC7FD 06                		ret
+0BC7FE                   	;
+0BC7FE                   	;
+0BC7FE                   	det1:
+0BC7FE 88 6E D2 0B       		mv	a,[deterr]
+0BC802 60 00             		cmp	a,0
+0BC804 1A 18             		jrnz	det1a
+0BC806 08 01             		mv	a,1
+0BC808 A8 6E D2 0B       		mv	[deterr],a
+0BC80C 88 6D D2 0B       		mv	a,[wanted]
+0BC810 A8 6F D2 0B       		mv	[ersq1],a
+0BC814 8C 6A D2 0B       		mv	x,[reading_line]
+0BC818 AC 70 D2 0B       		mv	[erln1],x
+0BC81C 9F                		rc
+0BC81D 06                		ret
+0BC81E 60 01             	det1a:	cmp	a,1
+0BC820 1A 18             		jrnz	det1b
+0BC822 08 02             		mv	a,2
+0BC824 A8 6E D2 0B       		mv	[deterr],a
+0BC828 88 6D D2 0B       		mv	a,[wanted]
+0BC82C A8 73 D2 0B       		mv	[ersq2],a
+0BC830 8C 6A D2 0B       		mv	x,[reading_line]
+0BC834 AC 74 D2 0B       		mv	[erln2],x
+0BC838 9F                		rc
+0BC839 06                		ret
+0BC83A 08 03             	det1b:	mv	a,3
+0BC83C A8 6E D2 0B       		mv	[deterr],a
+0BC840 88 6D D2 0B       		mv	a,[wanted]
+0BC844 A8 77 D2 0B       		mv	[ersq3],a
+0BC848 8C 6A D2 0B       		mv	x,[reading_line]
+0BC84C AC 78 D2 0B       		mv	[erln3],x
+0BC850 97                		sc
+0BC851 06                		ret
+0BC852                   	;
+0BC852                   	;
+0BC852                   	write_page:
+0BC852 04 2E CA          		call	correct
+0BC855 8C 66 D2 0B       		mv	x,[total_pages]
+0BC859 7C 04             		dec	x
+0BC85B AC 66 D2 0B       		mv	[total_pages],x
+0BC85F 18 07             		jrz	wrtpg1
+0BC861 04 71 C8          		call	write_page_2
+0BC864 1C 09             		jrc	wrtpg2
+0BC866 9F                		rc
+0BC867 06                		ret
+0BC868 04 71 C8          	wrtpg1:	call	write_page_2
+0BC86B 1C 02             		jrc	wrtpg2
+0BC86D 08 00             		mv	a,0		;0...wrote final page !!!!
+0BC86F 97                	wrtpg2:	sc			;1...file write error
+0BC870 06                		ret			;2...crc error detect
+0BC871                   	;
+0BC871                   	;
+0BC871                   	write_page_2:
+0BC871 08 01             		mv	a,1
+0BC873 A8 51 D2 0B       		mv	[write_seq],a
+0BC877 8C 48 D2 0B       		mv	x,[restsize]
+0BC87B 0D 04 11 00       		mv	y,66*66
+0BC87F 4D 45             		sub	x,y
+0BC881 1E 04             		jrnc	w_p_1
+0BC883 8D 48 D2 0B       		mv	y,[restsize]
+0BC887 AD 4B D2 0B       	w_p_1:	mv	[page_size],y
+0BC88B                   	;
+0BC88B                   	;
+0BC88B                   	write_line:
+0BC88B 8C 4B D2 0B       		mv	x,[page_size]
+0BC88F 0D 42 00 00       		mv	y,66
+0BC893 4D 45             		sub	x,y
+0BC895 1C 25             		jrc	w_l_2
+0BC897 18 23             		jrz	w_l_2
+0BC899                   	;
+0BC899 AD 4E D2 0B       	w_l_1:	mv	[line_size],y		;line (1) .. (n-1)
+0BC89D 04 DB C8          		call	write_line_2
+0BC8A0 1C 37             		jrc	w_l_3
+0BC8A2 8C 48 D2 0B       		mv	x,[restsize]
+0BC8A6 8D 4E D2 0B       		mv	y,[line_size]
+0BC8AA 4D 45             		sub	x,y
+0BC8AC AC 48 D2 0B       		mv	[restsize],x
+0BC8B0 8C 4B D2 0B       		mv	x,[page_size]
+0BC8B4 4D 45             		sub	x,y
+0BC8B6 AC 4B D2 0B       		mv	[page_size],x
+0BC8BA 13 31             		jr	write_line
+0BC8BC                   	;
+0BC8BC 8D 4B D2 0B       	w_l_2:	mv	y,[page_size]		;final line (=66?)
+0BC8C0 AD 4E D2 0B       		mv	[line_size],y
+0BC8C4 04 DB C8          		call	write_line_2
+0BC8C7 1C 10             		jrc	w_l_3
+0BC8C9 8C 48 D2 0B       		mv	x,[restsize]
+0BC8CD 8D 4E D2 0B       		mv	y,[line_size]
+0BC8D1 4D 45             		sub	x,y
+0BC8D3 AC 48 D2 0B       		mv	[restsize],x
+0BC8D7 9F                		rc
+0BC8D8 06                		ret
+0BC8D9                   	;
+0BC8D9 97                	w_l_3:	sc
+0BC8DA 06                		ret
+0BC8DB                   	;
+0BC8DB                   	;
+0BC8DB                   	write_line_2:
+0BC8DB 8C 48 D2 0B       		mv	x,[restsize]
+0BC8DF 7C 04             		dec	x
+0BC8E1 18 0E             		jrz	w_l_4		;                 crc last 1byte
+0BC8E3 6C 04             		inc	x
+0BC8E5 0D 43 00 00       		mv	y,67
+0BC8E9 4D 45             		sub	x,y
+0BC8EB 1C 10             		jrc	w_l_5		;(0..64) data   + crc 2byte
+0BC8ED 18 2E             		jrz	w_l_6		;   (65) data   + crc prevent 1byte
+0BC8EF 12 44             		jr	w_l_7		;   (66) data only                  + more data
+0BC8F1                   	;
+0BC8F1 04 7E C9          	w_l_4:	call	req_seq_adr
+0BC8F4 90 84 01          		mv	a,[x+1]
+0BC8F7 A8 AE D3 0B       		mv	[g_c2],a
+0BC8FB 12 48             		jr	w_l_9
+0BC8FD                   	;
+0BC8FD 04 7E C9          	w_l_5:	call	req_seq_adr
+0BC900 6C 04             		inc	x
+0BC902 8D 4E D2 0B       		mv	y,[line_size]
+0BC906 7C 05             		dec	y
+0BC908 7C 05             		dec	y
+0BC90A 04 62 C9          		call	write_line_3
+0BC90D 1C 4F             		jrc	write_error
+0BC90F 90 24             		mv	a,[x++]
+0BC911 A8 AD D3 0B       		mv	[g_c1],a
+0BC915 90 24             		mv	a,[x++]
+0BC917 A8 AE D3 0B       		mv	[g_c2],a
+0BC91B 12 28             		jr	w_l_9
+0BC91D                   	;
+0BC91D 04 7E C9          	w_l_6:	call	req_seq_adr
+0BC920 6C 04             		inc	x
+0BC922 8D 4E D2 0B       		mv	y,[line_size]
+0BC926 7C 05             		dec	y
+0BC928 04 62 C9          		call	write_line_3
+0BC92B 1C 31             		jrc	write_error
+0BC92D 90 24             		mv	a,[x++]
+0BC92F A8 AD D3 0B       		mv	[g_c1],a
+0BC933 12 0E             		jr	w_l_8
+0BC935                   	;
+0BC935 04 7E C9          	w_l_7:	call	req_seq_adr
+0BC938 6C 04             		inc	x
+0BC93A 8D 4E D2 0B       		mv	y,[line_size]
+0BC93E 04 62 C9          		call	write_line_3
+0BC941 1C 1B             		jrc	write_error
+0BC943                   	;
+0BC943 9F                	w_l_8:	rc
+0BC944 06                		ret
+0BC945                   	;
+0BC945 04 EC C9          	w_l_9:	call	calc_g_crc2
+0BC948 30 D1 00 AD D3 0B 		mvw	(0),[g_c1]
+0BC94E 8A AB D3 0B       		mv	ba,[g_crc1]
+0BC952 30 D6 02 00       		cmpw	(0),ba
+0BC956 1A 02             		jrnz	w_l_10
+0BC958 9F                		rc
+0BC959 06                		ret
+0BC95A                   	;
+0BC95A 08 02             	w_l_10:	mv	a,2		;crc error
+0BC95C 97                		sc
+0BC95D 06                		ret
+0BC95E                   	;
+0BC95E                   	write_error:
+0BC95E 08 01             		mv	a,1		;write error
+0BC960 97                		sc
+0BC961 06                		ret
+0BC962                   	;
+0BC962                   	;
+0BC962                   	write_line_3:
+0BC962 2C                		pushu	x		;adrs
+0BC963 2D                		pushu	y		;size
+0BC964 09 04             		mv	il,4
+0BC966 88 05 D2 0B       		mv	a,[handl1]
+0BC96A 30 A0 D6          		mv	(0d6h),a
+0BC96D 05 E4 FF 0F       		callf	F_CALL		;file_block_write to 'file1'
+0BC971 1E 04             		jrnc	w_l_11
+0BC973 3D                		popu	y
+0BC974 3C                		popu	x
+0BC975 97                		sc
+0BC976 06                		ret
+0BC977                   	w_l_11:
+0BC977 3D                		popu	y
+0BC978 3C                		popu	x
+0BC979 04 8E C9          		call	calc_g_crc
+0BC97C 9F                		rc
+0BC97D 06                		ret
+0BC97E                   	;
+0BC97E                   	;
+0BC97E                   	req_seq_adr:
+0BC97E 88 51 D2 0B       		mv	a,[write_seq]
+0BC982 6C 00             		inc	a
+0BC984 A8 51 D2 0B       		mv	[write_seq],a
+0BC988 7C 00             		dec	a
+0BC98A 04 28 CC          		call	seq_adrs
+0BC98D 06                		ret
+0BC98E                   	;
+0BC98E                   	;
+0BC98E                   	calc_g_crc:			;calculate crc
+0BC98E 30 A5 00          		mv	(0),y
+0BC991 30 81 00          		mv	il,(0)		;size
+0BC994 88 AF D3 0B       		mv	a,[crc_g_f]
+0BC998 60 00             		cmp	a,0
+0BC99A 1A 1A             		jrnz	c_g_c1
+0BC99C                   	;
+0BC99C 08 01             		mv	a,1
+0BC99E A8 AF D3 0B       		mv	[crc_g_f],a
+0BC9A2 90 24             		mv	a,[x++]
+0BC9A4 68 FF             		xor	a,0ffh
+0BC9A6 A8 AB D3 0B       		mv	[g_crc1],a
+0BC9AA 90 24             		mv	a,[x++]
+0BC9AC 68 FF             		xor	a,0ffh
+0BC9AE A8 AC D3 0B       		mv	[g_crc2],a
+0BC9B2 7C 01             		dec	il
+0BC9B4 7C 01             		dec	il
+0BC9B6                   	;
+0BC9B6 FD 01             	c_g_c1:	mv	a,il
+0BC9B8 60 00             		cmp	a,0
+0BC9BA 18 2F             		jrz	c_g_c3
+0BC9BC                   	;
+0BC9BC 0D 02 D0 0B       	c_g_c2:	mv	y,crc_data_table
+0BC9C0 0A 00 00          		mv	ba,0
+0BC9C3 88 AB D3 0B       		mv	a,[g_crc1]
+0BC9C7 44 22             		add	ba,ba
+0BC9C9 45 52             		add	y,ba
+0BC9CB 30 E1 25 00       		mvw	(0),[y++]
+0BC9CF 90 24             		mv	a,[x++]
+0BC9D1 30 6B 00          		xor	(0),a
+0BC9D4 88 AC D3 0B       		mv	a,[g_crc2]
+0BC9D8 30 6B 01          		xor	(1),a
+0BC9DB 30 D8 AB D3 0B 01 		mv	[g_crc1],(1)
+0BC9E1 30 D8 AC D3 0B 00 		mv	[g_crc2],(0)
+0BC9E7 7C 01             		dec	il
+0BC9E9 1B 2F             		jrnz	c_g_c2
+0BC9EB                   	;
+0BC9EB 06                	c_g_c3:	ret
+0BC9EC                   	;
+0BC9EC                   	;
+0BC9EC                   	calc_g_crc2:
+0BC9EC 04 07 CA          		call	g_csub2
+0BC9EF 04 07 CA          		call	g_csub2
+0BC9F2 88 AB D3 0B       		mv	a,[g_crc1]
+0BC9F6 68 FF             		xor	a,0ffh
+0BC9F8 A8 AB D3 0B       		mv	[g_crc1],a
+0BC9FC 88 AC D3 0B       		mv	a,[g_crc2]
+0BCA00 68 FF             		xor	a,0ffh
+0BCA02 A8 AC D3 0B       		mv	[g_crc2],a
+0BCA06 06                		ret
+0BCA07                   	;
+0BCA07                   	g_csub2:
+0BCA07 0D 02 D0 0B       		mv	y,crc_data_table
+0BCA0B 0A 00 00          		mv	ba,0
+0BCA0E 88 AB D3 0B       		mv	a,[g_crc1]
+0BCA12 44 22             		add	ba,ba
+0BCA14 45 52             		add	y,ba
+0BCA16 30 E1 25 00       		mvw	(0),[y++]
+0BCA1A 88 AC D3 0B       		mv	a,[g_crc2]
+0BCA1E 30 6B 01          		xor	(1),a
+0BCA21 30 D8 AB D3 0B 01 		mv	[g_crc1],(1)
+0BCA27 30 D8 AC D3 0B 00 		mv	[g_crc2],(0)
+0BCA2D 06                		ret
+0BCA2E                   	;
+0BCA2E                   	;
+0BCA2E                   	correct:
+0BCA2E 88 6E D2 0B       		mv	a,[deterr]
+0BCA32 60 00             		cmp	a,0
+0BCA34 18 16             		jrz	non_correct
+0BCA36 60 01             		cmp	a,1
+0BCA38 18 09             		jrz	crct_1
+0BCA3A                   	crct_2:
+0BCA3A 08 32             		mv	a,'2'
+0BCA3C 04 4E CD          		call	write2
+0BCA3F 04 AE CA          		call	correct_2_errors
+0BCA42 06                		ret
+0BCA43                   	crct_1:
+0BCA43 08 31             		mv	a,'1'
+0BCA45 04 4E CD          		call	write2
+0BCA48 04 52 CA          		call	correct_1_error
+0BCA4B 06                		ret
+0BCA4C                   	non_correct:
+0BCA4C 08 6F             		mv	a,'o'
+0BCA4E 04 4E CD          		call	write2
+0BCA51 06                		ret
+0BCA52                   	;
+0BCA52                   	;
+0BCA52                   	correct_1_error:
+0BCA52 88 6F D2 0B       		mv	a,[ersq1]
+0BCA56 60 43             		cmp	a,67
+0BCA58 18 53             		jrz	cr1_z
+0BCA5A 60 45             		cmp	a,69
+0BCA5C 18 4F             		jrz	cr1_z
+0BCA5E                   	;
+0BCA5E 0D 89 D2 0B       		mv	y,sum1
+0BCA62 09 42             		mv	il,66
+0BCA64 08 00             		mv	a,0
+0BCA66 B0 25             	cr1_a:	mv	[y++],a
+0BCA68 7C 01             		dec	il
+0BCA6A 1B 06             		jrnz	cr1_a
+0BCA6C                   	;
+0BCA6C 30 CC 01 01       		mv	(1),1
+0BCA70 30 80 01          	cr1_b:	mv	a,(1)
+0BCA73 04 28 CC          		call	seq_adrs
+0BCA76 6C 04             		inc	x
+0BCA78 0D 89 D2 0B       		mv	y,sum1
+0BCA7C 09 42             		mv	il,66
+0BCA7E 30 E0 24 00       	cr1_c:	mv	(0),[x++]
+0BCA82 90 05             		mv	a,[y]
+0BCA84 30 4A 00          		sub	a,(0)
+0BCA87 B0 25             		mv	[y++],a
+0BCA89 7C 01             		dec	il
+0BCA8B 1B 0F             		jrnz	cr1_c
+0BCA8D 30 6D 01          		inc	(1)
+0BCA90 30 61 01 44       		cmp	(1),68
+0BCA94 1B 26             		jrnz	cr1_b
+0BCA96                   	;
+0BCA96 88 6F D2 0B       		mv	a,[ersq1]
+0BCA9A 04 28 CC          		call	seq_adrs
+0BCA9D 6C 04             		inc	x
+0BCA9F 0D 89 D2 0B       		mv	y,sum1
+0BCAA3 09 42             		mv	il,66
+0BCAA5 90 25             	cr1_d:	mv	a,[y++]
+0BCAA7 B0 24             		mv	[x++],a
+0BCAA9 7C 01             		dec	il
+0BCAAB 1B 08             		jrnz	cr1_d
+0BCAAD                   	cr1_z:
+0BCAAD 06                		ret
+0BCAAE                   	;
+0BCAAE                   	;
+0BCAAE                   	;
+0BCAAE                   	correct_2_errors:
+0BCAAE 88 73 D2 0B       		mv	a,[ersq2]
+0BCAB2 60 45             		cmp	a,69
+0BCAB4 19 64             		jrz	correct_1_error
+0BCAB6                   	;
+0BCAB6 88 6F D2 0B       		mv	a,[ersq1]
+0BCABA 04 28 CC          		call	seq_adrs
+0BCABD AC 83 D2 0B       		mv	[er_adrs1],x
+0BCAC1 08 00             		mv	a,0
+0BCAC3 B0 04             		mv	[x],a
+0BCAC5 88 73 D2 0B       		mv	a,[ersq2]
+0BCAC9 04 28 CC          		call	seq_adrs
+0BCACC AC 86 D2 0B       		mv	[er_adrs2],x
+0BCAD0 08 00             		mv	a,0
+0BCAD2 B0 04             		mv	[x],a
+0BCAD4                   	;
+0BCAD4 0C 89 D2 0B       		mv	x,sum1
+0BCAD8 09 43             		mv	il,67
+0BCADA 0A 00 00          		mv	ba,0
+0BCADD B0 24             	cr2_a:	mv	[x++],a
+0BCADF 7C 01             		dec	il
+0BCAE1 1B 06             		jrnz	cr2_a
+0BCAE3                   	;
+0BCAE3 30 CC 01 01       		mv	(1),1		;calc vt sum
+0BCAE7 30 80 01          	cr2_b:	mv	a,(1)
+0BCAEA 04 28 CC          		call	seq_adrs
+0BCAED 6C 04             		inc	x
+0BCAEF 0D 8A D2 0B       		mv	y,sum1+1
+0BCAF3 09 42             		mv	il,66
+0BCAF5 30 E0 24 00       	cr2_c:	mv	(0),[x++]
+0BCAF9 90 05             		mv	a,[y]
+0BCAFB 30 4A 00          		sub	a,(0)
+0BCAFE B0 25             		mv	[y++],a
+0BCB00 7C 01             		dec	il
+0BCB02 1B 0F             		jrnz	cr2_c
+0BCB04 30 6D 01          		inc	(1)
+0BCB07 30 61 01 44       		cmp	(1),68
+0BCB0B 1B 26             		jrnz	cr2_b
+0BCB0D                   	;
+0BCB0D 08 45             		mv	a,69		;last (seq69)    slope sum
+0BCB0F 04 28 CC          		call	seq_adrs
+0BCB12 6C 04             		inc	x
+0BCB14 0D CE D2 0B       		mv	y,sum3+1
+0BCB18 09 42             		mv	il,66
+0BCB1A 30 CC 02 00       		mv	(2),0
+0BCB1E 90 24             	cr2_d:	mv	a,[x++]
+0BCB20 30 43 02          		add	(2),a
+0BCB23 30 A0 00          		mv	(0),a
+0BCB26 08 00             		mv	a,0
+0BCB28 30 4A 00          		sub	a,(0)
+0BCB2B B0 25             		mv	[y++],a
+0BCB2D 7C 01             		dec	il
+0BCB2F 1B 13             		jrnz	cr2_d
+0BCB31 30 80 02          		mv	a,(2)
+0BCB34 40 E6             		add	a,0e6h
+0BCB36 B0 25             		mv	[y++],a
+0BCB38 30 A0 02          		mv	(2),a
+0BCB3B 08 00             		mv	a,0
+0BCB3D 30 4A 02          		sub	a,(2)
+0BCB40 B0 24             		mv	[x++],a
+0BCB42                   	;
+0BCB42 30 CC 01 01       		mv	(1),1		;calc slope sum
+0BCB46 30 80 01          	cr2d1:	mv	a,(1)
+0BCB49 04 28 CC          		call	seq_adrs
+0BCB4C 0D CE D2 0B       		mv	y,sum3+1
+0BCB50 09 43             		mv	il,67
+0BCB52 32 C8 02 01       		mv	(2),(1)
+0BCB56 30 7D 02          		dec	(2)
+0BCB59 0A 00 00          		mv	ba,0
+0BCB5C 30 80 02          	cr2d2:	mv	a,(2)
+0BCB5F 2C                		pushu	x
+0BCB60 45 42             		add	x,ba
+0BCB62 30 E0 04 00       		mv	(0),[x]
+0BCB66 3C                		popu	x
+0BCB67 90 05             		mv	a,[y]
+0BCB69 30 4A 00          		sub	a,(0)
+0BCB6C B0 25             		mv	[y++],a
+0BCB6E 30 6D 02          		inc	(2)
+0BCB71 30 61 02 43       		cmp	(2),67
+0BCB75 1A 04             		jrnz	cr2d3
+0BCB77 30 CC 02 00       		mv	(2),0
+0BCB7B 7C 01             	cr2d3:	dec	il
+0BCB7D 1B 23             		jrnz	cr2d2
+0BCB7F 30 6D 01          		inc	(1)
+0BCB82 30 61 01 44       		cmp	(1),68
+0BCB86 1B 42             		jrnz	cr2d1
+0BCB88                   	;
+0BCB88 88 73 D2 0B       		mv	a,[ersq2]
+0BCB8C 30 D0 00 6F D2 0B 		mv	(0),[ersq1]
+0BCB92 30 4A 00          		sub	a,(0)
+0BCB95 30 A0 05          		mv	(5),a		;(5) ... step
+0BCB98 08 44             		mv	a,68
+0BCB9A 30 4A 00          		sub	a,(0)
+0BCB9D 60 43             		cmp	a,67
+0BCB9F 1C 02             		jrc	cr2_e
+0BCBA1 48 43             		sub	a,67
+0BCBA3 30 A0 04          	cr2_e:	mv	(4),a		;(4) ... slope sum adrs
+0BCBA6 30 CC 03 00       		mv	(3),0		;(3) ... vt sum adrs
+0BCBAA 88 6F D2 0B       		mv	a,[ersq1]
+0BCBAE 30 A0 00          		mv	(0),a		;(0) .,. slope sum elm (ersq1)
+0BCBB1 09 42             		mv	il,66
+0BCBB3                   	;
+0BCBB3 0A 00 00          	cr2_f:	mv	ba,0
+0BCBB6 30 80 04          		mv	a,(4)
+0BCBB9 0C CE D2 0B       		mv	x,sum3+1
+0BCBBD 45 42             		add	x,ba
+0BCBBF 30 E0 04 01       		mv	(1),[x]		;slope sum value  ==  (sum 1) + (sum elm2)
+0BCBC3                   	;
+0BCBC3 30 80 01          		mv	a,(1)
+0BCBC6 30 4A 00          		sub	a,(0)
+0BCBC9 30 A0 02          		mv	(2),a		;(slope sum elm2)
+0BCBCC                   	;
+0BCBCC 30 80 04          		mv	a,(4)
+0BCBCF 30 42 05          		add	a,(5)		;(slope adrs) += (step)
+0BCBD2 60 43             		cmp	a,67
+0BCBD4 1C 02             		jrc	cr2_g
+0BCBD6 48 43             		sub	a,67
+0BCBD8 30 A0 04          	cr2_g:	mv	(4),a
+0BCBDB                   	;
+0BCBDB 30 80 03          		mv	a,(3)
+0BCBDE 30 42 05          		add	a,(5)		;(vt adrs) += (step)
+0BCBE1 60 43             		cmp	a,67
+0BCBE3 1C 02             		jrc	cr2_h
+0BCBE5 48 43             		sub	a,67
+0BCBE7 30 A0 03          	cr2_h:	mv	(3),a
+0BCBEA                   	;
+0BCBEA 0A 00 00          		mv	ba,0
+0BCBED 30 80 03          		mv	a,(3)
+0BCBF0 8C 86 D2 0B       		mv	x,[er_adrs2]
+0BCBF4 45 42             		add	x,ba		;set
+0BCBF6 30 E8 04 02       		mv	[x],(2)		; slope sum elm (ersq2) == (vt sum elm2)
+0BCBFA                   	;
+0BCBFA 0A 00 00          		mv	ba,0
+0BCBFD 30 80 03          		mv	a,(3)
+0BCC00 0C 89 D2 0B       		mv	x,sum1
+0BCC04 45 42             		add	x,ba
+0BCC06 30 E0 04 01       		mv	(1),[x]		;vt sum value ==  (vt1) + (vt2)
+0BCC0A                   	;
+0BCC0A 30 80 01          		mv	a,(1)
+0BCC0D 30 4A 02          		sub	a,(2)
+0BCC10 30 A0 00          		mv	(0),a		;(v sum elm1 )
+0BCC13                   	;
+0BCC13 0A 00 00          		mv	ba,0
+0BCC16 30 80 03          		mv	a,(3)
+0BCC19 8C 83 D2 0B       		mv	x,[er_adrs1]
+0BCC1D 45 42             		add	x,ba		;set
+0BCC1F 30 E8 04 00       		mv	[x],(0)		; v sum elm (eqsr1) == next slope sum
+0BCC23                   	;
+0BCC23 7C 01             		dec	il
+0BCC25 1B 74             		jrnz	cr2_f
+0BCC27                   	;
+0BCC27 06                		ret
+0BCC28                   	;
+0BCC28                   	;
+0BCC28                   	;
+0BCC28                   	seq_adrs:
+0BCC28 FD 10             		mv	il,a
+0BCC2A 0C B0 D3 0B       		mv	x,dec_buf
+0BCC2E 0A 43 00          		mv	ba,67
+0BCC31 45 42             	s_a_1:	add	x,ba
+0BCC33 7C 01             		dec	il
+0BCC35 1B 06             		jrnz	s_a_1
+0BCC37 4D 42             		sub	x,ba
+0BCC39 06                	s_a_2:	ret
+0BCC3A                   	;
+0BCC3A                   	;
+0BCC3A                   	disp_errors:
+0BCC3A 0C 4B CE 0B       		mv	x,msg12		;(ERROR : )
+0BCC3E 04 33 CD          		call	write
+0BCC41                   	;
+0BCC41 8C 70 D2 0B       		mv	x,[erln1]
+0BCC45 04 99 CC          		call	disp_err_sub2
+0BCC48 88 6F D2 0B       		mv	a,[ersq1]
+0BCC4C 04 76 CC          		call	disp_err_sub1
+0BCC4F 8C 74 D2 0B       		mv	x,[erln2]
+0BCC53 04 99 CC          		call	disp_err_sub2
+0BCC56 88 73 D2 0B       		mv	a,[ersq2]
+0BCC5A 04 76 CC          		call	disp_err_sub1
+0BCC5D 8C 78 D2 0B       		mv	x,[erln3]
+0BCC61 04 99 CC          		call	disp_err_sub2
+0BCC64 88 77 D2 0B       		mv	a,[ersq3]
+0BCC68 04 76 CC          		call	disp_err_sub1
+0BCC6B 08 0D             		mv	a,CR
+0BCC6D 04 4E CD          		call	write2
+0BCC70 08 0A             		mv	a,LF
+0BCC72 04 4E CD          		call	write2
+0BCC75 06                		ret
+0BCC76                   	;
+0BCC76                   	disp_err_sub1:
+0BCC76 09 00             		mv	il,0
+0BCC78 0C 82 CE 0B       		mv	x,decode_table
+0BCC7C 30 E0 24 00       	dispe1:	mv	(0),[x++]
+0BCC80 6C 01             		inc	il
+0BCC82 30 63 00          		cmp	(0),a
+0BCC85 1B 0B             		jrnz	dispe1
+0BCC87 7C 01             		dec	il
+0BCC89 FD 01             		mv	a,il
+0BCC8B 04 4E CD          		call	write2
+0BCC8E 08 29             		mv	a,')'
+0BCC90 04 4E CD          		call	write2
+0BCC93 08 20             		mv	a,' '
+0BCC95 04 4E CD          		call	write2
+0BCC98 06                		ret
+0BCC99                   	;
+0BCC99                   	disp_err_sub2:
+0BCC99 08 5B             		mv	a,'['
+0BCC9B 04 4E CD          		call	write2
+0BCC9E 7C 04             		dec	x
+0BCCA0 04 BB CC          		call	number
+0BCCA3 04 33 CD          		call	write
+0BCCA6 08 5D             		mv	a,']'
+0BCCA8 04 4E CD          		call	write2
+0BCCAB 08 2D             		mv	a,'-'
+0BCCAD 04 4E CD          		call	write2
+0BCCB0 08 3E             		mv	a,'>'
+0BCCB2 04 4E CD          		call	write2
+0BCCB5 08 28             		mv	a,'('
+0BCCB7 04 4E CD          		call	write2
+0BCCBA 06                		ret
+0BCCBB                   	;
+0BCCBB                   	;
+0BCCBB                   	;
+0BCCBB 0D 55 D2 0B       	number:	mv	y,tenbuf	;convert decimal
+0BCCBF AD 52 D2 0B       		mv	[deci],y
+0BCCC3 0D A0 86 01       		mv	y,100000
+0BCCC7 04 1A CD          		call	num1
+0BCCCA 0D 10 27 00       		mv	y,10000
+0BCCCE 04 1A CD          		call	num1
+0BCCD1 0D E8 03 00       		mv	y,1000
+0BCCD5 04 1A CD          		call	num1
+0BCCD8 0D 64 00 00       		mv	y,100
+0BCCDC 04 1A CD          		call	num1
+0BCCDF 0D 0A 00 00       		mv	y,10
+0BCCE3 04 1A CD          		call	num1
+0BCCE6 0D 01 00 00       		mv	y,1
+0BCCEA 04 1A CD          		call	num1
+0BCCED 8C 52 D2 0B       		mv	x,[deci]
+0BCCF1 08 0A             		mv	a,10
+0BCCF3 B0 24             		mv	[x++],a
+0BCCF5 0C 55 D2 0B       		mv	x,tenbuf
+0BCCF9 0D 5C D2 0B       		mv	y,ten
+0BCCFD 90 24             	nm1:	mv	a,[x++]
+0BCCFF 60 00             		cmp	a,0
+0BCD01 19 06             		jrz	nm1
+0BCD03 40 30             		add	a,'0'
+0BCD05 B0 25             		mv	[y++],a
+0BCD07 90 24             	nm2:	mv	a,[x++]
+0BCD09 40 30             		add	a,'0'
+0BCD0B B0 25             		mv	[y++],a
+0BCD0D 60 3A             		cmp	a,'0'+10
+0BCD0F 1B 0A             		jrnz	nm2
+0BCD11 08 00             		mv	a,0
+0BCD13 B0 35             		mv	[--y],a
+0BCD15 0C 5C D2 0B       		mv	x,ten
+0BCD19 06                		ret
+0BCD1A                   	;
+0BCD1A 08 00             	num1:	mv	a,0
+0BCD1C 4D 45             	num2:	sub	x,y
+0BCD1E 6C 00             		inc	a
+0BCD20 1F 06             		jrnc	num2
+0BCD22 45 45             		add	x,y
+0BCD24 7C 00             		dec	a
+0BCD26 2C                		pushu	x
+0BCD27 8C 52 D2 0B       		mv	x,[deci]
+0BCD2B B0 24             		mv	[x++],a
+0BCD2D AC 52 D2 0B       		mv	[deci],x
+0BCD31 3C                		popu	x
+0BCD32 06                		ret
+0BCD33                   	;
+0BCD33                   	;
+0BCD33 30 CC D6 00       	write:	mv	(0d6h),0
+0BCD37 2C                		pushu	x		;display message
+0BCD38 0D 00 00 00       		mv	y,0
+0BCD3C 90 24             	wrt1:	mv	a,[x++]
+0BCD3E 6C 05             		inc	y
+0BCD40 60 00             		cmp	a,0
+0BCD42 1B 08             		jrnz	wrt1
+0BCD44 7C 05             		dec	y
+0BCD46 3C                		popu	x
+0BCD47 09 04             		mv	il,4
+0BCD49 05 E4 FF 0F       		callf	F_CALL		;file_iocs_4
+0BCD4D 06                		ret
+0BCD4E                   	;
+0BCD4E                   	;
+0BCD4E                   	;
+0BCD4E                   	write2:
+0BCD4E 30 CC D6 00       		mv	(0d6h),0
+0BCD52 09 06             		mv	il,6
+0BCD54 05 E4 FF 0F       		callf	F_CALL
+0BCD58 06                		ret
+0BCD59                   	;
+0BCD59                   	;
+0BCD59                   	;
+0BCD59 69 73 68 20 66 69 	msg1:	db	'ish file decoder V1.0 by E.Kako',CR,LF,0
+0BCD5F 6C 65 20 64 65 63 	
+0BCD65 6F 64 65 72 20 56 	
+0BCD6B 31 2E 30 20 62 79 	
+0BCD71 20 45 2E 4B 61 6B 	
+0BCD77 6F 0D 0A 00       	
+0BCD7B 55 53 41 47 45 20 	msg2:	db	'USAGE : ishd filename ',CR,LF,0
+0BCD81 3A 20 69 73 68 64 	
+0BCD87 20 66 69 6C 65 6E 	
+0BCD8D 61 6D 65 20 0D 0A 	
+0BCD93 00                	
+0BCD94 5B 20 72 65 73 74 	msg3:	db	'[ restore <JIS8 format> ]',CR,LF,0
+0BCD9A 6F 72 65 20 3C 4A 	
+0BCDA0 49 53 38 20 66 6F 	
+0BCDA6 72 6D 61 74 3E 20 	
+0BCDAC 5D 0D 0A 00       	
+0BCDB0 69 73 68 5F 66 69 	msg4:	db	'ish_file not found.',CR,LF,0
+0BCDB6 6C 65 20 6E 6F 74 	
+0BCDBC 20 66 6F 75 6E 64 	
+0BCDC2 2E 0D 0A 00       	
+0BCDC6 20 3A 20 00       	msg5:	db	' : ',0
+0BCDCA 61 6C 72 65 61 64 	msg6:	db	'already exist.',CR,LF,0
+0BCDD0 79 20 65 78 69 73 	
+0BCDD6 74 2E 0D 0A 00    	
+0BCDDB 75 73 65 20 75 70 	msg7:	db	'use upper version.',CR,LF,0
+0BCDE1 70 65 72 20 76 65 	
+0BCDE7 72 73 69 6F 6E 2E 	
+0BCDED 0D 0A 00          	
+0BCDF0 64 69 73 6B 20 66 	msg8:	db	'disk full.',CR,LF,0
+0BCDF6 75 6C 6C 2E 0D 0A 	
+0BCDFC 00                	
+0BCDFD 0D 0A 66 69 6C 65 	msg9:	db	CR,LF,'file restored successfully.',CR,LF,0
+0BCE03 20 72 65 73 74 6F 	
+0BCE09 72 65 64 20 73 75 	
+0BCE0F 63 63 65 73 73 66 	
+0BCE15 75 6C 6C 79 2E 0D 	
+0BCE1B 0A 00             	
+0BCE1D 0D 0A 66 69 6C 65 	msg10:	db	CR,LF,'file write error.',CR,LF,0
+0BCE23 20 77 72 69 74 65 	
+0BCE29 20 65 72 72 6F 72 	
+0BCE2F 2E 0D 0A 00       	
+0BCE33 0D 0A 63 72 63 20 	msg11:	db	CR,LF,'crc error detected.',CR,LF,0
+0BCE39 65 72 72 6F 72 20 	
+0BCE3F 64 65 74 65 63 74 	
+0BCE45 65 64 2E 0D 0A 00 	
+0BCE4B 45 52 52 4F 52 3A 	msg12:	db	'ERROR: ',0
+0BCE51 20 00             	
+0BCE53 78 0D 0A 00       	msg13:	db	'x',CR,LF,0
+0BCE57 65 78 74 72 65 6D 	msg14:	db	'extremely damaged.',CR,LF,0
+0BCE5D 65 6C 79 20 64 61 	
+0BCE63 6D 61 67 65 64 2E 	
+0BCE69 0D 0A 00          	
+0BCE6C 66 69 6C 65 20 63 	msg15:	db	'file cannot create.',CR,LF,0
+0BCE72 61 6E 6E 6F 74 20 	
+0BCE78 63 72 65 61 74 65 	
+0BCE7E 2E 0D 0A 00       	
+0BCE82                   	;
+0BCE82                   	decode_table:
+0BCE82 FF FF FF FF FF FF 		db	0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh
+0BCE88 FF FF             	
+0BCE8A FF FF FF FF FF FF 		db	0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh
+0BCE90 FF FF             	
+0BCE92 FF FF FF FF FF FF 		db	0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh
+0BCE98 FF FF             	
+0BCE9A FF FF FF FF FF FF 		db	0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh
+0BCEA0 FF FF             	
+0BCEA2 FF FF FF 00 FF 01 		db	0ffh,0ffh,0ffh, 00h,0ffh, 01h, 02h, 03h
+0BCEA8 02 03             	
+0BCEAA FF 04 FF 05 06 FF 		db	0ffh, 04h,0ffh, 05h, 06h,0ffh,0ffh, 08h
+0BCEB0 FF 08             	
+0BCEB2 FF FF 09 FF 0A 0B 		db	0ffh,0ffh, 09h,0ffh, 0ah, 0bh, 0ch, 0dh
+0BCEB8 0C 0D             	
+0BCEBA 0E 0F 10 11 12 13 		db	 0eh, 0fh, 10h, 11h, 12h, 13h, 14h, 07h
+0BCEC0 14 07             	
+0BCEC2 FF 15 16 17 18 19 		db	0ffh, 15h, 16h, 17h, 18h, 19h, 1ah, 1bh
+0BCEC8 1A 1B             	
+0BCECA 1C 1D FF 1E 1F FF 		db	 1ch, 1dh,0ffh, 1eh, 1fh,0ffh, 20h, 21h
+0BCED0 20 21             	
+0BCED2 FF FF 22 FF 23 24 		db	0ffh,0ffh, 22h,0ffh, 23h, 24h, 25h, 26h
+0BCED8 25 26             	
+0BCEDA 27 28 29 2A 2B 2C 		db	 27h, 28h, 29h, 2ah, 2bh, 2ch, 2dh,0ffh
+0BCEE0 2D FF             	
+0BCEE2 FF 2E 2F 30 31 32 		db	0ffh, 2eh, 2fh, 30h, 31h, 32h, 33h, 34h
+0BCEE8 33 34             	
+0BCEEA 35 36 37 38 39 3A 		db	 35h, 36h, 37h, 38h, 39h, 3ah, 3bh,0ffh
+0BCEF0 3B FF             	
+0BCEF2 3C 3D 3E 3F 40 41 		db	 3ch, 3dh, 3eh, 3fh, 40h, 41h, 42h,0ffh
+0BCEF8 42 FF             	
+0BCEFA 43 44 45 FF 46 FF 		db	 43h, 44h, 45h,0ffh, 46h,0ffh,0ffh,0ffh
+0BCF00 FF FF             	
+0BCF02 FF FF FF FF FF FF 		db	0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh
+0BCF08 FF FF             	
+0BCF0A FF FF FF FF FF FF 		db	0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh
+0BCF10 FF FF             	
+0BCF12 FF FF FF FF FF FF 		db	0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh
+0BCF18 FF FF             	
+0BCF1A FF FF FF FF FF FF 		db	0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh
+0BCF20 FF FF             	
+0BCF22 FF 47 48 49 4A 4B 		db	0ffh, 47h, 48h, 49h, 4ah, 4bh, 4ch, 4dh
+0BCF28 4C 4D             	
+0BCF2A 4E 4F 50 51 52 FF 		db	 4eh, 4fh, 50h, 51h, 52h,0ffh, 53h, 54h
+0BCF30 53 54             	
+0BCF32 55 56 57 FF 58 59 		db	 55h, 56h, 57h,0ffh, 58h, 59h, 5ah, 5bh
+0BCF38 5A 5B             	
+0BCF3A 5C 5D 5E 5F 60 61 		db	 5ch, 5dh, 5eh, 5fh, 60h, 61h, 62h,0ffh
+0BCF40 62 FF             	
+0BCF42 63 64 65 66 67 68 		db	 63h, 64h, 65h, 66h, 67h, 68h, 69h, 6ah
+0BCF48 69 6A             	
+0BCF4A 6B 6C 6D 6E 6F FF 		db	 6bh, 6ch, 6dh, 6eh, 6fh,0ffh, 70h, 71h
+0BCF50 70 71             	
+0BCF52 72 73 74 FF 75 76 		db	 72h, 73h, 74h,0ffh, 75h, 76h, 77h, 78h
+0BCF58 77 78             	
+0BCF5A 79 7A 7B 7C 7D 7E 		db	 79h, 7ah, 7bh, 7ch, 7dh, 7eh, 7fh,0ffh
+0BCF60 7F FF             	
+0BCF62 FF FF FF FF FF FF 		db	0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh
+0BCF68 FF FF             	
+0BCF6A FF FF FF FF FF FF 		db	0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh
+0BCF70 FF FF             	
+0BCF72 FF FF FF FF FF FF 		db	0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh
+0BCF78 FF FF             	
+0BCF7A FF FF FF FF FF FF 		db	0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh
+0BCF80 FF FF             	
+0BCF82                   	;
+0BCF82                   	jis7_table:
+0BCF82 FF FF FF FF FF FF 		db	0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh
+0BCF88 FF FF             	
+0BCF8A FF FF FF FF FF FF 		db	0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh
+0BCF90 FF FF             	
+0BCF92 FF FF FF FF FF FF 		db	0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh
+0BCF98 FF FF             	
+0BCF9A FF FF FF FF FF FF 		db	0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh,0ffh
+0BCFA0 FF FF             	
+0BCFA2 FF 00 01 FF 02 03 		db	0ffh, 00h, 01h,0ffh, 02h, 03h, 04h, 05h
+0BCFA8 04 05             	
+0BCFAA 06 07 08 09 0A 0B 		db	 06h, 07h, 08h, 09h, 0ah, 0bh,0ffh, 0ch
+0BCFB0 FF 0C             	
+0BCFB2 0D 0E 0F 10 11 12 		db	 0dh, 0eh, 0fh, 10h, 11h, 12h, 13h, 14h
+0BCFB8 13 14             	
+0BCFBA 15 16 17 18 19 1A 		db	 15h, 16h, 17h, 18h, 19h, 1ah, 1bh, 1ch
+0BCFC0 1B 1C             	
+0BCFC2 1D 1E 1F 20 21 22 		db	 1dh, 1eh, 1fh, 20h, 21h, 22h, 23h, 24h
+0BCFC8 23 24             	
+0BCFCA 25 26 27 28 29 2A 		db	 25h, 26h, 27h, 28h, 29h, 2ah, 2bh, 2ch
+0BCFD0 2B 2C             	
+0BCFD2 2D 2E 2F 30 31 32 		db	 2dh, 2eh, 2fh, 30h, 31h, 32h, 33h, 34h
+0BCFD8 33 34             	
+0BCFDA 35 36 37 38 39 3A 		db	 35h, 36h, 37h, 38h, 39h, 3ah, 3bh, 3ch
+0BCFE0 3B 3C             	
+0BCFE2 FF 3D 3E 3F 40 41 		db	0ffh, 3dh, 3eh, 3fh, 40h, 41h, 42h, 43h
+0BCFE8 42 43             	
+0BCFEA 44 45 46 47 48 49 		db	 44h, 45h, 46h, 47h, 48h, 49h, 4ah, 4bh
+0BCFF0 4A 4B             	
+0BCFF2 4C 4D 4E 4F 50 51 		db	 4ch, 4dh, 4eh, 4fh, 50h, 51h, 52h, 53h
+0BCFF8 52 53             	
+0BCFFA 54 55 56 57 58 59 		db	 54h, 55h, 56h, 57h, 58h, 59h, 5ah,0ffh
+0BD000 5A FF             	
+0BD002                   	;
+0BD002                   	crc_data_table:
+0BD002 00 00 21 10 42 20 		dw	00000h,01021h,02042h,03063h,04084h,050A5h,060C6h,070E7h
+0BD008 63 30 84 40 A5 50 	
+0BD00E C6 60 E7 70       	
+0BD012 08 81 29 91 4A A1 		dw	08108h,09129h,0A14Ah,0B16Bh,0C18Ch,0D1ADh,0E1CEh,0F1EFh
+0BD018 6B B1 8C C1 AD D1 	
+0BD01E CE E1 EF F1       	
+0BD022 31 12 10 02 73 32 		dw	01231h,00210h,03273h,02252h,052B5h,04294h,072F7h,062D6h
+0BD028 52 22 B5 52 94 42 	
+0BD02E F7 72 D6 62       	
+0BD032 39 93 18 83 7B B3 		dw	09339h,08318h,0B37Bh,0A35Ah,0D3BDh,0C39Ch,0F3FFh,0E3DEh
+0BD038 5A A3 BD D3 9C C3 	
+0BD03E FF F3 DE E3       	
+0BD042 62 24 43 34 20 04 		dw	02462h,03443h,00420h,01401h,064E6h,074C7h,044A4h,05485h
+0BD048 01 14 E6 64 C7 74 	
+0BD04E A4 44 85 54       	
+0BD052 6A A5 4B B5 28 85 		dw	0A56Ah,0B54Bh,08528h,09509h,0E5EEh,0F5CFh,0C5ACh,0D58Dh
+0BD058 09 95 EE E5 CF F5 	
+0BD05E AC C5 8D D5       	
+0BD062 53 36 72 26 11 16 		dw	03653h,02672h,01611h,00630h,076D7h,066F6h,05695h,046B4h
+0BD068 30 06 D7 76 F6 66 	
+0BD06E 95 56 B4 46       	
+0BD072 5B B7 7A A7 19 97 		dw	0B75Bh,0A77Ah,09719h,08738h,0F7DFh,0E7FEh,0D79Dh,0C7BCh
+0BD078 38 87 DF F7 FE E7 	
+0BD07E 9D D7 BC C7       	
+0BD082 C4 48 E5 58 86 68 		dw	048C4h,058E5h,06886h,078A7h,00840h,01861h,02802h,03823h
+0BD088 A7 78 40 08 61 18 	
+0BD08E 02 28 23 38       	
+0BD092 CC C9 ED D9 8E E9 		dw	0C9CCh,0D9EDh,0E98Eh,0F9AFh,08948h,09969h,0A90Ah,0B92Bh
+0BD098 AF F9 48 89 69 99 	
+0BD09E 0A A9 2B B9       	
+0BD0A2 F5 5A D4 4A B7 7A 		dw	05AF5h,04AD4h,07AB7h,06A96h,01A71h,00A50h,03A33h,02A12h
+0BD0A8 96 6A 71 1A 50 0A 	
+0BD0AE 33 3A 12 2A       	
+0BD0B2 FD DB DC CB BF FB 		dw	0DBFDh,0CBDCh,0FBBFh,0EB9Eh,09B79h,08B58h,0BB3Bh,0AB1Ah
+0BD0B8 9E EB 79 9B 58 8B 	
+0BD0BE 3B BB 1A AB       	
+0BD0C2 A6 6C 87 7C E4 4C 		dw	06CA6h,07C87h,04CE4h,05CC5h,02C22h,03C03h,00C60h,01C41h
+0BD0C8 C5 5C 22 2C 03 3C 	
+0BD0CE 60 0C 41 1C       	
+0BD0D2 AE ED 8F FD EC CD 		dw	0EDAEh,0FD8Fh,0CDECh,0DDCDh,0AD2Ah,0BD0Bh,08D68h,09D49h
+0BD0D8 CD DD 2A AD 0B BD 	
+0BD0DE 68 8D 49 9D       	
+0BD0E2 97 7E B6 6E D5 5E 		dw	07E97h,06EB6h,05ED5h,04EF4h,03E13h,02E32h,01E51h,00E70h
+0BD0E8 F4 4E 13 3E 32 2E 	
+0BD0EE 51 1E 70 0E       	
+0BD0F2 9F FF BE EF DD DF 		dw	0FF9Fh,0EFBEh,0DFDDh,0CFFCh,0BF1Bh,0AF3Ah,09F59h,08F78h
+0BD0F8 FC CF 1B BF 3A AF 	
+0BD0FE 59 9F 78 8F       	
+0BD102 88 91 A9 81 CA B1 		dw	09188h,081A9h,0B1CAh,0A1EBh,0D10Ch,0C12Dh,0F14Eh,0E16Fh
+0BD108 EB A1 0C D1 2D C1 	
+0BD10E 4E F1 6F E1       	
+0BD112 80 10 A1 00 C2 30 		dw	01080h,000A1h,030C2h,020E3h,05004h,04025h,07046h,06067h
+0BD118 E3 20 04 50 25 40 	
+0BD11E 46 70 67 60       	
+0BD122 B9 83 98 93 FB A3 		dw	083B9h,09398h,0A3FBh,0B3DAh,0C33Dh,0D31Ch,0E37Fh,0F35Eh
+0BD128 DA B3 3D C3 1C D3 	
+0BD12E 7F E3 5E F3       	
+0BD132 B1 02 90 12 F3 22 		dw	002B1h,01290h,022F3h,032D2h,04235h,05214h,06277h,07256h
+0BD138 D2 32 35 42 14 52 	
+0BD13E 77 62 56 72       	
+0BD142 EA B5 CB A5 A8 95 		dw	0B5EAh,0A5CBh,095A8h,08589h,0F56Eh,0E54Fh,0D52Ch,0C50Dh
+0BD148 89 85 6E F5 4F E5 	
+0BD14E 2C D5 0D C5       	
+0BD152 E2 34 C3 24 A0 14 		dw	034E2h,024C3h,014A0h,00481h,07466h,06447h,05424h,04405h
+0BD158 81 04 66 74 47 64 	
+0BD15E 24 54 05 44       	
+0BD162 DB A7 FA B7 99 87 		dw	0A7DBh,0B7FAh,08799h,097B8h,0E75Fh,0F77Eh,0C71Dh,0D73Ch
+0BD168 B8 97 5F E7 7E F7 	
+0BD16E 1D C7 3C D7       	
+0BD172 D3 26 F2 36 91 06 		dw	026D3h,036F2h,00691h,016B0h,06657h,07676h,04615h,05634h
+0BD178 B0 16 57 66 76 76 	
+0BD17E 15 46 34 56       	
+0BD182 4C D9 6D C9 0E F9 		dw	0D94Ch,0C96Dh,0F90Eh,0E92Fh,099C8h,089E9h,0B98Ah,0A9ABh
+0BD188 2F E9 C8 99 E9 89 	
+0BD18E 8A B9 AB A9       	
+0BD192 44 58 65 48 06 78 		dw	05844h,04865h,07806h,06827h,018C0h,008E1h,03882h,028A3h
+0BD198 27 68 C0 18 E1 08 	
+0BD19E 82 38 A3 28       	
+0BD1A2 7D CB 5C DB 3F EB 		dw	0CB7Dh,0DB5Ch,0EB3Fh,0FB1Eh,08BF9h,09BD8h,0ABBBh,0BB9Ah
+0BD1A8 1E FB F9 8B D8 9B 	
+0BD1AE BB AB 9A BB       	
+0BD1B2 75 4A 54 5A 37 6A 		dw	04A75h,05A54h,06A37h,07A16h,00AF1h,01AD0h,02AB3h,03A92h
+0BD1B8 16 7A F1 0A D0 1A 	
+0BD1BE B3 2A 92 3A       	
+0BD1C2 2E FD 0F ED 6C DD 		dw	0FD2Eh,0ED0Fh,0DD6Ch,0CD4Dh,0BDAAh,0AD8Bh,09DE8h,08DC9h
+0BD1C8 4D CD AA BD 8B AD 	
+0BD1CE E8 9D C9 8D       	
+0BD1D2 26 7C 07 6C 64 5C 		dw	07C26h,06C07h,05C64h,04C45h,03CA2h,02C83h,01CE0h,00CC1h
+0BD1D8 45 4C A2 3C 83 2C 	
+0BD1DE E0 1C C1 0C       	
+0BD1E2 1F EF 3E FF 5D CF 		dw	0EF1Fh,0FF3Eh,0CF5Dh,0DF7Ch,0AF9Bh,0BFBAh,08FD9h,09FF8h
+0BD1E8 7C DF 9B AF BA BF 	
+0BD1EE D9 8F F8 9F       	
+0BD1F2 17 6E 36 7E 55 4E 		dw	06E17h,07E36h,04E55h,05E74h,02E93h,03EB2h,00ED1h,01EF0h
+0BD1F8 74 5E 93 2E B2 3E 	
+0BD1FE D1 0E F0 1E       	
+0BD202                   	;
+0BD202 00                	base:	db	0
+0BD203                   	;
+0BD203 00                	mode:	db	0
+0BD204 00                	handl0:	db	0
+0BD205 00                	handl1:	db	0
+0BD206 00 00 00 00 00 00 	fname:	ds	21,0
+0BD20C 00 00 00 00 00 00 	
+0BD212 00 00 00 00 00 00 	
+0BD218 00 00 00          	
+0BD21B 00 00 00 00 00 00 	file1:	ds	21,0
+0BD221 00 00 00 00 00 00 	
+0BD227 00 00 00 00 00 00 	
+0BD22D 00 00 00          	
+0BD230 00 00 00 00 00 00 	file2:	ds	13,0
+0BD236 00 00 00 00 00 00 	
+0BD23C 00                	
+0BD23D 00 00 00 00 00 00 	finfo:	ds	8,0
+0BD243 00 00             	
+0BD245 00 00 00          	size:	dp	0
+0BD248                   	restsize:
+0BD248 00 00 00          		dp	0
+0BD24B                   	page_size:
+0BD24B 00 00 00          		dp	0
+0BD24E                   	line_size:
+0BD24E 00 00 00          		dp	0
+0BD251                   	write_seq:
+0BD251 00                		db	0
+0BD252 00 00 00          	deci:	dp	0
+0BD255 00 00 00 00 00 00 	tenbuf:	ds	7,0
+0BD25B 00                	
+0BD25C 00 00 00 00 00 00 	ten:	ds	7,0
+0BD262 00                	
+0BD263                   	total_lines:
+0BD263 00 00 00          		dp	0
+0BD266                   	total_pages:
+0BD266 00 00 00          		dp	0
+0BD269                   	rest_lines:
+0BD269 00                		db	0
+0BD26A                   	reading_line:
+0BD26A 00 00 00          		dp	0
+0BD26D 00                	wanted:	db	0
+0BD26E 00                	deterr:	db	0
+0BD26F 00                	ersq1:	db	0
+0BD270 00 00 00          	erln1:	dp	0
+0BD273 00                	ersq2:	db	0
+0BD274 00 00 00          	erln2:	dp	0
+0BD277 00                	ersq3:	db	0
+0BD278 00 00 00          	erln3:	dp	0
+0BD27B                   	;
+0BD27B 00 00 00          	lines:	dp	0
+0BD27E 00                	seq:	db	0
+0BD27F 00                	first:	db	0
+0BD280 00                	rest:	db	0
+0BD281 00                	eof_f:	db	0
+0BD282                   	already_read:
+0BD282 00                		db	0
+0BD283                   	;
+0BD283                   	er_adrs1:
+0BD283 00 00 00          		dp	0
+0BD286                   	er_adrs2:
+0BD286 00 00 00          		dp	0
+0BD289                   	;
+0BD289 00 00 00 00 00 00 	sum1:	ds	68,0
+0BD28F 00 00 00 00 00 00 	
+0BD295 00 00 00 00 00 00 	
+0BD29B 00 00 00 00 00 00 	
+0BD2A1 00 00 00 00 00 00 	
+0BD2A7 00 00 00 00 00 00 	
+0BD2AD 00 00 00 00 00 00 	
+0BD2B3 00 00 00 00 00 00 	
+0BD2B9 00 00 00 00 00 00 	
+0BD2BF 00 00 00 00 00 00 	
+0BD2C5 00 00 00 00 00 00 	
+0BD2CB 00 00             	
+0BD2CD 00 00 00 00 00 00 	sum3:	ds	68,0
+0BD2D3 00 00 00 00 00 00 	
+0BD2D9 00 00 00 00 00 00 	
+0BD2DF 00 00 00 00 00 00 	
+0BD2E5 00 00 00 00 00 00 	
+0BD2EB 00 00 00 00 00 00 	
+0BD2F1 00 00 00 00 00 00 	
+0BD2F7 00 00 00 00 00 00 	
+0BD2FD 00 00 00 00 00 00 	
+0BD303 00 00 00 00 00 00 	
+0BD309 00 00 00 00 00 00 	
+0BD30F 00 00             	
+0BD311                   	;
+0BD311                   	line_buf_ptr:
+0BD311 00 00             		dw	0
+0BD313                   	line_buf:
+0BD313 00 00 00 00 00 00 		ds	80,0
+0BD319 00 00 00 00 00 00 	
+0BD31F 00 00 00 00 00 00 	
+0BD325 00 00 00 00 00 00 	
+0BD32B 00 00 00 00 00 00 	
+0BD331 00 00 00 00 00 00 	
+0BD337 00 00 00 00 00 00 	
+0BD33D 00 00 00 00 00 00 	
+0BD343 00 00 00 00 00 00 	
+0BD349 00 00 00 00 00 00 	
+0BD34F 00 00 00 00 00 00 	
+0BD355 00 00 00 00 00 00 	
+0BD35B 00 00 00 00 00 00 	
+0BD361 00 00             	
+0BD363 00                	i_buf:	db	0
+0BD364 00 00 00 00 00 00 		ds	66,0
+0BD36A 00 00 00 00 00 00 	
+0BD370 00 00 00 00 00 00 	
+0BD376 00 00 00 00 00 00 	
+0BD37C 00 00 00 00 00 00 	
+0BD382 00 00 00 00 00 00 	
+0BD388 00 00 00 00 00 00 	
+0BD38E 00 00 00 00 00 00 	
+0BD394 00 00 00 00 00 00 	
+0BD39A 00 00 00 00 00 00 	
+0BD3A0 00 00 00 00 00 00 	
+0BD3A6 00                	crc1:	db	0
+0BD3A7 00                	crc2:	db	0
+0BD3A8 00                	d_dmy:	db	0
+0BD3A9                   	;
+0BD3A9 00                	c1:	db	0
+0BD3AA 00                	c2:	db	0
+0BD3AB                   	;
+0BD3AB 00                	g_crc1:	db	0
+0BD3AC 00                	g_crc2:	db	0
+0BD3AD                   	;
+0BD3AD                   	;
+0BD3AD 00                	g_c1:	db	0
+0BD3AE 00                	g_c2:	db	0
+0BD3AF                   	;
+0BD3AF                   	crc_g_f:
+0BD3AF 00                		db	0
+0BD3B0                   	;
+0BD3B0                   	;
+0BD3B0                   	dec_buf:
+0BD3B0 00 00 00 00 00 00 		ds	67*69,0
+0BD3B6 00 00 00 00 00 00 	
+0BD3BC 00 00 00 00 00 00 	
+0BD3C2 00 00 00 00 00 00 	
+0BD3C8 00 00 00 00 00 00 	
+0BD3CE 00 00 00 00 00 00 	
+0BD3D4 00 00 00 00 00 00 	
+0BD3DA 00 00 00 00 00 00 	
+0BD3E0 00 00 00 00 00 00 	
+0BD3E6 00 00 00 00 00 00 	
+0BD3EC 00 00 00 00 00 00 	
+0BD3F2 00 00 00 00 00 00 	
+0BD3F8 00 00 00 00 00 00 	
+0BD3FE 00 00 00 00 00 00 	
+0BD404 00 00 00 00 00 00 	
+0BD40A 00 00 00 00 00 00 	
+0BD410 00 00 00 00 00 00 	
+0BD416 00 00 00 00 00 00 	
+0BD41C 00 00 00 00 00 00 	
+0BD422 00 00 00 00 00 00 	
+0BD428 00 00 00 00 00 00 	
+0BD42E 00 00 00 00 00 00 	
+0BD434 00 00 00 00 00 00 	
+0BD43A 00 00 00 00 00 00 	
+0BD440 00 00 00 00 00 00 	
+0BD446 00 00 00 00 00 00 	
+0BD44C 00 00 00 00 00 00 	
+0BD452 00 00 00 00 00 00 	
+0BD458 00 00 00 00 00 00 	
+0BD45E 00 00 00 00 00 00 	
+0BD464 00 00 00 00 00 00 	
+0BD46A 00 00 00 00 00 00 	
+0BD470 00 00 00 00 00 00 	
+0BD476 00 00 00 00 00 00 	
+0BD47C 00 00 00 00 00 00 	
+0BD482 00 00 00 00 00 00 	
+0BD488 00 00 00 00 00 00 	
+0BD48E 00 00 00 00 00 00 	
+0BD494 00 00 00 00 00 00 	
+0BD49A 00 00 00 00 00 00 	
+0BD4A0 00 00 00 00 00 00 	
+0BD4A6 00 00 00 00 00 00 	
+0BD4AC 00 00 00 00 00 00 	
+0BD4B2 00 00 00 00 00 00 	
+0BD4B8 00 00 00 00 00 00 	
+0BD4BE 00 00 00 00 00 00 	
+0BD4C4 00 00 00 00 00 00 	
+0BD4CA 00 00 00 00 00 00 	
+0BD4D0 00 00 00 00 00 00 	
+0BD4D6 00 00 00 00 00 00 	
+0BD4DC 00 00 00 00 00 00 	
+0BD4E2 00 00 00 00 00 00 	
+0BD4E8 00 00 00 00 00 00 	
+0BD4EE 00 00 00 00 00 00 	
+0BD4F4 00 00 00 00 00 00 	
+0BD4FA 00 00 00 00 00 00 	
+0BD500 00 00 00 00 00 00 	
+0BD506 00 00 00 00 00 00 	
+0BD50C 00 00 00 00 00 00 	
+0BD512 00 00 00 00 00 00 	
+0BD518 00 00 00 00 00 00 	
+0BD51E 00 00 00 00 00 00 	
+0BD524 00 00 00 00 00 00 	
+0BD52A 00 00 00 00 00 00 	
+0BD530 00 00 00 00 00 00 	
+0BD536 00 00 00 00 00 00 	
+0BD53C 00 00 00 00 00 00 	
+0BD542 00 00 00 00 00 00 	
+0BD548 00 00 00 00 00 00 	
+0BD54E 00 00 00 00 00 00 	
+0BD554 00 00 00 00 00 00 	
+0BD55A 00 00 00 00 00 00 	
+0BD560 00 00 00 00 00 00 	
+0BD566 00 00 00 00 00 00 	
+0BD56C 00 00 00 00 00 00 	
+0BD572 00 00 00 00 00 00 	
+0BD578 00 00 00 00 00 00 	
+0BD57E 00 00 00 00 00 00 	
+0BD584 00 00 00 00 00 00 	
+0BD58A 00 00 00 00 00 00 	
+0BD590 00 00 00 00 00 00 	
+0BD596 00 00 00 00 00 00 	
+0BD59C 00 00 00 00 00 00 	
+0BD5A2 00 00 00 00 00 00 	
+0BD5A8 00 00 00 00 00 00 	
+0BD5AE 00 00 00 00 00 00 	
+0BD5B4 00 00 00 00 00 00 	
+0BD5BA 00 00 00 00 00 00 	
+0BD5C0 00 00 00 00 00 00 	
+0BD5C6 00 00 00 00 00 00 	
+0BD5CC 00 00 00 00 00 00 	
+0BD5D2 00 00 00 00 00 00 	
+0BD5D8 00 00 00 00 00 00 	
+0BD5DE 00 00 00 00 00 00 	
+0BD5E4 00 00 00 00 00 00 	
+0BD5EA 00 00 00 00 00 00 	
+0BD5F0 00 00 00 00 00 00 	
+0BD5F6 00 00 00 00 00 00 	
+0BD5FC 00 00 00 00 00 00 	
+0BD602 00 00 00 00 00 00 	
+0BD608 00 00 00 00 00 00 	
+0BD60E 00 00 00 00 00 00 	
+0BD614 00 00 00 00 00 00 	
+0BD61A 00 00 00 00 00 00 	
+0BD620 00 00 00 00 00 00 	
+0BD626 00 00 00 00 00 00 	
+0BD62C 00 00 00 00 00 00 	
+0BD632 00 00 00 00 00 00 	
+0BD638 00 00 00 00 00 00 	
+0BD63E 00 00 00 00 00 00 	
+0BD644 00 00 00 00 00 00 	
+0BD64A 00 00 00 00 00 00 	
+0BD650 00 00 00 00 00 00 	
+0BD656 00 00 00 00 00 00 	
+0BD65C 00 00 00 00 00 00 	
+0BD662 00 00 00 00 00 00 	
+0BD668 00 00 00 00 00 00 	
+0BD66E 00 00 00 00 00 00 	
+0BD674 00 00 00 00 00 00 	
+0BD67A 00 00 00 00 00 00 	
+0BD680 00 00 00 00 00 00 	
+0BD686 00 00 00 00 00 00 	
+0BD68C 00 00 00 00 00 00 	
+0BD692 00 00 00 00 00 00 	
+0BD698 00 00 00 00 00 00 	
+0BD69E 00 00 00 00 00 00 	
+0BD6A4 00 00 00 00 00 00 	
+0BD6AA 00 00 00 00 00 00 	
+0BD6B0 00 00 00 00 00 00 	
+0BD6B6 00 00 00 00 00 00 	
+0BD6BC 00 00 00 00 00 00 	
+0BD6C2 00 00 00 00 00 00 	
+0BD6C8 00 00 00 00 00 00 	
+0BD6CE 00 00 00 00 00 00 	
+0BD6D4 00 00 00 00 00 00 	
+0BD6DA 00 00 00 00 00 00 	
+0BD6E0 00 00 00 00 00 00 	
+0BD6E6 00 00 00 00 00 00 	
+0BD6EC 00 00 00 00 00 00 	
+0BD6F2 00 00 00 00 00 00 	
+0BD6F8 00 00 00 00 00 00 	
+0BD6FE 00 00 00 00 00 00 	
+0BD704 00 00 00 00 00 00 	
+0BD70A 00 00 00 00 00 00 	
+0BD710 00 00 00 00 00 00 	
+0BD716 00 00 00 00 00 00 	
+0BD71C 00 00 00 00 00 00 	
+0BD722 00 00 00 00 00 00 	
+0BD728 00 00 00 00 00 00 	
+0BD72E 00 00 00 00 00 00 	
+0BD734 00 00 00 00 00 00 	
+0BD73A 00 00 00 00 00 00 	
+0BD740 00 00 00 00 00 00 	
+0BD746 00 00 00 00 00 00 	
+0BD74C 00 00 00 00 00 00 	
+0BD752 00 00 00 00 00 00 	
+0BD758 00 00 00 00 00 00 	
+0BD75E 00 00 00 00 00 00 	
+0BD764 00 00 00 00 00 00 	
+0BD76A 00 00 00 00 00 00 	
+0BD770 00 00 00 00 00 00 	
+0BD776 00 00 00 00 00 00 	
+0BD77C 00 00 00 00 00 00 	
+0BD782 00 00 00 00 00 00 	
+0BD788 00 00 00 00 00 00 	
+0BD78E 00 00 00 00 00 00 	
+0BD794 00 00 00 00 00 00 	
+0BD79A 00 00 00 00 00 00 	
+0BD7A0 00 00 00 00 00 00 	
+0BD7A6 00 00 00 00 00 00 	
+0BD7AC 00 00 00 00 00 00 	
+0BD7B2 00 00 00 00 00 00 	
+0BD7B8 00 00 00 00 00 00 	
+0BD7BE 00 00 00 00 00 00 	
+0BD7C4 00 00 00 00 00 00 	
+0BD7CA 00 00 00 00 00 00 	
+0BD7D0 00 00 00 00 00 00 	
+0BD7D6 00 00 00 00 00 00 	
+0BD7DC 00 00 00 00 00 00 	
+0BD7E2 00 00 00 00 00 00 	
+0BD7E8 00 00 00 00 00 00 	
+0BD7EE 00 00 00 00 00 00 	
+0BD7F4 00 00 00 00 00 00 	
+0BD7FA 00 00 00 00 00 00 	
+0BD800 00 00 00 00 00 00 	
+0BD806 00 00 00 00 00 00 	
+0BD80C 00 00 00 00 00 00 	
+0BD812 00 00 00 00 00 00 	
+0BD818 00 00 00 00 00 00 	
+0BD81E 00 00 00 00 00 00 	
+0BD824 00 00 00 00 00 00 	
+0BD82A 00 00 00 00 00 00 	
+0BD830 00 00 00 00 00 00 	
+0BD836 00 00 00 00 00 00 	
+0BD83C 00 00 00 00 00 00 	
+0BD842 00 00 00 00 00 00 	
+0BD848 00 00 00 00 00 00 	
+0BD84E 00 00 00 00 00 00 	
+0BD854 00 00 00 00 00 00 	
+0BD85A 00 00 00 00 00 00 	
+0BD860 00 00 00 00 00 00 	
+0BD866 00 00 00 00 00 00 	
+0BD86C 00 00 00 00 00 00 	
+0BD872 00 00 00 00 00 00 	
+0BD878 00 00 00 00 00 00 	
+0BD87E 00 00 00 00 00 00 	
+0BD884 00 00 00 00 00 00 	
+0BD88A 00 00 00 00 00 00 	
+0BD890 00 00 00 00 00 00 	
+0BD896 00 00 00 00 00 00 	
+0BD89C 00 00 00 00 00 00 	
+0BD8A2 00 00 00 00 00 00 	
+0BD8A8 00 00 00 00 00 00 	
+0BD8AE 00 00 00 00 00 00 	
+0BD8B4 00 00 00 00 00 00 	
+0BD8BA 00 00 00 00 00 00 	
+0BD8C0 00 00 00 00 00 00 	
+0BD8C6 00 00 00 00 00 00 	
+0BD8CC 00 00 00 00 00 00 	
+0BD8D2 00 00 00 00 00 00 	
+0BD8D8 00 00 00 00 00 00 	
+0BD8DE 00 00 00 00 00 00 	
+0BD8E4 00 00 00 00 00 00 	
+0BD8EA 00 00 00 00 00 00 	
+0BD8F0 00 00 00 00 00 00 	
+0BD8F6 00 00 00 00 00 00 	
+0BD8FC 00 00 00 00 00 00 	
+0BD902 00 00 00 00 00 00 	
+0BD908 00 00 00 00 00 00 	
+0BD90E 00 00 00 00 00 00 	
+0BD914 00 00 00 00 00 00 	
+0BD91A 00 00 00 00 00 00 	
+0BD920 00 00 00 00 00 00 	
+0BD926 00 00 00 00 00 00 	
+0BD92C 00 00 00 00 00 00 	
+0BD932 00 00 00 00 00 00 	
+0BD938 00 00 00 00 00 00 	
+0BD93E 00 00 00 00 00 00 	
+0BD944 00 00 00 00 00 00 	
+0BD94A 00 00 00 00 00 00 	
+0BD950 00 00 00 00 00 00 	
+0BD956 00 00 00 00 00 00 	
+0BD95C 00 00 00 00 00 00 	
+0BD962 00 00 00 00 00 00 	
+0BD968 00 00 00 00 00 00 	
+0BD96E 00 00 00 00 00 00 	
+0BD974 00 00 00 00 00 00 	
+0BD97A 00 00 00 00 00 00 	
+0BD980 00 00 00 00 00 00 	
+0BD986 00 00 00 00 00 00 	
+0BD98C 00 00 00 00 00 00 	
+0BD992 00 00 00 00 00 00 	
+0BD998 00 00 00 00 00 00 	
+0BD99E 00 00 00 00 00 00 	
+0BD9A4 00 00 00 00 00 00 	
+0BD9AA 00 00 00 00 00 00 	
+0BD9B0 00 00 00 00 00 00 	
+0BD9B6 00 00 00 00 00 00 	
+0BD9BC 00 00 00 00 00 00 	
+0BD9C2 00 00 00 00 00 00 	
+0BD9C8 00 00 00 00 00 00 	
+0BD9CE 00 00 00 00 00 00 	
+0BD9D4 00 00 00 00 00 00 	
+0BD9DA 00 00 00 00 00 00 	
+0BD9E0 00 00 00 00 00 00 	
+0BD9E6 00 00 00 00 00 00 	
+0BD9EC 00 00 00 00 00 00 	
+0BD9F2 00 00 00 00 00 00 	
+0BD9F8 00 00 00 00 00 00 	
+0BD9FE 00 00 00 00 00 00 	
+0BDA04 00 00 00 00 00 00 	
+0BDA0A 00 00 00 00 00 00 	
+0BDA10 00 00 00 00 00 00 	
+0BDA16 00 00 00 00 00 00 	
+0BDA1C 00 00 00 00 00 00 	
+0BDA22 00 00 00 00 00 00 	
+0BDA28 00 00 00 00 00 00 	
+0BDA2E 00 00 00 00 00 00 	
+0BDA34 00 00 00 00 00 00 	
+0BDA3A 00 00 00 00 00 00 	
+0BDA40 00 00 00 00 00 00 	
+0BDA46 00 00 00 00 00 00 	
+0BDA4C 00 00 00 00 00 00 	
+0BDA52 00 00 00 00 00 00 	
+0BDA58 00 00 00 00 00 00 	
+0BDA5E 00 00 00 00 00 00 	
+0BDA64 00 00 00 00 00 00 	
+0BDA6A 00 00 00 00 00 00 	
+0BDA70 00 00 00 00 00 00 	
+0BDA76 00 00 00 00 00 00 	
+0BDA7C 00 00 00 00 00 00 	
+0BDA82 00 00 00 00 00 00 	
+0BDA88 00 00 00 00 00 00 	
+0BDA8E 00 00 00 00 00 00 	
+0BDA94 00 00 00 00 00 00 	
+0BDA9A 00 00 00 00 00 00 	
+0BDAA0 00 00 00 00 00 00 	
+0BDAA6 00 00 00 00 00 00 	
+0BDAAC 00 00 00 00 00 00 	
+0BDAB2 00 00 00 00 00 00 	
+0BDAB8 00 00 00 00 00 00 	
+0BDABE 00 00 00 00 00 00 	
+0BDAC4 00 00 00 00 00 00 	
+0BDACA 00 00 00 00 00 00 	
+0BDAD0 00 00 00 00 00 00 	
+0BDAD6 00 00 00 00 00 00 	
+0BDADC 00 00 00 00 00 00 	
+0BDAE2 00 00 00 00 00 00 	
+0BDAE8 00 00 00 00 00 00 	
+0BDAEE 00 00 00 00 00 00 	
+0BDAF4 00 00 00 00 00 00 	
+0BDAFA 00 00 00 00 00 00 	
+0BDB00 00 00 00 00 00 00 	
+0BDB06 00 00 00 00 00 00 	
+0BDB0C 00 00 00 00 00 00 	
+0BDB12 00 00 00 00 00 00 	
+0BDB18 00 00 00 00 00 00 	
+0BDB1E 00 00 00 00 00 00 	
+0BDB24 00 00 00 00 00 00 	
+0BDB2A 00 00 00 00 00 00 	
+0BDB30 00 00 00 00 00 00 	
+0BDB36 00 00 00 00 00 00 	
+0BDB3C 00 00 00 00 00 00 	
+0BDB42 00 00 00 00 00 00 	
+0BDB48 00 00 00 00 00 00 	
+0BDB4E 00 00 00 00 00 00 	
+0BDB54 00 00 00 00 00 00 	
+0BDB5A 00 00 00 00 00 00 	
+0BDB60 00 00 00 00 00 00 	
+0BDB66 00 00 00 00 00 00 	
+0BDB6C 00 00 00 00 00 00 	
+0BDB72 00 00 00 00 00 00 	
+0BDB78 00 00 00 00 00 00 	
+0BDB7E 00 00 00 00 00 00 	
+0BDB84 00 00 00 00 00 00 	
+0BDB8A 00 00 00 00 00 00 	
+0BDB90 00 00 00 00 00 00 	
+0BDB96 00 00 00 00 00 00 	
+0BDB9C 00 00 00 00 00 00 	
+0BDBA2 00 00 00 00 00 00 	
+0BDBA8 00 00 00 00 00 00 	
+0BDBAE 00 00 00 00 00 00 	
+0BDBB4 00 00 00 00 00 00 	
+0BDBBA 00 00 00 00 00 00 	
+0BDBC0 00 00 00 00 00 00 	
+0BDBC6 00 00 00 00 00 00 	
+0BDBCC 00 00 00 00 00 00 	
+0BDBD2 00 00 00 00 00 00 	
+0BDBD8 00 00 00 00 00 00 	
+0BDBDE 00 00 00 00 00 00 	
+0BDBE4 00 00 00 00 00 00 	
+0BDBEA 00 00 00 00 00 00 	
+0BDBF0 00 00 00 00 00 00 	
+0BDBF6 00 00 00 00 00 00 	
+0BDBFC 00 00 00 00 00 00 	
+0BDC02 00 00 00 00 00 00 	
+0BDC08 00 00 00 00 00 00 	
+0BDC0E 00 00 00 00 00 00 	
+0BDC14 00 00 00 00 00 00 	
+0BDC1A 00 00 00 00 00 00 	
+0BDC20 00 00 00 00 00 00 	
+0BDC26 00 00 00 00 00 00 	
+0BDC2C 00 00 00 00 00 00 	
+0BDC32 00 00 00 00 00 00 	
+0BDC38 00 00 00 00 00 00 	
+0BDC3E 00 00 00 00 00 00 	
+0BDC44 00 00 00 00 00 00 	
+0BDC4A 00 00 00 00 00 00 	
+0BDC50 00 00 00 00 00 00 	
+0BDC56 00 00 00 00 00 00 	
+0BDC5C 00 00 00 00 00 00 	
+0BDC62 00 00 00 00 00 00 	
+0BDC68 00 00 00 00 00 00 	
+0BDC6E 00 00 00 00 00 00 	
+0BDC74 00 00 00 00 00 00 	
+0BDC7A 00 00 00 00 00 00 	
+0BDC80 00 00 00 00 00 00 	
+0BDC86 00 00 00 00 00 00 	
+0BDC8C 00 00 00 00 00 00 	
+0BDC92 00 00 00 00 00 00 	
+0BDC98 00 00 00 00 00 00 	
+0BDC9E 00 00 00 00 00 00 	
+0BDCA4 00 00 00 00 00 00 	
+0BDCAA 00 00 00 00 00 00 	
+0BDCB0 00 00 00 00 00 00 	
+0BDCB6 00 00 00 00 00 00 	
+0BDCBC 00 00 00 00 00 00 	
+0BDCC2 00 00 00 00 00 00 	
+0BDCC8 00 00 00 00 00 00 	
+0BDCCE 00 00 00 00 00 00 	
+0BDCD4 00 00 00 00 00 00 	
+0BDCDA 00 00 00 00 00 00 	
+0BDCE0 00 00 00 00 00 00 	
+0BDCE6 00 00 00 00 00 00 	
+0BDCEC 00 00 00 00 00 00 	
+0BDCF2 00 00 00 00 00 00 	
+0BDCF8 00 00 00 00 00 00 	
+0BDCFE 00 00 00 00 00 00 	
+0BDD04 00 00 00 00 00 00 	
+0BDD0A 00 00 00 00 00 00 	
+0BDD10 00 00 00 00 00 00 	
+0BDD16 00 00 00 00 00 00 	
+0BDD1C 00 00 00 00 00 00 	
+0BDD22 00 00 00 00 00 00 	
+0BDD28 00 00 00 00 00 00 	
+0BDD2E 00 00 00 00 00 00 	
+0BDD34 00 00 00 00 00 00 	
+0BDD3A 00 00 00 00 00 00 	
+0BDD40 00 00 00 00 00 00 	
+0BDD46 00 00 00 00 00 00 	
+0BDD4C 00 00 00 00 00 00 	
+0BDD52 00 00 00 00 00 00 	
+0BDD58 00 00 00 00 00 00 	
+0BDD5E 00 00 00 00 00 00 	
+0BDD64 00 00 00 00 00 00 	
+0BDD6A 00 00 00 00 00 00 	
+0BDD70 00 00 00 00 00 00 	
+0BDD76 00 00 00 00 00 00 	
+0BDD7C 00 00 00 00 00 00 	
+0BDD82 00 00 00 00 00 00 	
+0BDD88 00 00 00 00 00 00 	
+0BDD8E 00 00 00 00 00 00 	
+0BDD94 00 00 00 00 00 00 	
+0BDD9A 00 00 00 00 00 00 	
+0BDDA0 00 00 00 00 00 00 	
+0BDDA6 00 00 00 00 00 00 	
+0BDDAC 00 00 00 00 00 00 	
+0BDDB2 00 00 00 00 00 00 	
+0BDDB8 00 00 00 00 00 00 	
+0BDDBE 00 00 00 00 00 00 	
+0BDDC4 00 00 00 00 00 00 	
+0BDDCA 00 00 00 00 00 00 	
+0BDDD0 00 00 00 00 00 00 	
+0BDDD6 00 00 00 00 00 00 	
+0BDDDC 00 00 00 00 00 00 	
+0BDDE2 00 00 00 00 00 00 	
+0BDDE8 00 00 00 00 00 00 	
+0BDDEE 00 00 00 00 00 00 	
+0BDDF4 00 00 00 00 00 00 	
+0BDDFA 00 00 00 00 00 00 	
+0BDE00 00 00 00 00 00 00 	
+0BDE06 00 00 00 00 00 00 	
+0BDE0C 00 00 00 00 00 00 	
+0BDE12 00 00 00 00 00 00 	
+0BDE18 00 00 00 00 00 00 	
+0BDE1E 00 00 00 00 00 00 	
+0BDE24 00 00 00 00 00 00 	
+0BDE2A 00 00 00 00 00 00 	
+0BDE30 00 00 00 00 00 00 	
+0BDE36 00 00 00 00 00 00 	
+0BDE3C 00 00 00 00 00 00 	
+0BDE42 00 00 00 00 00 00 	
+0BDE48 00 00 00 00 00 00 	
+0BDE4E 00 00 00 00 00 00 	
+0BDE54 00 00 00 00 00 00 	
+0BDE5A 00 00 00 00 00 00 	
+0BDE60 00 00 00 00 00 00 	
+0BDE66 00 00 00 00 00 00 	
+0BDE6C 00 00 00 00 00 00 	
+0BDE72 00 00 00 00 00 00 	
+0BDE78 00 00 00 00 00 00 	
+0BDE7E 00 00 00 00 00 00 	
+0BDE84 00 00 00 00 00 00 	
+0BDE8A 00 00 00 00 00 00 	
+0BDE90 00 00 00 00 00 00 	
+0BDE96 00 00 00 00 00 00 	
+0BDE9C 00 00 00 00 00 00 	
+0BDEA2 00 00 00 00 00 00 	
+0BDEA8 00 00 00 00 00 00 	
+0BDEAE 00 00 00 00 00 00 	
+0BDEB4 00 00 00 00 00 00 	
+0BDEBA 00 00 00 00 00 00 	
+0BDEC0 00 00 00 00 00 00 	
+0BDEC6 00 00 00 00 00 00 	
+0BDECC 00 00 00 00 00 00 	
+0BDED2 00 00 00 00 00 00 	
+0BDED8 00 00 00 00 00 00 	
+0BDEDE 00 00 00 00 00 00 	
+0BDEE4 00 00 00 00 00 00 	
+0BDEEA 00 00 00 00 00 00 	
+0BDEF0 00 00 00 00 00 00 	
+0BDEF6 00 00 00 00 00 00 	
+0BDEFC 00 00 00 00 00 00 	
+0BDF02 00 00 00 00 00 00 	
+0BDF08 00 00 00 00 00 00 	
+0BDF0E 00 00 00 00 00 00 	
+0BDF14 00 00 00 00 00 00 	
+0BDF1A 00 00 00 00 00 00 	
+0BDF20 00 00 00 00 00 00 	
+0BDF26 00 00 00 00 00 00 	
+0BDF2C 00 00 00 00 00 00 	
+0BDF32 00 00 00 00 00 00 	
+0BDF38 00 00 00 00 00 00 	
+0BDF3E 00 00 00 00 00 00 	
+0BDF44 00 00 00 00 00 00 	
+0BDF4A 00 00 00 00 00 00 	
+0BDF50 00 00 00 00 00 00 	
+0BDF56 00 00 00 00 00 00 	
+0BDF5C 00 00 00 00 00 00 	
+0BDF62 00 00 00 00 00 00 	
+0BDF68 00 00 00 00 00 00 	
+0BDF6E 00 00 00 00 00 00 	
+0BDF74 00 00 00 00 00 00 	
+0BDF7A 00 00 00 00 00 00 	
+0BDF80 00 00 00 00 00 00 	
+0BDF86 00 00 00 00 00 00 	
+0BDF8C 00 00 00 00 00 00 	
+0BDF92 00 00 00 00 00 00 	
+0BDF98 00 00 00 00 00 00 	
+0BDF9E 00 00 00 00 00 00 	
+0BDFA4 00 00 00 00 00 00 	
+0BDFAA 00 00 00 00 00 00 	
+0BDFB0 00 00 00 00 00 00 	
+0BDFB6 00 00 00 00 00 00 	
+0BDFBC 00 00 00 00 00 00 	
+0BDFC2 00 00 00 00 00 00 	
+0BDFC8 00 00 00 00 00 00 	
+0BDFCE 00 00 00 00 00 00 	
+0BDFD4 00 00 00 00 00 00 	
+0BDFDA 00 00 00 00 00 00 	
+0BDFE0 00 00 00 00 00 00 	
+0BDFE6 00 00 00 00 00 00 	
+0BDFEC 00 00 00 00 00 00 	
+0BDFF2 00 00 00 00 00 00 	
+0BDFF8 00 00 00 00 00 00 	
+0BDFFE 00 00 00 00 00 00 	
+0BE004 00 00 00 00 00 00 	
+0BE00A 00 00 00 00 00 00 	
+0BE010 00 00 00 00 00 00 	
+0BE016 00 00 00 00 00 00 	
+0BE01C 00 00 00 00 00 00 	
+0BE022 00 00 00 00 00 00 	
+0BE028 00 00 00 00 00 00 	
+0BE02E 00 00 00 00 00 00 	
+0BE034 00 00 00 00 00 00 	
+0BE03A 00 00 00 00 00 00 	
+0BE040 00 00 00 00 00 00 	
+0BE046 00 00 00 00 00 00 	
+0BE04C 00 00 00 00 00 00 	
+0BE052 00 00 00 00 00 00 	
+0BE058 00 00 00 00 00 00 	
+0BE05E 00 00 00 00 00 00 	
+0BE064 00 00 00 00 00 00 	
+0BE06A 00 00 00 00 00 00 	
+0BE070 00 00 00 00 00 00 	
+0BE076 00 00 00 00 00 00 	
+0BE07C 00 00 00 00 00 00 	
+0BE082 00 00 00 00 00 00 	
+0BE088 00 00 00 00 00 00 	
+0BE08E 00 00 00 00 00 00 	
+0BE094 00 00 00 00 00 00 	
+0BE09A 00 00 00 00 00 00 	
+0BE0A0 00 00 00 00 00 00 	
+0BE0A6 00 00 00 00 00 00 	
+0BE0AC 00 00 00 00 00 00 	
+0BE0B2 00 00 00 00 00 00 	
+0BE0B8 00 00 00 00 00 00 	
+0BE0BE 00 00 00 00 00 00 	
+0BE0C4 00 00 00 00 00 00 	
+0BE0CA 00 00 00 00 00 00 	
+0BE0D0 00 00 00 00 00 00 	
+0BE0D6 00 00 00 00 00 00 	
+0BE0DC 00 00 00 00 00 00 	
+0BE0E2 00 00 00 00 00 00 	
+0BE0E8 00 00 00 00 00 00 	
+0BE0EE 00 00 00 00 00 00 	
+0BE0F4 00 00 00 00 00 00 	
+0BE0FA 00 00 00 00 00 00 	
+0BE100 00 00 00 00 00 00 	
+0BE106 00 00 00 00 00 00 	
+0BE10C 00 00 00 00 00 00 	
+0BE112 00 00 00 00 00 00 	
+0BE118 00 00 00 00 00 00 	
+0BE11E 00 00 00 00 00 00 	
+0BE124 00 00 00 00 00 00 	
+0BE12A 00 00 00 00 00 00 	
+0BE130 00 00 00 00 00 00 	
+0BE136 00 00 00 00 00 00 	
+0BE13C 00 00 00 00 00 00 	
+0BE142 00 00 00 00 00 00 	
+0BE148 00 00 00 00 00 00 	
+0BE14E 00 00 00 00 00 00 	
+0BE154 00 00 00 00 00 00 	
+0BE15A 00 00 00 00 00 00 	
+0BE160 00 00 00 00 00 00 	
+0BE166 00 00 00 00 00 00 	
+0BE16C 00 00 00 00 00 00 	
+0BE172 00 00 00 00 00 00 	
+0BE178 00 00 00 00 00 00 	
+0BE17E 00 00 00 00 00 00 	
+0BE184 00 00 00 00 00 00 	
+0BE18A 00 00 00 00 00 00 	
+0BE190 00 00 00 00 00 00 	
+0BE196 00 00 00 00 00 00 	
+0BE19C 00 00 00 00 00 00 	
+0BE1A2 00 00 00 00 00 00 	
+0BE1A8 00 00 00 00 00 00 	
+0BE1AE 00 00 00 00 00 00 	
+0BE1B4 00 00 00 00 00 00 	
+0BE1BA 00 00 00 00 00 00 	
+0BE1C0 00 00 00 00 00 00 	
+0BE1C6 00 00 00 00 00 00 	
+0BE1CC 00 00 00 00 00 00 	
+0BE1D2 00 00 00 00 00 00 	
+0BE1D8 00 00 00 00 00 00 	
+0BE1DE 00 00 00 00 00 00 	
+0BE1E4 00 00 00 00 00 00 	
+0BE1EA 00 00 00 00 00 00 	
+0BE1F0 00 00 00 00 00 00 	
+0BE1F6 00 00 00 00 00 00 	
+0BE1FC 00 00 00 00 00 00 	
+0BE202 00 00 00 00 00 00 	
+0BE208 00 00 00 00 00 00 	
+0BE20E 00 00 00 00 00 00 	
+0BE214 00 00 00 00 00 00 	
+0BE21A 00 00 00 00 00 00 	
+0BE220 00 00 00 00 00 00 	
+0BE226 00 00 00 00 00 00 	
+0BE22C 00 00 00 00 00 00 	
+0BE232 00 00 00 00 00 00 	
+0BE238 00 00 00 00 00 00 	
+0BE23E 00 00 00 00 00 00 	
+0BE244 00 00 00 00 00 00 	
+0BE24A 00 00 00 00 00 00 	
+0BE250 00 00 00 00 00 00 	
+0BE256 00 00 00 00 00 00 	
+0BE25C 00 00 00 00 00 00 	
+0BE262 00 00 00 00 00 00 	
+0BE268 00 00 00 00 00 00 	
+0BE26E 00 00 00 00 00 00 	
+0BE274 00 00 00 00 00 00 	
+0BE27A 00 00 00 00 00 00 	
+0BE280 00 00 00 00 00 00 	
+0BE286 00 00 00 00 00 00 	
+0BE28C 00 00 00 00 00 00 	
+0BE292 00 00 00 00 00 00 	
+0BE298 00 00 00 00 00 00 	
+0BE29E 00 00 00 00 00 00 	
+0BE2A4 00 00 00 00 00 00 	
+0BE2AA 00 00 00 00 00 00 	
+0BE2B0 00 00 00 00 00 00 	
+0BE2B6 00 00 00 00 00 00 	
+0BE2BC 00 00 00 00 00 00 	
+0BE2C2 00 00 00 00 00 00 	
+0BE2C8 00 00 00 00 00 00 	
+0BE2CE 00 00 00 00 00 00 	
+0BE2D4 00 00 00 00 00 00 	
+0BE2DA 00 00 00 00 00 00 	
+0BE2E0 00 00 00 00 00 00 	
+0BE2E6 00 00 00 00 00 00 	
+0BE2EC 00 00 00 00 00 00 	
+0BE2F2 00 00 00 00 00 00 	
+0BE2F8 00 00 00 00 00 00 	
+0BE2FE 00 00 00 00 00 00 	
+0BE304 00 00 00 00 00 00 	
+0BE30A 00 00 00 00 00 00 	
+0BE310 00 00 00 00 00 00 	
+0BE316 00 00 00 00 00 00 	
+0BE31C 00 00 00 00 00 00 	
+0BE322 00 00 00 00 00 00 	
+0BE328 00 00 00 00 00 00 	
+0BE32E 00 00 00 00 00 00 	
+0BE334 00 00 00 00 00 00 	
+0BE33A 00 00 00 00 00 00 	
+0BE340 00 00 00 00 00 00 	
+0BE346 00 00 00 00 00 00 	
+0BE34C 00 00 00 00 00 00 	
+0BE352 00 00 00 00 00 00 	
+0BE358 00 00 00 00 00 00 	
+0BE35E 00 00 00 00 00 00 	
+0BE364 00 00 00 00 00 00 	
+0BE36A 00 00 00 00 00 00 	
+0BE370 00 00 00 00 00 00 	
+0BE376 00 00 00 00 00 00 	
+0BE37C 00 00 00 00 00 00 	
+0BE382 00 00 00 00 00 00 	
+0BE388 00 00 00 00 00 00 	
+0BE38E 00 00 00 00 00 00 	
+0BE394 00 00 00 00 00 00 	
+0BE39A 00 00 00 00 00 00 	
+0BE3A0 00 00 00 00 00 00 	
+0BE3A6 00 00 00 00 00 00 	
+0BE3AC 00 00 00 00 00 00 	
+0BE3B2 00 00 00 00 00 00 	
+0BE3B8 00 00 00 00 00 00 	
+0BE3BE 00 00 00 00 00 00 	
+0BE3C4 00 00 00 00 00 00 	
+0BE3CA 00 00 00 00 00 00 	
+0BE3D0 00 00 00 00 00 00 	
+0BE3D6 00 00 00 00 00 00 	
+0BE3DC 00 00 00 00 00 00 	
+0BE3E2 00 00 00 00 00 00 	
+0BE3E8 00 00 00 00 00 00 	
+0BE3EE 00 00 00 00 00 00 	
+0BE3F4 00 00 00 00 00 00 	
+0BE3FA 00 00 00 00 00 00 	
+0BE400 00 00 00 00 00 00 	
+0BE406 00 00 00 00 00 00 	
+0BE40C 00 00 00 00 00 00 	
+0BE412 00 00 00 00 00 00 	
+0BE418 00 00 00 00 00 00 	
+0BE41E 00 00 00 00 00 00 	
+0BE424 00 00 00 00 00 00 	
+0BE42A 00 00 00 00 00 00 	
+0BE430 00 00 00 00 00 00 	
+0BE436 00 00 00 00 00 00 	
+0BE43C 00 00 00 00 00 00 	
+0BE442 00 00 00 00 00 00 	
+0BE448 00 00 00 00 00 00 	
+0BE44E 00 00 00 00 00 00 	
+0BE454 00 00 00 00 00 00 	
+0BE45A 00 00 00 00 00 00 	
+0BE460 00 00 00 00 00 00 	
+0BE466 00 00 00 00 00 00 	
+0BE46C 00 00 00 00 00 00 	
+0BE472 00 00 00 00 00 00 	
+0BE478 00 00 00 00 00 00 	
+0BE47E 00 00 00 00 00 00 	
+0BE484 00 00 00 00 00 00 	
+0BE48A 00 00 00 00 00 00 	
+0BE490 00 00 00 00 00 00 	
+0BE496 00 00 00 00 00 00 	
+0BE49C 00 00 00 00 00 00 	
+0BE4A2 00 00 00 00 00 00 	
+0BE4A8 00 00 00 00 00 00 	
+0BE4AE 00 00 00 00 00 00 	
+0BE4B4 00 00 00 00 00 00 	
+0BE4BA 00 00 00 00 00 00 	
+0BE4C0 00 00 00 00 00 00 	
+0BE4C6 00 00 00 00 00 00 	
+0BE4CC 00 00 00 00 00 00 	
+0BE4D2 00 00 00 00 00 00 	
+0BE4D8 00 00 00 00 00 00 	
+0BE4DE 00 00 00 00 00 00 	
+0BE4E4 00 00 00 00 00 00 	
+0BE4EA 00 00 00 00 00 00 	
+0BE4F0 00 00 00 00 00 00 	
+0BE4F6 00 00 00 00 00 00 	
+0BE4FC 00 00 00 00 00 00 	
+0BE502 00 00 00 00 00 00 	
+0BE508 00 00 00 00 00 00 	
+0BE50E 00 00 00 00 00 00 	
+0BE514 00 00 00 00 00 00 	
+0BE51A 00 00 00 00 00 00 	
+0BE520 00 00 00 00 00 00 	
+0BE526 00 00 00 00 00 00 	
+0BE52C 00 00 00 00 00 00 	
+0BE532 00 00 00 00 00 00 	
+0BE538 00 00 00 00 00 00 	
+0BE53E 00 00 00 00 00 00 	
+0BE544 00 00 00 00 00 00 	
+0BE54A 00 00 00 00 00 00 	
+0BE550 00 00 00 00 00 00 	
+0BE556 00 00 00 00 00 00 	
+0BE55C 00 00 00 00 00 00 	
+0BE562 00 00 00 00 00 00 	
+0BE568 00 00 00 00 00 00 	
+0BE56E 00 00 00 00 00 00 	
+0BE574 00 00 00 00 00 00 	
+0BE57A 00 00 00 00 00 00 	
+0BE580 00 00 00 00 00 00 	
+0BE586 00 00 00 00 00 00 	
+0BE58C 00 00 00 00 00 00 	
+0BE592 00 00 00 00 00 00 	
+0BE598 00 00 00 00 00 00 	
+0BE59E 00 00 00 00 00 00 	
+0BE5A4 00 00 00 00 00 00 	
+0BE5AA 00 00 00 00 00 00 	
+0BE5B0 00 00 00 00 00 00 	
+0BE5B6 00 00 00 00 00 00 	
+0BE5BC 00 00 00          	
+0BE5BF                   		pre_off
+0BE5BF                   		end
+
+  No fatal error.  Code: 0BC000h - 0BE5BEh [     9663 byte(s)]
