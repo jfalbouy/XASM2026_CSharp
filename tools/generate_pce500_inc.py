@@ -20,24 +20,77 @@ def hx(s):
 def load(fn):
     return json.load(open(DATA / fn, encoding="utf-8"))
 
+# ---------------------------------------------------------------------------
+# Les deux bornes du moteur C historique (xasm2026-1-2), mesurees le 2026-09-11
+# ---------------------------------------------------------------------------
+# src/genop.c lit ses lignes par fgets(asmtext, 255, ...) : une ligne de 254
+# caracteres ou plus n'est pas refusee, elle est COUPEE EN DEUX, et la suite
+# devient une ligne a part entiere -- d'ou un "Label format error" signale sur la
+# ligne suivante. Et ses labels sont bornes a 16 caracteres.
+#
+# Tant que l'include depassait ces bornes, le controle croise entre les deux
+# assembleurs demandait une copie expurgee du carnet : une verification qui
+# porte sur autre chose que le fichier livre ne vaut pas grand-chose. On respecte
+# donc les deux bornes ici, une fois pour toutes.
+LARGEUR_MAX = 16      # longueur maximale d'un label, borne du moteur C
+LIGNE_MAX = 250       # marge sous les 253 caracteres que fgets(255) tolere
+
+# Abreviations appliquees SEULEMENT a un nom qui depasse encore LARGEUR_MAX apres
+# le prefixe de device. Un nom qui tient est laisse tel quel : mieux vaut la
+# lisibilite quand elle est gratuite.
+ABREV = {
+    "table": "tbl", "buffer": "buf", "matrix": "mtx", "block": "blk",
+    "create": "cre", "transfer": "xfer", "format": "fmt", "read": "rd",
+    "write": "wr", "sector": "sect", "verify": "vfy",
+}
+
+def raccourcir(name):
+    """Ramene un nom sous LARGEUR_MAX par la table ci-dessus, ou echoue en le disant."""
+    if len(name) <= LARGEUR_MAX:
+        return name
+    court = "_".join(ABREV.get(m, m) for m in name.split("_"))
+    if len(court) > LARGEUR_MAX:
+        sys.exit(f"generate_pce500_inc: '{name}' fait {len(name)} caracteres et "
+                 f"'{court}' en fait encore {len(court)} : le moteur C en refuse "
+                 f"plus de {LARGEUR_MAX}. Ajouter une abreviation a ABREV.")
+    return court
+
 lines = []
-used = set()          # noms deja definis : garantit l'unicite globale des EQU
+used = {}             # nom emis -> nom complet d'origine : unicite globale des EQU
 skipped = []          # (nom, adresse) ignores pour cause de doublon, listes en fin de fichier
 def emit(s=""): lines.append(s)
 
-def define(name, addr, desc, width, hexw):
-    """Emet un EQU si le nom est neuf ; sinon l'ignore et le consigne (pas de doublon)."""
+def define(name, addr, desc, width, hexw, complet=None):
+    """Emet un EQU si le nom est neuf ; sinon l'ignore et le consigne (pas de doublon).
+
+    `complet` est le nom documente ailleurs (carnet, CLAUDE.md) quand il differe de
+    celui qu'on emet : il ouvre alors le commentaire, pour que rien ne se perde.
+    """
+    complet = complet or name
+    name = raccourcir(name)
     if name in used:
-        skipped.append((name, addr))
+        # ⛔ Un raccourcissement ne doit JAMAIS faire disparaitre une constante en
+        # silence : si deux noms complets differents se rejoignent, c'est un defaut
+        # de la table ABREV, pas un doublon des carnets.
+        if used[name] != complet:
+            sys.exit(f"generate_pce500_inc: '{complet}' et '{used[name]}' se "
+                     f"raccourcissent tous deux en '{name}'. Corriger ABREV.")
+        skipped.append((complet, addr))
         return
-    used.add(name)
+    used[name] = complet
     line = f"{name+':':<{width+1}} equ {addr:<{hexw}}"
-    if desc:
-        line += f" ; {desc}"
-    emit(line.rstrip())
+    if desc or name != complet:
+        # le nom complet ouvre le commentaire : rien n'est perdu, et un grep sur
+        # l'ancien nom retrouve la constante
+        line += " ; " + (f"{complet} - {desc}" if name != complet and desc
+                         else complet if name != complet else desc)
+    line = line.rstrip()
+    if len(line) > LIGNE_MAX:
+        line = line[:LIGNE_MAX - 4].rstrip() + " ..."
+    emit(line)
 
 def block(items, addrkey, namekey):
-    width = max((len(x[namekey]) for x in items), default=8)
+    width = max((len(raccourcir(x[namekey])) for x in items), default=8)
     hexw = max((len(hx(x[addrkey])) for x in items), default=8)
     for x in items:
         define(x[namekey], hx(x[addrkey]), x.get("desc", "").strip(), width, hexw)
@@ -100,12 +153,17 @@ for dev in fcs["iocs_devices"]:
     define("dev_" + dev["name"], hx(hex(dev["device"])), f"device {dev['device']} ({dev['drives']})", 16, 5)
 emit("")
 emit("; --- Codes de fonction IOCS par device (IL >= 41h) ----------------------------")
+emit("; Prefixe dN_ = le NUMERO du device, celui-la meme qu'il faut poser dans (cl) :")
+emit("; un code de fonction >= 41h ne veut rien dire sans lui (043h vaut key_read sur le")
+emit("; clavier et printer_check sur l'imprimante). Le nom complet d'origine ouvre le")
+emit("; commentaire, de sorte qu'un grep sur display_guide_line retrouve d0_guide_line.")
 for dev in fcs["iocs_devices"]:
     emit(f"; device {dev['device']} : {dev['name']} ({dev['drives']})")
     for fn in dev.get("functions", []):
         if fn["name"] in ("unused", "non_documente"):
             continue
-        define(f"{dev['name']}_{fn['name']}", hx(fn["il"]), fn["desc"][:80], 28, 5)
+        define(f"d{dev['device']}_{fn['name']}", hx(fn["il"]), fn["desc"][:80], 16, 5,
+               complet=f"{dev['name']}_{fn['name']}")
     emit("")
 
 if skipped:
@@ -114,6 +172,28 @@ if skipped:
         emit(f";   {n}  (aussi a {a})")
     emit("")
 
+# Le moteur C historique exige un END dans CHAQUE fichier inclus (« EOF comes before
+# END ») ; xasm2026-4 l'accepte sans broncher, et ni l'un ni l'autre n'arrete pour
+# autant l'assemblage du fichier appelant.
+emit("; --- Fin du carnet ------------------------------------------------------------")
+emit("; END est exige par le moteur C dans chaque fichier inclus ; xasm2026-4 l'admet.")
+emit("\tend")
+
+# --------------------------------------------------------------------------------
+# Controle de ce qu'on vient d'ecrire : les deux bornes du moteur C, sur le fichier
+# LIVRE. Un generateur qui promet une contrainte doit la verifier, pas l'esperer.
+# --------------------------------------------------------------------------------
+trop_long = [l for l in lines if len(l) > LIGNE_MAX + 3]
+trop_large = [m.group(1) for l in lines
+              if (m := re.match(r"^([A-Za-z_][A-Za-z_0-9]*):", l)) and len(m.group(1)) > LARGEUR_MAX]
+if trop_long or trop_large:
+    sys.exit("generate_pce500_inc: le fichier produit viole les bornes du moteur C"
+             + (f" | {len(trop_long)} ligne(s) de plus de {LIGNE_MAX + 3} caracteres" if trop_long else "")
+             + (f" | label(s) de plus de {LARGEUR_MAX} caracteres : {', '.join(trop_large)}" if trop_large else ""))
+
 OUT.parent.mkdir(parents=True, exist_ok=True)
 OUT.write_text("\n".join(lines) + "\n", encoding="utf-8")
-print(f"ecrit : {OUT}  ({len(lines)} lignes)")
+renommes = sorted(n for n, c in used.items() if n != c)
+larg = max(len(x) for x in used)
+print(f"ecrit : {OUT}  ({len(lines)} lignes, {len(used)} equ, label le plus long "
+      f"{larg} car., {len(renommes)} nom(s) differents du nom documente)")
