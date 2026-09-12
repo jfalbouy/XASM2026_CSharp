@@ -5,7 +5,7 @@
 ; GENERE automatiquement par tools/generate_pce500_inc.py a partir des tables
 ; du desassembleur SC62015Disassembler (Data/*.json), source autoritative alignee
 ; sur le listing de reference. NE PAS EDITER A LA MAIN : regenerer depuis les tables.
-; Genere le 2026-09-11.
+; Genere le 2026-09-12.
 ;
 ; Usage :   include pce500.inc
 ;
@@ -16,7 +16,7 @@
 ; --- Registres et zones de la RAM interne (00h-0FFh) ---------------------------
 txtbas: equ 0CBH ; TEXT.BAS courant
 datbas: equ 0CEH ; DATA.BAS courant
-basptr: equ 0D1H ; POINTEUR (3 octets) vers la zone de travail de l'interpreteur BASIC. A NE PAS CONFONDRE avec baswrk = 0BFD0Eh, qui est la zone elle-meme : ce nom-la vient du listing de E. Kako (register.lst, 1990) et sert de verite terrain. Le ...
+basptr: equ 0D1H ; POINTEUR (3 octets) vers la zone de travail de l'interpreteur BASIC, en RAM interne. C'est la COPIE de celui que la ROM lit en 0BFD0Eh (baswrk) : elle la fait par mvp (0D1h),[0BFD0Eh] en 0F98CAh. Les crochets d'extension du BAS ...
 bl:     equ 0D4H ; registre BL / BX bas
 bh:     equ 0D5H ; registre BH / BX haut
 cl:     equ 0D6H ; registre CL / CX bas
@@ -121,7 +121,7 @@ intv_ext:         equ 0BFCD8H ; vecteur interruption externe, ISR/IMR bit 6 EXM 
 intv_soft:        equ 0BFCDBH ; vecteur interruption logicielle : instruction IR, ISR/IMR bit 7 IRM ; non employee par le systeme ; declenchee par l'instruction IR (manuel technique, List of interrupt factor p91-92)
 s1_btm:           equ 0BFCDEH ; bottom of S1 (nom et libelle de REGISTER.ASM) ; le manuel dit "last address of slot 0 (S1:) + 1" et La Feuille du Sharp en fait le pointeur de la 1re zone de travail, la pile utilisateur U : trois lectures d'une me ...
 swork:            equ 0BFCE1H ; pointeur de zone de travail : pile systeme S ; taille de la zone U = [0BFCE1h] - [0BFCDEh]
-baswrk:           equ 0BFD0EH ; BASIC work address -- la ZONE de travail, en memoire EXTERNE. Nom repris du listing de E. Kako (register.lst, 1990), ou il est declare baswrk: equ 0bfd0eh. A NE PAS CONFONDRE avec basptr = 0D1h, le POINTEUR en RAM ...
+baswrk:           equ 0BFD0EH ; POINTEUR (3 octets) vers la zone de travail du BASIC, en memoire EXTERNE : il CONTIENT l'adresse, il N'EST PAS la zone. La ROM le recopie dans basptr par mvp (0D1h),[0BFD0Eh] en 0F98CAh. Nom de E. Kako (register.ls ...
 iocswrk:          equ 0BFD17H ; pointeur de zone de travail : IOCS ; debut de la zone de travail IOCS ; elle s'etend jusqu'a [0BFD1Ah] et fait environ 246h octets ; ce pointeur est recopie en RAM interne (iocsw) (manuel technique, IOCS Special Te ...
 usrwrk:           equ 0BFD1AH ; machine language area ; fin de la zone de travail IOCS et debut de la zone langage machine de l'utilisateur (manuel technique, IOCS Special Technique p85-86)
 sio_timer:        equ 0BFD31H ; minuterie d'erreur SIO, 2 octets : n x 0,5 s ; 0FFFFh = sans limite (defaut) (manuel technique, Parameter Work du driver SIO p53)
