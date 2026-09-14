@@ -11,7 +11,7 @@ namespace Xasm2026.Tests;
 /// Verifie que l'include de constantes systeme Exemples/INCLUDE/pce500.inc s'assemble et que
 /// ses symboles se resolvent aux bonnes valeurs. example.asm sert a la fois de documentation
 /// d'usage et de cible de test. Les octets attendus ont ete controles a la main :
-///   fcs_open_file=01h, fcs_call=0FFFE4h, cl=0D6h, dev_display=0, display_char_out_at=41h,
+///   fcs_open_file=01h, fcs_call=0FFFE4h, cl=0D6h, dev_display=0, d0_char_out_at=41h,
 ///   iocs_call=0FFFE8h, pushu imr, imr=0FBh, s1_top=0BFC15h, baswrk=0BFD0Eh, ssr=0FFh.
 /// </summary>
 [Collection("assembler")]
@@ -35,7 +35,7 @@ public sealed class SystemIncludeTests
                     0x09, 0x01,                   // mv il,fcs_open_file
                     0x05, 0xE4, 0xFF, 0x0F,       // callf fcs_call
                     0xCC, 0xD6, 0x00,             // mv (cl),dev_display
-                    0x09, 0x41,                   // mv il,display_char_out_at
+                    0x09, 0x41,                   // mv il,d0_char_out_at
                     0x05, 0xE8, 0xFF, 0x0F,       // callf iocs_call
                     0x2F,                         // pushu imr
                     0xCC, 0xFB, 0xA0,             // mv (imr),0A0h

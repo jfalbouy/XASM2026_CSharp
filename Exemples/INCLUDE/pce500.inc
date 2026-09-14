@@ -5,7 +5,7 @@
 ; GENERE automatiquement par tools/generate_pce500_inc.py a partir des tables
 ; du desassembleur SC62015Disassembler (Data/*.json), source autoritative alignee
 ; sur le listing de reference. NE PAS EDITER A LA MAIN : regenerer depuis les tables.
-; Genere le 2026-09-12.
+; Genere le 2026-09-14.
 ;
 ; Usage :   include pce500.inc
 ;
@@ -123,7 +123,7 @@ s1_btm:           equ 0BFCDEH ; bottom of S1 (nom et libelle de REGISTER.ASM) ; 
 swork:            equ 0BFCE1H ; pointeur de zone de travail : pile systeme S ; taille de la zone U = [0BFCE1h] - [0BFCDEh]
 baswrk:           equ 0BFD0EH ; POINTEUR (3 octets) vers la zone de travail du BASIC, en memoire EXTERNE : il CONTIENT l'adresse, il N'EST PAS la zone. La ROM le recopie dans basptr par mvp (0D1h),[0BFD0Eh] en 0F98CAh. Nom de E. Kako (register.ls ...
 iocswrk:          equ 0BFD17H ; pointeur de zone de travail : IOCS ; debut de la zone de travail IOCS ; elle s'etend jusqu'a [0BFD1Ah] et fait environ 246h octets ; ce pointeur est recopie en RAM interne (iocsw) (manuel technique, IOCS Special Te ...
-usrwrk:           equ 0BFD1AH ; machine language area ; fin de la zone de travail IOCS et debut de la zone langage machine de l'utilisateur (manuel technique, IOCS Special Technique p85-86)
+usrwrk:           equ 0BFD1AH ; POINTEUR (3 octets) vers le debut de la zone langage machine de l'utilisateur : il CONTIENT l'adresse (defaut 0BFC00h, zone vide), il N'EST PAS la zone. Elle s'etend de [0BFD1Ah] au plafond 0BFC00h, et [0BFD1Ah] cl ...
 sio_timer:        equ 0BFD31H ; minuterie d'erreur SIO, 2 octets : n x 0,5 s ; 0FFFFh = sans limite (defaut) (manuel technique, Parameter Work du driver SIO p53)
 sio_baud:         equ 0BFD33H ; reglage de la liaison SIO : bits 6-4 = vitesse (001 300, 010 600, 011 1200, 100 2400, 101 4800, 110 9600 bauds ; 000 aucune), bits 3-2 = parite (00 paire, 01 impaire, 1x aucune), bit 1 = longueur (0 : 8 bits, 1 : 7 ...
 sio_setup:        equ 0BFD34H ; reglage du protocole SIO : bit 6 = emettre l'octet [0BFD61h] a l'ouverture, bit 4 = emettre [0BFD62h] a la fermeture, bit 2 = XON/XOFF en reception, bit 1 = XON/XOFF en emission ; defaut 021h (manuel technique, Par ...

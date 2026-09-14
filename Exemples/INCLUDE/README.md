@@ -6,7 +6,7 @@ Fichier d'inclusion prêt à l'emploi pour démarrer un nouveau projet. Une seul
         include pce500.inc
 ```
 
-Il définit **276 constantes** (`EQU`) réparties en sections :
+Il définit **288 constantes** (`EQU`, génération du 2026-09-14) réparties en sections :
 
 | Section | Contenu | Exemples |
 | --- | --- | --- |
@@ -15,7 +15,12 @@ Il définit **276 constantes** (`EQU`) réparties en sections :
 | Codes de fonction FCS | numéro à mettre dans `IL` | `fcs_open_file`, `fcs_read`, `fcs_close_file` |
 | Codes de fonction IOCS communs | idem, fonctions partagées | `iocs_find_drive`, `iocs_memory_directory` |
 | Numéros de device IOCS | à placer dans `(cl)` = `0D6h` | `dev_display`, `dev_key`, `dev_sio`, `dev_memcard` |
-| Codes de fonction IOCS par device | commandes ≥ 41h, préfixées par le device | `display_char_out_at`, `key_getkey`, `sio_send_byte` |
+| Codes de fonction IOCS par device | commandes propres au device, préfixées par son **numéro** (`d0_`, `d1_`…) et bornées à 16 caractères ; le nom documenté du carnet reste en commentaire | `d0_char_out_at` (`display_char_out_at`), `d1_key_read`, `d1_matrix_read` |
+
+> ⛔ Ce tableau citait `display_char_out_at`, `key_getkey` et `sio_send_byte`, des noms que
+> l'include n'exporte plus depuis que ses labels tiennent dans les 16 caractères du moteur C.
+> `example.asm` employait encore le premier : les deux tests de `SystemIncludeTests` étaient en
+> échec. Corrigé le 2026-09-14.
 
 Voir `example.asm` pour un usage typique (appel FCS, appel IOCS, accès aux registres).
 

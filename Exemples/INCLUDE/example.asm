@@ -11,7 +11,7 @@
 
 ; --- appel IOCS : afficher un caractere via le device ecran -----------------
         mv      (cl),dev_display    ; (0D6h) <- numero de device 0
-        mv      il,display_char_out_at
+        mv      il,d0_char_out_at   ; commande 41h du device 0 (nom documente : display_char_out_at)
         callf   iocs_call           ; point d'entree IOCS (0FFFE8H)
 
 ; --- registres internes et carte memoire ------------------------------------
