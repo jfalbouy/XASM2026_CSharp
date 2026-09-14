@@ -1,7 +1,8 @@
 # TUTORIEL — exemples des fonctionnalités de XASM2026-4
 
 Ce dossier rassemble des **fichiers d'illustration** de ce qui fait l'originalité de XASM2026-4 :
-expressions, directives, symboles locaux, macros, structures, préprocesseur A62. Ils complètent
+expressions, directives, symboles locaux, macros, structures, préprocesseur A62, adressage de la
+mémoire interne et prébits. Ils complètent
 le [README principal](../../README.md) en montrant chaque construction **à l'œuvre** — et
 surtout l'octet qu'elle produit.
 
@@ -12,10 +13,12 @@ surtout l'octet qu'elle produit.
 > ces exemples : le **`.asm`** (source commentée), le **`.lst`** (listing : *adresse → octets →
 > source*, c'est là qu'on lit le résultat de chaque construction) et le **`.obj`** (octets assemblés).
 >
-> **Exception : `08_relocation_detaillee.asm` EST exécutable et testable sur le Sharp** (il a donc
-> un `.uu`), et il est **validé sur émulateur** : `CALL &BF000` affiche « RELOC. REUSSIE ». La
-> relocation étant délicate, on la comprend beaucoup mieux en la voyant fonctionner : ce programme
-> relocalise réellement un bout de code et affiche le résultat.
+> **Exceptions : `08_relocation_detaillee.asm` et `09_memoire_interne_prebits.asm` SONT exécutables
+> et testables sur le Sharp** (ils ont donc un `.uu`). Ces deux mécanismes — la relocation et
+> l'octet PRE (« prébit ») de la mémoire interne — étant les plus délicats du CPU, on les comprend
+> beaucoup mieux en les voyant à l'œuvre : chaque programme produit un résultat visible à l'écran.
+> Les deux sont **validés sur émulateur** : `08` → « RELOC. REUSSIE » ; `09` → affiche `A` (avec
+> prébit, `(40h)`) puis `Z` (sans prébit, `(BP+40h)=50h`), prouvant que le prébit change l'octet lu.
 
 ## Les exemples
 
@@ -29,6 +32,7 @@ surtout l'octet qu'elle produit.
 | `06_structures.asm` | `STRUCT`/`ENDS` (champs = offsets, nom = taille), zone de travail A62 `SUBORG` + `BYTE`/`WORD`/`PNTR` + `%`, blocs `{ }` | *Structures, blocs A62* |
 | `07_preprocesseur_a62.asm` | le **préprocesseur A62** : `rel` (génère la table de relocation), `#defmacro`/`%0..%9` (dont `bsr`), `#if`/`#else`/`#endif` | *Préprocesseur A62 : `rel`, `#defmacro`, `#if`* |
 | `08_relocation_detaillee.asm` | **la relocation, démontrée et TESTABLE** : copie un code à une autre adresse, applique la table `rel`, sabote l'original, exécute la copie → affiche « RELOC. REUSSIE ». Décode la table octet par octet et donne la correction. **A un `.uu`.** | *Préprocesseur A62 → la relocation* |
+| `09_memoire_interne_prebits.asm` | **mémoire interne `(n)` et octet PRE, démontrés et TESTABLES** : avec `BP=10h`, lit le **même** `(40h)` **avec** prébit (→ absolu `40h`, `'A'`) et **sans** prébit (→ `(BP+40h)=50h`, `'Z'`) et affiche les deux. Prouve à l'écran que le prébit change l'octet lu. Le `.lst` montre le `30h` présent/absent. **A un `.uu`.** | *Syntaxe assembleur → mémoire interne / prébits* |
 
 ## Comment lire un exemple
 
@@ -43,5 +47,6 @@ cd .\Exemples\TUTORIEL
 ..\..\bin\xasm2026-4.exe 01_expressions.asm -O -L
 ```
 
-*(à part `06` et `07` en `0BF000h`/travail, tous s'assemblent à `0E000h` ; voyez l'en-tête de
-chaque fichier pour la commande exacte, certains ajoutant `-S` pour lister les symboles.)*
+*(les exemples exécutables `08` et `09`, ainsi que `06`/`07` (zone de travail), s'assemblent en
+`0BF000h` ; les autres à `0E000h`. Voyez l'en-tête de chaque fichier pour la commande exacte —
+`08` et `09` ajoutent `-B` pour produire le `.uu` de déploiement, certains `-S` pour les symboles.)*

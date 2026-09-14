@@ -1,0 +1,123 @@
+000000                   	; ==========================================================================
+000000                   	;  09_memoire_interne_prebits.asm - MEMOIRE INTERNE (n) ET OCTET "PRE",
+000000                   	;                                    DEMONTRE ET TESTABLE SUR LE SHARP
+000000                   	;
+000000                   	;  Le point le plus deroutant du SC62015 : un operande "(n)" ne designe PAS
+000000                   	;  toujours l'octet absolu n de la RAM interne. Le CPU a un mode par defaut,
+000000                   	;  et c'est un octet PREfixe (dit "prebit"/"prebyte") place AVANT l'opcode
+000000                   	;  qui decide du mode reel :
+000000                   	;
+000000                   	;    - AVEC prebit (ici 030h)  ->  (n)      = octet ABSOLU n
+000000                   	;    - SANS prebit (defaut CPU) -> (n) vaut (BP+n) = octet  BP + n
+000000                   	;
+000000                   	;  Autrement dit : sans prebit, l'adresse depend de BP (RAM interne 0ECh).
+000000                   	;  Si BP n'est pas nul, on lit AILLEURS que prevu -- bug classique.
+000000                   	;
+000000                   	;  En XASM, sous 'pre_on' :
+000000                   	;    - ecrire (n)      => l'assembleur EMET le prebit  -> absolu
+000000                   	;    - ecrire (bp+n)   => AUCUN prebit (mode par defaut) -> BP+n
+000000                   	;  (Regardez le .lst : la 1re forme a un octet 30h en tete, pas la 2nde.)
+000000                   	;
+000000                   	;  CE QUE FAIT CE PROGRAMME (pour rendre la difference VISIBLE) :
+000000                   	;    1. fixe BP = 010h (non nul, c'est ce qui revele le piege) ;
+000000                   	;    2. ecrit 'A' a l'adresse ABSOLUE 040h, et 'Z' a l'adresse 050h ;
+000000                   	;    3. lit le MEME operande (040h) de deux facons et affiche le resultat :
+000000                   	;         AVEC prebit : (040h)        -> 'A'
+000000                   	;         SANS prebit : (bp+040h)=050h -> 'Z'
+000000                   	;  Deux octets DIFFERENTS pour la meme ecriture "(40h)", uniquement selon
+000000                   	;  la presence du prebit : c'est la lecon.
+000000                   	;
+000000                   	;  Tout est sauve/restaure (BP et les 2 octets touches) : retour propre a BASIC.
+000000                   	;
+000000                   	;  Deployer :
+000000                   	;    xasm2026-4 09_memoire_interne_prebits.asm -O PREBIT.OBJ -B 09_memoire_interne_prebits.uu
+000000                   	;  Sur le Sharp / l'emulateur :
+000000                   	;    LOADM "x:PREBIT.OBJ"   puis   CALL &BF000
+000000                   	; ==========================================================================
+000000                   	
+0BF000                   		org	0BF000H
+0BF000                   		pre_on				; (n) = absolu (avec prebit) ; (bp+n) = sans prebit
+0BF000                   	
+0BF000                   	; --- constantes systeme ---
+0BF000                   	fcs_call:	equ	0FFFE4H		; appel FCS (affichage)
+0BF000                   	cl:		equ	0D6H		; handle FCS : 0 = ecran
+0BF000                   	bp_ram:		equ	0ECH		; Base Pointer, en RAM interne
+0BF000                   	
+0BF000                   	; --- parametres de la demonstration ---
+0BF000                   	var:		equ	040H		; "ma variable" : octet absolu 040h
+0BF000                   	base:		equ	010H		; base BP choisie (non nulle)
+0BF000                   						; => sans prebit, (var) devient (bp+var)=050h
+0BF000                   	
+0BF000                   	; ==========================================================================
+0BF000                   	;  PROGRAMME (lance par CALL &BF000)
+0BF000                   	; ==========================================================================
+0BF000                   	start:
+0BF000 3C                		popu	x			; pointeur de ligne BASIC
+0BF001 2C                		pushu	x			; ... restitue -> retour propre (pas de Syntax error)
+0BF002                   	
+0BF002                   	; --- (0) SAUVER ce qu'on va modifier : BP, puis les octets absolus 040h et 050h.
+0BF002                   	;         On lit en ABSOLU (donc AVEC prebit) pour ne pas dependre de BP courant.
+0BF002 30 80 EC          		mv	a,(bp_ram)		; BP courant   (30 .. : prebit present)
+0BF005 28                		pushu	a
+0BF006 30 80 40          		mv	a,(var)			; octet absolu 040h
+0BF009 28                		pushu	a
+0BF00A 30 80 50          		mv	a,(var+base)		; octet absolu 050h
+0BF00D 28                		pushu	a
+0BF00E                   	
+0BF00E                   	; --- (1) FIXER BP = base (non nul) : c'est ce qui rend le piege visible. ---
+0BF00E 30 CC EC 10       		mv	(bp_ram),base		; (0ECh) <- 010h   (prebit present : absolu)
+0BF012                   	
+0BF012                   	; --- (2) ECRIRE deux marqueurs DIFFERENTS a deux adresses absolues. ---
+0BF012 08 41             		mv	a,'A'
+0BF014 30 A0 40          		mv	(var),a			; absolu 040h <- 'A'   (AVEC prebit)
+0BF017 08 5A             		mv	a,'Z'
+0BF019 A0 40             		mv	(bp+var),a		; (bp+040h)=050h <- 'Z' (SANS prebit)
+0BF01B                   	
+0BF01B                   	; --- (3) LIRE le MEME operande (var) de deux facons, capturer dans le message. ---
+0BF01B 30 80 40          		mv	a,(var)			; AVEC prebit -> absolu 040h  -> 'A'
+0BF01E A8 62 F0 0B       		mv	[res_avec],a
+0BF022 80 40             		mv	a,(bp+var)		; SANS prebit -> (bp+040h)=050h -> 'Z'
+0BF024 A8 7F F0 0B       		mv	[res_sans],a
+0BF028                   	
+0BF028                   	; --- (4) RESTAURER l'etat interne (ordre inverse des empilements). ---
+0BF028 38                		popu	a
+0BF029 30 A0 50          		mv	(var+base),a		; restaurer absolu 050h
+0BF02C 38                		popu	a
+0BF02D 30 A0 40          		mv	(var),a			; restaurer absolu 040h
+0BF030 38                		popu	a
+0BF031 30 A0 EC          		mv	(bp_ram),a		; restaurer BP (fait avant l'appel FCS)
+0BF034                   	
+0BF034                   	; --- (5) AFFICHER le resultat. ---
+0BF034 0C 48 F0 0B       		mv	x,msg
+0BF038 0D 56 00 00       		mv	y,btm-msg
+0BF03C 30 CC D6 00       		mv	(cl),0			; handle 0 = ecran
+0BF040 09 04             		mv	il,4			; fonction FCS 04h = write_block
+0BF042 05 E4 FF 0F       		callf	fcs_call
+0BF046 9F                		rc				; carry clair -> retour propre a BASIC
+0BF047 07                		retf
+0BF048                   	
+0BF048                   	; ==========================================================================
+0BF048                   	;  MESSAGE (en memoire EXTERNE : pointe par X, syntaxe [..], pas (..))
+0BF048                   	;  Les deux octets 'res_avec'/'res_sans' sont remplis a l'execution.
+0BF048                   	; ==========================================================================
+0BF048 50 52 45 20 70 72 	msg:		db	'PRE present (n)=40h    -> '
+0BF04E 65 73 65 6E 74 20 	
+0BF054 28 6E 29 3D 34 30 	
+0BF05A 68 20 20 20 20 2D 	
+0BF060 3E 20             	
+0BF062 3F 0D 0A          	res_avec:	db	'?',13,10
+0BF065 50 52 45 20 61 62 			db	'PRE absent (bp+n)=50h  -> '
+0BF06B 73 65 6E 74 20 28 	
+0BF071 62 70 2B 6E 29 3D 	
+0BF077 35 30 68 20 20 2D 	
+0BF07D 3E 20             	
+0BF07F 3F 0D 0A          	res_sans:	db	'?',13,10
+0BF082 4D 65 6D 65 20 28 			db	'Meme (n), octet different!',13,10
+0BF088 6E 29 2C 20 6F 63 	
+0BF08E 74 65 74 20 64 69 	
+0BF094 66 66 65 72 65 6E 	
+0BF09A 74 21 0D 0A       	
+0BF09E                   	btm:
+0BF09E                   		end
+
+  No fatal error.  Code: 0BF000h - 0BF09Dh [      158 byte(s)]
