@@ -161,7 +161,7 @@ Cela facilite la correction séquentielle des erreurs source.
 | `REGISTER` | `.OBJ` identique à la référence, 4 154 octets. |
 | `TMAP2020` | `.OBJ` identique à la référence, 1 744 octets. |
 | `VOGUE` | `.OBJ` identique à la référence, 14 433 octets. |
-| `coverage_all.asm` | Compilation toutes options, 399 lignes, 892 octets. |
+| `coverage_all.asm` | Compilation toutes options, 399 lignes, 889 octets. |
 
 ## 11. Texte original anglais de XASM140 - Information.DOC
 

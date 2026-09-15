@@ -286,7 +286,6 @@ start:
         test    [ext0],$3B
 
         cmp     a,$40
-        cmp     a,(16)
         cmp     (16),a
         cmp     (16),(17)
         cmp     [ext0],$41

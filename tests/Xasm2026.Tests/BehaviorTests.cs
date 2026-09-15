@@ -1,4 +1,5 @@
 using System.IO;
+using System.Linq;
 using Xasm2026.Native;
 using Xasm2026.Native.Assembly;
 using Xunit;
@@ -704,6 +705,67 @@ public sealed class BehaviorTests
             Assert.Equal(
                 new[] { 0x0C, 0x34, 0x12, 0x00, 0x04, 0x78, 0x56, 0x81, 0x04, 0xFF },
                 bytes);
+        });
+    }
+
+    /// <summary>
+    /// CMP et TEST n'ont ni forme A,(n) ni (pour TEST) forme (m),(n) : le moteur C repond
+    /// "Undefined instruction". Le port les acceptait et emettait un opcode d'une autre
+    /// instruction (62h CMP [lmn],n tronque, 6Bh XOR (n),A, 6Ah XOR [lmn],n tronque),
+    /// ce qui plantait la machine sans aucun message. Voir RAPPORT-BUG-cmp-a-parentheses.md.
+    /// </summary>
+    [Theory]
+    [InlineData("cmp a,(005H)")]
+    [InlineData("cmp a,(BP+5)")]
+    [InlineData("cmp a,(0)")]
+    [InlineData("test a,(BP+1)")]
+    [InlineData("test a,(16)")]
+    [InlineData("test (16),(17)")]
+    public void Cmp_and_test_reject_undefined_internal_ram_forms(string instruction)
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "c.asm"),
+                "        ORG 0BF000H\n        PRE_ON\n        " + instruction + "\n        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "c.asm" });
+            var ex = Assert.Throws<InvalidOperationException>(() => new NativeAssembler(options).Assemble());
+
+            Assert.Contains("ligne 3: Undefined instruction", ex.Message, StringComparison.Ordinal);
+        });
+    }
+
+    /// <summary>
+    /// Garde-fou inverse : les formes voisines, elles, existent et doivent garder leur
+    /// encodage (octets du moteur C / table de commandes Sharp).
+    /// </summary>
+    [Theory]
+    [InlineData("cmp a,05AH", "60 5a")]
+    [InlineData("cmp (BP+5),a", "63 05")]
+    [InlineData("cmp (16),(17)", "b7 10 11")]
+    [InlineData("cmp (16),$41", "61 10 41")]
+    [InlineData("test a,$39", "64 39")]
+    [InlineData("test (16),$3A", "65 10 3a")]
+    [InlineData("test (16),a", "67 10")]
+    [InlineData("add a,(16)", "42 10")]
+    [InlineData("sub a,(16)", "4a 10")]
+    [InlineData("adc a,(16)", "52 10")]
+    [InlineData("sbc a,(16)", "5a 10")]
+    [InlineData("and a,(16)", "77 10")]
+    [InlineData("or a,(16)", "7f 10")]
+    [InlineData("xor a,(16)", "6f 10")]
+    public void Valid_neighbours_of_the_rejected_forms_keep_their_encoding(string instruction, string expected)
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "c.asm"),
+                "        ORG 0BF000H\n        " + instruction + "\n        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "c.asm" });
+            var result = new NativeAssembler(options).Assemble();
+            var got = string.Join(' ', result.GeneratedBytes.Select(b => ((int)b.Value & 0xFF).ToString("x2")));
+
+            Assert.Equal(expected, got);
         });
     }
 

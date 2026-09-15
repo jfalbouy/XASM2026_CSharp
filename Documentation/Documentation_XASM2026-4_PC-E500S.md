@@ -490,7 +490,7 @@ Les validations effectuées en fin de projet :
 | `REGISTER` | `.OBJ` identique à la référence (4 154 octets). |
 | `TMAP2020` | `.OBJ` identique à la référence (1 744 octets). |
 | `VOGUE` | `.OBJ` identique à la référence (14 433 octets). |
-| `coverage_all.asm` | Compilation complète toutes options, 892 octets. |
+| `coverage_all.asm` | Compilation complète toutes options, 889 octets. |
 | UU coverage | Ligne `size` identique à la taille réelle de l'objet. |
 
 ### 12.1 Comparaison directe avec le moteur C

@@ -2416,8 +2416,18 @@ internal sealed partial class NativeAssembler
             throw new NotSupportedException($"operation logique invalide: {operandText}");
         }
 
+        // TEST partage ce codeur avec AND/OR/XOR mais releve du type 3 de two_operand (opr.c),
+        // comme CMP : ni A,(n) ni (m),(n). Les accepter emettait offset+7 = 6Bh (XOR (n),A, qui
+        // ecrit en memoire) et offset+6 = 6Ah (XOR [lmn],n, 5 octets dont 3 seulement emis).
+        var isTest = offset == 0x64;
         var left = operands[0].Trim();
         var right = operands[1].Trim();
+        if (isTest && right.StartsWith('(') && right.EndsWith(')')
+            && (left.Equals("A", StringComparison.OrdinalIgnoreCase) || (left.StartsWith('(') && left.EndsWith(')'))))
+        {
+            throw new NotSupportedException($"Undefined instruction: test {operandText}");
+        }
+
         if (left.Equals("A", StringComparison.OrdinalIgnoreCase) && right.StartsWith('(') && right.EndsWith(')'))
         {
             var rightAddress = ParseInternalRamOperand(right);
@@ -2490,11 +2500,10 @@ internal sealed partial class NativeAssembler
         var right = operands[1].Trim();
         if (left.Equals("A", StringComparison.OrdinalIgnoreCase) && right.StartsWith('(') && right.EndsWith(')'))
         {
-            var rightAddress = ParseInternalRamOperand(right);
-            EmitPrebyte(rightAddress.PreId, 0, emit, result);
-            Emit(0x62, emit, result);
-            Emit(rightAddress.Value, emit, result);
-            return;
+            // CMP A,(n) n'existe pas sur le SC62015 : le moteur C la refuse (opr.c, two_operand
+            // n'admet A,(n) que pour les types 1 et 2). Le port emettait 62h = CMP [lmn],n,
+            // instruction de 5 octets dont il n'ecrivait que 2 : l'execution se desynchronisait.
+            throw new NotSupportedException($"Undefined instruction: cmp {operandText}");
         }
 
         if (left.Equals("A", StringComparison.OrdinalIgnoreCase))

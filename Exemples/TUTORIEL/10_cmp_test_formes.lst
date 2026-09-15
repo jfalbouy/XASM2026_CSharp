@@ -1,0 +1,103 @@
+000000                   	; ==========================================================================
+000000                   	;  10_cmp_test_formes.asm - CMP ET TEST : LES FORMES QUI EXISTENT,
+000000                   	;                           ET CELLES QUI N'EXISTENT PAS
+000000                   	;
+000000                   	;  Presque toutes les familles arithmetiques et logiques du SC62015 ont une
+000000                   	;  forme "A,(n)" (l'accumulateur face a un octet de RAM interne) :
+000000                   	;      ADD 42h   SUB 4Ah   ADC 52h   SBC 5Ah   AND 77h   OR 7Fh   XOR 6Fh
+000000                   	;  CMP et TEST, NON : il n'existe ni "CMP A,(n)" ni "TEST A,(n)". Et TEST
+000000                   	;  n'a pas non plus de forme "(m),(n)" (CMP l'a : B7h).
+000000                   	;
+000000                   	;  L'assembleur doit donc REFUSER ces formes ("Undefined instruction"),
+000000                   	;  comme le moteur C de reference. Avant le correctif du 2026-09-15,
+000000                   	;  XASM2026-4 les acceptait et emettait l'opcode d'une AUTRE instruction :
+000000                   	;      cmp  a,(n)     -> 62 nn      = CMP [lmn],n  (5 octets, 2 emis)
+000000                   	;      test a,(n)     -> 6B nn      = XOR (n),A    (ECRIT en memoire !)
+000000                   	;      test (m),(n)   -> 6A mm nn   = XOR [lmn],n  (5 octets, 3 emis)
+000000                   	;  Sans aucun message : le defaut n'apparaissait qu'a l'execution, le CPU
+000000                   	;  avalant les octets suivants et partant n'importe ou (retour au MENU).
+000000                   	;
+000000                   	;  CE FICHIER :
+000000                   	;    1-2. assemble toutes les formes VALIDES de CMP et TEST (lire le .lst) ;
+000000                   	;    3.   montre comment reecrire "cmp a,(n)" avec la forme qui existe,
+000000                   	;         "cmp (n),a", SANS se tromper de condition : le sens s'inverse ;
+000000                   	;    4.   garde les formes INVALIDES dans un bloc desactive : passer
+000000                   	;         'demo_refus' a 1 et reassembler -> "Undefined instruction".
+000000                   	;
+000000                   	;  Ce n'est PAS un programme a executer (pas de .uu) : il sert a lire les
+000000                   	;  octets. Il donne un objet IDENTIQUE avec xasm2026-4 et xasm2026-1-2.
+000000                   	;
+000000                   	;    xasm2026-4 10_cmp_test_formes.asm -O -L
+000000                   	; ==========================================================================
+000000                   	
+00E000                   		org	0E000H
+00E000                   		pre_on				; (n) = absolu -> prebit emis ; (bp+n) -> sans prebit
+00E000                   	
+00E000                   	work:		equ	010H		; un octet de RAM interne
+00E000                   	ext:		equ	0BF800H		; une adresse de memoire externe (20 bits)
+00E000                   	demo_refus:	equ	0		; 1 = assembler les formes INVALIDES (refus attendu)
+00E000                   	
+00E000                   	; ==========================================================================
+00E000                   	;  1. CMP : les formes qui existent (positionnent C et Z, n'ecrivent rien)
+00E000                   	; ==========================================================================
+00E000 60 5A             		cmp	a,05AH			; 60 5A            A - n
+00E002 30 61 10 5A       		cmp	(work),05AH		; 30 61 10 5A      (m) - n
+00E006 62 00 F8 0B 5A    		cmp	[ext],05AH		; 62 00 F8 0B 5A   [lmn] - n : 5 octets
+00E00B 30 63 10          		cmp	(work),a		; 30 63 10         (n) - A
+00E00E 63 05             		cmp	(bp+5),a		; 63 05            (BP+5) - A, sans prebit
+00E010 32 B7 10 11       		cmp	(work),(work+1)		; 32 B7 10 11      (m) - (n)
+00E014                   	
+00E014                   	; ==========================================================================
+00E014                   	;  2. TEST : les formes qui existent (ET logique : positionne Z, n'ecrit rien)
+00E014                   	; ==========================================================================
+00E014 64 80             		test	a,080H			; 64 80
+00E016 30 65 10 80       		test	(work),080H		; 30 65 10 80
+00E01A 66 00 F8 0B 80    		test	[ext],080H		; 66 00 F8 0B 80
+00E01F 30 67 10          		test	(work),a		; 30 67 10
+00E022                   	
+00E022                   	;  Pour comparaison, les familles qui ONT une forme A,(n) (resultat dans A) :
+00E022 30 42 10          		add	a,(work)		; 30 42 10
+00E025 30 4A 10          		sub	a,(work)		; 30 4A 10
+00E028 30 52 10          		adc	a,(work)		; 30 52 10
+00E02B 30 5A 10          		sbc	a,(work)		; 30 5A 10
+00E02E 30 77 10          		and	a,(work)		; 30 77 10
+00E031 30 7F 10          		or	a,(work)		; 30 7F 10
+00E034 30 6F 10          		xor	a,(work)		; 30 6F 10
+00E037                   	
+00E037                   	; ==========================================================================
+00E037                   	;  3. REECRIRE "cmp a,(n)" : la forme reelle "cmp (n),a" INVERSE LE SENS
+00E037                   	;
+00E037                   	;  "cmp (n),a" calcule (n) - A. La retenue (emprunt) signifie (n) < A,
+00E037                   	;  autrement dit A > (n). Selon ce qu'on veut savoir de A face a (n) :
+00E037                   	;
+00E037                   	;      condition voulue   "cmp a,(n)" (n'existe pas)   "cmp (n),a" (reel)
+00E037                   	;      A =  (n)           jrz                          jrz        identique
+00E037                   	;      A <> (n)           jrnz                         jrnz       identique
+00E037                   	;      A >  (n)           NC et NZ                     jrc
+00E037                   	;      A <= (n)           C ou Z                       jrnc
+00E037                   	;      A <  (n)           jrc                          NC et NZ
+00E037                   	;      A >= (n)           jrnc                         C ou Z
+00E037                   	;
+00E037                   	;  Piege : recopier "jrc" tel quel apres avoir retourne les operandes
+00E037                   	;  teste A > (n) au lieu de A < (n). L'egalite, elle, ne change pas.
+00E037                   	;
+00E037                   	;  Exemple : aller a 'plus_petit' si A < (work), sinon a 'pas_plus_petit'.
+00E037                   	; ==========================================================================
+00E037 30 63 10          		cmp	(work),a		; (work) - A
+00E03A 18 06             		jrz	pas_plus_petit		; A = (work)
+00E03C 1C 04             		jrc	pas_plus_petit		; A > (work)   (retenue : (work) < A)
+00E03E                   	plus_petit:				; ici : NC et NZ, donc A < (work)
+00E03E 08 01             		mv	a,1
+00E040 12 02             		jr	suite
+00E042                   	pas_plus_petit:				; ici : A >= (work)
+00E042 08 00             		mv	a,0
+00E044                   	suite:
+00E044                   	
+00E044                   	; ==========================================================================
+00E044                   	;  4. LES FORMES QUI N'EXISTENT PAS : bloc desactive (demo_refus = 0).
+00E044                   	;     Avec demo_refus = 1, l'assemblage echoue sur "Undefined instruction".
+00E044                   	; ==========================================================================
+00E044                   	
+00E044                   		end
+
+  No fatal error.  Code: 00E000h - 00E043h [       68 byte(s)]

@@ -264,140 +264,139 @@
 0BE295 66 00 E9 0B 3B    	        test    [ext0],$3B
 0BE29A                   	
 0BE29A 60 40             	        cmp     a,$40
-0BE29C 30 62 10          	        cmp     a,(16)
-0BE29F 30 63 10          	        cmp     (16),a
-0BE2A2 32 B7 10 11       	        cmp     (16),(17)
-0BE2A6 62 00 E9 0B 41    	        cmp     [ext0],$41
-0BE2AB 32 C6 10 11       	        cmpw    (16),(17)
-0BE2AF 30 D6 02 10       	        cmpw    (16),ba
-0BE2B3 32 C7 10 11       	        cmpp    (16),(17)
-0BE2B7 30 D7 04 10       	        cmpp    (16),x
-0BE2BB                   	
-0BE2BB 6C 00             	        inc     a
-0BE2BD 6C 01             	        inc     il
-0BE2BF 6C 02             	        inc     ba
-0BE2C1 6C 03             	        inc     i
-0BE2C3 6C 04             	        inc     x
-0BE2C5 6C 05             	        inc     y
-0BE2C7 6C 06             	        inc     u
-0BE2C9 6C 07             	        inc     s
-0BE2CB 30 6D 10          	        inc     (16)
-0BE2CE 7C 00             	        dec     a
-0BE2D0 7C 01             	        dec     il
-0BE2D2 7C 02             	        dec     ba
-0BE2D4 7C 03             	        dec     i
-0BE2D6 7C 04             	        dec     x
-0BE2D8 7C 05             	        dec     y
-0BE2DA 7C 06             	        dec     u
-0BE2DC 7C 07             	        dec     s
-0BE2DE 30 7D 10          	        dec     (16)
-0BE2E1                   	
-0BE2E1 E4                	        ror     a
-0BE2E2 30 E5 10          	        ror     (16)
-0BE2E5 E6                	        rol     a
-0BE2E6 30 E7 10          	        rol     (16)
-0BE2E9 F4                	        shr     a
-0BE2EA 30 F5 10          	        shr     (16)
-0BE2ED F6                	        shl     a
-0BE2EE 30 F7 10          	        shl     (16)
-0BE2F1 30 FC 10          	        dsrl    (16)
-0BE2F4 30 EC 10          	        dsll    (16)
-0BE2F7                   	
-0BE2F7 28                	        pushu   a
-0BE2F8 29                	        pushu   il
-0BE2F9 2A                	        pushu   ba
-0BE2FA 2B                	        pushu   i
-0BE2FB 2C                	        pushu   x
-0BE2FC 2D                	        pushu   y
-0BE2FD 2E                	        pushu   f
-0BE2FE 2F                	        pushu   imr
-0BE2FF 3F                	        popu    imr
-0BE300 3E                	        popu    f
-0BE301 3D                	        popu    y
-0BE302 3C                	        popu    x
-0BE303 3B                	        popu    i
-0BE304 3A                	        popu    ba
-0BE305 39                	        popu    il
-0BE306 38                	        popu    a
-0BE307 4F                	        pushs   f
-0BE308 5F                	        pops    f
-0BE309                   	
-0BE309 97                	        sc
-0BE30A 9F                	        rc
-0BE30B CE                	        tcl
-0BE30C DE                	        halt
-0BE30D DF                	        off
-0BE30E EF                	        wait
-0BE30F FE                	        ir
-0BE310                   	
-0BE310 04 35 E3          	        call    sub_near
-0BE313 05 36 E3 0B       	        callf   sub_far
-0BE317 14 1A E3          	        jpz     branch_a
-0BE31A                   	branch_a:
-0BE31A 15 1D E3          	        jpnz    branch_b
-0BE31D                   	branch_b:
-0BE31D 16 20 E3          	        jpc     branch_c
-0BE320                   	branch_c:
-0BE320 17 23 E3          	        jpnc    branch_d
-0BE323                   	branch_d:
-0BE323 12 00             	        jr      branch_e
-0BE325                   	branch_e:
-0BE325 18 00             	        jrz     branch_f
-0BE327                   	branch_f:
-0BE327 1A 00             	        jrnz    branch_g
-0BE329                   	branch_g:
-0BE329 1C 00             	        jrc     branch_h
-0BE32B                   	branch_h:
-0BE32B 1E 00             	        jrnc    branch_i
-0BE32D                   	branch_i:
-0BE32D 02 30 E3          	        jp      branch_j
-0BE330                   	branch_j:
-0BE330 11 04             	        jp      x
+0BE29C 30 63 10          	        cmp     (16),a
+0BE29F 32 B7 10 11       	        cmp     (16),(17)
+0BE2A3 62 00 E9 0B 41    	        cmp     [ext0],$41
+0BE2A8 32 C6 10 11       	        cmpw    (16),(17)
+0BE2AC 30 D6 02 10       	        cmpw    (16),ba
+0BE2B0 32 C7 10 11       	        cmpp    (16),(17)
+0BE2B4 30 D7 04 10       	        cmpp    (16),x
+0BE2B8                   	
+0BE2B8 6C 00             	        inc     a
+0BE2BA 6C 01             	        inc     il
+0BE2BC 6C 02             	        inc     ba
+0BE2BE 6C 03             	        inc     i
+0BE2C0 6C 04             	        inc     x
+0BE2C2 6C 05             	        inc     y
+0BE2C4 6C 06             	        inc     u
+0BE2C6 6C 07             	        inc     s
+0BE2C8 30 6D 10          	        inc     (16)
+0BE2CB 7C 00             	        dec     a
+0BE2CD 7C 01             	        dec     il
+0BE2CF 7C 02             	        dec     ba
+0BE2D1 7C 03             	        dec     i
+0BE2D3 7C 04             	        dec     x
+0BE2D5 7C 05             	        dec     y
+0BE2D7 7C 06             	        dec     u
+0BE2D9 7C 07             	        dec     s
+0BE2DB 30 7D 10          	        dec     (16)
+0BE2DE                   	
+0BE2DE E4                	        ror     a
+0BE2DF 30 E5 10          	        ror     (16)
+0BE2E2 E6                	        rol     a
+0BE2E3 30 E7 10          	        rol     (16)
+0BE2E6 F4                	        shr     a
+0BE2E7 30 F5 10          	        shr     (16)
+0BE2EA F6                	        shl     a
+0BE2EB 30 F7 10          	        shl     (16)
+0BE2EE 30 FC 10          	        dsrl    (16)
+0BE2F1 30 EC 10          	        dsll    (16)
+0BE2F4                   	
+0BE2F4 28                	        pushu   a
+0BE2F5 29                	        pushu   il
+0BE2F6 2A                	        pushu   ba
+0BE2F7 2B                	        pushu   i
+0BE2F8 2C                	        pushu   x
+0BE2F9 2D                	        pushu   y
+0BE2FA 2E                	        pushu   f
+0BE2FB 2F                	        pushu   imr
+0BE2FC 3F                	        popu    imr
+0BE2FD 3E                	        popu    f
+0BE2FE 3D                	        popu    y
+0BE2FF 3C                	        popu    x
+0BE300 3B                	        popu    i
+0BE301 3A                	        popu    ba
+0BE302 39                	        popu    il
+0BE303 38                	        popu    a
+0BE304 4F                	        pushs   f
+0BE305 5F                	        pops    f
+0BE306                   	
+0BE306 97                	        sc
+0BE307 9F                	        rc
+0BE308 CE                	        tcl
+0BE309 DE                	        halt
+0BE30A DF                	        off
+0BE30B EF                	        wait
+0BE30C FE                	        ir
+0BE30D                   	
+0BE30D 04 32 E3          	        call    sub_near
+0BE310 05 33 E3 0B       	        callf   sub_far
+0BE314 14 17 E3          	        jpz     branch_a
+0BE317                   	branch_a:
+0BE317 15 1A E3          	        jpnz    branch_b
+0BE31A                   	branch_b:
+0BE31A 16 1D E3          	        jpc     branch_c
+0BE31D                   	branch_c:
+0BE31D 17 20 E3          	        jpnc    branch_d
+0BE320                   	branch_d:
+0BE320 12 00             	        jr      branch_e
+0BE322                   	branch_e:
+0BE322 18 00             	        jrz     branch_f
+0BE324                   	branch_f:
+0BE324 1A 00             	        jrnz    branch_g
+0BE326                   	branch_g:
+0BE326 1C 00             	        jrc     branch_h
+0BE328                   	branch_h:
+0BE328 1E 00             	        jrnc    branch_i
+0BE32A                   	branch_i:
+0BE32A 02 2D E3          	        jp      branch_j
+0BE32D                   	branch_j:
+0BE32D 11 04             	        jp      x
+0BE32F                   	
+0BE32F                   	        local
+0BE32F                   	loop_top:
+0BE32F 01                	        db      $01
+0BE330 13 03             	        jr      loop_top
+0BE332                   	        endl
 0BE332                   	
-0BE332                   	        local
-0BE332                   	loop_top:
-0BE332 01                	        db      $01
-0BE333 13 03             	        jr      loop_top
-0BE335                   	        endl
+0BE332                   	sub_near:
+0BE332 06                	        ret
+0BE333                   	
+0BE333                   	sub_far:
+0BE333 07                	        retf
+0BE334                   	
+0BE334                   	irq_return:
+0BE334 01                	        reti
 0BE335                   	
-0BE335                   	sub_near:
-0BE335 06                	        ret
-0BE336                   	
-0BE336                   	sub_far:
-0BE336 07                	        retf
-0BE337                   	
-0BE337                   	irq_return:
-0BE337 01                	        reti
-0BE338                   	
-0BE338                   	        section DATA
-0BE338                   	more_data:
-0BE338 46 01             	        add     a,il
-0BE33A 4E 01             	        sub     a,il
-0BE33C 30 41 10 12       	        add     (16),$12
-0BE340 30 49 10 12       	        sub     (16),$12
-0BE344 30 71 10 12       	        and     (16),$12
-0BE348 30 79 10 12       	        or      (16),$12
-0BE34C 30 69 10 12       	        xor     (16),$12
-0BE350 30 61 10 12       	        cmp     (16),$12
-0BE354                   	        undef   INCLUDE_FLAG
-0BE354 24                	        db      $24
-0BE355                   	
-0BE355                   	        pre_on
-0BE355 A0 01             	        mv      (bp+1),a
-0BE357 34 A0 02          	        mv      (px+2),a
-0BE35A 24 A0 00          	        mv      (bp+px),a
-0BE35D 30 A0 40          	        mv      (#$40),a
-0BE360 80 01             	        mv      a,(bp+1)
-0BE362 34 80 02          	        mv      a,(px+2)
-0BE365 24 80 00          	        mv      a,(bp+px)
-0BE368 30 80 40          	        mv      a,(#$40)
-0BE36B 23 C8 01 02       	        mv      (bp+1),(py+2)
-0BE36F 34 C9 02 03       	        mvw     (px+2),(bp+3)
-0BE373 25 CA 00 00       	        mvp     (bp+px),(bp+py)
-0BE377 23 CB 01 02       	        mvl     (bp+1),(py+2)
-0BE37B                   	
-0BE37B FF                	        reset
-0BE37C                   	        end
+0BE335                   	        section DATA
+0BE335                   	more_data:
+0BE335 46 01             	        add     a,il
+0BE337 4E 01             	        sub     a,il
+0BE339 30 41 10 12       	        add     (16),$12
+0BE33D 30 49 10 12       	        sub     (16),$12
+0BE341 30 71 10 12       	        and     (16),$12
+0BE345 30 79 10 12       	        or      (16),$12
+0BE349 30 69 10 12       	        xor     (16),$12
+0BE34D 30 61 10 12       	        cmp     (16),$12
+0BE351                   	        undef   INCLUDE_FLAG
+0BE351 24                	        db      $24
+0BE352                   	
+0BE352                   	        pre_on
+0BE352 A0 01             	        mv      (bp+1),a
+0BE354 34 A0 02          	        mv      (px+2),a
+0BE357 24 A0 00          	        mv      (bp+px),a
+0BE35A 30 A0 40          	        mv      (#$40),a
+0BE35D 80 01             	        mv      a,(bp+1)
+0BE35F 34 80 02          	        mv      a,(px+2)
+0BE362 24 80 00          	        mv      a,(bp+px)
+0BE365 30 80 40          	        mv      a,(#$40)
+0BE368 23 C8 01 02       	        mv      (bp+1),(py+2)
+0BE36C 34 C9 02 03       	        mvw     (px+2),(bp+3)
+0BE370 25 CA 00 00       	        mvp     (bp+px),(bp+py)
+0BE374 23 CB 01 02       	        mvl     (bp+1),(py+2)
+0BE378                   	
+0BE378 FF                	        reset
+0BE379                   	        end
 
  - Symbols -
 
@@ -409,16 +408,16 @@
 000005h  base5
 000006h  base6
 000007h  base7
-0BE31Ah  branch_a
-0BE31Dh  branch_b
-0BE320h  branch_c
-0BE323h  branch_d
-0BE325h  branch_e
-0BE327h  branch_f
-0BE329h  branch_g
-0BE32Bh  branch_h
-0BE32Dh  branch_i
-0BE330h  branch_j
+0BE317h  branch_a
+0BE31Ah  branch_b
+0BE31Dh  branch_c
+0BE320h  branch_d
+0BE322h  branch_e
+0BE324h  branch_f
+0BE326h  branch_g
+0BE328h  branch_h
+0BE32Ah  branch_i
+0BE32Dh  branch_j
 0BE020h  data_block
 0BE900h  ext0
 0BEA00h  ext1
@@ -426,17 +425,17 @@
 000034h  inc_const
 0BE006h  inc_ptr
 0BE004h  inc_word
-0BE337h  irq_return
-0BE338h  more_data
-0BE332h  n00001
-0BE332h  n00001!loop_top
+0BE334h  irq_return
+0BE335h  more_data
+0BE32Fh  n00001
+0BE32Fh  n00001!loop_top
 000020h  ptr0
 000024h  ptr1
 0BE039h  start
-0BE336h  sub_far
-0BE335h  sub_near
+0BE333h  sub_far
+0BE332h  sub_near
 0BE009h  w_a
 0BE00Ah  w_b
 0BE00Ch  w_p
 
-  No fatal error.  Code: 0BE000h - 0BE37Bh [      892 byte(s)]
+  No fatal error.  Code: 0BE000h - 0BE378h [      889 byte(s)]

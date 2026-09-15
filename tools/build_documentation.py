@@ -278,8 +278,8 @@ Les validations effectuées en fin de projet :
 | `VOGUE` | `.OBJ` et `.LST` identiques à la référence. |
 | `TRDOS` | `.OBJ` identiques au moteur C `xasm2026-2`. |
 | `UUCODE` | `.OBJ` identiques au moteur C `xasm2026-2`. |
-| `coverage_all.asm` | Compilation complète toutes options, 399 lignes, 892 octets. |
-| HEX/S19 coverage | 892 octets utiles. |
+| `coverage_all.asm` | Compilation complète toutes options, 399 lignes, 889 octets. |
+| HEX/S19 coverage | 889 octets utiles. |
 | UU coverage | Ligne `size` identique à la taille réelle de l'objet. |
 
 ## 13. Commandes de validation recommandées
@@ -456,7 +456,7 @@ Cela facilite la correction séquentielle des erreurs source.
 | `VOGUE` | `.OBJ/.LST` identiques à XASM 1.40. |
 | `TRDOS` | `.OBJ` identiques au moteur C. |
 | `UUCODE` | `.OBJ` identiques au moteur C. |
-| `coverage_all.asm` | Compilation toutes options, 399 lignes, 892 octets. |
+| `coverage_all.asm` | Compilation toutes options, 399 lignes, 889 octets. |
 
 ## 11. Texte original anglais de XASM140 - Information.DOC
 
