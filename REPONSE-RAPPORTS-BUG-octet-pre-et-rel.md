@@ -172,7 +172,7 @@ Deux remarques, sans urgence :
 ## 5. Pour vérifier
 
 ```powershell
-cd C:\Claude\xasm2026-4
+# depuis la racine du depot
 dotnet test .\tests\Xasm2026.Tests\Xasm2026.Tests.csproj -c Release --filter "PrebyteFamiliesTests|RelocationSitesTests"
 python .\tools\gen_prebyte_families.py     # régénère les octets attendus depuis le moteur C
 ```
