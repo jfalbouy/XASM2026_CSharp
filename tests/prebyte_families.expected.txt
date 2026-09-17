@@ -1,0 +1,2525 @@
+# Octets attendus pour les formes a operande de RAM interne (octet PRE).
+# Genere par tools/gen_prebyte_families.py avec le moteur C xasm2026-1-2 :
+# chaque instruction assemblee seule, a 0BF000h, sous le mode indique.
+# Format : mode <TAB> instruction <TAB> octets | (refus attendu)
+
+pre_on	add (00BH),012H	30 41 0b 12
+pre_on	add (BP+3),012H	41 03 12
+pre_on	add (PX+3),012H	34 41 03 12
+pre_on	add (PY+3),012H	(refus attendu)
+pre_on	add (00BH),a	30 43 0b
+pre_on	add (BP+3),a	43 03
+pre_on	add (PX+3),a	34 43 03
+pre_on	add (PY+3),a	(refus attendu)
+pre_on	add a,(00BH)	30 42 0b
+pre_on	add a,(BP+3)	42 03
+pre_on	add a,(PX+3)	34 42 03
+pre_on	add a,(PY+3)	(refus attendu)
+pre_on	sub (00BH),012H	30 49 0b 12
+pre_on	sub (BP+3),012H	49 03 12
+pre_on	sub (PX+3),012H	34 49 03 12
+pre_on	sub (PY+3),012H	(refus attendu)
+pre_on	sub (00BH),a	30 4b 0b
+pre_on	sub (BP+3),a	4b 03
+pre_on	sub (PX+3),a	34 4b 03
+pre_on	sub (PY+3),a	(refus attendu)
+pre_on	sub a,(00BH)	30 4a 0b
+pre_on	sub a,(BP+3)	4a 03
+pre_on	sub a,(PX+3)	34 4a 03
+pre_on	sub a,(PY+3)	(refus attendu)
+pre_on	adc (00BH),012H	30 51 0b 12
+pre_on	adc (BP+3),012H	51 03 12
+pre_on	adc (PX+3),012H	34 51 03 12
+pre_on	adc (PY+3),012H	(refus attendu)
+pre_on	adc (00BH),a	30 53 0b
+pre_on	adc (BP+3),a	53 03
+pre_on	adc (PX+3),a	34 53 03
+pre_on	adc (PY+3),a	(refus attendu)
+pre_on	adc a,(00BH)	30 52 0b
+pre_on	adc a,(BP+3)	52 03
+pre_on	adc a,(PX+3)	34 52 03
+pre_on	adc a,(PY+3)	(refus attendu)
+pre_on	sbc (00BH),012H	30 59 0b 12
+pre_on	sbc (BP+3),012H	59 03 12
+pre_on	sbc (PX+3),012H	34 59 03 12
+pre_on	sbc (PY+3),012H	(refus attendu)
+pre_on	sbc (00BH),a	30 5b 0b
+pre_on	sbc (BP+3),a	5b 03
+pre_on	sbc (PX+3),a	34 5b 03
+pre_on	sbc (PY+3),a	(refus attendu)
+pre_on	sbc a,(00BH)	30 5a 0b
+pre_on	sbc a,(BP+3)	5a 03
+pre_on	sbc a,(PX+3)	34 5a 03
+pre_on	sbc a,(PY+3)	(refus attendu)
+pre_on	and (00BH),012H	30 71 0b 12
+pre_on	and (BP+3),012H	71 03 12
+pre_on	and (PX+3),012H	34 71 03 12
+pre_on	and (PY+3),012H	(refus attendu)
+pre_on	and (00BH),a	30 73 0b
+pre_on	and (BP+3),a	73 03
+pre_on	and (PX+3),a	34 73 03
+pre_on	and (PY+3),a	(refus attendu)
+pre_on	and a,(00BH)	30 77 0b
+pre_on	and a,(BP+3)	77 03
+pre_on	and a,(PX+3)	34 77 03
+pre_on	and a,(PY+3)	(refus attendu)
+pre_on	or (00BH),012H	30 79 0b 12
+pre_on	or (BP+3),012H	79 03 12
+pre_on	or (PX+3),012H	34 79 03 12
+pre_on	or (PY+3),012H	(refus attendu)
+pre_on	or (00BH),a	30 7b 0b
+pre_on	or (BP+3),a	7b 03
+pre_on	or (PX+3),a	34 7b 03
+pre_on	or (PY+3),a	(refus attendu)
+pre_on	or a,(00BH)	30 7f 0b
+pre_on	or a,(BP+3)	7f 03
+pre_on	or a,(PX+3)	34 7f 03
+pre_on	or a,(PY+3)	(refus attendu)
+pre_on	xor (00BH),012H	30 69 0b 12
+pre_on	xor (BP+3),012H	69 03 12
+pre_on	xor (PX+3),012H	34 69 03 12
+pre_on	xor (PY+3),012H	(refus attendu)
+pre_on	xor (00BH),a	30 6b 0b
+pre_on	xor (BP+3),a	6b 03
+pre_on	xor (PX+3),a	34 6b 03
+pre_on	xor (PY+3),a	(refus attendu)
+pre_on	xor a,(00BH)	30 6f 0b
+pre_on	xor a,(BP+3)	6f 03
+pre_on	xor a,(PX+3)	34 6f 03
+pre_on	xor a,(PY+3)	(refus attendu)
+pre_on	cmp (00BH),012H	30 61 0b 12
+pre_on	cmp (BP+3),012H	61 03 12
+pre_on	cmp (PX+3),012H	34 61 03 12
+pre_on	cmp (PY+3),012H	(refus attendu)
+pre_on	cmp (00BH),a	30 63 0b
+pre_on	cmp (BP+3),a	63 03
+pre_on	cmp (PX+3),a	34 63 03
+pre_on	cmp (PY+3),a	(refus attendu)
+pre_on	test (00BH),012H	30 65 0b 12
+pre_on	test (BP+3),012H	65 03 12
+pre_on	test (PX+3),012H	34 65 03 12
+pre_on	test (PY+3),012H	(refus attendu)
+pre_on	test (00BH),a	30 67 0b
+pre_on	test (BP+3),a	67 03
+pre_on	test (PX+3),a	34 67 03
+pre_on	test (PY+3),a	(refus attendu)
+pre_on	adcl (00BH),a	30 55 0b
+pre_on	adcl (BP+3),a	55 03
+pre_on	adcl (PX+3),a	34 55 03
+pre_on	adcl (PY+3),a	(refus attendu)
+pre_on	sbcl (00BH),a	30 5d 0b
+pre_on	sbcl (BP+3),a	5d 03
+pre_on	sbcl (PX+3),a	34 5d 03
+pre_on	sbcl (PY+3),a	(refus attendu)
+pre_on	dadl (00BH),a	30 c5 0b
+pre_on	dadl (BP+3),a	c5 03
+pre_on	dadl (PX+3),a	34 c5 03
+pre_on	dadl (PY+3),a	(refus attendu)
+pre_on	dsbl (00BH),a	30 d5 0b
+pre_on	dsbl (BP+3),a	d5 03
+pre_on	dsbl (PX+3),a	34 d5 03
+pre_on	dsbl (PY+3),a	(refus attendu)
+pre_on	pmdf (00BH),012H	30 47 0b 12
+pre_on	pmdf (BP+3),012H	47 03 12
+pre_on	pmdf (PX+3),012H	34 47 03 12
+pre_on	pmdf (PY+3),012H	(refus attendu)
+pre_on	pmdf (00BH),a	30 57 0b
+pre_on	pmdf (BP+3),a	57 03
+pre_on	pmdf (PX+3),a	34 57 03
+pre_on	pmdf (PY+3),a	(refus attendu)
+pre_on	cmpw (00BH),ba	30 d6 02 0b
+pre_on	cmpw (BP+3),ba	d6 02 03
+pre_on	cmpw (PX+3),ba	34 d6 02 03
+pre_on	cmpw (PY+3),ba	(refus attendu)
+pre_on	cmpw (00BH),i	30 d6 03 0b
+pre_on	cmpw (BP+3),i	d6 03 03
+pre_on	cmpw (PX+3),i	34 d6 03 03
+pre_on	cmpw (PY+3),i	(refus attendu)
+pre_on	cmpp (00BH),x	30 d7 04 0b
+pre_on	cmpp (BP+3),x	d7 04 03
+pre_on	cmpp (PX+3),x	34 d7 04 03
+pre_on	cmpp (PY+3),x	(refus attendu)
+pre_on	cmpp (00BH),y	30 d7 05 0b
+pre_on	cmpp (BP+3),y	d7 05 03
+pre_on	cmpp (PX+3),y	34 d7 05 03
+pre_on	cmpp (PY+3),y	(refus attendu)
+pre_on	inc (00BH)	30 6d 0b
+pre_on	inc (BP+3)	6d 03
+pre_on	inc (PX+3)	34 6d 03
+pre_on	inc (PY+3)	(refus attendu)
+pre_on	dec (00BH)	30 7d 0b
+pre_on	dec (BP+3)	7d 03
+pre_on	dec (PX+3)	34 7d 03
+pre_on	dec (PY+3)	(refus attendu)
+pre_on	ror (00BH)	30 e5 0b
+pre_on	ror (BP+3)	e5 03
+pre_on	ror (PX+3)	34 e5 03
+pre_on	ror (PY+3)	(refus attendu)
+pre_on	rol (00BH)	30 e7 0b
+pre_on	rol (BP+3)	e7 03
+pre_on	rol (PX+3)	34 e7 03
+pre_on	rol (PY+3)	(refus attendu)
+pre_on	shr (00BH)	30 f5 0b
+pre_on	shr (BP+3)	f5 03
+pre_on	shr (PX+3)	34 f5 03
+pre_on	shr (PY+3)	(refus attendu)
+pre_on	shl (00BH)	30 f7 0b
+pre_on	shl (BP+3)	f7 03
+pre_on	shl (PX+3)	34 f7 03
+pre_on	shl (PY+3)	(refus attendu)
+pre_on	dsll (00BH)	30 ec 0b
+pre_on	dsll (BP+3)	ec 03
+pre_on	dsll (PX+3)	34 ec 03
+pre_on	dsll (PY+3)	(refus attendu)
+pre_on	dsrl (00BH)	30 fc 0b
+pre_on	dsrl (BP+3)	fc 03
+pre_on	dsrl (PX+3)	34 fc 03
+pre_on	dsrl (PY+3)	(refus attendu)
+pre_on	mv a,(00BH)	30 80 0b
+pre_on	mv a,(BP+3)	80 03
+pre_on	mv a,(PX+3)	34 80 03
+pre_on	mv a,(PY+3)	(refus attendu)
+pre_on	mv (00BH),a	30 a0 0b
+pre_on	mv (BP+3),a	a0 03
+pre_on	mv (PX+3),a	34 a0 03
+pre_on	mv (PY+3),a	(refus attendu)
+pre_on	mv a,[(00BH)]	30 98 00 0b
+pre_on	mv a,[(BP+3)]	98 00 03
+pre_on	mv a,[(PX+3)]	34 98 00 03
+pre_on	mv a,[(PY+3)]	(refus attendu)
+pre_on	mv [(00BH)],a	30 b8 00 0b
+pre_on	mv [(BP+3)],a	b8 00 03
+pre_on	mv [(PX+3)],a	34 b8 00 03
+pre_on	mv [(PY+3)],a	(refus attendu)
+pre_on	mv a,[(00BH)+2]	30 98 80 0b 02
+pre_on	mv a,[(BP+3)+2]	98 80 03 02
+pre_on	mv a,[(PX+3)+2]	34 98 80 03 02
+pre_on	mv a,[(PY+3)+2]	(refus attendu)
+pre_on	mv [(00BH)+2],a	30 b8 80 0b 02
+pre_on	mv [(BP+3)+2],a	b8 80 03 02
+pre_on	mv [(PX+3)+2],a	34 b8 80 03 02
+pre_on	mv [(PY+3)+2],a	(refus attendu)
+pre_on	mv il,(00BH)	30 81 0b
+pre_on	mv il,(BP+3)	81 03
+pre_on	mv il,(PX+3)	34 81 03
+pre_on	mv il,(PY+3)	(refus attendu)
+pre_on	mv (00BH),il	30 a1 0b
+pre_on	mv (BP+3),il	a1 03
+pre_on	mv (PX+3),il	34 a1 03
+pre_on	mv (PY+3),il	(refus attendu)
+pre_on	mv il,[(00BH)]	30 99 00 0b
+pre_on	mv il,[(BP+3)]	99 00 03
+pre_on	mv il,[(PX+3)]	34 99 00 03
+pre_on	mv il,[(PY+3)]	(refus attendu)
+pre_on	mv [(00BH)],il	30 b9 00 0b
+pre_on	mv [(BP+3)],il	b9 00 03
+pre_on	mv [(PX+3)],il	34 b9 00 03
+pre_on	mv [(PY+3)],il	(refus attendu)
+pre_on	mv il,[(00BH)+2]	30 99 80 0b 02
+pre_on	mv il,[(BP+3)+2]	99 80 03 02
+pre_on	mv il,[(PX+3)+2]	34 99 80 03 02
+pre_on	mv il,[(PY+3)+2]	(refus attendu)
+pre_on	mv [(00BH)+2],il	30 b9 80 0b 02
+pre_on	mv [(BP+3)+2],il	b9 80 03 02
+pre_on	mv [(PX+3)+2],il	34 b9 80 03 02
+pre_on	mv [(PY+3)+2],il	(refus attendu)
+pre_on	mv ba,(00BH)	30 82 0b
+pre_on	mv ba,(BP+3)	82 03
+pre_on	mv ba,(PX+3)	34 82 03
+pre_on	mv ba,(PY+3)	(refus attendu)
+pre_on	mv (00BH),ba	30 a2 0b
+pre_on	mv (BP+3),ba	a2 03
+pre_on	mv (PX+3),ba	34 a2 03
+pre_on	mv (PY+3),ba	(refus attendu)
+pre_on	mv ba,[(00BH)]	30 9a 00 0b
+pre_on	mv ba,[(BP+3)]	9a 00 03
+pre_on	mv ba,[(PX+3)]	34 9a 00 03
+pre_on	mv ba,[(PY+3)]	(refus attendu)
+pre_on	mv [(00BH)],ba	30 ba 00 0b
+pre_on	mv [(BP+3)],ba	ba 00 03
+pre_on	mv [(PX+3)],ba	34 ba 00 03
+pre_on	mv [(PY+3)],ba	(refus attendu)
+pre_on	mv ba,[(00BH)+2]	30 9a 80 0b 02
+pre_on	mv ba,[(BP+3)+2]	9a 80 03 02
+pre_on	mv ba,[(PX+3)+2]	34 9a 80 03 02
+pre_on	mv ba,[(PY+3)+2]	(refus attendu)
+pre_on	mv [(00BH)+2],ba	30 ba 80 0b 02
+pre_on	mv [(BP+3)+2],ba	ba 80 03 02
+pre_on	mv [(PX+3)+2],ba	34 ba 80 03 02
+pre_on	mv [(PY+3)+2],ba	(refus attendu)
+pre_on	mv i,(00BH)	30 83 0b
+pre_on	mv i,(BP+3)	83 03
+pre_on	mv i,(PX+3)	34 83 03
+pre_on	mv i,(PY+3)	(refus attendu)
+pre_on	mv (00BH),i	30 a3 0b
+pre_on	mv (BP+3),i	a3 03
+pre_on	mv (PX+3),i	34 a3 03
+pre_on	mv (PY+3),i	(refus attendu)
+pre_on	mv i,[(00BH)]	30 9b 00 0b
+pre_on	mv i,[(BP+3)]	9b 00 03
+pre_on	mv i,[(PX+3)]	34 9b 00 03
+pre_on	mv i,[(PY+3)]	(refus attendu)
+pre_on	mv [(00BH)],i	30 bb 00 0b
+pre_on	mv [(BP+3)],i	bb 00 03
+pre_on	mv [(PX+3)],i	34 bb 00 03
+pre_on	mv [(PY+3)],i	(refus attendu)
+pre_on	mv i,[(00BH)+2]	30 9b 80 0b 02
+pre_on	mv i,[(BP+3)+2]	9b 80 03 02
+pre_on	mv i,[(PX+3)+2]	34 9b 80 03 02
+pre_on	mv i,[(PY+3)+2]	(refus attendu)
+pre_on	mv [(00BH)+2],i	30 bb 80 0b 02
+pre_on	mv [(BP+3)+2],i	bb 80 03 02
+pre_on	mv [(PX+3)+2],i	34 bb 80 03 02
+pre_on	mv [(PY+3)+2],i	(refus attendu)
+pre_on	mv x,(00BH)	30 84 0b
+pre_on	mv x,(BP+3)	84 03
+pre_on	mv x,(PX+3)	34 84 03
+pre_on	mv x,(PY+3)	(refus attendu)
+pre_on	mv (00BH),x	30 a4 0b
+pre_on	mv (BP+3),x	a4 03
+pre_on	mv (PX+3),x	34 a4 03
+pre_on	mv (PY+3),x	(refus attendu)
+pre_on	mv x,[(00BH)]	30 9c 00 0b
+pre_on	mv x,[(BP+3)]	9c 00 03
+pre_on	mv x,[(PX+3)]	34 9c 00 03
+pre_on	mv x,[(PY+3)]	(refus attendu)
+pre_on	mv [(00BH)],x	30 bc 00 0b
+pre_on	mv [(BP+3)],x	bc 00 03
+pre_on	mv [(PX+3)],x	34 bc 00 03
+pre_on	mv [(PY+3)],x	(refus attendu)
+pre_on	mv x,[(00BH)+2]	30 9c 80 0b 02
+pre_on	mv x,[(BP+3)+2]	9c 80 03 02
+pre_on	mv x,[(PX+3)+2]	34 9c 80 03 02
+pre_on	mv x,[(PY+3)+2]	(refus attendu)
+pre_on	mv [(00BH)+2],x	30 bc 80 0b 02
+pre_on	mv [(BP+3)+2],x	bc 80 03 02
+pre_on	mv [(PX+3)+2],x	34 bc 80 03 02
+pre_on	mv [(PY+3)+2],x	(refus attendu)
+pre_on	mv y,(00BH)	30 85 0b
+pre_on	mv y,(BP+3)	85 03
+pre_on	mv y,(PX+3)	34 85 03
+pre_on	mv y,(PY+3)	(refus attendu)
+pre_on	mv (00BH),y	30 a5 0b
+pre_on	mv (BP+3),y	a5 03
+pre_on	mv (PX+3),y	34 a5 03
+pre_on	mv (PY+3),y	(refus attendu)
+pre_on	mv y,[(00BH)]	30 9d 00 0b
+pre_on	mv y,[(BP+3)]	9d 00 03
+pre_on	mv y,[(PX+3)]	34 9d 00 03
+pre_on	mv y,[(PY+3)]	(refus attendu)
+pre_on	mv [(00BH)],y	30 bd 00 0b
+pre_on	mv [(BP+3)],y	bd 00 03
+pre_on	mv [(PX+3)],y	34 bd 00 03
+pre_on	mv [(PY+3)],y	(refus attendu)
+pre_on	mv y,[(00BH)+2]	30 9d 80 0b 02
+pre_on	mv y,[(BP+3)+2]	9d 80 03 02
+pre_on	mv y,[(PX+3)+2]	34 9d 80 03 02
+pre_on	mv y,[(PY+3)+2]	(refus attendu)
+pre_on	mv [(00BH)+2],y	30 bd 80 0b 02
+pre_on	mv [(BP+3)+2],y	bd 80 03 02
+pre_on	mv [(PX+3)+2],y	34 bd 80 03 02
+pre_on	mv [(PY+3)+2],y	(refus attendu)
+pre_on	mv u,(00BH)	30 86 0b
+pre_on	mv u,(BP+3)	86 03
+pre_on	mv u,(PX+3)	34 86 03
+pre_on	mv u,(PY+3)	(refus attendu)
+pre_on	mv (00BH),u	30 a6 0b
+pre_on	mv (BP+3),u	a6 03
+pre_on	mv (PX+3),u	34 a6 03
+pre_on	mv (PY+3),u	(refus attendu)
+pre_on	mv u,[(00BH)]	30 9e 00 0b
+pre_on	mv u,[(BP+3)]	9e 00 03
+pre_on	mv u,[(PX+3)]	34 9e 00 03
+pre_on	mv u,[(PY+3)]	(refus attendu)
+pre_on	mv [(00BH)],u	30 be 00 0b
+pre_on	mv [(BP+3)],u	be 00 03
+pre_on	mv [(PX+3)],u	34 be 00 03
+pre_on	mv [(PY+3)],u	(refus attendu)
+pre_on	mv u,[(00BH)+2]	30 9e 80 0b 02
+pre_on	mv u,[(BP+3)+2]	9e 80 03 02
+pre_on	mv u,[(PX+3)+2]	34 9e 80 03 02
+pre_on	mv u,[(PY+3)+2]	(refus attendu)
+pre_on	mv [(00BH)+2],u	30 be 80 0b 02
+pre_on	mv [(BP+3)+2],u	be 80 03 02
+pre_on	mv [(PX+3)+2],u	34 be 80 03 02
+pre_on	mv [(PY+3)+2],u	(refus attendu)
+pre_on	mv s,(00BH)	30 87 0b
+pre_on	mv s,(BP+3)	87 03
+pre_on	mv s,(PX+3)	34 87 03
+pre_on	mv s,(PY+3)	(refus attendu)
+pre_on	mv (00BH),s	30 a7 0b
+pre_on	mv (BP+3),s	a7 03
+pre_on	mv (PX+3),s	34 a7 03
+pre_on	mv (PY+3),s	(refus attendu)
+pre_on	mv s,[(00BH)]	(refus attendu)
+pre_on	mv s,[(BP+3)]	(refus attendu)
+pre_on	mv s,[(PX+3)]	(refus attendu)
+pre_on	mv s,[(PY+3)]	(refus attendu)
+pre_on	mv [(00BH)],s	(refus attendu)
+pre_on	mv [(BP+3)],s	(refus attendu)
+pre_on	mv [(PX+3)],s	(refus attendu)
+pre_on	mv [(PY+3)],s	(refus attendu)
+pre_on	mv s,[(00BH)+2]	(refus attendu)
+pre_on	mv s,[(BP+3)+2]	(refus attendu)
+pre_on	mv s,[(PX+3)+2]	(refus attendu)
+pre_on	mv s,[(PY+3)+2]	(refus attendu)
+pre_on	mv [(00BH)+2],s	(refus attendu)
+pre_on	mv [(BP+3)+2],s	(refus attendu)
+pre_on	mv [(PX+3)+2],s	(refus attendu)
+pre_on	mv [(PY+3)+2],s	(refus attendu)
+pre_on	mv (00BH),012H	30 cc 0b 12
+pre_on	mv (BP+3),012H	cc 03 12
+pre_on	mv (PX+3),012H	34 cc 03 12
+pre_on	mv (PY+3),012H	(refus attendu)
+pre_on	mvw (00BH),01234H	30 cd 0b 34 12
+pre_on	mvw (BP+3),01234H	cd 03 34 12
+pre_on	mvw (PX+3),01234H	34 cd 03 34 12
+pre_on	mvw (PY+3),01234H	(refus attendu)
+pre_on	mvp (00BH),012345H	30 dc 0b 45 23 01
+pre_on	mvp (BP+3),012345H	dc 03 45 23 01
+pre_on	mvp (PX+3),012345H	34 dc 03 45 23 01
+pre_on	mvp (PY+3),012345H	(refus attendu)
+pre_on	mv (00BH),[0BF800H]	30 d0 0b 00 f8 0b
+pre_on	mv (BP+3),[0BF800H]	d0 03 00 f8 0b
+pre_on	mv (PX+3),[0BF800H]	34 d0 03 00 f8 0b
+pre_on	mv (PY+3),[0BF800H]	(refus attendu)
+pre_on	mv [0BF800H],(00BH)	30 d8 00 f8 0b 0b
+pre_on	mv [0BF800H],(BP+3)	d8 00 f8 0b 03
+pre_on	mv [0BF800H],(PX+3)	34 d8 00 f8 0b 03
+pre_on	mv [0BF800H],(PY+3)	(refus attendu)
+pre_on	mv (00BH),[y]	30 e0 05 0b
+pre_on	mv (BP+3),[y]	e0 05 03
+pre_on	mv (PX+3),[y]	34 e0 05 03
+pre_on	mv (PY+3),[y]	(refus attendu)
+pre_on	mv [y],(00BH)	30 e8 05 0b
+pre_on	mv [y],(BP+3)	e8 05 03
+pre_on	mv [y],(PX+3)	34 e8 05 03
+pre_on	mv [y],(PY+3)	(refus attendu)
+pre_on	mv (00BH),[y++]	30 e0 25 0b
+pre_on	mv (BP+3),[y++]	e0 25 03
+pre_on	mv (PX+3),[y++]	34 e0 25 03
+pre_on	mv (PY+3),[y++]	(refus attendu)
+pre_on	mv [y++],(00BH)	30 e8 25 0b
+pre_on	mv [y++],(BP+3)	e8 25 03
+pre_on	mv [y++],(PX+3)	34 e8 25 03
+pre_on	mv [y++],(PY+3)	(refus attendu)
+pre_on	mv (00BH),[--y]	30 e0 35 0b
+pre_on	mv (BP+3),[--y]	e0 35 03
+pre_on	mv (PX+3),[--y]	34 e0 35 03
+pre_on	mv (PY+3),[--y]	(refus attendu)
+pre_on	mv [--y],(00BH)	30 e8 35 0b
+pre_on	mv [--y],(BP+3)	e8 35 03
+pre_on	mv [--y],(PX+3)	34 e8 35 03
+pre_on	mv [--y],(PY+3)	(refus attendu)
+pre_on	mv (00BH),[y+2]	30 e0 85 0b 02
+pre_on	mv (BP+3),[y+2]	e0 85 03 02
+pre_on	mv (PX+3),[y+2]	34 e0 85 03 02
+pre_on	mv (PY+3),[y+2]	(refus attendu)
+pre_on	mv [y+2],(00BH)	30 e8 85 0b 02
+pre_on	mv [y+2],(BP+3)	e8 85 03 02
+pre_on	mv [y+2],(PX+3)	34 e8 85 03 02
+pre_on	mv [y+2],(PY+3)	(refus attendu)
+pre_on	mv (00BH),[y-2]	30 e0 c5 0b 02
+pre_on	mv (BP+3),[y-2]	e0 c5 03 02
+pre_on	mv (PX+3),[y-2]	34 e0 c5 03 02
+pre_on	mv (PY+3),[y-2]	(refus attendu)
+pre_on	mv [y-2],(00BH)	30 e8 c5 0b 02
+pre_on	mv [y-2],(BP+3)	e8 c5 03 02
+pre_on	mv [y-2],(PX+3)	34 e8 c5 03 02
+pre_on	mv [y-2],(PY+3)	(refus attendu)
+pre_on	mvw (00BH),[0BF800H]	30 d1 0b 00 f8 0b
+pre_on	mvw (BP+3),[0BF800H]	d1 03 00 f8 0b
+pre_on	mvw (PX+3),[0BF800H]	34 d1 03 00 f8 0b
+pre_on	mvw (PY+3),[0BF800H]	(refus attendu)
+pre_on	mvw [0BF800H],(00BH)	30 d9 00 f8 0b 0b
+pre_on	mvw [0BF800H],(BP+3)	d9 00 f8 0b 03
+pre_on	mvw [0BF800H],(PX+3)	34 d9 00 f8 0b 03
+pre_on	mvw [0BF800H],(PY+3)	(refus attendu)
+pre_on	mvw (00BH),[y]	30 e1 05 0b
+pre_on	mvw (BP+3),[y]	e1 05 03
+pre_on	mvw (PX+3),[y]	34 e1 05 03
+pre_on	mvw (PY+3),[y]	(refus attendu)
+pre_on	mvw [y],(00BH)	30 e9 05 0b
+pre_on	mvw [y],(BP+3)	e9 05 03
+pre_on	mvw [y],(PX+3)	34 e9 05 03
+pre_on	mvw [y],(PY+3)	(refus attendu)
+pre_on	mvw (00BH),[y++]	30 e1 25 0b
+pre_on	mvw (BP+3),[y++]	e1 25 03
+pre_on	mvw (PX+3),[y++]	34 e1 25 03
+pre_on	mvw (PY+3),[y++]	(refus attendu)
+pre_on	mvw [y++],(00BH)	30 e9 25 0b
+pre_on	mvw [y++],(BP+3)	e9 25 03
+pre_on	mvw [y++],(PX+3)	34 e9 25 03
+pre_on	mvw [y++],(PY+3)	(refus attendu)
+pre_on	mvw (00BH),[--y]	30 e1 35 0b
+pre_on	mvw (BP+3),[--y]	e1 35 03
+pre_on	mvw (PX+3),[--y]	34 e1 35 03
+pre_on	mvw (PY+3),[--y]	(refus attendu)
+pre_on	mvw [--y],(00BH)	30 e9 35 0b
+pre_on	mvw [--y],(BP+3)	e9 35 03
+pre_on	mvw [--y],(PX+3)	34 e9 35 03
+pre_on	mvw [--y],(PY+3)	(refus attendu)
+pre_on	mvw (00BH),[y+2]	30 e1 85 0b 02
+pre_on	mvw (BP+3),[y+2]	e1 85 03 02
+pre_on	mvw (PX+3),[y+2]	34 e1 85 03 02
+pre_on	mvw (PY+3),[y+2]	(refus attendu)
+pre_on	mvw [y+2],(00BH)	30 e9 85 0b 02
+pre_on	mvw [y+2],(BP+3)	e9 85 03 02
+pre_on	mvw [y+2],(PX+3)	34 e9 85 03 02
+pre_on	mvw [y+2],(PY+3)	(refus attendu)
+pre_on	mvw (00BH),[y-2]	30 e1 c5 0b 02
+pre_on	mvw (BP+3),[y-2]	e1 c5 03 02
+pre_on	mvw (PX+3),[y-2]	34 e1 c5 03 02
+pre_on	mvw (PY+3),[y-2]	(refus attendu)
+pre_on	mvw [y-2],(00BH)	30 e9 c5 0b 02
+pre_on	mvw [y-2],(BP+3)	e9 c5 03 02
+pre_on	mvw [y-2],(PX+3)	34 e9 c5 03 02
+pre_on	mvw [y-2],(PY+3)	(refus attendu)
+pre_on	mvp (00BH),[0BF800H]	30 d2 0b 00 f8 0b
+pre_on	mvp (BP+3),[0BF800H]	d2 03 00 f8 0b
+pre_on	mvp (PX+3),[0BF800H]	34 d2 03 00 f8 0b
+pre_on	mvp (PY+3),[0BF800H]	(refus attendu)
+pre_on	mvp [0BF800H],(00BH)	30 da 00 f8 0b 0b
+pre_on	mvp [0BF800H],(BP+3)	da 00 f8 0b 03
+pre_on	mvp [0BF800H],(PX+3)	34 da 00 f8 0b 03
+pre_on	mvp [0BF800H],(PY+3)	(refus attendu)
+pre_on	mvp (00BH),[y]	30 e2 05 0b
+pre_on	mvp (BP+3),[y]	e2 05 03
+pre_on	mvp (PX+3),[y]	34 e2 05 03
+pre_on	mvp (PY+3),[y]	(refus attendu)
+pre_on	mvp [y],(00BH)	30 ea 05 0b
+pre_on	mvp [y],(BP+3)	ea 05 03
+pre_on	mvp [y],(PX+3)	34 ea 05 03
+pre_on	mvp [y],(PY+3)	(refus attendu)
+pre_on	mvp (00BH),[y++]	30 e2 25 0b
+pre_on	mvp (BP+3),[y++]	e2 25 03
+pre_on	mvp (PX+3),[y++]	34 e2 25 03
+pre_on	mvp (PY+3),[y++]	(refus attendu)
+pre_on	mvp [y++],(00BH)	30 ea 25 0b
+pre_on	mvp [y++],(BP+3)	ea 25 03
+pre_on	mvp [y++],(PX+3)	34 ea 25 03
+pre_on	mvp [y++],(PY+3)	(refus attendu)
+pre_on	mvp (00BH),[--y]	30 e2 35 0b
+pre_on	mvp (BP+3),[--y]	e2 35 03
+pre_on	mvp (PX+3),[--y]	34 e2 35 03
+pre_on	mvp (PY+3),[--y]	(refus attendu)
+pre_on	mvp [--y],(00BH)	30 ea 35 0b
+pre_on	mvp [--y],(BP+3)	ea 35 03
+pre_on	mvp [--y],(PX+3)	34 ea 35 03
+pre_on	mvp [--y],(PY+3)	(refus attendu)
+pre_on	mvp (00BH),[y+2]	30 e2 85 0b 02
+pre_on	mvp (BP+3),[y+2]	e2 85 03 02
+pre_on	mvp (PX+3),[y+2]	34 e2 85 03 02
+pre_on	mvp (PY+3),[y+2]	(refus attendu)
+pre_on	mvp [y+2],(00BH)	30 ea 85 0b 02
+pre_on	mvp [y+2],(BP+3)	ea 85 03 02
+pre_on	mvp [y+2],(PX+3)	34 ea 85 03 02
+pre_on	mvp [y+2],(PY+3)	(refus attendu)
+pre_on	mvp (00BH),[y-2]	30 e2 c5 0b 02
+pre_on	mvp (BP+3),[y-2]	e2 c5 03 02
+pre_on	mvp (PX+3),[y-2]	34 e2 c5 03 02
+pre_on	mvp (PY+3),[y-2]	(refus attendu)
+pre_on	mvp [y-2],(00BH)	30 ea c5 0b 02
+pre_on	mvp [y-2],(BP+3)	ea c5 03 02
+pre_on	mvp [y-2],(PX+3)	34 ea c5 03 02
+pre_on	mvp [y-2],(PY+3)	(refus attendu)
+pre_on	mvl (00BH),[0BF800H]	30 d3 0b 00 f8 0b
+pre_on	mvl (BP+3),[0BF800H]	d3 03 00 f8 0b
+pre_on	mvl (PX+3),[0BF800H]	34 d3 03 00 f8 0b
+pre_on	mvl (PY+3),[0BF800H]	(refus attendu)
+pre_on	mvl [0BF800H],(00BH)	30 db 00 f8 0b 0b
+pre_on	mvl [0BF800H],(BP+3)	db 00 f8 0b 03
+pre_on	mvl [0BF800H],(PX+3)	34 db 00 f8 0b 03
+pre_on	mvl [0BF800H],(PY+3)	(refus attendu)
+pre_on	mvl (00BH),[y]	(refus attendu)
+pre_on	mvl (BP+3),[y]	(refus attendu)
+pre_on	mvl (PX+3),[y]	(refus attendu)
+pre_on	mvl (PY+3),[y]	(refus attendu)
+pre_on	mvl [y],(00BH)	(refus attendu)
+pre_on	mvl [y],(BP+3)	(refus attendu)
+pre_on	mvl [y],(PX+3)	(refus attendu)
+pre_on	mvl [y],(PY+3)	(refus attendu)
+pre_on	mvl (00BH),[y++]	30 e3 25 0b
+pre_on	mvl (BP+3),[y++]	e3 25 03
+pre_on	mvl (PX+3),[y++]	34 e3 25 03
+pre_on	mvl (PY+3),[y++]	(refus attendu)
+pre_on	mvl [y++],(00BH)	30 eb 25 0b
+pre_on	mvl [y++],(BP+3)	eb 25 03
+pre_on	mvl [y++],(PX+3)	34 eb 25 03
+pre_on	mvl [y++],(PY+3)	(refus attendu)
+pre_on	mvl (00BH),[--y]	30 e3 35 0b
+pre_on	mvl (BP+3),[--y]	e3 35 03
+pre_on	mvl (PX+3),[--y]	34 e3 35 03
+pre_on	mvl (PY+3),[--y]	(refus attendu)
+pre_on	mvl [--y],(00BH)	30 eb 35 0b
+pre_on	mvl [--y],(BP+3)	eb 35 03
+pre_on	mvl [--y],(PX+3)	34 eb 35 03
+pre_on	mvl [--y],(PY+3)	(refus attendu)
+pre_on	mvl (00BH),[y+2]	30 56 85 0b 02
+pre_on	mvl (BP+3),[y+2]	56 85 03 02
+pre_on	mvl (PX+3),[y+2]	34 56 85 03 02
+pre_on	mvl (PY+3),[y+2]	(refus attendu)
+pre_on	mvl [y+2],(00BH)	30 5e 85 0b 02
+pre_on	mvl [y+2],(BP+3)	5e 85 03 02
+pre_on	mvl [y+2],(PX+3)	34 5e 85 03 02
+pre_on	mvl [y+2],(PY+3)	(refus attendu)
+pre_on	mvl (00BH),[y-2]	30 56 c5 0b 02
+pre_on	mvl (BP+3),[y-2]	56 c5 03 02
+pre_on	mvl (PX+3),[y-2]	34 56 c5 03 02
+pre_on	mvl (PY+3),[y-2]	(refus attendu)
+pre_on	mvl [y-2],(00BH)	30 5e c5 0b 02
+pre_on	mvl [y-2],(BP+3)	5e c5 03 02
+pre_on	mvl [y-2],(PX+3)	34 5e c5 03 02
+pre_on	mvl [y-2],(PY+3)	(refus attendu)
+pre_on	jp (00BH)	30 10 0b
+pre_on	jp (BP+3)	10 03
+pre_on	jp (PX+3)	34 10 03
+pre_on	jp (PY+3)	(refus attendu)
+pre_on	mv (00CH),(00BH)	32 c8 0c 0b
+pre_on	mv (00CH),(BP+3)	30 c8 0c 03
+pre_on	mv (00CH),(PY+3)	33 c8 0c 03
+pre_on	mv (00CH),(BP+PY)	31 c8 0c 00
+pre_on	mv (BP+4),(00BH)	22 c8 04 0b
+pre_on	mv (BP+4),(BP+3)	c8 04 03
+pre_on	mv (BP+4),(PY+3)	23 c8 04 03
+pre_on	mv (BP+4),(BP+PY)	21 c8 04 00
+pre_on	mv (PX+4),(00BH)	36 c8 04 0b
+pre_on	mv (PX+4),(BP+3)	34 c8 04 03
+pre_on	mv (PX+4),(PY+3)	37 c8 04 03
+pre_on	mv (PX+4),(BP+PY)	35 c8 04 00
+pre_on	mv (BP+PX),(00BH)	26 c8 00 0b
+pre_on	mv (BP+PX),(BP+3)	24 c8 00 03
+pre_on	mv (BP+PX),(PY+3)	27 c8 00 03
+pre_on	mv (BP+PX),(BP+PY)	25 c8 00 00
+pre_on	mvw (00CH),(00BH)	32 c9 0c 0b
+pre_on	mvw (00CH),(BP+3)	30 c9 0c 03
+pre_on	mvw (00CH),(PY+3)	33 c9 0c 03
+pre_on	mvw (00CH),(BP+PY)	31 c9 0c 00
+pre_on	mvw (BP+4),(00BH)	22 c9 04 0b
+pre_on	mvw (BP+4),(BP+3)	c9 04 03
+pre_on	mvw (BP+4),(PY+3)	23 c9 04 03
+pre_on	mvw (BP+4),(BP+PY)	21 c9 04 00
+pre_on	mvw (PX+4),(00BH)	36 c9 04 0b
+pre_on	mvw (PX+4),(BP+3)	34 c9 04 03
+pre_on	mvw (PX+4),(PY+3)	37 c9 04 03
+pre_on	mvw (PX+4),(BP+PY)	35 c9 04 00
+pre_on	mvw (BP+PX),(00BH)	26 c9 00 0b
+pre_on	mvw (BP+PX),(BP+3)	24 c9 00 03
+pre_on	mvw (BP+PX),(PY+3)	27 c9 00 03
+pre_on	mvw (BP+PX),(BP+PY)	25 c9 00 00
+pre_on	mvp (00CH),(00BH)	32 ca 0c 0b
+pre_on	mvp (00CH),(BP+3)	30 ca 0c 03
+pre_on	mvp (00CH),(PY+3)	33 ca 0c 03
+pre_on	mvp (00CH),(BP+PY)	31 ca 0c 00
+pre_on	mvp (BP+4),(00BH)	22 ca 04 0b
+pre_on	mvp (BP+4),(BP+3)	ca 04 03
+pre_on	mvp (BP+4),(PY+3)	23 ca 04 03
+pre_on	mvp (BP+4),(BP+PY)	21 ca 04 00
+pre_on	mvp (PX+4),(00BH)	36 ca 04 0b
+pre_on	mvp (PX+4),(BP+3)	34 ca 04 03
+pre_on	mvp (PX+4),(PY+3)	37 ca 04 03
+pre_on	mvp (PX+4),(BP+PY)	35 ca 04 00
+pre_on	mvp (BP+PX),(00BH)	26 ca 00 0b
+pre_on	mvp (BP+PX),(BP+3)	24 ca 00 03
+pre_on	mvp (BP+PX),(PY+3)	27 ca 00 03
+pre_on	mvp (BP+PX),(BP+PY)	25 ca 00 00
+pre_on	mvl (00CH),(00BH)	32 cb 0c 0b
+pre_on	mvl (00CH),(BP+3)	30 cb 0c 03
+pre_on	mvl (00CH),(PY+3)	33 cb 0c 03
+pre_on	mvl (00CH),(BP+PY)	31 cb 0c 00
+pre_on	mvl (BP+4),(00BH)	22 cb 04 0b
+pre_on	mvl (BP+4),(BP+3)	cb 04 03
+pre_on	mvl (BP+4),(PY+3)	23 cb 04 03
+pre_on	mvl (BP+4),(BP+PY)	21 cb 04 00
+pre_on	mvl (PX+4),(00BH)	36 cb 04 0b
+pre_on	mvl (PX+4),(BP+3)	34 cb 04 03
+pre_on	mvl (PX+4),(PY+3)	37 cb 04 03
+pre_on	mvl (PX+4),(BP+PY)	35 cb 04 00
+pre_on	mvl (BP+PX),(00BH)	26 cb 00 0b
+pre_on	mvl (BP+PX),(BP+3)	24 cb 00 03
+pre_on	mvl (BP+PX),(PY+3)	27 cb 00 03
+pre_on	mvl (BP+PX),(BP+PY)	25 cb 00 00
+pre_on	mvld (00CH),(00BH)	32 cf 0c 0b
+pre_on	mvld (00CH),(BP+3)	30 cf 0c 03
+pre_on	mvld (00CH),(PY+3)	33 cf 0c 03
+pre_on	mvld (00CH),(BP+PY)	31 cf 0c 00
+pre_on	mvld (BP+4),(00BH)	22 cf 04 0b
+pre_on	mvld (BP+4),(BP+3)	cf 04 03
+pre_on	mvld (BP+4),(PY+3)	23 cf 04 03
+pre_on	mvld (BP+4),(BP+PY)	21 cf 04 00
+pre_on	mvld (PX+4),(00BH)	36 cf 04 0b
+pre_on	mvld (PX+4),(BP+3)	34 cf 04 03
+pre_on	mvld (PX+4),(PY+3)	37 cf 04 03
+pre_on	mvld (PX+4),(BP+PY)	35 cf 04 00
+pre_on	mvld (BP+PX),(00BH)	26 cf 00 0b
+pre_on	mvld (BP+PX),(BP+3)	24 cf 00 03
+pre_on	mvld (BP+PX),(PY+3)	27 cf 00 03
+pre_on	mvld (BP+PX),(BP+PY)	25 cf 00 00
+pre_on	ex (00CH),(00BH)	32 c0 0c 0b
+pre_on	ex (00CH),(BP+3)	30 c0 0c 03
+pre_on	ex (00CH),(PY+3)	33 c0 0c 03
+pre_on	ex (00CH),(BP+PY)	31 c0 0c 00
+pre_on	ex (BP+4),(00BH)	22 c0 04 0b
+pre_on	ex (BP+4),(BP+3)	c0 04 03
+pre_on	ex (BP+4),(PY+3)	23 c0 04 03
+pre_on	ex (BP+4),(BP+PY)	21 c0 04 00
+pre_on	ex (PX+4),(00BH)	36 c0 04 0b
+pre_on	ex (PX+4),(BP+3)	34 c0 04 03
+pre_on	ex (PX+4),(PY+3)	37 c0 04 03
+pre_on	ex (PX+4),(BP+PY)	35 c0 04 00
+pre_on	ex (BP+PX),(00BH)	26 c0 00 0b
+pre_on	ex (BP+PX),(BP+3)	24 c0 00 03
+pre_on	ex (BP+PX),(PY+3)	27 c0 00 03
+pre_on	ex (BP+PX),(BP+PY)	25 c0 00 00
+pre_on	exw (00CH),(00BH)	32 c1 0c 0b
+pre_on	exw (00CH),(BP+3)	30 c1 0c 03
+pre_on	exw (00CH),(PY+3)	33 c1 0c 03
+pre_on	exw (00CH),(BP+PY)	31 c1 0c 00
+pre_on	exw (BP+4),(00BH)	22 c1 04 0b
+pre_on	exw (BP+4),(BP+3)	c1 04 03
+pre_on	exw (BP+4),(PY+3)	23 c1 04 03
+pre_on	exw (BP+4),(BP+PY)	21 c1 04 00
+pre_on	exw (PX+4),(00BH)	36 c1 04 0b
+pre_on	exw (PX+4),(BP+3)	34 c1 04 03
+pre_on	exw (PX+4),(PY+3)	37 c1 04 03
+pre_on	exw (PX+4),(BP+PY)	35 c1 04 00
+pre_on	exw (BP+PX),(00BH)	26 c1 00 0b
+pre_on	exw (BP+PX),(BP+3)	24 c1 00 03
+pre_on	exw (BP+PX),(PY+3)	27 c1 00 03
+pre_on	exw (BP+PX),(BP+PY)	25 c1 00 00
+pre_on	exp (00CH),(00BH)	32 c2 0c 0b
+pre_on	exp (00CH),(BP+3)	30 c2 0c 03
+pre_on	exp (00CH),(PY+3)	33 c2 0c 03
+pre_on	exp (00CH),(BP+PY)	31 c2 0c 00
+pre_on	exp (BP+4),(00BH)	22 c2 04 0b
+pre_on	exp (BP+4),(BP+3)	c2 04 03
+pre_on	exp (BP+4),(PY+3)	23 c2 04 03
+pre_on	exp (BP+4),(BP+PY)	21 c2 04 00
+pre_on	exp (PX+4),(00BH)	36 c2 04 0b
+pre_on	exp (PX+4),(BP+3)	34 c2 04 03
+pre_on	exp (PX+4),(PY+3)	37 c2 04 03
+pre_on	exp (PX+4),(BP+PY)	35 c2 04 00
+pre_on	exp (BP+PX),(00BH)	26 c2 00 0b
+pre_on	exp (BP+PX),(BP+3)	24 c2 00 03
+pre_on	exp (BP+PX),(PY+3)	27 c2 00 03
+pre_on	exp (BP+PX),(BP+PY)	25 c2 00 00
+pre_on	exl (00CH),(00BH)	32 c3 0c 0b
+pre_on	exl (00CH),(BP+3)	30 c3 0c 03
+pre_on	exl (00CH),(PY+3)	33 c3 0c 03
+pre_on	exl (00CH),(BP+PY)	31 c3 0c 00
+pre_on	exl (BP+4),(00BH)	22 c3 04 0b
+pre_on	exl (BP+4),(BP+3)	c3 04 03
+pre_on	exl (BP+4),(PY+3)	23 c3 04 03
+pre_on	exl (BP+4),(BP+PY)	21 c3 04 00
+pre_on	exl (PX+4),(00BH)	36 c3 04 0b
+pre_on	exl (PX+4),(BP+3)	34 c3 04 03
+pre_on	exl (PX+4),(PY+3)	37 c3 04 03
+pre_on	exl (PX+4),(BP+PY)	35 c3 04 00
+pre_on	exl (BP+PX),(00BH)	26 c3 00 0b
+pre_on	exl (BP+PX),(BP+3)	24 c3 00 03
+pre_on	exl (BP+PX),(PY+3)	27 c3 00 03
+pre_on	exl (BP+PX),(BP+PY)	25 c3 00 00
+pre_on	cmp (00CH),(00BH)	32 b7 0c 0b
+pre_on	cmp (00CH),(BP+3)	30 b7 0c 03
+pre_on	cmp (00CH),(PY+3)	33 b7 0c 03
+pre_on	cmp (00CH),(BP+PY)	31 b7 0c 00
+pre_on	cmp (BP+4),(00BH)	22 b7 04 0b
+pre_on	cmp (BP+4),(BP+3)	b7 04 03
+pre_on	cmp (BP+4),(PY+3)	23 b7 04 03
+pre_on	cmp (BP+4),(BP+PY)	21 b7 04 00
+pre_on	cmp (PX+4),(00BH)	36 b7 04 0b
+pre_on	cmp (PX+4),(BP+3)	34 b7 04 03
+pre_on	cmp (PX+4),(PY+3)	37 b7 04 03
+pre_on	cmp (PX+4),(BP+PY)	35 b7 04 00
+pre_on	cmp (BP+PX),(00BH)	26 b7 00 0b
+pre_on	cmp (BP+PX),(BP+3)	24 b7 00 03
+pre_on	cmp (BP+PX),(PY+3)	27 b7 00 03
+pre_on	cmp (BP+PX),(BP+PY)	25 b7 00 00
+pre_on	cmpw (00CH),(00BH)	32 c6 0c 0b
+pre_on	cmpw (00CH),(BP+3)	30 c6 0c 03
+pre_on	cmpw (00CH),(PY+3)	33 c6 0c 03
+pre_on	cmpw (00CH),(BP+PY)	31 c6 0c 00
+pre_on	cmpw (BP+4),(00BH)	22 c6 04 0b
+pre_on	cmpw (BP+4),(BP+3)	c6 04 03
+pre_on	cmpw (BP+4),(PY+3)	23 c6 04 03
+pre_on	cmpw (BP+4),(BP+PY)	21 c6 04 00
+pre_on	cmpw (PX+4),(00BH)	36 c6 04 0b
+pre_on	cmpw (PX+4),(BP+3)	34 c6 04 03
+pre_on	cmpw (PX+4),(PY+3)	37 c6 04 03
+pre_on	cmpw (PX+4),(BP+PY)	35 c6 04 00
+pre_on	cmpw (BP+PX),(00BH)	26 c6 00 0b
+pre_on	cmpw (BP+PX),(BP+3)	24 c6 00 03
+pre_on	cmpw (BP+PX),(PY+3)	27 c6 00 03
+pre_on	cmpw (BP+PX),(BP+PY)	25 c6 00 00
+pre_on	cmpp (00CH),(00BH)	32 c7 0c 0b
+pre_on	cmpp (00CH),(BP+3)	30 c7 0c 03
+pre_on	cmpp (00CH),(PY+3)	33 c7 0c 03
+pre_on	cmpp (00CH),(BP+PY)	31 c7 0c 00
+pre_on	cmpp (BP+4),(00BH)	22 c7 04 0b
+pre_on	cmpp (BP+4),(BP+3)	c7 04 03
+pre_on	cmpp (BP+4),(PY+3)	23 c7 04 03
+pre_on	cmpp (BP+4),(BP+PY)	21 c7 04 00
+pre_on	cmpp (PX+4),(00BH)	36 c7 04 0b
+pre_on	cmpp (PX+4),(BP+3)	34 c7 04 03
+pre_on	cmpp (PX+4),(PY+3)	37 c7 04 03
+pre_on	cmpp (PX+4),(BP+PY)	35 c7 04 00
+pre_on	cmpp (BP+PX),(00BH)	26 c7 00 0b
+pre_on	cmpp (BP+PX),(BP+3)	24 c7 00 03
+pre_on	cmpp (BP+PX),(PY+3)	27 c7 00 03
+pre_on	cmpp (BP+PX),(BP+PY)	25 c7 00 00
+pre_on	and (00CH),(00BH)	32 76 0c 0b
+pre_on	and (00CH),(BP+3)	30 76 0c 03
+pre_on	and (00CH),(PY+3)	33 76 0c 03
+pre_on	and (00CH),(BP+PY)	31 76 0c 00
+pre_on	and (BP+4),(00BH)	22 76 04 0b
+pre_on	and (BP+4),(BP+3)	76 04 03
+pre_on	and (BP+4),(PY+3)	23 76 04 03
+pre_on	and (BP+4),(BP+PY)	21 76 04 00
+pre_on	and (PX+4),(00BH)	36 76 04 0b
+pre_on	and (PX+4),(BP+3)	34 76 04 03
+pre_on	and (PX+4),(PY+3)	37 76 04 03
+pre_on	and (PX+4),(BP+PY)	35 76 04 00
+pre_on	and (BP+PX),(00BH)	26 76 00 0b
+pre_on	and (BP+PX),(BP+3)	24 76 00 03
+pre_on	and (BP+PX),(PY+3)	27 76 00 03
+pre_on	and (BP+PX),(BP+PY)	25 76 00 00
+pre_on	or (00CH),(00BH)	32 7e 0c 0b
+pre_on	or (00CH),(BP+3)	30 7e 0c 03
+pre_on	or (00CH),(PY+3)	33 7e 0c 03
+pre_on	or (00CH),(BP+PY)	31 7e 0c 00
+pre_on	or (BP+4),(00BH)	22 7e 04 0b
+pre_on	or (BP+4),(BP+3)	7e 04 03
+pre_on	or (BP+4),(PY+3)	23 7e 04 03
+pre_on	or (BP+4),(BP+PY)	21 7e 04 00
+pre_on	or (PX+4),(00BH)	36 7e 04 0b
+pre_on	or (PX+4),(BP+3)	34 7e 04 03
+pre_on	or (PX+4),(PY+3)	37 7e 04 03
+pre_on	or (PX+4),(BP+PY)	35 7e 04 00
+pre_on	or (BP+PX),(00BH)	26 7e 00 0b
+pre_on	or (BP+PX),(BP+3)	24 7e 00 03
+pre_on	or (BP+PX),(PY+3)	27 7e 00 03
+pre_on	or (BP+PX),(BP+PY)	25 7e 00 00
+pre_on	xor (00CH),(00BH)	32 6e 0c 0b
+pre_on	xor (00CH),(BP+3)	30 6e 0c 03
+pre_on	xor (00CH),(PY+3)	33 6e 0c 03
+pre_on	xor (00CH),(BP+PY)	31 6e 0c 00
+pre_on	xor (BP+4),(00BH)	22 6e 04 0b
+pre_on	xor (BP+4),(BP+3)	6e 04 03
+pre_on	xor (BP+4),(PY+3)	23 6e 04 03
+pre_on	xor (BP+4),(BP+PY)	21 6e 04 00
+pre_on	xor (PX+4),(00BH)	36 6e 04 0b
+pre_on	xor (PX+4),(BP+3)	34 6e 04 03
+pre_on	xor (PX+4),(PY+3)	37 6e 04 03
+pre_on	xor (PX+4),(BP+PY)	35 6e 04 00
+pre_on	xor (BP+PX),(00BH)	26 6e 00 0b
+pre_on	xor (BP+PX),(BP+3)	24 6e 00 03
+pre_on	xor (BP+PX),(PY+3)	27 6e 00 03
+pre_on	xor (BP+PX),(BP+PY)	25 6e 00 00
+pre_on	adcl (00CH),(00BH)	32 54 0c 0b
+pre_on	adcl (00CH),(BP+3)	30 54 0c 03
+pre_on	adcl (00CH),(PY+3)	33 54 0c 03
+pre_on	adcl (00CH),(BP+PY)	31 54 0c 00
+pre_on	adcl (BP+4),(00BH)	22 54 04 0b
+pre_on	adcl (BP+4),(BP+3)	54 04 03
+pre_on	adcl (BP+4),(PY+3)	23 54 04 03
+pre_on	adcl (BP+4),(BP+PY)	21 54 04 00
+pre_on	adcl (PX+4),(00BH)	36 54 04 0b
+pre_on	adcl (PX+4),(BP+3)	34 54 04 03
+pre_on	adcl (PX+4),(PY+3)	37 54 04 03
+pre_on	adcl (PX+4),(BP+PY)	35 54 04 00
+pre_on	adcl (BP+PX),(00BH)	26 54 00 0b
+pre_on	adcl (BP+PX),(BP+3)	24 54 00 03
+pre_on	adcl (BP+PX),(PY+3)	27 54 00 03
+pre_on	adcl (BP+PX),(BP+PY)	25 54 00 00
+pre_on	sbcl (00CH),(00BH)	32 5c 0c 0b
+pre_on	sbcl (00CH),(BP+3)	30 5c 0c 03
+pre_on	sbcl (00CH),(PY+3)	33 5c 0c 03
+pre_on	sbcl (00CH),(BP+PY)	31 5c 0c 00
+pre_on	sbcl (BP+4),(00BH)	22 5c 04 0b
+pre_on	sbcl (BP+4),(BP+3)	5c 04 03
+pre_on	sbcl (BP+4),(PY+3)	23 5c 04 03
+pre_on	sbcl (BP+4),(BP+PY)	21 5c 04 00
+pre_on	sbcl (PX+4),(00BH)	36 5c 04 0b
+pre_on	sbcl (PX+4),(BP+3)	34 5c 04 03
+pre_on	sbcl (PX+4),(PY+3)	37 5c 04 03
+pre_on	sbcl (PX+4),(BP+PY)	35 5c 04 00
+pre_on	sbcl (BP+PX),(00BH)	26 5c 00 0b
+pre_on	sbcl (BP+PX),(BP+3)	24 5c 00 03
+pre_on	sbcl (BP+PX),(PY+3)	27 5c 00 03
+pre_on	sbcl (BP+PX),(BP+PY)	25 5c 00 00
+pre_on	dadl (00CH),(00BH)	32 c4 0c 0b
+pre_on	dadl (00CH),(BP+3)	30 c4 0c 03
+pre_on	dadl (00CH),(PY+3)	33 c4 0c 03
+pre_on	dadl (00CH),(BP+PY)	31 c4 0c 00
+pre_on	dadl (BP+4),(00BH)	22 c4 04 0b
+pre_on	dadl (BP+4),(BP+3)	c4 04 03
+pre_on	dadl (BP+4),(PY+3)	23 c4 04 03
+pre_on	dadl (BP+4),(BP+PY)	21 c4 04 00
+pre_on	dadl (PX+4),(00BH)	36 c4 04 0b
+pre_on	dadl (PX+4),(BP+3)	34 c4 04 03
+pre_on	dadl (PX+4),(PY+3)	37 c4 04 03
+pre_on	dadl (PX+4),(BP+PY)	35 c4 04 00
+pre_on	dadl (BP+PX),(00BH)	26 c4 00 0b
+pre_on	dadl (BP+PX),(BP+3)	24 c4 00 03
+pre_on	dadl (BP+PX),(PY+3)	27 c4 00 03
+pre_on	dadl (BP+PX),(BP+PY)	25 c4 00 00
+pre_on	dsbl (00CH),(00BH)	32 d4 0c 0b
+pre_on	dsbl (00CH),(BP+3)	30 d4 0c 03
+pre_on	dsbl (00CH),(PY+3)	33 d4 0c 03
+pre_on	dsbl (00CH),(BP+PY)	31 d4 0c 00
+pre_on	dsbl (BP+4),(00BH)	22 d4 04 0b
+pre_on	dsbl (BP+4),(BP+3)	d4 04 03
+pre_on	dsbl (BP+4),(PY+3)	23 d4 04 03
+pre_on	dsbl (BP+4),(BP+PY)	21 d4 04 00
+pre_on	dsbl (PX+4),(00BH)	36 d4 04 0b
+pre_on	dsbl (PX+4),(BP+3)	34 d4 04 03
+pre_on	dsbl (PX+4),(PY+3)	37 d4 04 03
+pre_on	dsbl (PX+4),(BP+PY)	35 d4 04 00
+pre_on	dsbl (BP+PX),(00BH)	26 d4 00 0b
+pre_on	dsbl (BP+PX),(BP+3)	24 d4 00 03
+pre_on	dsbl (BP+PX),(PY+3)	27 d4 00 03
+pre_on	dsbl (BP+PX),(BP+PY)	25 d4 00 00
+pre_on	mv (00CH),[(00BH)]	32 f0 00 0c 0b
+pre_on	mv (00CH),[(BP+3)]	30 f0 00 0c 03
+pre_on	mv (00CH),[(PY+3)]	33 f0 00 0c 03
+pre_on	mv (00CH),[(BP+PY)]	31 f0 00 0c 00
+pre_on	mv (BP+4),[(00BH)]	22 f0 00 04 0b
+pre_on	mv (BP+4),[(BP+3)]	f0 00 04 03
+pre_on	mv (BP+4),[(PY+3)]	23 f0 00 04 03
+pre_on	mv (BP+4),[(BP+PY)]	21 f0 00 04 00
+pre_on	mv (PX+4),[(00BH)]	36 f0 00 04 0b
+pre_on	mv (PX+4),[(BP+3)]	34 f0 00 04 03
+pre_on	mv (PX+4),[(PY+3)]	37 f0 00 04 03
+pre_on	mv (PX+4),[(BP+PY)]	35 f0 00 04 00
+pre_on	mv (BP+PX),[(00BH)]	26 f0 00 00 0b
+pre_on	mv (BP+PX),[(BP+3)]	24 f0 00 00 03
+pre_on	mv (BP+PX),[(PY+3)]	27 f0 00 00 03
+pre_on	mv (BP+PX),[(BP+PY)]	25 f0 00 00 00
+pre_on	mv [(00CH)],(00BH)	32 f8 00 0c 0b
+pre_on	mv [(00CH)],(BP+3)	30 f8 00 0c 03
+pre_on	mv [(00CH)],(PY+3)	33 f8 00 0c 03
+pre_on	mv [(00CH)],(BP+PY)	31 f8 00 0c 00
+pre_on	mv [(BP+4)],(00BH)	22 f8 00 04 0b
+pre_on	mv [(BP+4)],(BP+3)	f8 00 04 03
+pre_on	mv [(BP+4)],(PY+3)	23 f8 00 04 03
+pre_on	mv [(BP+4)],(BP+PY)	21 f8 00 04 00
+pre_on	mv [(PX+4)],(00BH)	36 f8 00 04 0b
+pre_on	mv [(PX+4)],(BP+3)	34 f8 00 04 03
+pre_on	mv [(PX+4)],(PY+3)	37 f8 00 04 03
+pre_on	mv [(PX+4)],(BP+PY)	35 f8 00 04 00
+pre_on	mv [(BP+PX)],(00BH)	26 f8 00 00 0b
+pre_on	mv [(BP+PX)],(BP+3)	24 f8 00 00 03
+pre_on	mv [(BP+PX)],(PY+3)	27 f8 00 00 03
+pre_on	mv [(BP+PX)],(BP+PY)	25 f8 00 00 00
+pre_on	mv (00CH),[(00BH)+2]	32 f0 80 0c 0b 02
+pre_on	mv (00CH),[(BP+3)+2]	30 f0 80 0c 03 02
+pre_on	mv (00CH),[(PY+3)+2]	33 f0 80 0c 03 02
+pre_on	mv (00CH),[(BP+PY)+2]	31 f0 80 0c 00 02
+pre_on	mv (BP+4),[(00BH)+2]	22 f0 80 04 0b 02
+pre_on	mv (BP+4),[(BP+3)+2]	f0 80 04 03 02
+pre_on	mv (BP+4),[(PY+3)+2]	23 f0 80 04 03 02
+pre_on	mv (BP+4),[(BP+PY)+2]	21 f0 80 04 00 02
+pre_on	mv (PX+4),[(00BH)+2]	36 f0 80 04 0b 02
+pre_on	mv (PX+4),[(BP+3)+2]	34 f0 80 04 03 02
+pre_on	mv (PX+4),[(PY+3)+2]	37 f0 80 04 03 02
+pre_on	mv (PX+4),[(BP+PY)+2]	35 f0 80 04 00 02
+pre_on	mv (BP+PX),[(00BH)+2]	26 f0 80 00 0b 02
+pre_on	mv (BP+PX),[(BP+3)+2]	24 f0 80 00 03 02
+pre_on	mv (BP+PX),[(PY+3)+2]	27 f0 80 00 03 02
+pre_on	mv (BP+PX),[(BP+PY)+2]	25 f0 80 00 00 02
+pre_on	mv [(00CH)+2],(00BH)	32 f8 80 0c 0b 02
+pre_on	mv [(00CH)+2],(BP+3)	30 f8 80 0c 03 02
+pre_on	mv [(00CH)+2],(PY+3)	33 f8 80 0c 03 02
+pre_on	mv [(00CH)+2],(BP+PY)	31 f8 80 0c 00 02
+pre_on	mv [(BP+4)+2],(00BH)	22 f8 80 04 0b 02
+pre_on	mv [(BP+4)+2],(BP+3)	f8 80 04 03 02
+pre_on	mv [(BP+4)+2],(PY+3)	23 f8 80 04 03 02
+pre_on	mv [(BP+4)+2],(BP+PY)	21 f8 80 04 00 02
+pre_on	mv [(PX+4)+2],(00BH)	36 f8 80 04 0b 02
+pre_on	mv [(PX+4)+2],(BP+3)	34 f8 80 04 03 02
+pre_on	mv [(PX+4)+2],(PY+3)	37 f8 80 04 03 02
+pre_on	mv [(PX+4)+2],(BP+PY)	35 f8 80 04 00 02
+pre_on	mv [(BP+PX)+2],(00BH)	26 f8 80 00 0b 02
+pre_on	mv [(BP+PX)+2],(BP+3)	24 f8 80 00 03 02
+pre_on	mv [(BP+PX)+2],(PY+3)	27 f8 80 00 03 02
+pre_on	mv [(BP+PX)+2],(BP+PY)	25 f8 80 00 00 02
+pre_on	mv (00CH),[(00BH)-2]	32 f0 c0 0c 0b 02
+pre_on	mv (00CH),[(BP+3)-2]	30 f0 c0 0c 03 02
+pre_on	mv (00CH),[(PY+3)-2]	33 f0 c0 0c 03 02
+pre_on	mv (00CH),[(BP+PY)-2]	31 f0 c0 0c 00 02
+pre_on	mv (BP+4),[(00BH)-2]	22 f0 c0 04 0b 02
+pre_on	mv (BP+4),[(BP+3)-2]	f0 c0 04 03 02
+pre_on	mv (BP+4),[(PY+3)-2]	23 f0 c0 04 03 02
+pre_on	mv (BP+4),[(BP+PY)-2]	21 f0 c0 04 00 02
+pre_on	mv (PX+4),[(00BH)-2]	36 f0 c0 04 0b 02
+pre_on	mv (PX+4),[(BP+3)-2]	34 f0 c0 04 03 02
+pre_on	mv (PX+4),[(PY+3)-2]	37 f0 c0 04 03 02
+pre_on	mv (PX+4),[(BP+PY)-2]	35 f0 c0 04 00 02
+pre_on	mv (BP+PX),[(00BH)-2]	26 f0 c0 00 0b 02
+pre_on	mv (BP+PX),[(BP+3)-2]	24 f0 c0 00 03 02
+pre_on	mv (BP+PX),[(PY+3)-2]	27 f0 c0 00 03 02
+pre_on	mv (BP+PX),[(BP+PY)-2]	25 f0 c0 00 00 02
+pre_on	mv [(00CH)-2],(00BH)	32 f8 c0 0c 0b 02
+pre_on	mv [(00CH)-2],(BP+3)	30 f8 c0 0c 03 02
+pre_on	mv [(00CH)-2],(PY+3)	33 f8 c0 0c 03 02
+pre_on	mv [(00CH)-2],(BP+PY)	31 f8 c0 0c 00 02
+pre_on	mv [(BP+4)-2],(00BH)	22 f8 c0 04 0b 02
+pre_on	mv [(BP+4)-2],(BP+3)	f8 c0 04 03 02
+pre_on	mv [(BP+4)-2],(PY+3)	23 f8 c0 04 03 02
+pre_on	mv [(BP+4)-2],(BP+PY)	21 f8 c0 04 00 02
+pre_on	mv [(PX+4)-2],(00BH)	36 f8 c0 04 0b 02
+pre_on	mv [(PX+4)-2],(BP+3)	34 f8 c0 04 03 02
+pre_on	mv [(PX+4)-2],(PY+3)	37 f8 c0 04 03 02
+pre_on	mv [(PX+4)-2],(BP+PY)	35 f8 c0 04 00 02
+pre_on	mv [(BP+PX)-2],(00BH)	26 f8 c0 00 0b 02
+pre_on	mv [(BP+PX)-2],(BP+3)	24 f8 c0 00 03 02
+pre_on	mv [(BP+PX)-2],(PY+3)	27 f8 c0 00 03 02
+pre_on	mv [(BP+PX)-2],(BP+PY)	25 f8 c0 00 00 02
+pre_on	mvw (00CH),[(00BH)]	32 f1 00 0c 0b
+pre_on	mvw (00CH),[(BP+3)]	30 f1 00 0c 03
+pre_on	mvw (00CH),[(PY+3)]	33 f1 00 0c 03
+pre_on	mvw (00CH),[(BP+PY)]	31 f1 00 0c 00
+pre_on	mvw (BP+4),[(00BH)]	22 f1 00 04 0b
+pre_on	mvw (BP+4),[(BP+3)]	f1 00 04 03
+pre_on	mvw (BP+4),[(PY+3)]	23 f1 00 04 03
+pre_on	mvw (BP+4),[(BP+PY)]	21 f1 00 04 00
+pre_on	mvw (PX+4),[(00BH)]	36 f1 00 04 0b
+pre_on	mvw (PX+4),[(BP+3)]	34 f1 00 04 03
+pre_on	mvw (PX+4),[(PY+3)]	37 f1 00 04 03
+pre_on	mvw (PX+4),[(BP+PY)]	35 f1 00 04 00
+pre_on	mvw (BP+PX),[(00BH)]	26 f1 00 00 0b
+pre_on	mvw (BP+PX),[(BP+3)]	24 f1 00 00 03
+pre_on	mvw (BP+PX),[(PY+3)]	27 f1 00 00 03
+pre_on	mvw (BP+PX),[(BP+PY)]	25 f1 00 00 00
+pre_on	mvw [(00CH)],(00BH)	32 f9 00 0c 0b
+pre_on	mvw [(00CH)],(BP+3)	30 f9 00 0c 03
+pre_on	mvw [(00CH)],(PY+3)	33 f9 00 0c 03
+pre_on	mvw [(00CH)],(BP+PY)	31 f9 00 0c 00
+pre_on	mvw [(BP+4)],(00BH)	22 f9 00 04 0b
+pre_on	mvw [(BP+4)],(BP+3)	f9 00 04 03
+pre_on	mvw [(BP+4)],(PY+3)	23 f9 00 04 03
+pre_on	mvw [(BP+4)],(BP+PY)	21 f9 00 04 00
+pre_on	mvw [(PX+4)],(00BH)	36 f9 00 04 0b
+pre_on	mvw [(PX+4)],(BP+3)	34 f9 00 04 03
+pre_on	mvw [(PX+4)],(PY+3)	37 f9 00 04 03
+pre_on	mvw [(PX+4)],(BP+PY)	35 f9 00 04 00
+pre_on	mvw [(BP+PX)],(00BH)	26 f9 00 00 0b
+pre_on	mvw [(BP+PX)],(BP+3)	24 f9 00 00 03
+pre_on	mvw [(BP+PX)],(PY+3)	27 f9 00 00 03
+pre_on	mvw [(BP+PX)],(BP+PY)	25 f9 00 00 00
+pre_on	mvw (00CH),[(00BH)+2]	32 f1 80 0c 0b 02
+pre_on	mvw (00CH),[(BP+3)+2]	30 f1 80 0c 03 02
+pre_on	mvw (00CH),[(PY+3)+2]	33 f1 80 0c 03 02
+pre_on	mvw (00CH),[(BP+PY)+2]	31 f1 80 0c 00 02
+pre_on	mvw (BP+4),[(00BH)+2]	22 f1 80 04 0b 02
+pre_on	mvw (BP+4),[(BP+3)+2]	f1 80 04 03 02
+pre_on	mvw (BP+4),[(PY+3)+2]	23 f1 80 04 03 02
+pre_on	mvw (BP+4),[(BP+PY)+2]	21 f1 80 04 00 02
+pre_on	mvw (PX+4),[(00BH)+2]	36 f1 80 04 0b 02
+pre_on	mvw (PX+4),[(BP+3)+2]	34 f1 80 04 03 02
+pre_on	mvw (PX+4),[(PY+3)+2]	37 f1 80 04 03 02
+pre_on	mvw (PX+4),[(BP+PY)+2]	35 f1 80 04 00 02
+pre_on	mvw (BP+PX),[(00BH)+2]	26 f1 80 00 0b 02
+pre_on	mvw (BP+PX),[(BP+3)+2]	24 f1 80 00 03 02
+pre_on	mvw (BP+PX),[(PY+3)+2]	27 f1 80 00 03 02
+pre_on	mvw (BP+PX),[(BP+PY)+2]	25 f1 80 00 00 02
+pre_on	mvw [(00CH)+2],(00BH)	32 f9 80 0c 0b 02
+pre_on	mvw [(00CH)+2],(BP+3)	30 f9 80 0c 03 02
+pre_on	mvw [(00CH)+2],(PY+3)	33 f9 80 0c 03 02
+pre_on	mvw [(00CH)+2],(BP+PY)	31 f9 80 0c 00 02
+pre_on	mvw [(BP+4)+2],(00BH)	22 f9 80 04 0b 02
+pre_on	mvw [(BP+4)+2],(BP+3)	f9 80 04 03 02
+pre_on	mvw [(BP+4)+2],(PY+3)	23 f9 80 04 03 02
+pre_on	mvw [(BP+4)+2],(BP+PY)	21 f9 80 04 00 02
+pre_on	mvw [(PX+4)+2],(00BH)	36 f9 80 04 0b 02
+pre_on	mvw [(PX+4)+2],(BP+3)	34 f9 80 04 03 02
+pre_on	mvw [(PX+4)+2],(PY+3)	37 f9 80 04 03 02
+pre_on	mvw [(PX+4)+2],(BP+PY)	35 f9 80 04 00 02
+pre_on	mvw [(BP+PX)+2],(00BH)	26 f9 80 00 0b 02
+pre_on	mvw [(BP+PX)+2],(BP+3)	24 f9 80 00 03 02
+pre_on	mvw [(BP+PX)+2],(PY+3)	27 f9 80 00 03 02
+pre_on	mvw [(BP+PX)+2],(BP+PY)	25 f9 80 00 00 02
+pre_on	mvw (00CH),[(00BH)-2]	32 f1 c0 0c 0b 02
+pre_on	mvw (00CH),[(BP+3)-2]	30 f1 c0 0c 03 02
+pre_on	mvw (00CH),[(PY+3)-2]	33 f1 c0 0c 03 02
+pre_on	mvw (00CH),[(BP+PY)-2]	31 f1 c0 0c 00 02
+pre_on	mvw (BP+4),[(00BH)-2]	22 f1 c0 04 0b 02
+pre_on	mvw (BP+4),[(BP+3)-2]	f1 c0 04 03 02
+pre_on	mvw (BP+4),[(PY+3)-2]	23 f1 c0 04 03 02
+pre_on	mvw (BP+4),[(BP+PY)-2]	21 f1 c0 04 00 02
+pre_on	mvw (PX+4),[(00BH)-2]	36 f1 c0 04 0b 02
+pre_on	mvw (PX+4),[(BP+3)-2]	34 f1 c0 04 03 02
+pre_on	mvw (PX+4),[(PY+3)-2]	37 f1 c0 04 03 02
+pre_on	mvw (PX+4),[(BP+PY)-2]	35 f1 c0 04 00 02
+pre_on	mvw (BP+PX),[(00BH)-2]	26 f1 c0 00 0b 02
+pre_on	mvw (BP+PX),[(BP+3)-2]	24 f1 c0 00 03 02
+pre_on	mvw (BP+PX),[(PY+3)-2]	27 f1 c0 00 03 02
+pre_on	mvw (BP+PX),[(BP+PY)-2]	25 f1 c0 00 00 02
+pre_on	mvw [(00CH)-2],(00BH)	32 f9 c0 0c 0b 02
+pre_on	mvw [(00CH)-2],(BP+3)	30 f9 c0 0c 03 02
+pre_on	mvw [(00CH)-2],(PY+3)	33 f9 c0 0c 03 02
+pre_on	mvw [(00CH)-2],(BP+PY)	31 f9 c0 0c 00 02
+pre_on	mvw [(BP+4)-2],(00BH)	22 f9 c0 04 0b 02
+pre_on	mvw [(BP+4)-2],(BP+3)	f9 c0 04 03 02
+pre_on	mvw [(BP+4)-2],(PY+3)	23 f9 c0 04 03 02
+pre_on	mvw [(BP+4)-2],(BP+PY)	21 f9 c0 04 00 02
+pre_on	mvw [(PX+4)-2],(00BH)	36 f9 c0 04 0b 02
+pre_on	mvw [(PX+4)-2],(BP+3)	34 f9 c0 04 03 02
+pre_on	mvw [(PX+4)-2],(PY+3)	37 f9 c0 04 03 02
+pre_on	mvw [(PX+4)-2],(BP+PY)	35 f9 c0 04 00 02
+pre_on	mvw [(BP+PX)-2],(00BH)	26 f9 c0 00 0b 02
+pre_on	mvw [(BP+PX)-2],(BP+3)	24 f9 c0 00 03 02
+pre_on	mvw [(BP+PX)-2],(PY+3)	27 f9 c0 00 03 02
+pre_on	mvw [(BP+PX)-2],(BP+PY)	25 f9 c0 00 00 02
+pre_on	mvp (00CH),[(00BH)]	32 f2 00 0c 0b
+pre_on	mvp (00CH),[(BP+3)]	30 f2 00 0c 03
+pre_on	mvp (00CH),[(PY+3)]	33 f2 00 0c 03
+pre_on	mvp (00CH),[(BP+PY)]	31 f2 00 0c 00
+pre_on	mvp (BP+4),[(00BH)]	22 f2 00 04 0b
+pre_on	mvp (BP+4),[(BP+3)]	f2 00 04 03
+pre_on	mvp (BP+4),[(PY+3)]	23 f2 00 04 03
+pre_on	mvp (BP+4),[(BP+PY)]	21 f2 00 04 00
+pre_on	mvp (PX+4),[(00BH)]	36 f2 00 04 0b
+pre_on	mvp (PX+4),[(BP+3)]	34 f2 00 04 03
+pre_on	mvp (PX+4),[(PY+3)]	37 f2 00 04 03
+pre_on	mvp (PX+4),[(BP+PY)]	35 f2 00 04 00
+pre_on	mvp (BP+PX),[(00BH)]	26 f2 00 00 0b
+pre_on	mvp (BP+PX),[(BP+3)]	24 f2 00 00 03
+pre_on	mvp (BP+PX),[(PY+3)]	27 f2 00 00 03
+pre_on	mvp (BP+PX),[(BP+PY)]	25 f2 00 00 00
+pre_on	mvp [(00CH)],(00BH)	32 fa 00 0c 0b
+pre_on	mvp [(00CH)],(BP+3)	30 fa 00 0c 03
+pre_on	mvp [(00CH)],(PY+3)	33 fa 00 0c 03
+pre_on	mvp [(00CH)],(BP+PY)	31 fa 00 0c 00
+pre_on	mvp [(BP+4)],(00BH)	22 fa 00 04 0b
+pre_on	mvp [(BP+4)],(BP+3)	fa 00 04 03
+pre_on	mvp [(BP+4)],(PY+3)	23 fa 00 04 03
+pre_on	mvp [(BP+4)],(BP+PY)	21 fa 00 04 00
+pre_on	mvp [(PX+4)],(00BH)	36 fa 00 04 0b
+pre_on	mvp [(PX+4)],(BP+3)	34 fa 00 04 03
+pre_on	mvp [(PX+4)],(PY+3)	37 fa 00 04 03
+pre_on	mvp [(PX+4)],(BP+PY)	35 fa 00 04 00
+pre_on	mvp [(BP+PX)],(00BH)	26 fa 00 00 0b
+pre_on	mvp [(BP+PX)],(BP+3)	24 fa 00 00 03
+pre_on	mvp [(BP+PX)],(PY+3)	27 fa 00 00 03
+pre_on	mvp [(BP+PX)],(BP+PY)	25 fa 00 00 00
+pre_on	mvp (00CH),[(00BH)+2]	32 f2 80 0c 0b 02
+pre_on	mvp (00CH),[(BP+3)+2]	30 f2 80 0c 03 02
+pre_on	mvp (00CH),[(PY+3)+2]	33 f2 80 0c 03 02
+pre_on	mvp (00CH),[(BP+PY)+2]	31 f2 80 0c 00 02
+pre_on	mvp (BP+4),[(00BH)+2]	22 f2 80 04 0b 02
+pre_on	mvp (BP+4),[(BP+3)+2]	f2 80 04 03 02
+pre_on	mvp (BP+4),[(PY+3)+2]	23 f2 80 04 03 02
+pre_on	mvp (BP+4),[(BP+PY)+2]	21 f2 80 04 00 02
+pre_on	mvp (PX+4),[(00BH)+2]	36 f2 80 04 0b 02
+pre_on	mvp (PX+4),[(BP+3)+2]	34 f2 80 04 03 02
+pre_on	mvp (PX+4),[(PY+3)+2]	37 f2 80 04 03 02
+pre_on	mvp (PX+4),[(BP+PY)+2]	35 f2 80 04 00 02
+pre_on	mvp (BP+PX),[(00BH)+2]	26 f2 80 00 0b 02
+pre_on	mvp (BP+PX),[(BP+3)+2]	24 f2 80 00 03 02
+pre_on	mvp (BP+PX),[(PY+3)+2]	27 f2 80 00 03 02
+pre_on	mvp (BP+PX),[(BP+PY)+2]	25 f2 80 00 00 02
+pre_on	mvp [(00CH)+2],(00BH)	32 fa 80 0c 0b 02
+pre_on	mvp [(00CH)+2],(BP+3)	30 fa 80 0c 03 02
+pre_on	mvp [(00CH)+2],(PY+3)	33 fa 80 0c 03 02
+pre_on	mvp [(00CH)+2],(BP+PY)	31 fa 80 0c 00 02
+pre_on	mvp [(BP+4)+2],(00BH)	22 fa 80 04 0b 02
+pre_on	mvp [(BP+4)+2],(BP+3)	fa 80 04 03 02
+pre_on	mvp [(BP+4)+2],(PY+3)	23 fa 80 04 03 02
+pre_on	mvp [(BP+4)+2],(BP+PY)	21 fa 80 04 00 02
+pre_on	mvp [(PX+4)+2],(00BH)	36 fa 80 04 0b 02
+pre_on	mvp [(PX+4)+2],(BP+3)	34 fa 80 04 03 02
+pre_on	mvp [(PX+4)+2],(PY+3)	37 fa 80 04 03 02
+pre_on	mvp [(PX+4)+2],(BP+PY)	35 fa 80 04 00 02
+pre_on	mvp [(BP+PX)+2],(00BH)	26 fa 80 00 0b 02
+pre_on	mvp [(BP+PX)+2],(BP+3)	24 fa 80 00 03 02
+pre_on	mvp [(BP+PX)+2],(PY+3)	27 fa 80 00 03 02
+pre_on	mvp [(BP+PX)+2],(BP+PY)	25 fa 80 00 00 02
+pre_on	mvp (00CH),[(00BH)-2]	32 f2 c0 0c 0b 02
+pre_on	mvp (00CH),[(BP+3)-2]	30 f2 c0 0c 03 02
+pre_on	mvp (00CH),[(PY+3)-2]	33 f2 c0 0c 03 02
+pre_on	mvp (00CH),[(BP+PY)-2]	31 f2 c0 0c 00 02
+pre_on	mvp (BP+4),[(00BH)-2]	22 f2 c0 04 0b 02
+pre_on	mvp (BP+4),[(BP+3)-2]	f2 c0 04 03 02
+pre_on	mvp (BP+4),[(PY+3)-2]	23 f2 c0 04 03 02
+pre_on	mvp (BP+4),[(BP+PY)-2]	21 f2 c0 04 00 02
+pre_on	mvp (PX+4),[(00BH)-2]	36 f2 c0 04 0b 02
+pre_on	mvp (PX+4),[(BP+3)-2]	34 f2 c0 04 03 02
+pre_on	mvp (PX+4),[(PY+3)-2]	37 f2 c0 04 03 02
+pre_on	mvp (PX+4),[(BP+PY)-2]	35 f2 c0 04 00 02
+pre_on	mvp (BP+PX),[(00BH)-2]	26 f2 c0 00 0b 02
+pre_on	mvp (BP+PX),[(BP+3)-2]	24 f2 c0 00 03 02
+pre_on	mvp (BP+PX),[(PY+3)-2]	27 f2 c0 00 03 02
+pre_on	mvp (BP+PX),[(BP+PY)-2]	25 f2 c0 00 00 02
+pre_on	mvp [(00CH)-2],(00BH)	32 fa c0 0c 0b 02
+pre_on	mvp [(00CH)-2],(BP+3)	30 fa c0 0c 03 02
+pre_on	mvp [(00CH)-2],(PY+3)	33 fa c0 0c 03 02
+pre_on	mvp [(00CH)-2],(BP+PY)	31 fa c0 0c 00 02
+pre_on	mvp [(BP+4)-2],(00BH)	22 fa c0 04 0b 02
+pre_on	mvp [(BP+4)-2],(BP+3)	fa c0 04 03 02
+pre_on	mvp [(BP+4)-2],(PY+3)	23 fa c0 04 03 02
+pre_on	mvp [(BP+4)-2],(BP+PY)	21 fa c0 04 00 02
+pre_on	mvp [(PX+4)-2],(00BH)	36 fa c0 04 0b 02
+pre_on	mvp [(PX+4)-2],(BP+3)	34 fa c0 04 03 02
+pre_on	mvp [(PX+4)-2],(PY+3)	37 fa c0 04 03 02
+pre_on	mvp [(PX+4)-2],(BP+PY)	35 fa c0 04 00 02
+pre_on	mvp [(BP+PX)-2],(00BH)	26 fa c0 00 0b 02
+pre_on	mvp [(BP+PX)-2],(BP+3)	24 fa c0 00 03 02
+pre_on	mvp [(BP+PX)-2],(PY+3)	27 fa c0 00 03 02
+pre_on	mvp [(BP+PX)-2],(BP+PY)	25 fa c0 00 00 02
+pre_on	mvl (00CH),[(00BH)]	32 f3 00 0c 0b
+pre_on	mvl (00CH),[(BP+3)]	30 f3 00 0c 03
+pre_on	mvl (00CH),[(PY+3)]	33 f3 00 0c 03
+pre_on	mvl (00CH),[(BP+PY)]	31 f3 00 0c 00
+pre_on	mvl (BP+4),[(00BH)]	22 f3 00 04 0b
+pre_on	mvl (BP+4),[(BP+3)]	f3 00 04 03
+pre_on	mvl (BP+4),[(PY+3)]	23 f3 00 04 03
+pre_on	mvl (BP+4),[(BP+PY)]	21 f3 00 04 00
+pre_on	mvl (PX+4),[(00BH)]	36 f3 00 04 0b
+pre_on	mvl (PX+4),[(BP+3)]	34 f3 00 04 03
+pre_on	mvl (PX+4),[(PY+3)]	37 f3 00 04 03
+pre_on	mvl (PX+4),[(BP+PY)]	35 f3 00 04 00
+pre_on	mvl (BP+PX),[(00BH)]	26 f3 00 00 0b
+pre_on	mvl (BP+PX),[(BP+3)]	24 f3 00 00 03
+pre_on	mvl (BP+PX),[(PY+3)]	27 f3 00 00 03
+pre_on	mvl (BP+PX),[(BP+PY)]	25 f3 00 00 00
+pre_on	mvl [(00CH)],(00BH)	32 fb 00 0c 0b
+pre_on	mvl [(00CH)],(BP+3)	30 fb 00 0c 03
+pre_on	mvl [(00CH)],(PY+3)	33 fb 00 0c 03
+pre_on	mvl [(00CH)],(BP+PY)	31 fb 00 0c 00
+pre_on	mvl [(BP+4)],(00BH)	22 fb 00 04 0b
+pre_on	mvl [(BP+4)],(BP+3)	fb 00 04 03
+pre_on	mvl [(BP+4)],(PY+3)	23 fb 00 04 03
+pre_on	mvl [(BP+4)],(BP+PY)	21 fb 00 04 00
+pre_on	mvl [(PX+4)],(00BH)	36 fb 00 04 0b
+pre_on	mvl [(PX+4)],(BP+3)	34 fb 00 04 03
+pre_on	mvl [(PX+4)],(PY+3)	37 fb 00 04 03
+pre_on	mvl [(PX+4)],(BP+PY)	35 fb 00 04 00
+pre_on	mvl [(BP+PX)],(00BH)	26 fb 00 00 0b
+pre_on	mvl [(BP+PX)],(BP+3)	24 fb 00 00 03
+pre_on	mvl [(BP+PX)],(PY+3)	27 fb 00 00 03
+pre_on	mvl [(BP+PX)],(BP+PY)	25 fb 00 00 00
+pre_on	mvl (00CH),[(00BH)+2]	32 f3 80 0c 0b 02
+pre_on	mvl (00CH),[(BP+3)+2]	30 f3 80 0c 03 02
+pre_on	mvl (00CH),[(PY+3)+2]	33 f3 80 0c 03 02
+pre_on	mvl (00CH),[(BP+PY)+2]	31 f3 80 0c 00 02
+pre_on	mvl (BP+4),[(00BH)+2]	22 f3 80 04 0b 02
+pre_on	mvl (BP+4),[(BP+3)+2]	f3 80 04 03 02
+pre_on	mvl (BP+4),[(PY+3)+2]	23 f3 80 04 03 02
+pre_on	mvl (BP+4),[(BP+PY)+2]	21 f3 80 04 00 02
+pre_on	mvl (PX+4),[(00BH)+2]	36 f3 80 04 0b 02
+pre_on	mvl (PX+4),[(BP+3)+2]	34 f3 80 04 03 02
+pre_on	mvl (PX+4),[(PY+3)+2]	37 f3 80 04 03 02
+pre_on	mvl (PX+4),[(BP+PY)+2]	35 f3 80 04 00 02
+pre_on	mvl (BP+PX),[(00BH)+2]	26 f3 80 00 0b 02
+pre_on	mvl (BP+PX),[(BP+3)+2]	24 f3 80 00 03 02
+pre_on	mvl (BP+PX),[(PY+3)+2]	27 f3 80 00 03 02
+pre_on	mvl (BP+PX),[(BP+PY)+2]	25 f3 80 00 00 02
+pre_on	mvl [(00CH)+2],(00BH)	32 fb 80 0c 0b 02
+pre_on	mvl [(00CH)+2],(BP+3)	30 fb 80 0c 03 02
+pre_on	mvl [(00CH)+2],(PY+3)	33 fb 80 0c 03 02
+pre_on	mvl [(00CH)+2],(BP+PY)	31 fb 80 0c 00 02
+pre_on	mvl [(BP+4)+2],(00BH)	22 fb 80 04 0b 02
+pre_on	mvl [(BP+4)+2],(BP+3)	fb 80 04 03 02
+pre_on	mvl [(BP+4)+2],(PY+3)	23 fb 80 04 03 02
+pre_on	mvl [(BP+4)+2],(BP+PY)	21 fb 80 04 00 02
+pre_on	mvl [(PX+4)+2],(00BH)	36 fb 80 04 0b 02
+pre_on	mvl [(PX+4)+2],(BP+3)	34 fb 80 04 03 02
+pre_on	mvl [(PX+4)+2],(PY+3)	37 fb 80 04 03 02
+pre_on	mvl [(PX+4)+2],(BP+PY)	35 fb 80 04 00 02
+pre_on	mvl [(BP+PX)+2],(00BH)	26 fb 80 00 0b 02
+pre_on	mvl [(BP+PX)+2],(BP+3)	24 fb 80 00 03 02
+pre_on	mvl [(BP+PX)+2],(PY+3)	27 fb 80 00 03 02
+pre_on	mvl [(BP+PX)+2],(BP+PY)	25 fb 80 00 00 02
+pre_on	mvl (00CH),[(00BH)-2]	32 f3 c0 0c 0b 02
+pre_on	mvl (00CH),[(BP+3)-2]	30 f3 c0 0c 03 02
+pre_on	mvl (00CH),[(PY+3)-2]	33 f3 c0 0c 03 02
+pre_on	mvl (00CH),[(BP+PY)-2]	31 f3 c0 0c 00 02
+pre_on	mvl (BP+4),[(00BH)-2]	22 f3 c0 04 0b 02
+pre_on	mvl (BP+4),[(BP+3)-2]	f3 c0 04 03 02
+pre_on	mvl (BP+4),[(PY+3)-2]	23 f3 c0 04 03 02
+pre_on	mvl (BP+4),[(BP+PY)-2]	21 f3 c0 04 00 02
+pre_on	mvl (PX+4),[(00BH)-2]	36 f3 c0 04 0b 02
+pre_on	mvl (PX+4),[(BP+3)-2]	34 f3 c0 04 03 02
+pre_on	mvl (PX+4),[(PY+3)-2]	37 f3 c0 04 03 02
+pre_on	mvl (PX+4),[(BP+PY)-2]	35 f3 c0 04 00 02
+pre_on	mvl (BP+PX),[(00BH)-2]	26 f3 c0 00 0b 02
+pre_on	mvl (BP+PX),[(BP+3)-2]	24 f3 c0 00 03 02
+pre_on	mvl (BP+PX),[(PY+3)-2]	27 f3 c0 00 03 02
+pre_on	mvl (BP+PX),[(BP+PY)-2]	25 f3 c0 00 00 02
+pre_on	mvl [(00CH)-2],(00BH)	32 fb c0 0c 0b 02
+pre_on	mvl [(00CH)-2],(BP+3)	30 fb c0 0c 03 02
+pre_on	mvl [(00CH)-2],(PY+3)	33 fb c0 0c 03 02
+pre_on	mvl [(00CH)-2],(BP+PY)	31 fb c0 0c 00 02
+pre_on	mvl [(BP+4)-2],(00BH)	22 fb c0 04 0b 02
+pre_on	mvl [(BP+4)-2],(BP+3)	fb c0 04 03 02
+pre_on	mvl [(BP+4)-2],(PY+3)	23 fb c0 04 03 02
+pre_on	mvl [(BP+4)-2],(BP+PY)	21 fb c0 04 00 02
+pre_on	mvl [(PX+4)-2],(00BH)	36 fb c0 04 0b 02
+pre_on	mvl [(PX+4)-2],(BP+3)	34 fb c0 04 03 02
+pre_on	mvl [(PX+4)-2],(PY+3)	37 fb c0 04 03 02
+pre_on	mvl [(PX+4)-2],(BP+PY)	35 fb c0 04 00 02
+pre_on	mvl [(BP+PX)-2],(00BH)	26 fb c0 00 0b 02
+pre_on	mvl [(BP+PX)-2],(BP+3)	24 fb c0 00 03 02
+pre_on	mvl [(BP+PX)-2],(PY+3)	27 fb c0 00 03 02
+pre_on	mvl [(BP+PX)-2],(BP+PY)	25 fb c0 00 00 02
+pre_off	add (00BH),012H	41 0b 12
+pre_off	add (BP+3),012H	41 03 12
+pre_off	add (PX+3),012H	41 03 12
+pre_off	add (PY+3),012H	(refus attendu)
+pre_off	add (00BH),a	43 0b
+pre_off	add (BP+3),a	43 03
+pre_off	add (PX+3),a	43 03
+pre_off	add (PY+3),a	(refus attendu)
+pre_off	add a,(00BH)	42 0b
+pre_off	add a,(BP+3)	42 03
+pre_off	add a,(PX+3)	42 03
+pre_off	add a,(PY+3)	(refus attendu)
+pre_off	sub (00BH),012H	49 0b 12
+pre_off	sub (BP+3),012H	49 03 12
+pre_off	sub (PX+3),012H	49 03 12
+pre_off	sub (PY+3),012H	(refus attendu)
+pre_off	sub (00BH),a	4b 0b
+pre_off	sub (BP+3),a	4b 03
+pre_off	sub (PX+3),a	4b 03
+pre_off	sub (PY+3),a	(refus attendu)
+pre_off	sub a,(00BH)	4a 0b
+pre_off	sub a,(BP+3)	4a 03
+pre_off	sub a,(PX+3)	4a 03
+pre_off	sub a,(PY+3)	(refus attendu)
+pre_off	adc (00BH),012H	51 0b 12
+pre_off	adc (BP+3),012H	51 03 12
+pre_off	adc (PX+3),012H	51 03 12
+pre_off	adc (PY+3),012H	(refus attendu)
+pre_off	adc (00BH),a	53 0b
+pre_off	adc (BP+3),a	53 03
+pre_off	adc (PX+3),a	53 03
+pre_off	adc (PY+3),a	(refus attendu)
+pre_off	adc a,(00BH)	52 0b
+pre_off	adc a,(BP+3)	52 03
+pre_off	adc a,(PX+3)	52 03
+pre_off	adc a,(PY+3)	(refus attendu)
+pre_off	sbc (00BH),012H	59 0b 12
+pre_off	sbc (BP+3),012H	59 03 12
+pre_off	sbc (PX+3),012H	59 03 12
+pre_off	sbc (PY+3),012H	(refus attendu)
+pre_off	sbc (00BH),a	5b 0b
+pre_off	sbc (BP+3),a	5b 03
+pre_off	sbc (PX+3),a	5b 03
+pre_off	sbc (PY+3),a	(refus attendu)
+pre_off	sbc a,(00BH)	5a 0b
+pre_off	sbc a,(BP+3)	5a 03
+pre_off	sbc a,(PX+3)	5a 03
+pre_off	sbc a,(PY+3)	(refus attendu)
+pre_off	and (00BH),012H	71 0b 12
+pre_off	and (BP+3),012H	71 03 12
+pre_off	and (PX+3),012H	71 03 12
+pre_off	and (PY+3),012H	(refus attendu)
+pre_off	and (00BH),a	73 0b
+pre_off	and (BP+3),a	73 03
+pre_off	and (PX+3),a	73 03
+pre_off	and (PY+3),a	(refus attendu)
+pre_off	and a,(00BH)	77 0b
+pre_off	and a,(BP+3)	77 03
+pre_off	and a,(PX+3)	77 03
+pre_off	and a,(PY+3)	(refus attendu)
+pre_off	or (00BH),012H	79 0b 12
+pre_off	or (BP+3),012H	79 03 12
+pre_off	or (PX+3),012H	79 03 12
+pre_off	or (PY+3),012H	(refus attendu)
+pre_off	or (00BH),a	7b 0b
+pre_off	or (BP+3),a	7b 03
+pre_off	or (PX+3),a	7b 03
+pre_off	or (PY+3),a	(refus attendu)
+pre_off	or a,(00BH)	7f 0b
+pre_off	or a,(BP+3)	7f 03
+pre_off	or a,(PX+3)	7f 03
+pre_off	or a,(PY+3)	(refus attendu)
+pre_off	xor (00BH),012H	69 0b 12
+pre_off	xor (BP+3),012H	69 03 12
+pre_off	xor (PX+3),012H	69 03 12
+pre_off	xor (PY+3),012H	(refus attendu)
+pre_off	xor (00BH),a	6b 0b
+pre_off	xor (BP+3),a	6b 03
+pre_off	xor (PX+3),a	6b 03
+pre_off	xor (PY+3),a	(refus attendu)
+pre_off	xor a,(00BH)	6f 0b
+pre_off	xor a,(BP+3)	6f 03
+pre_off	xor a,(PX+3)	6f 03
+pre_off	xor a,(PY+3)	(refus attendu)
+pre_off	cmp (00BH),012H	61 0b 12
+pre_off	cmp (BP+3),012H	61 03 12
+pre_off	cmp (PX+3),012H	61 03 12
+pre_off	cmp (PY+3),012H	(refus attendu)
+pre_off	cmp (00BH),a	63 0b
+pre_off	cmp (BP+3),a	63 03
+pre_off	cmp (PX+3),a	63 03
+pre_off	cmp (PY+3),a	(refus attendu)
+pre_off	test (00BH),012H	65 0b 12
+pre_off	test (BP+3),012H	65 03 12
+pre_off	test (PX+3),012H	65 03 12
+pre_off	test (PY+3),012H	(refus attendu)
+pre_off	test (00BH),a	67 0b
+pre_off	test (BP+3),a	67 03
+pre_off	test (PX+3),a	67 03
+pre_off	test (PY+3),a	(refus attendu)
+pre_off	adcl (00BH),a	55 0b
+pre_off	adcl (BP+3),a	55 03
+pre_off	adcl (PX+3),a	55 03
+pre_off	adcl (PY+3),a	(refus attendu)
+pre_off	sbcl (00BH),a	5d 0b
+pre_off	sbcl (BP+3),a	5d 03
+pre_off	sbcl (PX+3),a	5d 03
+pre_off	sbcl (PY+3),a	(refus attendu)
+pre_off	dadl (00BH),a	c5 0b
+pre_off	dadl (BP+3),a	c5 03
+pre_off	dadl (PX+3),a	c5 03
+pre_off	dadl (PY+3),a	(refus attendu)
+pre_off	dsbl (00BH),a	d5 0b
+pre_off	dsbl (BP+3),a	d5 03
+pre_off	dsbl (PX+3),a	d5 03
+pre_off	dsbl (PY+3),a	(refus attendu)
+pre_off	pmdf (00BH),012H	47 0b 12
+pre_off	pmdf (BP+3),012H	47 03 12
+pre_off	pmdf (PX+3),012H	47 03 12
+pre_off	pmdf (PY+3),012H	(refus attendu)
+pre_off	pmdf (00BH),a	57 0b
+pre_off	pmdf (BP+3),a	57 03
+pre_off	pmdf (PX+3),a	57 03
+pre_off	pmdf (PY+3),a	(refus attendu)
+pre_off	cmpw (00BH),ba	d6 02 0b
+pre_off	cmpw (BP+3),ba	d6 02 03
+pre_off	cmpw (PX+3),ba	d6 02 03
+pre_off	cmpw (PY+3),ba	(refus attendu)
+pre_off	cmpw (00BH),i	d6 03 0b
+pre_off	cmpw (BP+3),i	d6 03 03
+pre_off	cmpw (PX+3),i	d6 03 03
+pre_off	cmpw (PY+3),i	(refus attendu)
+pre_off	cmpp (00BH),x	d7 04 0b
+pre_off	cmpp (BP+3),x	d7 04 03
+pre_off	cmpp (PX+3),x	d7 04 03
+pre_off	cmpp (PY+3),x	(refus attendu)
+pre_off	cmpp (00BH),y	d7 05 0b
+pre_off	cmpp (BP+3),y	d7 05 03
+pre_off	cmpp (PX+3),y	d7 05 03
+pre_off	cmpp (PY+3),y	(refus attendu)
+pre_off	inc (00BH)	6d 0b
+pre_off	inc (BP+3)	6d 03
+pre_off	inc (PX+3)	6d 03
+pre_off	inc (PY+3)	(refus attendu)
+pre_off	dec (00BH)	7d 0b
+pre_off	dec (BP+3)	7d 03
+pre_off	dec (PX+3)	7d 03
+pre_off	dec (PY+3)	(refus attendu)
+pre_off	ror (00BH)	e5 0b
+pre_off	ror (BP+3)	e5 03
+pre_off	ror (PX+3)	e5 03
+pre_off	ror (PY+3)	(refus attendu)
+pre_off	rol (00BH)	e7 0b
+pre_off	rol (BP+3)	e7 03
+pre_off	rol (PX+3)	e7 03
+pre_off	rol (PY+3)	(refus attendu)
+pre_off	shr (00BH)	f5 0b
+pre_off	shr (BP+3)	f5 03
+pre_off	shr (PX+3)	f5 03
+pre_off	shr (PY+3)	(refus attendu)
+pre_off	shl (00BH)	f7 0b
+pre_off	shl (BP+3)	f7 03
+pre_off	shl (PX+3)	f7 03
+pre_off	shl (PY+3)	(refus attendu)
+pre_off	dsll (00BH)	ec 0b
+pre_off	dsll (BP+3)	ec 03
+pre_off	dsll (PX+3)	ec 03
+pre_off	dsll (PY+3)	(refus attendu)
+pre_off	dsrl (00BH)	fc 0b
+pre_off	dsrl (BP+3)	fc 03
+pre_off	dsrl (PX+3)	fc 03
+pre_off	dsrl (PY+3)	(refus attendu)
+pre_off	mv a,(00BH)	80 0b
+pre_off	mv a,(BP+3)	80 03
+pre_off	mv a,(PX+3)	80 03
+pre_off	mv a,(PY+3)	(refus attendu)
+pre_off	mv (00BH),a	a0 0b
+pre_off	mv (BP+3),a	a0 03
+pre_off	mv (PX+3),a	a0 03
+pre_off	mv (PY+3),a	(refus attendu)
+pre_off	mv a,[(00BH)]	98 00 0b
+pre_off	mv a,[(BP+3)]	98 00 03
+pre_off	mv a,[(PX+3)]	98 00 03
+pre_off	mv a,[(PY+3)]	(refus attendu)
+pre_off	mv [(00BH)],a	b8 00 0b
+pre_off	mv [(BP+3)],a	b8 00 03
+pre_off	mv [(PX+3)],a	b8 00 03
+pre_off	mv [(PY+3)],a	(refus attendu)
+pre_off	mv a,[(00BH)+2]	98 80 0b 02
+pre_off	mv a,[(BP+3)+2]	98 80 03 02
+pre_off	mv a,[(PX+3)+2]	98 80 03 02
+pre_off	mv a,[(PY+3)+2]	(refus attendu)
+pre_off	mv [(00BH)+2],a	b8 80 0b 02
+pre_off	mv [(BP+3)+2],a	b8 80 03 02
+pre_off	mv [(PX+3)+2],a	b8 80 03 02
+pre_off	mv [(PY+3)+2],a	(refus attendu)
+pre_off	mv il,(00BH)	81 0b
+pre_off	mv il,(BP+3)	81 03
+pre_off	mv il,(PX+3)	81 03
+pre_off	mv il,(PY+3)	(refus attendu)
+pre_off	mv (00BH),il	a1 0b
+pre_off	mv (BP+3),il	a1 03
+pre_off	mv (PX+3),il	a1 03
+pre_off	mv (PY+3),il	(refus attendu)
+pre_off	mv il,[(00BH)]	99 00 0b
+pre_off	mv il,[(BP+3)]	99 00 03
+pre_off	mv il,[(PX+3)]	99 00 03
+pre_off	mv il,[(PY+3)]	(refus attendu)
+pre_off	mv [(00BH)],il	b9 00 0b
+pre_off	mv [(BP+3)],il	b9 00 03
+pre_off	mv [(PX+3)],il	b9 00 03
+pre_off	mv [(PY+3)],il	(refus attendu)
+pre_off	mv il,[(00BH)+2]	99 80 0b 02
+pre_off	mv il,[(BP+3)+2]	99 80 03 02
+pre_off	mv il,[(PX+3)+2]	99 80 03 02
+pre_off	mv il,[(PY+3)+2]	(refus attendu)
+pre_off	mv [(00BH)+2],il	b9 80 0b 02
+pre_off	mv [(BP+3)+2],il	b9 80 03 02
+pre_off	mv [(PX+3)+2],il	b9 80 03 02
+pre_off	mv [(PY+3)+2],il	(refus attendu)
+pre_off	mv ba,(00BH)	82 0b
+pre_off	mv ba,(BP+3)	82 03
+pre_off	mv ba,(PX+3)	82 03
+pre_off	mv ba,(PY+3)	(refus attendu)
+pre_off	mv (00BH),ba	a2 0b
+pre_off	mv (BP+3),ba	a2 03
+pre_off	mv (PX+3),ba	a2 03
+pre_off	mv (PY+3),ba	(refus attendu)
+pre_off	mv ba,[(00BH)]	9a 00 0b
+pre_off	mv ba,[(BP+3)]	9a 00 03
+pre_off	mv ba,[(PX+3)]	9a 00 03
+pre_off	mv ba,[(PY+3)]	(refus attendu)
+pre_off	mv [(00BH)],ba	ba 00 0b
+pre_off	mv [(BP+3)],ba	ba 00 03
+pre_off	mv [(PX+3)],ba	ba 00 03
+pre_off	mv [(PY+3)],ba	(refus attendu)
+pre_off	mv ba,[(00BH)+2]	9a 80 0b 02
+pre_off	mv ba,[(BP+3)+2]	9a 80 03 02
+pre_off	mv ba,[(PX+3)+2]	9a 80 03 02
+pre_off	mv ba,[(PY+3)+2]	(refus attendu)
+pre_off	mv [(00BH)+2],ba	ba 80 0b 02
+pre_off	mv [(BP+3)+2],ba	ba 80 03 02
+pre_off	mv [(PX+3)+2],ba	ba 80 03 02
+pre_off	mv [(PY+3)+2],ba	(refus attendu)
+pre_off	mv i,(00BH)	83 0b
+pre_off	mv i,(BP+3)	83 03
+pre_off	mv i,(PX+3)	83 03
+pre_off	mv i,(PY+3)	(refus attendu)
+pre_off	mv (00BH),i	a3 0b
+pre_off	mv (BP+3),i	a3 03
+pre_off	mv (PX+3),i	a3 03
+pre_off	mv (PY+3),i	(refus attendu)
+pre_off	mv i,[(00BH)]	9b 00 0b
+pre_off	mv i,[(BP+3)]	9b 00 03
+pre_off	mv i,[(PX+3)]	9b 00 03
+pre_off	mv i,[(PY+3)]	(refus attendu)
+pre_off	mv [(00BH)],i	bb 00 0b
+pre_off	mv [(BP+3)],i	bb 00 03
+pre_off	mv [(PX+3)],i	bb 00 03
+pre_off	mv [(PY+3)],i	(refus attendu)
+pre_off	mv i,[(00BH)+2]	9b 80 0b 02
+pre_off	mv i,[(BP+3)+2]	9b 80 03 02
+pre_off	mv i,[(PX+3)+2]	9b 80 03 02
+pre_off	mv i,[(PY+3)+2]	(refus attendu)
+pre_off	mv [(00BH)+2],i	bb 80 0b 02
+pre_off	mv [(BP+3)+2],i	bb 80 03 02
+pre_off	mv [(PX+3)+2],i	bb 80 03 02
+pre_off	mv [(PY+3)+2],i	(refus attendu)
+pre_off	mv x,(00BH)	84 0b
+pre_off	mv x,(BP+3)	84 03
+pre_off	mv x,(PX+3)	84 03
+pre_off	mv x,(PY+3)	(refus attendu)
+pre_off	mv (00BH),x	a4 0b
+pre_off	mv (BP+3),x	a4 03
+pre_off	mv (PX+3),x	a4 03
+pre_off	mv (PY+3),x	(refus attendu)
+pre_off	mv x,[(00BH)]	9c 00 0b
+pre_off	mv x,[(BP+3)]	9c 00 03
+pre_off	mv x,[(PX+3)]	9c 00 03
+pre_off	mv x,[(PY+3)]	(refus attendu)
+pre_off	mv [(00BH)],x	bc 00 0b
+pre_off	mv [(BP+3)],x	bc 00 03
+pre_off	mv [(PX+3)],x	bc 00 03
+pre_off	mv [(PY+3)],x	(refus attendu)
+pre_off	mv x,[(00BH)+2]	9c 80 0b 02
+pre_off	mv x,[(BP+3)+2]	9c 80 03 02
+pre_off	mv x,[(PX+3)+2]	9c 80 03 02
+pre_off	mv x,[(PY+3)+2]	(refus attendu)
+pre_off	mv [(00BH)+2],x	bc 80 0b 02
+pre_off	mv [(BP+3)+2],x	bc 80 03 02
+pre_off	mv [(PX+3)+2],x	bc 80 03 02
+pre_off	mv [(PY+3)+2],x	(refus attendu)
+pre_off	mv y,(00BH)	85 0b
+pre_off	mv y,(BP+3)	85 03
+pre_off	mv y,(PX+3)	85 03
+pre_off	mv y,(PY+3)	(refus attendu)
+pre_off	mv (00BH),y	a5 0b
+pre_off	mv (BP+3),y	a5 03
+pre_off	mv (PX+3),y	a5 03
+pre_off	mv (PY+3),y	(refus attendu)
+pre_off	mv y,[(00BH)]	9d 00 0b
+pre_off	mv y,[(BP+3)]	9d 00 03
+pre_off	mv y,[(PX+3)]	9d 00 03
+pre_off	mv y,[(PY+3)]	(refus attendu)
+pre_off	mv [(00BH)],y	bd 00 0b
+pre_off	mv [(BP+3)],y	bd 00 03
+pre_off	mv [(PX+3)],y	bd 00 03
+pre_off	mv [(PY+3)],y	(refus attendu)
+pre_off	mv y,[(00BH)+2]	9d 80 0b 02
+pre_off	mv y,[(BP+3)+2]	9d 80 03 02
+pre_off	mv y,[(PX+3)+2]	9d 80 03 02
+pre_off	mv y,[(PY+3)+2]	(refus attendu)
+pre_off	mv [(00BH)+2],y	bd 80 0b 02
+pre_off	mv [(BP+3)+2],y	bd 80 03 02
+pre_off	mv [(PX+3)+2],y	bd 80 03 02
+pre_off	mv [(PY+3)+2],y	(refus attendu)
+pre_off	mv u,(00BH)	86 0b
+pre_off	mv u,(BP+3)	86 03
+pre_off	mv u,(PX+3)	86 03
+pre_off	mv u,(PY+3)	(refus attendu)
+pre_off	mv (00BH),u	a6 0b
+pre_off	mv (BP+3),u	a6 03
+pre_off	mv (PX+3),u	a6 03
+pre_off	mv (PY+3),u	(refus attendu)
+pre_off	mv u,[(00BH)]	9e 00 0b
+pre_off	mv u,[(BP+3)]	9e 00 03
+pre_off	mv u,[(PX+3)]	9e 00 03
+pre_off	mv u,[(PY+3)]	(refus attendu)
+pre_off	mv [(00BH)],u	be 00 0b
+pre_off	mv [(BP+3)],u	be 00 03
+pre_off	mv [(PX+3)],u	be 00 03
+pre_off	mv [(PY+3)],u	(refus attendu)
+pre_off	mv u,[(00BH)+2]	9e 80 0b 02
+pre_off	mv u,[(BP+3)+2]	9e 80 03 02
+pre_off	mv u,[(PX+3)+2]	9e 80 03 02
+pre_off	mv u,[(PY+3)+2]	(refus attendu)
+pre_off	mv [(00BH)+2],u	be 80 0b 02
+pre_off	mv [(BP+3)+2],u	be 80 03 02
+pre_off	mv [(PX+3)+2],u	be 80 03 02
+pre_off	mv [(PY+3)+2],u	(refus attendu)
+pre_off	mv s,(00BH)	87 0b
+pre_off	mv s,(BP+3)	87 03
+pre_off	mv s,(PX+3)	87 03
+pre_off	mv s,(PY+3)	(refus attendu)
+pre_off	mv (00BH),s	a7 0b
+pre_off	mv (BP+3),s	a7 03
+pre_off	mv (PX+3),s	a7 03
+pre_off	mv (PY+3),s	(refus attendu)
+pre_off	mv s,[(00BH)]	(refus attendu)
+pre_off	mv s,[(BP+3)]	(refus attendu)
+pre_off	mv s,[(PX+3)]	(refus attendu)
+pre_off	mv s,[(PY+3)]	(refus attendu)
+pre_off	mv [(00BH)],s	(refus attendu)
+pre_off	mv [(BP+3)],s	(refus attendu)
+pre_off	mv [(PX+3)],s	(refus attendu)
+pre_off	mv [(PY+3)],s	(refus attendu)
+pre_off	mv s,[(00BH)+2]	(refus attendu)
+pre_off	mv s,[(BP+3)+2]	(refus attendu)
+pre_off	mv s,[(PX+3)+2]	(refus attendu)
+pre_off	mv s,[(PY+3)+2]	(refus attendu)
+pre_off	mv [(00BH)+2],s	(refus attendu)
+pre_off	mv [(BP+3)+2],s	(refus attendu)
+pre_off	mv [(PX+3)+2],s	(refus attendu)
+pre_off	mv [(PY+3)+2],s	(refus attendu)
+pre_off	mv (00BH),012H	cc 0b 12
+pre_off	mv (BP+3),012H	cc 03 12
+pre_off	mv (PX+3),012H	cc 03 12
+pre_off	mv (PY+3),012H	(refus attendu)
+pre_off	mvw (00BH),01234H	cd 0b 34 12
+pre_off	mvw (BP+3),01234H	cd 03 34 12
+pre_off	mvw (PX+3),01234H	cd 03 34 12
+pre_off	mvw (PY+3),01234H	(refus attendu)
+pre_off	mvp (00BH),012345H	dc 0b 45 23 01
+pre_off	mvp (BP+3),012345H	dc 03 45 23 01
+pre_off	mvp (PX+3),012345H	dc 03 45 23 01
+pre_off	mvp (PY+3),012345H	(refus attendu)
+pre_off	mv (00BH),[0BF800H]	d0 0b 00 f8 0b
+pre_off	mv (BP+3),[0BF800H]	d0 03 00 f8 0b
+pre_off	mv (PX+3),[0BF800H]	d0 03 00 f8 0b
+pre_off	mv (PY+3),[0BF800H]	(refus attendu)
+pre_off	mv [0BF800H],(00BH)	d8 00 f8 0b 0b
+pre_off	mv [0BF800H],(BP+3)	d8 00 f8 0b 03
+pre_off	mv [0BF800H],(PX+3)	d8 00 f8 0b 03
+pre_off	mv [0BF800H],(PY+3)	(refus attendu)
+pre_off	mv (00BH),[y]	e0 05 0b
+pre_off	mv (BP+3),[y]	e0 05 03
+pre_off	mv (PX+3),[y]	e0 05 03
+pre_off	mv (PY+3),[y]	(refus attendu)
+pre_off	mv [y],(00BH)	e8 05 0b
+pre_off	mv [y],(BP+3)	e8 05 03
+pre_off	mv [y],(PX+3)	e8 05 03
+pre_off	mv [y],(PY+3)	(refus attendu)
+pre_off	mv (00BH),[y++]	e0 25 0b
+pre_off	mv (BP+3),[y++]	e0 25 03
+pre_off	mv (PX+3),[y++]	e0 25 03
+pre_off	mv (PY+3),[y++]	(refus attendu)
+pre_off	mv [y++],(00BH)	e8 25 0b
+pre_off	mv [y++],(BP+3)	e8 25 03
+pre_off	mv [y++],(PX+3)	e8 25 03
+pre_off	mv [y++],(PY+3)	(refus attendu)
+pre_off	mv (00BH),[--y]	e0 35 0b
+pre_off	mv (BP+3),[--y]	e0 35 03
+pre_off	mv (PX+3),[--y]	e0 35 03
+pre_off	mv (PY+3),[--y]	(refus attendu)
+pre_off	mv [--y],(00BH)	e8 35 0b
+pre_off	mv [--y],(BP+3)	e8 35 03
+pre_off	mv [--y],(PX+3)	e8 35 03
+pre_off	mv [--y],(PY+3)	(refus attendu)
+pre_off	mv (00BH),[y+2]	e0 85 0b 02
+pre_off	mv (BP+3),[y+2]	e0 85 03 02
+pre_off	mv (PX+3),[y+2]	e0 85 03 02
+pre_off	mv (PY+3),[y+2]	(refus attendu)
+pre_off	mv [y+2],(00BH)	e8 85 0b 02
+pre_off	mv [y+2],(BP+3)	e8 85 03 02
+pre_off	mv [y+2],(PX+3)	e8 85 03 02
+pre_off	mv [y+2],(PY+3)	(refus attendu)
+pre_off	mv (00BH),[y-2]	e0 c5 0b 02
+pre_off	mv (BP+3),[y-2]	e0 c5 03 02
+pre_off	mv (PX+3),[y-2]	e0 c5 03 02
+pre_off	mv (PY+3),[y-2]	(refus attendu)
+pre_off	mv [y-2],(00BH)	e8 c5 0b 02
+pre_off	mv [y-2],(BP+3)	e8 c5 03 02
+pre_off	mv [y-2],(PX+3)	e8 c5 03 02
+pre_off	mv [y-2],(PY+3)	(refus attendu)
+pre_off	mvw (00BH),[0BF800H]	d1 0b 00 f8 0b
+pre_off	mvw (BP+3),[0BF800H]	d1 03 00 f8 0b
+pre_off	mvw (PX+3),[0BF800H]	d1 03 00 f8 0b
+pre_off	mvw (PY+3),[0BF800H]	(refus attendu)
+pre_off	mvw [0BF800H],(00BH)	d9 00 f8 0b 0b
+pre_off	mvw [0BF800H],(BP+3)	d9 00 f8 0b 03
+pre_off	mvw [0BF800H],(PX+3)	d9 00 f8 0b 03
+pre_off	mvw [0BF800H],(PY+3)	(refus attendu)
+pre_off	mvw (00BH),[y]	e1 05 0b
+pre_off	mvw (BP+3),[y]	e1 05 03
+pre_off	mvw (PX+3),[y]	e1 05 03
+pre_off	mvw (PY+3),[y]	(refus attendu)
+pre_off	mvw [y],(00BH)	e9 05 0b
+pre_off	mvw [y],(BP+3)	e9 05 03
+pre_off	mvw [y],(PX+3)	e9 05 03
+pre_off	mvw [y],(PY+3)	(refus attendu)
+pre_off	mvw (00BH),[y++]	e1 25 0b
+pre_off	mvw (BP+3),[y++]	e1 25 03
+pre_off	mvw (PX+3),[y++]	e1 25 03
+pre_off	mvw (PY+3),[y++]	(refus attendu)
+pre_off	mvw [y++],(00BH)	e9 25 0b
+pre_off	mvw [y++],(BP+3)	e9 25 03
+pre_off	mvw [y++],(PX+3)	e9 25 03
+pre_off	mvw [y++],(PY+3)	(refus attendu)
+pre_off	mvw (00BH),[--y]	e1 35 0b
+pre_off	mvw (BP+3),[--y]	e1 35 03
+pre_off	mvw (PX+3),[--y]	e1 35 03
+pre_off	mvw (PY+3),[--y]	(refus attendu)
+pre_off	mvw [--y],(00BH)	e9 35 0b
+pre_off	mvw [--y],(BP+3)	e9 35 03
+pre_off	mvw [--y],(PX+3)	e9 35 03
+pre_off	mvw [--y],(PY+3)	(refus attendu)
+pre_off	mvw (00BH),[y+2]	e1 85 0b 02
+pre_off	mvw (BP+3),[y+2]	e1 85 03 02
+pre_off	mvw (PX+3),[y+2]	e1 85 03 02
+pre_off	mvw (PY+3),[y+2]	(refus attendu)
+pre_off	mvw [y+2],(00BH)	e9 85 0b 02
+pre_off	mvw [y+2],(BP+3)	e9 85 03 02
+pre_off	mvw [y+2],(PX+3)	e9 85 03 02
+pre_off	mvw [y+2],(PY+3)	(refus attendu)
+pre_off	mvw (00BH),[y-2]	e1 c5 0b 02
+pre_off	mvw (BP+3),[y-2]	e1 c5 03 02
+pre_off	mvw (PX+3),[y-2]	e1 c5 03 02
+pre_off	mvw (PY+3),[y-2]	(refus attendu)
+pre_off	mvw [y-2],(00BH)	e9 c5 0b 02
+pre_off	mvw [y-2],(BP+3)	e9 c5 03 02
+pre_off	mvw [y-2],(PX+3)	e9 c5 03 02
+pre_off	mvw [y-2],(PY+3)	(refus attendu)
+pre_off	mvp (00BH),[0BF800H]	d2 0b 00 f8 0b
+pre_off	mvp (BP+3),[0BF800H]	d2 03 00 f8 0b
+pre_off	mvp (PX+3),[0BF800H]	d2 03 00 f8 0b
+pre_off	mvp (PY+3),[0BF800H]	(refus attendu)
+pre_off	mvp [0BF800H],(00BH)	da 00 f8 0b 0b
+pre_off	mvp [0BF800H],(BP+3)	da 00 f8 0b 03
+pre_off	mvp [0BF800H],(PX+3)	da 00 f8 0b 03
+pre_off	mvp [0BF800H],(PY+3)	(refus attendu)
+pre_off	mvp (00BH),[y]	e2 05 0b
+pre_off	mvp (BP+3),[y]	e2 05 03
+pre_off	mvp (PX+3),[y]	e2 05 03
+pre_off	mvp (PY+3),[y]	(refus attendu)
+pre_off	mvp [y],(00BH)	ea 05 0b
+pre_off	mvp [y],(BP+3)	ea 05 03
+pre_off	mvp [y],(PX+3)	ea 05 03
+pre_off	mvp [y],(PY+3)	(refus attendu)
+pre_off	mvp (00BH),[y++]	e2 25 0b
+pre_off	mvp (BP+3),[y++]	e2 25 03
+pre_off	mvp (PX+3),[y++]	e2 25 03
+pre_off	mvp (PY+3),[y++]	(refus attendu)
+pre_off	mvp [y++],(00BH)	ea 25 0b
+pre_off	mvp [y++],(BP+3)	ea 25 03
+pre_off	mvp [y++],(PX+3)	ea 25 03
+pre_off	mvp [y++],(PY+3)	(refus attendu)
+pre_off	mvp (00BH),[--y]	e2 35 0b
+pre_off	mvp (BP+3),[--y]	e2 35 03
+pre_off	mvp (PX+3),[--y]	e2 35 03
+pre_off	mvp (PY+3),[--y]	(refus attendu)
+pre_off	mvp [--y],(00BH)	ea 35 0b
+pre_off	mvp [--y],(BP+3)	ea 35 03
+pre_off	mvp [--y],(PX+3)	ea 35 03
+pre_off	mvp [--y],(PY+3)	(refus attendu)
+pre_off	mvp (00BH),[y+2]	e2 85 0b 02
+pre_off	mvp (BP+3),[y+2]	e2 85 03 02
+pre_off	mvp (PX+3),[y+2]	e2 85 03 02
+pre_off	mvp (PY+3),[y+2]	(refus attendu)
+pre_off	mvp [y+2],(00BH)	ea 85 0b 02
+pre_off	mvp [y+2],(BP+3)	ea 85 03 02
+pre_off	mvp [y+2],(PX+3)	ea 85 03 02
+pre_off	mvp [y+2],(PY+3)	(refus attendu)
+pre_off	mvp (00BH),[y-2]	e2 c5 0b 02
+pre_off	mvp (BP+3),[y-2]	e2 c5 03 02
+pre_off	mvp (PX+3),[y-2]	e2 c5 03 02
+pre_off	mvp (PY+3),[y-2]	(refus attendu)
+pre_off	mvp [y-2],(00BH)	ea c5 0b 02
+pre_off	mvp [y-2],(BP+3)	ea c5 03 02
+pre_off	mvp [y-2],(PX+3)	ea c5 03 02
+pre_off	mvp [y-2],(PY+3)	(refus attendu)
+pre_off	mvl (00BH),[0BF800H]	d3 0b 00 f8 0b
+pre_off	mvl (BP+3),[0BF800H]	d3 03 00 f8 0b
+pre_off	mvl (PX+3),[0BF800H]	d3 03 00 f8 0b
+pre_off	mvl (PY+3),[0BF800H]	(refus attendu)
+pre_off	mvl [0BF800H],(00BH)	db 00 f8 0b 0b
+pre_off	mvl [0BF800H],(BP+3)	db 00 f8 0b 03
+pre_off	mvl [0BF800H],(PX+3)	db 00 f8 0b 03
+pre_off	mvl [0BF800H],(PY+3)	(refus attendu)
+pre_off	mvl (00BH),[y]	(refus attendu)
+pre_off	mvl (BP+3),[y]	(refus attendu)
+pre_off	mvl (PX+3),[y]	(refus attendu)
+pre_off	mvl (PY+3),[y]	(refus attendu)
+pre_off	mvl [y],(00BH)	(refus attendu)
+pre_off	mvl [y],(BP+3)	(refus attendu)
+pre_off	mvl [y],(PX+3)	(refus attendu)
+pre_off	mvl [y],(PY+3)	(refus attendu)
+pre_off	mvl (00BH),[y++]	e3 25 0b
+pre_off	mvl (BP+3),[y++]	e3 25 03
+pre_off	mvl (PX+3),[y++]	e3 25 03
+pre_off	mvl (PY+3),[y++]	(refus attendu)
+pre_off	mvl [y++],(00BH)	eb 25 0b
+pre_off	mvl [y++],(BP+3)	eb 25 03
+pre_off	mvl [y++],(PX+3)	eb 25 03
+pre_off	mvl [y++],(PY+3)	(refus attendu)
+pre_off	mvl (00BH),[--y]	e3 35 0b
+pre_off	mvl (BP+3),[--y]	e3 35 03
+pre_off	mvl (PX+3),[--y]	e3 35 03
+pre_off	mvl (PY+3),[--y]	(refus attendu)
+pre_off	mvl [--y],(00BH)	eb 35 0b
+pre_off	mvl [--y],(BP+3)	eb 35 03
+pre_off	mvl [--y],(PX+3)	eb 35 03
+pre_off	mvl [--y],(PY+3)	(refus attendu)
+pre_off	mvl (00BH),[y+2]	56 85 0b 02
+pre_off	mvl (BP+3),[y+2]	56 85 03 02
+pre_off	mvl (PX+3),[y+2]	56 85 03 02
+pre_off	mvl (PY+3),[y+2]	(refus attendu)
+pre_off	mvl [y+2],(00BH)	5e 85 0b 02
+pre_off	mvl [y+2],(BP+3)	5e 85 03 02
+pre_off	mvl [y+2],(PX+3)	5e 85 03 02
+pre_off	mvl [y+2],(PY+3)	(refus attendu)
+pre_off	mvl (00BH),[y-2]	56 c5 0b 02
+pre_off	mvl (BP+3),[y-2]	56 c5 03 02
+pre_off	mvl (PX+3),[y-2]	56 c5 03 02
+pre_off	mvl (PY+3),[y-2]	(refus attendu)
+pre_off	mvl [y-2],(00BH)	5e c5 0b 02
+pre_off	mvl [y-2],(BP+3)	5e c5 03 02
+pre_off	mvl [y-2],(PX+3)	5e c5 03 02
+pre_off	mvl [y-2],(PY+3)	(refus attendu)
+pre_off	jp (00BH)	10 0b
+pre_off	jp (BP+3)	10 03
+pre_off	jp (PX+3)	10 03
+pre_off	jp (PY+3)	(refus attendu)
+pre_off	mv (00CH),(00BH)	c8 0c 0b
+pre_off	mv (00CH),(BP+3)	c8 0c 03
+pre_off	mv (00CH),(PY+3)	c8 0c 03
+pre_off	mv (00CH),(BP+PY)	c8 0c 00
+pre_off	mv (BP+4),(00BH)	c8 04 0b
+pre_off	mv (BP+4),(BP+3)	c8 04 03
+pre_off	mv (BP+4),(PY+3)	c8 04 03
+pre_off	mv (BP+4),(BP+PY)	c8 04 00
+pre_off	mv (PX+4),(00BH)	c8 04 0b
+pre_off	mv (PX+4),(BP+3)	c8 04 03
+pre_off	mv (PX+4),(PY+3)	c8 04 03
+pre_off	mv (PX+4),(BP+PY)	c8 04 00
+pre_off	mv (BP+PX),(00BH)	c8 00 0b
+pre_off	mv (BP+PX),(BP+3)	c8 00 03
+pre_off	mv (BP+PX),(PY+3)	c8 00 03
+pre_off	mv (BP+PX),(BP+PY)	c8 00 00
+pre_off	mvw (00CH),(00BH)	c9 0c 0b
+pre_off	mvw (00CH),(BP+3)	c9 0c 03
+pre_off	mvw (00CH),(PY+3)	c9 0c 03
+pre_off	mvw (00CH),(BP+PY)	c9 0c 00
+pre_off	mvw (BP+4),(00BH)	c9 04 0b
+pre_off	mvw (BP+4),(BP+3)	c9 04 03
+pre_off	mvw (BP+4),(PY+3)	c9 04 03
+pre_off	mvw (BP+4),(BP+PY)	c9 04 00
+pre_off	mvw (PX+4),(00BH)	c9 04 0b
+pre_off	mvw (PX+4),(BP+3)	c9 04 03
+pre_off	mvw (PX+4),(PY+3)	c9 04 03
+pre_off	mvw (PX+4),(BP+PY)	c9 04 00
+pre_off	mvw (BP+PX),(00BH)	c9 00 0b
+pre_off	mvw (BP+PX),(BP+3)	c9 00 03
+pre_off	mvw (BP+PX),(PY+3)	c9 00 03
+pre_off	mvw (BP+PX),(BP+PY)	c9 00 00
+pre_off	mvp (00CH),(00BH)	ca 0c 0b
+pre_off	mvp (00CH),(BP+3)	ca 0c 03
+pre_off	mvp (00CH),(PY+3)	ca 0c 03
+pre_off	mvp (00CH),(BP+PY)	ca 0c 00
+pre_off	mvp (BP+4),(00BH)	ca 04 0b
+pre_off	mvp (BP+4),(BP+3)	ca 04 03
+pre_off	mvp (BP+4),(PY+3)	ca 04 03
+pre_off	mvp (BP+4),(BP+PY)	ca 04 00
+pre_off	mvp (PX+4),(00BH)	ca 04 0b
+pre_off	mvp (PX+4),(BP+3)	ca 04 03
+pre_off	mvp (PX+4),(PY+3)	ca 04 03
+pre_off	mvp (PX+4),(BP+PY)	ca 04 00
+pre_off	mvp (BP+PX),(00BH)	ca 00 0b
+pre_off	mvp (BP+PX),(BP+3)	ca 00 03
+pre_off	mvp (BP+PX),(PY+3)	ca 00 03
+pre_off	mvp (BP+PX),(BP+PY)	ca 00 00
+pre_off	mvl (00CH),(00BH)	cb 0c 0b
+pre_off	mvl (00CH),(BP+3)	cb 0c 03
+pre_off	mvl (00CH),(PY+3)	cb 0c 03
+pre_off	mvl (00CH),(BP+PY)	cb 0c 00
+pre_off	mvl (BP+4),(00BH)	cb 04 0b
+pre_off	mvl (BP+4),(BP+3)	cb 04 03
+pre_off	mvl (BP+4),(PY+3)	cb 04 03
+pre_off	mvl (BP+4),(BP+PY)	cb 04 00
+pre_off	mvl (PX+4),(00BH)	cb 04 0b
+pre_off	mvl (PX+4),(BP+3)	cb 04 03
+pre_off	mvl (PX+4),(PY+3)	cb 04 03
+pre_off	mvl (PX+4),(BP+PY)	cb 04 00
+pre_off	mvl (BP+PX),(00BH)	cb 00 0b
+pre_off	mvl (BP+PX),(BP+3)	cb 00 03
+pre_off	mvl (BP+PX),(PY+3)	cb 00 03
+pre_off	mvl (BP+PX),(BP+PY)	cb 00 00
+pre_off	mvld (00CH),(00BH)	cf 0c 0b
+pre_off	mvld (00CH),(BP+3)	cf 0c 03
+pre_off	mvld (00CH),(PY+3)	cf 0c 03
+pre_off	mvld (00CH),(BP+PY)	cf 0c 00
+pre_off	mvld (BP+4),(00BH)	cf 04 0b
+pre_off	mvld (BP+4),(BP+3)	cf 04 03
+pre_off	mvld (BP+4),(PY+3)	cf 04 03
+pre_off	mvld (BP+4),(BP+PY)	cf 04 00
+pre_off	mvld (PX+4),(00BH)	cf 04 0b
+pre_off	mvld (PX+4),(BP+3)	cf 04 03
+pre_off	mvld (PX+4),(PY+3)	cf 04 03
+pre_off	mvld (PX+4),(BP+PY)	cf 04 00
+pre_off	mvld (BP+PX),(00BH)	cf 00 0b
+pre_off	mvld (BP+PX),(BP+3)	cf 00 03
+pre_off	mvld (BP+PX),(PY+3)	cf 00 03
+pre_off	mvld (BP+PX),(BP+PY)	cf 00 00
+pre_off	ex (00CH),(00BH)	c0 0c 0b
+pre_off	ex (00CH),(BP+3)	c0 0c 03
+pre_off	ex (00CH),(PY+3)	c0 0c 03
+pre_off	ex (00CH),(BP+PY)	c0 0c 00
+pre_off	ex (BP+4),(00BH)	c0 04 0b
+pre_off	ex (BP+4),(BP+3)	c0 04 03
+pre_off	ex (BP+4),(PY+3)	c0 04 03
+pre_off	ex (BP+4),(BP+PY)	c0 04 00
+pre_off	ex (PX+4),(00BH)	c0 04 0b
+pre_off	ex (PX+4),(BP+3)	c0 04 03
+pre_off	ex (PX+4),(PY+3)	c0 04 03
+pre_off	ex (PX+4),(BP+PY)	c0 04 00
+pre_off	ex (BP+PX),(00BH)	c0 00 0b
+pre_off	ex (BP+PX),(BP+3)	c0 00 03
+pre_off	ex (BP+PX),(PY+3)	c0 00 03
+pre_off	ex (BP+PX),(BP+PY)	c0 00 00
+pre_off	exw (00CH),(00BH)	c1 0c 0b
+pre_off	exw (00CH),(BP+3)	c1 0c 03
+pre_off	exw (00CH),(PY+3)	c1 0c 03
+pre_off	exw (00CH),(BP+PY)	c1 0c 00
+pre_off	exw (BP+4),(00BH)	c1 04 0b
+pre_off	exw (BP+4),(BP+3)	c1 04 03
+pre_off	exw (BP+4),(PY+3)	c1 04 03
+pre_off	exw (BP+4),(BP+PY)	c1 04 00
+pre_off	exw (PX+4),(00BH)	c1 04 0b
+pre_off	exw (PX+4),(BP+3)	c1 04 03
+pre_off	exw (PX+4),(PY+3)	c1 04 03
+pre_off	exw (PX+4),(BP+PY)	c1 04 00
+pre_off	exw (BP+PX),(00BH)	c1 00 0b
+pre_off	exw (BP+PX),(BP+3)	c1 00 03
+pre_off	exw (BP+PX),(PY+3)	c1 00 03
+pre_off	exw (BP+PX),(BP+PY)	c1 00 00
+pre_off	exp (00CH),(00BH)	c2 0c 0b
+pre_off	exp (00CH),(BP+3)	c2 0c 03
+pre_off	exp (00CH),(PY+3)	c2 0c 03
+pre_off	exp (00CH),(BP+PY)	c2 0c 00
+pre_off	exp (BP+4),(00BH)	c2 04 0b
+pre_off	exp (BP+4),(BP+3)	c2 04 03
+pre_off	exp (BP+4),(PY+3)	c2 04 03
+pre_off	exp (BP+4),(BP+PY)	c2 04 00
+pre_off	exp (PX+4),(00BH)	c2 04 0b
+pre_off	exp (PX+4),(BP+3)	c2 04 03
+pre_off	exp (PX+4),(PY+3)	c2 04 03
+pre_off	exp (PX+4),(BP+PY)	c2 04 00
+pre_off	exp (BP+PX),(00BH)	c2 00 0b
+pre_off	exp (BP+PX),(BP+3)	c2 00 03
+pre_off	exp (BP+PX),(PY+3)	c2 00 03
+pre_off	exp (BP+PX),(BP+PY)	c2 00 00
+pre_off	exl (00CH),(00BH)	c3 0c 0b
+pre_off	exl (00CH),(BP+3)	c3 0c 03
+pre_off	exl (00CH),(PY+3)	c3 0c 03
+pre_off	exl (00CH),(BP+PY)	c3 0c 00
+pre_off	exl (BP+4),(00BH)	c3 04 0b
+pre_off	exl (BP+4),(BP+3)	c3 04 03
+pre_off	exl (BP+4),(PY+3)	c3 04 03
+pre_off	exl (BP+4),(BP+PY)	c3 04 00
+pre_off	exl (PX+4),(00BH)	c3 04 0b
+pre_off	exl (PX+4),(BP+3)	c3 04 03
+pre_off	exl (PX+4),(PY+3)	c3 04 03
+pre_off	exl (PX+4),(BP+PY)	c3 04 00
+pre_off	exl (BP+PX),(00BH)	c3 00 0b
+pre_off	exl (BP+PX),(BP+3)	c3 00 03
+pre_off	exl (BP+PX),(PY+3)	c3 00 03
+pre_off	exl (BP+PX),(BP+PY)	c3 00 00
+pre_off	cmp (00CH),(00BH)	b7 0c 0b
+pre_off	cmp (00CH),(BP+3)	b7 0c 03
+pre_off	cmp (00CH),(PY+3)	b7 0c 03
+pre_off	cmp (00CH),(BP+PY)	b7 0c 00
+pre_off	cmp (BP+4),(00BH)	b7 04 0b
+pre_off	cmp (BP+4),(BP+3)	b7 04 03
+pre_off	cmp (BP+4),(PY+3)	b7 04 03
+pre_off	cmp (BP+4),(BP+PY)	b7 04 00
+pre_off	cmp (PX+4),(00BH)	b7 04 0b
+pre_off	cmp (PX+4),(BP+3)	b7 04 03
+pre_off	cmp (PX+4),(PY+3)	b7 04 03
+pre_off	cmp (PX+4),(BP+PY)	b7 04 00
+pre_off	cmp (BP+PX),(00BH)	b7 00 0b
+pre_off	cmp (BP+PX),(BP+3)	b7 00 03
+pre_off	cmp (BP+PX),(PY+3)	b7 00 03
+pre_off	cmp (BP+PX),(BP+PY)	b7 00 00
+pre_off	cmpw (00CH),(00BH)	c6 0c 0b
+pre_off	cmpw (00CH),(BP+3)	c6 0c 03
+pre_off	cmpw (00CH),(PY+3)	c6 0c 03
+pre_off	cmpw (00CH),(BP+PY)	c6 0c 00
+pre_off	cmpw (BP+4),(00BH)	c6 04 0b
+pre_off	cmpw (BP+4),(BP+3)	c6 04 03
+pre_off	cmpw (BP+4),(PY+3)	c6 04 03
+pre_off	cmpw (BP+4),(BP+PY)	c6 04 00
+pre_off	cmpw (PX+4),(00BH)	c6 04 0b
+pre_off	cmpw (PX+4),(BP+3)	c6 04 03
+pre_off	cmpw (PX+4),(PY+3)	c6 04 03
+pre_off	cmpw (PX+4),(BP+PY)	c6 04 00
+pre_off	cmpw (BP+PX),(00BH)	c6 00 0b
+pre_off	cmpw (BP+PX),(BP+3)	c6 00 03
+pre_off	cmpw (BP+PX),(PY+3)	c6 00 03
+pre_off	cmpw (BP+PX),(BP+PY)	c6 00 00
+pre_off	cmpp (00CH),(00BH)	c7 0c 0b
+pre_off	cmpp (00CH),(BP+3)	c7 0c 03
+pre_off	cmpp (00CH),(PY+3)	c7 0c 03
+pre_off	cmpp (00CH),(BP+PY)	c7 0c 00
+pre_off	cmpp (BP+4),(00BH)	c7 04 0b
+pre_off	cmpp (BP+4),(BP+3)	c7 04 03
+pre_off	cmpp (BP+4),(PY+3)	c7 04 03
+pre_off	cmpp (BP+4),(BP+PY)	c7 04 00
+pre_off	cmpp (PX+4),(00BH)	c7 04 0b
+pre_off	cmpp (PX+4),(BP+3)	c7 04 03
+pre_off	cmpp (PX+4),(PY+3)	c7 04 03
+pre_off	cmpp (PX+4),(BP+PY)	c7 04 00
+pre_off	cmpp (BP+PX),(00BH)	c7 00 0b
+pre_off	cmpp (BP+PX),(BP+3)	c7 00 03
+pre_off	cmpp (BP+PX),(PY+3)	c7 00 03
+pre_off	cmpp (BP+PX),(BP+PY)	c7 00 00
+pre_off	and (00CH),(00BH)	76 0c 0b
+pre_off	and (00CH),(BP+3)	76 0c 03
+pre_off	and (00CH),(PY+3)	76 0c 03
+pre_off	and (00CH),(BP+PY)	76 0c 00
+pre_off	and (BP+4),(00BH)	76 04 0b
+pre_off	and (BP+4),(BP+3)	76 04 03
+pre_off	and (BP+4),(PY+3)	76 04 03
+pre_off	and (BP+4),(BP+PY)	76 04 00
+pre_off	and (PX+4),(00BH)	76 04 0b
+pre_off	and (PX+4),(BP+3)	76 04 03
+pre_off	and (PX+4),(PY+3)	76 04 03
+pre_off	and (PX+4),(BP+PY)	76 04 00
+pre_off	and (BP+PX),(00BH)	76 00 0b
+pre_off	and (BP+PX),(BP+3)	76 00 03
+pre_off	and (BP+PX),(PY+3)	76 00 03
+pre_off	and (BP+PX),(BP+PY)	76 00 00
+pre_off	or (00CH),(00BH)	7e 0c 0b
+pre_off	or (00CH),(BP+3)	7e 0c 03
+pre_off	or (00CH),(PY+3)	7e 0c 03
+pre_off	or (00CH),(BP+PY)	7e 0c 00
+pre_off	or (BP+4),(00BH)	7e 04 0b
+pre_off	or (BP+4),(BP+3)	7e 04 03
+pre_off	or (BP+4),(PY+3)	7e 04 03
+pre_off	or (BP+4),(BP+PY)	7e 04 00
+pre_off	or (PX+4),(00BH)	7e 04 0b
+pre_off	or (PX+4),(BP+3)	7e 04 03
+pre_off	or (PX+4),(PY+3)	7e 04 03
+pre_off	or (PX+4),(BP+PY)	7e 04 00
+pre_off	or (BP+PX),(00BH)	7e 00 0b
+pre_off	or (BP+PX),(BP+3)	7e 00 03
+pre_off	or (BP+PX),(PY+3)	7e 00 03
+pre_off	or (BP+PX),(BP+PY)	7e 00 00
+pre_off	xor (00CH),(00BH)	6e 0c 0b
+pre_off	xor (00CH),(BP+3)	6e 0c 03
+pre_off	xor (00CH),(PY+3)	6e 0c 03
+pre_off	xor (00CH),(BP+PY)	6e 0c 00
+pre_off	xor (BP+4),(00BH)	6e 04 0b
+pre_off	xor (BP+4),(BP+3)	6e 04 03
+pre_off	xor (BP+4),(PY+3)	6e 04 03
+pre_off	xor (BP+4),(BP+PY)	6e 04 00
+pre_off	xor (PX+4),(00BH)	6e 04 0b
+pre_off	xor (PX+4),(BP+3)	6e 04 03
+pre_off	xor (PX+4),(PY+3)	6e 04 03
+pre_off	xor (PX+4),(BP+PY)	6e 04 00
+pre_off	xor (BP+PX),(00BH)	6e 00 0b
+pre_off	xor (BP+PX),(BP+3)	6e 00 03
+pre_off	xor (BP+PX),(PY+3)	6e 00 03
+pre_off	xor (BP+PX),(BP+PY)	6e 00 00
+pre_off	adcl (00CH),(00BH)	54 0c 0b
+pre_off	adcl (00CH),(BP+3)	54 0c 03
+pre_off	adcl (00CH),(PY+3)	54 0c 03
+pre_off	adcl (00CH),(BP+PY)	54 0c 00
+pre_off	adcl (BP+4),(00BH)	54 04 0b
+pre_off	adcl (BP+4),(BP+3)	54 04 03
+pre_off	adcl (BP+4),(PY+3)	54 04 03
+pre_off	adcl (BP+4),(BP+PY)	54 04 00
+pre_off	adcl (PX+4),(00BH)	54 04 0b
+pre_off	adcl (PX+4),(BP+3)	54 04 03
+pre_off	adcl (PX+4),(PY+3)	54 04 03
+pre_off	adcl (PX+4),(BP+PY)	54 04 00
+pre_off	adcl (BP+PX),(00BH)	54 00 0b
+pre_off	adcl (BP+PX),(BP+3)	54 00 03
+pre_off	adcl (BP+PX),(PY+3)	54 00 03
+pre_off	adcl (BP+PX),(BP+PY)	54 00 00
+pre_off	sbcl (00CH),(00BH)	5c 0c 0b
+pre_off	sbcl (00CH),(BP+3)	5c 0c 03
+pre_off	sbcl (00CH),(PY+3)	5c 0c 03
+pre_off	sbcl (00CH),(BP+PY)	5c 0c 00
+pre_off	sbcl (BP+4),(00BH)	5c 04 0b
+pre_off	sbcl (BP+4),(BP+3)	5c 04 03
+pre_off	sbcl (BP+4),(PY+3)	5c 04 03
+pre_off	sbcl (BP+4),(BP+PY)	5c 04 00
+pre_off	sbcl (PX+4),(00BH)	5c 04 0b
+pre_off	sbcl (PX+4),(BP+3)	5c 04 03
+pre_off	sbcl (PX+4),(PY+3)	5c 04 03
+pre_off	sbcl (PX+4),(BP+PY)	5c 04 00
+pre_off	sbcl (BP+PX),(00BH)	5c 00 0b
+pre_off	sbcl (BP+PX),(BP+3)	5c 00 03
+pre_off	sbcl (BP+PX),(PY+3)	5c 00 03
+pre_off	sbcl (BP+PX),(BP+PY)	5c 00 00
+pre_off	dadl (00CH),(00BH)	c4 0c 0b
+pre_off	dadl (00CH),(BP+3)	c4 0c 03
+pre_off	dadl (00CH),(PY+3)	c4 0c 03
+pre_off	dadl (00CH),(BP+PY)	c4 0c 00
+pre_off	dadl (BP+4),(00BH)	c4 04 0b
+pre_off	dadl (BP+4),(BP+3)	c4 04 03
+pre_off	dadl (BP+4),(PY+3)	c4 04 03
+pre_off	dadl (BP+4),(BP+PY)	c4 04 00
+pre_off	dadl (PX+4),(00BH)	c4 04 0b
+pre_off	dadl (PX+4),(BP+3)	c4 04 03
+pre_off	dadl (PX+4),(PY+3)	c4 04 03
+pre_off	dadl (PX+4),(BP+PY)	c4 04 00
+pre_off	dadl (BP+PX),(00BH)	c4 00 0b
+pre_off	dadl (BP+PX),(BP+3)	c4 00 03
+pre_off	dadl (BP+PX),(PY+3)	c4 00 03
+pre_off	dadl (BP+PX),(BP+PY)	c4 00 00
+pre_off	dsbl (00CH),(00BH)	d4 0c 0b
+pre_off	dsbl (00CH),(BP+3)	d4 0c 03
+pre_off	dsbl (00CH),(PY+3)	d4 0c 03
+pre_off	dsbl (00CH),(BP+PY)	d4 0c 00
+pre_off	dsbl (BP+4),(00BH)	d4 04 0b
+pre_off	dsbl (BP+4),(BP+3)	d4 04 03
+pre_off	dsbl (BP+4),(PY+3)	d4 04 03
+pre_off	dsbl (BP+4),(BP+PY)	d4 04 00
+pre_off	dsbl (PX+4),(00BH)	d4 04 0b
+pre_off	dsbl (PX+4),(BP+3)	d4 04 03
+pre_off	dsbl (PX+4),(PY+3)	d4 04 03
+pre_off	dsbl (PX+4),(BP+PY)	d4 04 00
+pre_off	dsbl (BP+PX),(00BH)	d4 00 0b
+pre_off	dsbl (BP+PX),(BP+3)	d4 00 03
+pre_off	dsbl (BP+PX),(PY+3)	d4 00 03
+pre_off	dsbl (BP+PX),(BP+PY)	d4 00 00
+pre_off	mv (00CH),[(00BH)]	f0 00 0c 0b
+pre_off	mv (00CH),[(BP+3)]	f0 00 0c 03
+pre_off	mv (00CH),[(PY+3)]	f0 00 0c 03
+pre_off	mv (00CH),[(BP+PY)]	f0 00 0c 00
+pre_off	mv (BP+4),[(00BH)]	f0 00 04 0b
+pre_off	mv (BP+4),[(BP+3)]	f0 00 04 03
+pre_off	mv (BP+4),[(PY+3)]	f0 00 04 03
+pre_off	mv (BP+4),[(BP+PY)]	f0 00 04 00
+pre_off	mv (PX+4),[(00BH)]	f0 00 04 0b
+pre_off	mv (PX+4),[(BP+3)]	f0 00 04 03
+pre_off	mv (PX+4),[(PY+3)]	f0 00 04 03
+pre_off	mv (PX+4),[(BP+PY)]	f0 00 04 00
+pre_off	mv (BP+PX),[(00BH)]	f0 00 00 0b
+pre_off	mv (BP+PX),[(BP+3)]	f0 00 00 03
+pre_off	mv (BP+PX),[(PY+3)]	f0 00 00 03
+pre_off	mv (BP+PX),[(BP+PY)]	f0 00 00 00
+pre_off	mv [(00CH)],(00BH)	f8 00 0c 0b
+pre_off	mv [(00CH)],(BP+3)	f8 00 0c 03
+pre_off	mv [(00CH)],(PY+3)	f8 00 0c 03
+pre_off	mv [(00CH)],(BP+PY)	f8 00 0c 00
+pre_off	mv [(BP+4)],(00BH)	f8 00 04 0b
+pre_off	mv [(BP+4)],(BP+3)	f8 00 04 03
+pre_off	mv [(BP+4)],(PY+3)	f8 00 04 03
+pre_off	mv [(BP+4)],(BP+PY)	f8 00 04 00
+pre_off	mv [(PX+4)],(00BH)	f8 00 04 0b
+pre_off	mv [(PX+4)],(BP+3)	f8 00 04 03
+pre_off	mv [(PX+4)],(PY+3)	f8 00 04 03
+pre_off	mv [(PX+4)],(BP+PY)	f8 00 04 00
+pre_off	mv [(BP+PX)],(00BH)	f8 00 00 0b
+pre_off	mv [(BP+PX)],(BP+3)	f8 00 00 03
+pre_off	mv [(BP+PX)],(PY+3)	f8 00 00 03
+pre_off	mv [(BP+PX)],(BP+PY)	f8 00 00 00
+pre_off	mv (00CH),[(00BH)+2]	f0 80 0c 0b 02
+pre_off	mv (00CH),[(BP+3)+2]	f0 80 0c 03 02
+pre_off	mv (00CH),[(PY+3)+2]	f0 80 0c 03 02
+pre_off	mv (00CH),[(BP+PY)+2]	f0 80 0c 00 02
+pre_off	mv (BP+4),[(00BH)+2]	f0 80 04 0b 02
+pre_off	mv (BP+4),[(BP+3)+2]	f0 80 04 03 02
+pre_off	mv (BP+4),[(PY+3)+2]	f0 80 04 03 02
+pre_off	mv (BP+4),[(BP+PY)+2]	f0 80 04 00 02
+pre_off	mv (PX+4),[(00BH)+2]	f0 80 04 0b 02
+pre_off	mv (PX+4),[(BP+3)+2]	f0 80 04 03 02
+pre_off	mv (PX+4),[(PY+3)+2]	f0 80 04 03 02
+pre_off	mv (PX+4),[(BP+PY)+2]	f0 80 04 00 02
+pre_off	mv (BP+PX),[(00BH)+2]	f0 80 00 0b 02
+pre_off	mv (BP+PX),[(BP+3)+2]	f0 80 00 03 02
+pre_off	mv (BP+PX),[(PY+3)+2]	f0 80 00 03 02
+pre_off	mv (BP+PX),[(BP+PY)+2]	f0 80 00 00 02
+pre_off	mv [(00CH)+2],(00BH)	f8 80 0c 0b 02
+pre_off	mv [(00CH)+2],(BP+3)	f8 80 0c 03 02
+pre_off	mv [(00CH)+2],(PY+3)	f8 80 0c 03 02
+pre_off	mv [(00CH)+2],(BP+PY)	f8 80 0c 00 02
+pre_off	mv [(BP+4)+2],(00BH)	f8 80 04 0b 02
+pre_off	mv [(BP+4)+2],(BP+3)	f8 80 04 03 02
+pre_off	mv [(BP+4)+2],(PY+3)	f8 80 04 03 02
+pre_off	mv [(BP+4)+2],(BP+PY)	f8 80 04 00 02
+pre_off	mv [(PX+4)+2],(00BH)	f8 80 04 0b 02
+pre_off	mv [(PX+4)+2],(BP+3)	f8 80 04 03 02
+pre_off	mv [(PX+4)+2],(PY+3)	f8 80 04 03 02
+pre_off	mv [(PX+4)+2],(BP+PY)	f8 80 04 00 02
+pre_off	mv [(BP+PX)+2],(00BH)	f8 80 00 0b 02
+pre_off	mv [(BP+PX)+2],(BP+3)	f8 80 00 03 02
+pre_off	mv [(BP+PX)+2],(PY+3)	f8 80 00 03 02
+pre_off	mv [(BP+PX)+2],(BP+PY)	f8 80 00 00 02
+pre_off	mv (00CH),[(00BH)-2]	f0 c0 0c 0b 02
+pre_off	mv (00CH),[(BP+3)-2]	f0 c0 0c 03 02
+pre_off	mv (00CH),[(PY+3)-2]	f0 c0 0c 03 02
+pre_off	mv (00CH),[(BP+PY)-2]	f0 c0 0c 00 02
+pre_off	mv (BP+4),[(00BH)-2]	f0 c0 04 0b 02
+pre_off	mv (BP+4),[(BP+3)-2]	f0 c0 04 03 02
+pre_off	mv (BP+4),[(PY+3)-2]	f0 c0 04 03 02
+pre_off	mv (BP+4),[(BP+PY)-2]	f0 c0 04 00 02
+pre_off	mv (PX+4),[(00BH)-2]	f0 c0 04 0b 02
+pre_off	mv (PX+4),[(BP+3)-2]	f0 c0 04 03 02
+pre_off	mv (PX+4),[(PY+3)-2]	f0 c0 04 03 02
+pre_off	mv (PX+4),[(BP+PY)-2]	f0 c0 04 00 02
+pre_off	mv (BP+PX),[(00BH)-2]	f0 c0 00 0b 02
+pre_off	mv (BP+PX),[(BP+3)-2]	f0 c0 00 03 02
+pre_off	mv (BP+PX),[(PY+3)-2]	f0 c0 00 03 02
+pre_off	mv (BP+PX),[(BP+PY)-2]	f0 c0 00 00 02
+pre_off	mv [(00CH)-2],(00BH)	f8 c0 0c 0b 02
+pre_off	mv [(00CH)-2],(BP+3)	f8 c0 0c 03 02
+pre_off	mv [(00CH)-2],(PY+3)	f8 c0 0c 03 02
+pre_off	mv [(00CH)-2],(BP+PY)	f8 c0 0c 00 02
+pre_off	mv [(BP+4)-2],(00BH)	f8 c0 04 0b 02
+pre_off	mv [(BP+4)-2],(BP+3)	f8 c0 04 03 02
+pre_off	mv [(BP+4)-2],(PY+3)	f8 c0 04 03 02
+pre_off	mv [(BP+4)-2],(BP+PY)	f8 c0 04 00 02
+pre_off	mv [(PX+4)-2],(00BH)	f8 c0 04 0b 02
+pre_off	mv [(PX+4)-2],(BP+3)	f8 c0 04 03 02
+pre_off	mv [(PX+4)-2],(PY+3)	f8 c0 04 03 02
+pre_off	mv [(PX+4)-2],(BP+PY)	f8 c0 04 00 02
+pre_off	mv [(BP+PX)-2],(00BH)	f8 c0 00 0b 02
+pre_off	mv [(BP+PX)-2],(BP+3)	f8 c0 00 03 02
+pre_off	mv [(BP+PX)-2],(PY+3)	f8 c0 00 03 02
+pre_off	mv [(BP+PX)-2],(BP+PY)	f8 c0 00 00 02
+pre_off	mvw (00CH),[(00BH)]	f1 00 0c 0b
+pre_off	mvw (00CH),[(BP+3)]	f1 00 0c 03
+pre_off	mvw (00CH),[(PY+3)]	f1 00 0c 03
+pre_off	mvw (00CH),[(BP+PY)]	f1 00 0c 00
+pre_off	mvw (BP+4),[(00BH)]	f1 00 04 0b
+pre_off	mvw (BP+4),[(BP+3)]	f1 00 04 03
+pre_off	mvw (BP+4),[(PY+3)]	f1 00 04 03
+pre_off	mvw (BP+4),[(BP+PY)]	f1 00 04 00
+pre_off	mvw (PX+4),[(00BH)]	f1 00 04 0b
+pre_off	mvw (PX+4),[(BP+3)]	f1 00 04 03
+pre_off	mvw (PX+4),[(PY+3)]	f1 00 04 03
+pre_off	mvw (PX+4),[(BP+PY)]	f1 00 04 00
+pre_off	mvw (BP+PX),[(00BH)]	f1 00 00 0b
+pre_off	mvw (BP+PX),[(BP+3)]	f1 00 00 03
+pre_off	mvw (BP+PX),[(PY+3)]	f1 00 00 03
+pre_off	mvw (BP+PX),[(BP+PY)]	f1 00 00 00
+pre_off	mvw [(00CH)],(00BH)	f9 00 0c 0b
+pre_off	mvw [(00CH)],(BP+3)	f9 00 0c 03
+pre_off	mvw [(00CH)],(PY+3)	f9 00 0c 03
+pre_off	mvw [(00CH)],(BP+PY)	f9 00 0c 00
+pre_off	mvw [(BP+4)],(00BH)	f9 00 04 0b
+pre_off	mvw [(BP+4)],(BP+3)	f9 00 04 03
+pre_off	mvw [(BP+4)],(PY+3)	f9 00 04 03
+pre_off	mvw [(BP+4)],(BP+PY)	f9 00 04 00
+pre_off	mvw [(PX+4)],(00BH)	f9 00 04 0b
+pre_off	mvw [(PX+4)],(BP+3)	f9 00 04 03
+pre_off	mvw [(PX+4)],(PY+3)	f9 00 04 03
+pre_off	mvw [(PX+4)],(BP+PY)	f9 00 04 00
+pre_off	mvw [(BP+PX)],(00BH)	f9 00 00 0b
+pre_off	mvw [(BP+PX)],(BP+3)	f9 00 00 03
+pre_off	mvw [(BP+PX)],(PY+3)	f9 00 00 03
+pre_off	mvw [(BP+PX)],(BP+PY)	f9 00 00 00
+pre_off	mvw (00CH),[(00BH)+2]	f1 80 0c 0b 02
+pre_off	mvw (00CH),[(BP+3)+2]	f1 80 0c 03 02
+pre_off	mvw (00CH),[(PY+3)+2]	f1 80 0c 03 02
+pre_off	mvw (00CH),[(BP+PY)+2]	f1 80 0c 00 02
+pre_off	mvw (BP+4),[(00BH)+2]	f1 80 04 0b 02
+pre_off	mvw (BP+4),[(BP+3)+2]	f1 80 04 03 02
+pre_off	mvw (BP+4),[(PY+3)+2]	f1 80 04 03 02
+pre_off	mvw (BP+4),[(BP+PY)+2]	f1 80 04 00 02
+pre_off	mvw (PX+4),[(00BH)+2]	f1 80 04 0b 02
+pre_off	mvw (PX+4),[(BP+3)+2]	f1 80 04 03 02
+pre_off	mvw (PX+4),[(PY+3)+2]	f1 80 04 03 02
+pre_off	mvw (PX+4),[(BP+PY)+2]	f1 80 04 00 02
+pre_off	mvw (BP+PX),[(00BH)+2]	f1 80 00 0b 02
+pre_off	mvw (BP+PX),[(BP+3)+2]	f1 80 00 03 02
+pre_off	mvw (BP+PX),[(PY+3)+2]	f1 80 00 03 02
+pre_off	mvw (BP+PX),[(BP+PY)+2]	f1 80 00 00 02
+pre_off	mvw [(00CH)+2],(00BH)	f9 80 0c 0b 02
+pre_off	mvw [(00CH)+2],(BP+3)	f9 80 0c 03 02
+pre_off	mvw [(00CH)+2],(PY+3)	f9 80 0c 03 02
+pre_off	mvw [(00CH)+2],(BP+PY)	f9 80 0c 00 02
+pre_off	mvw [(BP+4)+2],(00BH)	f9 80 04 0b 02
+pre_off	mvw [(BP+4)+2],(BP+3)	f9 80 04 03 02
+pre_off	mvw [(BP+4)+2],(PY+3)	f9 80 04 03 02
+pre_off	mvw [(BP+4)+2],(BP+PY)	f9 80 04 00 02
+pre_off	mvw [(PX+4)+2],(00BH)	f9 80 04 0b 02
+pre_off	mvw [(PX+4)+2],(BP+3)	f9 80 04 03 02
+pre_off	mvw [(PX+4)+2],(PY+3)	f9 80 04 03 02
+pre_off	mvw [(PX+4)+2],(BP+PY)	f9 80 04 00 02
+pre_off	mvw [(BP+PX)+2],(00BH)	f9 80 00 0b 02
+pre_off	mvw [(BP+PX)+2],(BP+3)	f9 80 00 03 02
+pre_off	mvw [(BP+PX)+2],(PY+3)	f9 80 00 03 02
+pre_off	mvw [(BP+PX)+2],(BP+PY)	f9 80 00 00 02
+pre_off	mvw (00CH),[(00BH)-2]	f1 c0 0c 0b 02
+pre_off	mvw (00CH),[(BP+3)-2]	f1 c0 0c 03 02
+pre_off	mvw (00CH),[(PY+3)-2]	f1 c0 0c 03 02
+pre_off	mvw (00CH),[(BP+PY)-2]	f1 c0 0c 00 02
+pre_off	mvw (BP+4),[(00BH)-2]	f1 c0 04 0b 02
+pre_off	mvw (BP+4),[(BP+3)-2]	f1 c0 04 03 02
+pre_off	mvw (BP+4),[(PY+3)-2]	f1 c0 04 03 02
+pre_off	mvw (BP+4),[(BP+PY)-2]	f1 c0 04 00 02
+pre_off	mvw (PX+4),[(00BH)-2]	f1 c0 04 0b 02
+pre_off	mvw (PX+4),[(BP+3)-2]	f1 c0 04 03 02
+pre_off	mvw (PX+4),[(PY+3)-2]	f1 c0 04 03 02
+pre_off	mvw (PX+4),[(BP+PY)-2]	f1 c0 04 00 02
+pre_off	mvw (BP+PX),[(00BH)-2]	f1 c0 00 0b 02
+pre_off	mvw (BP+PX),[(BP+3)-2]	f1 c0 00 03 02
+pre_off	mvw (BP+PX),[(PY+3)-2]	f1 c0 00 03 02
+pre_off	mvw (BP+PX),[(BP+PY)-2]	f1 c0 00 00 02
+pre_off	mvw [(00CH)-2],(00BH)	f9 c0 0c 0b 02
+pre_off	mvw [(00CH)-2],(BP+3)	f9 c0 0c 03 02
+pre_off	mvw [(00CH)-2],(PY+3)	f9 c0 0c 03 02
+pre_off	mvw [(00CH)-2],(BP+PY)	f9 c0 0c 00 02
+pre_off	mvw [(BP+4)-2],(00BH)	f9 c0 04 0b 02
+pre_off	mvw [(BP+4)-2],(BP+3)	f9 c0 04 03 02
+pre_off	mvw [(BP+4)-2],(PY+3)	f9 c0 04 03 02
+pre_off	mvw [(BP+4)-2],(BP+PY)	f9 c0 04 00 02
+pre_off	mvw [(PX+4)-2],(00BH)	f9 c0 04 0b 02
+pre_off	mvw [(PX+4)-2],(BP+3)	f9 c0 04 03 02
+pre_off	mvw [(PX+4)-2],(PY+3)	f9 c0 04 03 02
+pre_off	mvw [(PX+4)-2],(BP+PY)	f9 c0 04 00 02
+pre_off	mvw [(BP+PX)-2],(00BH)	f9 c0 00 0b 02
+pre_off	mvw [(BP+PX)-2],(BP+3)	f9 c0 00 03 02
+pre_off	mvw [(BP+PX)-2],(PY+3)	f9 c0 00 03 02
+pre_off	mvw [(BP+PX)-2],(BP+PY)	f9 c0 00 00 02
+pre_off	mvp (00CH),[(00BH)]	f2 00 0c 0b
+pre_off	mvp (00CH),[(BP+3)]	f2 00 0c 03
+pre_off	mvp (00CH),[(PY+3)]	f2 00 0c 03
+pre_off	mvp (00CH),[(BP+PY)]	f2 00 0c 00
+pre_off	mvp (BP+4),[(00BH)]	f2 00 04 0b
+pre_off	mvp (BP+4),[(BP+3)]	f2 00 04 03
+pre_off	mvp (BP+4),[(PY+3)]	f2 00 04 03
+pre_off	mvp (BP+4),[(BP+PY)]	f2 00 04 00
+pre_off	mvp (PX+4),[(00BH)]	f2 00 04 0b
+pre_off	mvp (PX+4),[(BP+3)]	f2 00 04 03
+pre_off	mvp (PX+4),[(PY+3)]	f2 00 04 03
+pre_off	mvp (PX+4),[(BP+PY)]	f2 00 04 00
+pre_off	mvp (BP+PX),[(00BH)]	f2 00 00 0b
+pre_off	mvp (BP+PX),[(BP+3)]	f2 00 00 03
+pre_off	mvp (BP+PX),[(PY+3)]	f2 00 00 03
+pre_off	mvp (BP+PX),[(BP+PY)]	f2 00 00 00
+pre_off	mvp [(00CH)],(00BH)	fa 00 0c 0b
+pre_off	mvp [(00CH)],(BP+3)	fa 00 0c 03
+pre_off	mvp [(00CH)],(PY+3)	fa 00 0c 03
+pre_off	mvp [(00CH)],(BP+PY)	fa 00 0c 00
+pre_off	mvp [(BP+4)],(00BH)	fa 00 04 0b
+pre_off	mvp [(BP+4)],(BP+3)	fa 00 04 03
+pre_off	mvp [(BP+4)],(PY+3)	fa 00 04 03
+pre_off	mvp [(BP+4)],(BP+PY)	fa 00 04 00
+pre_off	mvp [(PX+4)],(00BH)	fa 00 04 0b
+pre_off	mvp [(PX+4)],(BP+3)	fa 00 04 03
+pre_off	mvp [(PX+4)],(PY+3)	fa 00 04 03
+pre_off	mvp [(PX+4)],(BP+PY)	fa 00 04 00
+pre_off	mvp [(BP+PX)],(00BH)	fa 00 00 0b
+pre_off	mvp [(BP+PX)],(BP+3)	fa 00 00 03
+pre_off	mvp [(BP+PX)],(PY+3)	fa 00 00 03
+pre_off	mvp [(BP+PX)],(BP+PY)	fa 00 00 00
+pre_off	mvp (00CH),[(00BH)+2]	f2 80 0c 0b 02
+pre_off	mvp (00CH),[(BP+3)+2]	f2 80 0c 03 02
+pre_off	mvp (00CH),[(PY+3)+2]	f2 80 0c 03 02
+pre_off	mvp (00CH),[(BP+PY)+2]	f2 80 0c 00 02
+pre_off	mvp (BP+4),[(00BH)+2]	f2 80 04 0b 02
+pre_off	mvp (BP+4),[(BP+3)+2]	f2 80 04 03 02
+pre_off	mvp (BP+4),[(PY+3)+2]	f2 80 04 03 02
+pre_off	mvp (BP+4),[(BP+PY)+2]	f2 80 04 00 02
+pre_off	mvp (PX+4),[(00BH)+2]	f2 80 04 0b 02
+pre_off	mvp (PX+4),[(BP+3)+2]	f2 80 04 03 02
+pre_off	mvp (PX+4),[(PY+3)+2]	f2 80 04 03 02
+pre_off	mvp (PX+4),[(BP+PY)+2]	f2 80 04 00 02
+pre_off	mvp (BP+PX),[(00BH)+2]	f2 80 00 0b 02
+pre_off	mvp (BP+PX),[(BP+3)+2]	f2 80 00 03 02
+pre_off	mvp (BP+PX),[(PY+3)+2]	f2 80 00 03 02
+pre_off	mvp (BP+PX),[(BP+PY)+2]	f2 80 00 00 02
+pre_off	mvp [(00CH)+2],(00BH)	fa 80 0c 0b 02
+pre_off	mvp [(00CH)+2],(BP+3)	fa 80 0c 03 02
+pre_off	mvp [(00CH)+2],(PY+3)	fa 80 0c 03 02
+pre_off	mvp [(00CH)+2],(BP+PY)	fa 80 0c 00 02
+pre_off	mvp [(BP+4)+2],(00BH)	fa 80 04 0b 02
+pre_off	mvp [(BP+4)+2],(BP+3)	fa 80 04 03 02
+pre_off	mvp [(BP+4)+2],(PY+3)	fa 80 04 03 02
+pre_off	mvp [(BP+4)+2],(BP+PY)	fa 80 04 00 02
+pre_off	mvp [(PX+4)+2],(00BH)	fa 80 04 0b 02
+pre_off	mvp [(PX+4)+2],(BP+3)	fa 80 04 03 02
+pre_off	mvp [(PX+4)+2],(PY+3)	fa 80 04 03 02
+pre_off	mvp [(PX+4)+2],(BP+PY)	fa 80 04 00 02
+pre_off	mvp [(BP+PX)+2],(00BH)	fa 80 00 0b 02
+pre_off	mvp [(BP+PX)+2],(BP+3)	fa 80 00 03 02
+pre_off	mvp [(BP+PX)+2],(PY+3)	fa 80 00 03 02
+pre_off	mvp [(BP+PX)+2],(BP+PY)	fa 80 00 00 02
+pre_off	mvp (00CH),[(00BH)-2]	f2 c0 0c 0b 02
+pre_off	mvp (00CH),[(BP+3)-2]	f2 c0 0c 03 02
+pre_off	mvp (00CH),[(PY+3)-2]	f2 c0 0c 03 02
+pre_off	mvp (00CH),[(BP+PY)-2]	f2 c0 0c 00 02
+pre_off	mvp (BP+4),[(00BH)-2]	f2 c0 04 0b 02
+pre_off	mvp (BP+4),[(BP+3)-2]	f2 c0 04 03 02
+pre_off	mvp (BP+4),[(PY+3)-2]	f2 c0 04 03 02
+pre_off	mvp (BP+4),[(BP+PY)-2]	f2 c0 04 00 02
+pre_off	mvp (PX+4),[(00BH)-2]	f2 c0 04 0b 02
+pre_off	mvp (PX+4),[(BP+3)-2]	f2 c0 04 03 02
+pre_off	mvp (PX+4),[(PY+3)-2]	f2 c0 04 03 02
+pre_off	mvp (PX+4),[(BP+PY)-2]	f2 c0 04 00 02
+pre_off	mvp (BP+PX),[(00BH)-2]	f2 c0 00 0b 02
+pre_off	mvp (BP+PX),[(BP+3)-2]	f2 c0 00 03 02
+pre_off	mvp (BP+PX),[(PY+3)-2]	f2 c0 00 03 02
+pre_off	mvp (BP+PX),[(BP+PY)-2]	f2 c0 00 00 02
+pre_off	mvp [(00CH)-2],(00BH)	fa c0 0c 0b 02
+pre_off	mvp [(00CH)-2],(BP+3)	fa c0 0c 03 02
+pre_off	mvp [(00CH)-2],(PY+3)	fa c0 0c 03 02
+pre_off	mvp [(00CH)-2],(BP+PY)	fa c0 0c 00 02
+pre_off	mvp [(BP+4)-2],(00BH)	fa c0 04 0b 02
+pre_off	mvp [(BP+4)-2],(BP+3)	fa c0 04 03 02
+pre_off	mvp [(BP+4)-2],(PY+3)	fa c0 04 03 02
+pre_off	mvp [(BP+4)-2],(BP+PY)	fa c0 04 00 02
+pre_off	mvp [(PX+4)-2],(00BH)	fa c0 04 0b 02
+pre_off	mvp [(PX+4)-2],(BP+3)	fa c0 04 03 02
+pre_off	mvp [(PX+4)-2],(PY+3)	fa c0 04 03 02
+pre_off	mvp [(PX+4)-2],(BP+PY)	fa c0 04 00 02
+pre_off	mvp [(BP+PX)-2],(00BH)	fa c0 00 0b 02
+pre_off	mvp [(BP+PX)-2],(BP+3)	fa c0 00 03 02
+pre_off	mvp [(BP+PX)-2],(PY+3)	fa c0 00 03 02
+pre_off	mvp [(BP+PX)-2],(BP+PY)	fa c0 00 00 02
+pre_off	mvl (00CH),[(00BH)]	f3 00 0c 0b
+pre_off	mvl (00CH),[(BP+3)]	f3 00 0c 03
+pre_off	mvl (00CH),[(PY+3)]	f3 00 0c 03
+pre_off	mvl (00CH),[(BP+PY)]	f3 00 0c 00
+pre_off	mvl (BP+4),[(00BH)]	f3 00 04 0b
+pre_off	mvl (BP+4),[(BP+3)]	f3 00 04 03
+pre_off	mvl (BP+4),[(PY+3)]	f3 00 04 03
+pre_off	mvl (BP+4),[(BP+PY)]	f3 00 04 00
+pre_off	mvl (PX+4),[(00BH)]	f3 00 04 0b
+pre_off	mvl (PX+4),[(BP+3)]	f3 00 04 03
+pre_off	mvl (PX+4),[(PY+3)]	f3 00 04 03
+pre_off	mvl (PX+4),[(BP+PY)]	f3 00 04 00
+pre_off	mvl (BP+PX),[(00BH)]	f3 00 00 0b
+pre_off	mvl (BP+PX),[(BP+3)]	f3 00 00 03
+pre_off	mvl (BP+PX),[(PY+3)]	f3 00 00 03
+pre_off	mvl (BP+PX),[(BP+PY)]	f3 00 00 00
+pre_off	mvl [(00CH)],(00BH)	fb 00 0c 0b
+pre_off	mvl [(00CH)],(BP+3)	fb 00 0c 03
+pre_off	mvl [(00CH)],(PY+3)	fb 00 0c 03
+pre_off	mvl [(00CH)],(BP+PY)	fb 00 0c 00
+pre_off	mvl [(BP+4)],(00BH)	fb 00 04 0b
+pre_off	mvl [(BP+4)],(BP+3)	fb 00 04 03
+pre_off	mvl [(BP+4)],(PY+3)	fb 00 04 03
+pre_off	mvl [(BP+4)],(BP+PY)	fb 00 04 00
+pre_off	mvl [(PX+4)],(00BH)	fb 00 04 0b
+pre_off	mvl [(PX+4)],(BP+3)	fb 00 04 03
+pre_off	mvl [(PX+4)],(PY+3)	fb 00 04 03
+pre_off	mvl [(PX+4)],(BP+PY)	fb 00 04 00
+pre_off	mvl [(BP+PX)],(00BH)	fb 00 00 0b
+pre_off	mvl [(BP+PX)],(BP+3)	fb 00 00 03
+pre_off	mvl [(BP+PX)],(PY+3)	fb 00 00 03
+pre_off	mvl [(BP+PX)],(BP+PY)	fb 00 00 00
+pre_off	mvl (00CH),[(00BH)+2]	f3 80 0c 0b 02
+pre_off	mvl (00CH),[(BP+3)+2]	f3 80 0c 03 02
+pre_off	mvl (00CH),[(PY+3)+2]	f3 80 0c 03 02
+pre_off	mvl (00CH),[(BP+PY)+2]	f3 80 0c 00 02
+pre_off	mvl (BP+4),[(00BH)+2]	f3 80 04 0b 02
+pre_off	mvl (BP+4),[(BP+3)+2]	f3 80 04 03 02
+pre_off	mvl (BP+4),[(PY+3)+2]	f3 80 04 03 02
+pre_off	mvl (BP+4),[(BP+PY)+2]	f3 80 04 00 02
+pre_off	mvl (PX+4),[(00BH)+2]	f3 80 04 0b 02
+pre_off	mvl (PX+4),[(BP+3)+2]	f3 80 04 03 02
+pre_off	mvl (PX+4),[(PY+3)+2]	f3 80 04 03 02
+pre_off	mvl (PX+4),[(BP+PY)+2]	f3 80 04 00 02
+pre_off	mvl (BP+PX),[(00BH)+2]	f3 80 00 0b 02
+pre_off	mvl (BP+PX),[(BP+3)+2]	f3 80 00 03 02
+pre_off	mvl (BP+PX),[(PY+3)+2]	f3 80 00 03 02
+pre_off	mvl (BP+PX),[(BP+PY)+2]	f3 80 00 00 02
+pre_off	mvl [(00CH)+2],(00BH)	fb 80 0c 0b 02
+pre_off	mvl [(00CH)+2],(BP+3)	fb 80 0c 03 02
+pre_off	mvl [(00CH)+2],(PY+3)	fb 80 0c 03 02
+pre_off	mvl [(00CH)+2],(BP+PY)	fb 80 0c 00 02
+pre_off	mvl [(BP+4)+2],(00BH)	fb 80 04 0b 02
+pre_off	mvl [(BP+4)+2],(BP+3)	fb 80 04 03 02
+pre_off	mvl [(BP+4)+2],(PY+3)	fb 80 04 03 02
+pre_off	mvl [(BP+4)+2],(BP+PY)	fb 80 04 00 02
+pre_off	mvl [(PX+4)+2],(00BH)	fb 80 04 0b 02
+pre_off	mvl [(PX+4)+2],(BP+3)	fb 80 04 03 02
+pre_off	mvl [(PX+4)+2],(PY+3)	fb 80 04 03 02
+pre_off	mvl [(PX+4)+2],(BP+PY)	fb 80 04 00 02
+pre_off	mvl [(BP+PX)+2],(00BH)	fb 80 00 0b 02
+pre_off	mvl [(BP+PX)+2],(BP+3)	fb 80 00 03 02
+pre_off	mvl [(BP+PX)+2],(PY+3)	fb 80 00 03 02
+pre_off	mvl [(BP+PX)+2],(BP+PY)	fb 80 00 00 02
+pre_off	mvl (00CH),[(00BH)-2]	f3 c0 0c 0b 02
+pre_off	mvl (00CH),[(BP+3)-2]	f3 c0 0c 03 02
+pre_off	mvl (00CH),[(PY+3)-2]	f3 c0 0c 03 02
+pre_off	mvl (00CH),[(BP+PY)-2]	f3 c0 0c 00 02
+pre_off	mvl (BP+4),[(00BH)-2]	f3 c0 04 0b 02
+pre_off	mvl (BP+4),[(BP+3)-2]	f3 c0 04 03 02
+pre_off	mvl (BP+4),[(PY+3)-2]	f3 c0 04 03 02
+pre_off	mvl (BP+4),[(BP+PY)-2]	f3 c0 04 00 02
+pre_off	mvl (PX+4),[(00BH)-2]	f3 c0 04 0b 02
+pre_off	mvl (PX+4),[(BP+3)-2]	f3 c0 04 03 02
+pre_off	mvl (PX+4),[(PY+3)-2]	f3 c0 04 03 02
+pre_off	mvl (PX+4),[(BP+PY)-2]	f3 c0 04 00 02
+pre_off	mvl (BP+PX),[(00BH)-2]	f3 c0 00 0b 02
+pre_off	mvl (BP+PX),[(BP+3)-2]	f3 c0 00 03 02
+pre_off	mvl (BP+PX),[(PY+3)-2]	f3 c0 00 03 02
+pre_off	mvl (BP+PX),[(BP+PY)-2]	f3 c0 00 00 02
+pre_off	mvl [(00CH)-2],(00BH)	fb c0 0c 0b 02
+pre_off	mvl [(00CH)-2],(BP+3)	fb c0 0c 03 02
+pre_off	mvl [(00CH)-2],(PY+3)	fb c0 0c 03 02
+pre_off	mvl [(00CH)-2],(BP+PY)	fb c0 0c 00 02
+pre_off	mvl [(BP+4)-2],(00BH)	fb c0 04 0b 02
+pre_off	mvl [(BP+4)-2],(BP+3)	fb c0 04 03 02
+pre_off	mvl [(BP+4)-2],(PY+3)	fb c0 04 03 02
+pre_off	mvl [(BP+4)-2],(BP+PY)	fb c0 04 00 02
+pre_off	mvl [(PX+4)-2],(00BH)	fb c0 04 0b 02
+pre_off	mvl [(PX+4)-2],(BP+3)	fb c0 04 03 02
+pre_off	mvl [(PX+4)-2],(PY+3)	fb c0 04 03 02
+pre_off	mvl [(PX+4)-2],(BP+PY)	fb c0 04 00 02
+pre_off	mvl [(BP+PX)-2],(00BH)	fb c0 00 0b 02
+pre_off	mvl [(BP+PX)-2],(BP+3)	fb c0 00 03 02
+pre_off	mvl [(BP+PX)-2],(PY+3)	fb c0 00 03 02
+pre_off	mvl [(BP+PX)-2],(BP+PY)	fb c0 00 00 02

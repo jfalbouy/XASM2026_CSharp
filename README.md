@@ -598,7 +598,7 @@ sources d'origine des drivers Kon **telles quelles**. Trois constructions :
 
 | Construction | Description |
 |---|---|
-| `[label:] rel <instruction>` | **Relocation.** Assemble l'instruction **et** enregistre son champ d'adresse comme site relogeable. En fin d'assemblage, les sites sont encodés en **table de relocation** (format Kon) ajoutée après le code — comme le faisait A62, au lieu de coder la table en dur. Émise **seulement** si des `rel` existent (sinon objet identique) |
+| `[label:] rel <instruction>` | **Relocation.** Assemble l'instruction **et** enregistre son champ d'adresse comme site relogeable. En fin d'assemblage, les sites sont encodés en **table de relocation** (format Kon) ajoutée après le code — comme le faisait A62, au lieu de coder la table en dur. Émise **seulement** si des `rel` existent (sinon objet identique). La position et la largeur du champ sont **relevées au moment où l'adresse est émise** ; `rel` devant une instruction qui ne porte pas **exactement une** adresse absolue (`mn` ou `lmn`) est une erreur |
 | `#defmacro nom` … `#endmacro` | **Macro A62** à paramètres positionnels `%0..%9`. Ex. `bsr` : `#defmacro bsr` / `rel call %0` / `#endmacro`, puis `bsr cible` |
 | `#if <cond>` / `#else` / `#endif` | **Assemblage conditionnel** : `#if symbole` (vrai si ≠ 0), `#if a == b`, `#if a != b` |
 

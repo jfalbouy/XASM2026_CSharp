@@ -285,6 +285,17 @@ contre `PLINKC.OBJ`) : suite de deltas entre offsets des champs d'adresse (1ᵉ�
 l'`org`), bit `080h` = largeur 3 octets (`mv imm20`/`dp`), absent = 2 octets (`call`/`jp` proche),
 `07Eh` = delta long (2 octets little-endian suivent), `0FFh` = fin.
 
+Le champ d'adresse est **relevé au moment où l'assembleur l'émet**, avec sa largeur : 2 octets
+pour une adresse `mn` (`JP`, `CALL`, `JPZ`, `JPNZ`, `JPC`, `JPNC`, `DW`), 3 pour une adresse `lmn`
+(`JPF`, `CALLF`, `MV r3,lmn`, toutes les formes `[lmn]`, `MVP (n),lmn`, `DP`). Sa position est
+donc juste même quand un octet suit l'adresse (`CMP [lmn],n`, `MV [lmn],(n)`…) ou qu'un octet PRE
+la précède. `rel` exige une instruction portant **exactement une** adresse absolue : devant
+`mv a,05H`, `jr`, `db` ou un `dw` à plusieurs valeurs, c'est une **erreur d'assemblage**.
+
+> ⚠️ Jusqu'au 2026-09-17, la position était *déduite* de la fin de l'instruction : la table était
+> fausse, sans message, pour `JPZ`/`JPNZ`/`JPC`/`JPNC`, pour les formes où un octet suit
+> l'adresse, et pour `DW`. Une table produite avant cette date avec ces formes est à régénérer.
+
 **`#defmacro nom` … `#endmacro`** — macro A62 à paramètres positionnels `%0..%9`. Par exemple
 `bsr` (appel proche relogeable) se définit par `#defmacro bsr` / `rel call %0` / `#endmacro`.
 

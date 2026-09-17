@@ -1,5 +1,10 @@
 # Rapport de bug — `rel` situe mal le champ d'adresse : table de relocation fausse
 
+> ✅ **Corrigé le 2026-09-17.** Le champ est relevé au moment où l'adresse est émise, et `rel` sans
+> adresse absolue unique est refusé. `RelocationSitesTests` applique l'oracle du §6 aux 27 formes
+> + `DP`/`DW`. Sur BASEXT (144 sites), la table émise égale celle de `reloc.py` et reloge l'objet
+> sans un octet faux. Détail : `PORTAGE.md`.
+
 **Composant** : xasm2026-4 (assembleur SC62015), préprocesseur A62, préfixe `rel`
 **Gravité** : **critique** — la table de relocation est **fausse en silence** (`No fatal error`).
 Un pilote relogé avec elle s'installe, puis **corrompt ses propres instructions** : opcode

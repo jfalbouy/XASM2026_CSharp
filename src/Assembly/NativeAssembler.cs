@@ -29,6 +29,10 @@ internal sealed partial class NativeAssembler
     // compilateur A62. Collectes en passe d'emission uniquement.
     private readonly List<(int Offset, int Width)> _relocSites = [];
 
+    // Champs d'adresse absolue releves pendant l'assemblage d'une ligne 'rel' (null hors
+    // d'une telle ligne). Voir NoteAddressField.
+    private List<(int Offset, int Width)>? _relAddressFields;
+
     // Avertissements non fatals (mes.c / err_handle). Ceux du preprocesseur sont collectes
     // une seule fois ; ceux des passes ne sont retenus qu'en passe d'emission pour eviter
     // les doublons, l'assemblage etant execute deux fois.
@@ -163,6 +167,7 @@ internal sealed partial class NativeAssembler
         _symbols.ResetScopes();
         _preStack.Clear();
         _relocSites.Clear();
+        _relAddressFields = null;
         if (!emit)
         {
             _symbols.ClearOccurrences();
@@ -265,6 +270,8 @@ internal sealed partial class NativeAssembler
                     line = SourceLine.Parse(line.OperandText);
                     mnemonic = line.Mnemonic.ToUpperInvariant();
                 }
+
+                _relAddressFields = relLine ? [] : null;
 
                 switch (mnemonic)
                 {
@@ -603,6 +610,17 @@ internal sealed partial class NativeAssembler
                         break;
                     }
 
+                    // Saut vers l'adresse rangee en RAM interne : [PRE] 10h n. "jp (n)" etait
+                    // evalue comme une expression parenthesee, d'ou un JP direct 02 n 00.
+                    if (IsInternalRamOperand(cible))
+                    {
+                        var pointeur = ParseInternalRamOperand(cible);
+                        EmitPrebyte(pointeur.PreId, 0, emit, result);
+                        Emit(0x10, emit, result);
+                        Emit(pointeur.Value, emit, result);
+                        break;
+                    }
+
                     EmitAbsoluteJump(line.OperandText, 0x02, 2, emit, result);
                     break;
                 }
@@ -718,13 +736,27 @@ internal sealed partial class NativeAssembler
                             $"opcode ou directive non encore portee: {mnemonic}");
                 }
 
-                // Site de relocation A62 : le champ d'adresse occupe les derniers octets de
-                // l'instruction (2 pour call/jp proche, 3 pour mv imm20 / dp / callf). Son offset
-                // dans l'objet est l'index courant moins cette largeur.
-                if (relLine && emit)
+                // Site de relocation A62 : le champ d'adresse a ete RELEVE par l'encodeur au
+                // moment ou il l'emettait (NoteAddressField), avec sa largeur. Il etait
+                // auparavant deduit de la fin de l'instruction et d'une largeur 2 reservee a
+                // CALL/JP : faux pour JPZ/JPNZ/JPC/JPNC (2 octets), pour les formes ou un octet
+                // suit l'adresse (CMP/TEST/AND/OR/XOR [lmn],n ; MV..MVL [lmn],(n)) et pour DW.
+                // Voir RAPPORT-BUG-rel-champ-adresse.md.
+                if (relLine)
                 {
-                    var width = mnemonic is "CALL" or "JP" ? 2 : 3;
-                    _relocSites.Add((result.GeneratedBytes.Count - width, width));
+                    var fields = _relAddressFields!;
+                    _relAddressFields = null;
+                    if (fields.Count != 1)
+                    {
+                        throw new NotSupportedException(fields.Count == 0
+                            ? "rel : l'instruction ne porte aucune adresse absolue (mn ou lmn)"
+                            : $"rel : l'instruction porte {fields.Count} adresses absolues, une seule est relogeable");
+                    }
+
+                    if (emit)
+                    {
+                        _relocSites.Add(fields[0]);
+                    }
                 }
 
                 AddListingLine(emit, result, mnemonic == "ORG" ? _locationCounter : lineAddress, lineByteStart, rawLine);
@@ -903,6 +935,14 @@ internal sealed partial class NativeAssembler
             return;
         }
 
+        // (m) <- [(n)±d], quel que soit le mode de (m). Traite avant la branche generique
+        // ci-dessous, qui emettait deja un PRE pour (m) seul avant d'en emettre un second.
+        if (IsInternalRamOperand(left) && TrySplitMemoryPointer(right, out var loadBase, out var loadOffset))
+        {
+            EmitMemoryPointerTransfer(0xF0, left, loadBase, loadOffset, emit, result);
+            return;
+        }
+
         // Les formes relatives a BP sont traitees plus loin, sauf lorsqu'elles lisent une
         // adresse memoire simple : "mv (bp+7),[etiquette]" appartient bien a cette famille
         // et n'etait prise en charge nulle part, l'operande droit finissant evalue comme un
@@ -941,28 +981,6 @@ internal sealed partial class NativeAssembler
             if (right.StartsWith('[') && right.EndsWith(']'))
             {
                 var inner = right[1..^1].Trim();
-                if (inner.StartsWith('('))
-                {
-                    var close = inner.IndexOf(")", StringComparison.Ordinal);
-                    if (close > 0)
-                    {
-                        var baseExpression = inner[1..close];
-                        var offsetExpression = inner[(close + 1)..];
-                        var baseAddress = ParseInternalRamOperand($"({baseExpression})");
-                        EmitPrebyte(target.PreId, baseAddress.PreId, emit, result);
-                        Emit(0xF0, emit, result);
-                        Emit(PointerSubByte(offsetExpression), emit, result);
-                        Emit(target.Value, emit, result);
-                        Emit(baseAddress.Value, emit, result);
-                        if (HasPointerOffset(offsetExpression))
-                        {
-                            Emit(EvalDisplacement(offsetExpression), emit, result);
-                        }
-
-                        return;
-                    }
-                }
-
                 if (TryEmitIndexedSuffix(inner, emit, result, out var suffix))
                 {
                     Emit(0xE0, emit, result);
@@ -1007,29 +1025,6 @@ internal sealed partial class NativeAssembler
             return;
         }
 
-        if (left.StartsWith('(') && left.EndsWith(')') && right.StartsWith("[(") && right.EndsWith(']'))
-        {
-            var close = right.IndexOf(")", StringComparison.Ordinal);
-            if (close > 2)
-            {
-                var baseExpression = right[2..close];
-                var offsetExpression = right[(close + 1)..^1];
-                if (!IsBpRelative(baseExpression))
-                {
-                    Emit(0x22, emit, result);
-                }
-
-                Emit(0xF0, emit, result);
-                Emit(offsetExpression.TrimStart().StartsWith('-') ? 0xC0 : 0x80, emit, result);
-                Emit(InternalRamOffset(left, emit, result), emit, result);
-                Emit(IsBpRelative(baseExpression)
-                    ? InternalRamOffset($"({baseExpression})", emit, result)
-                    : Eval(baseExpression), emit, result);
-                Emit(EvalDisplacement(offsetExpression), emit, result);
-                return;
-            }
-        }
-
         if (left.StartsWith('(') && left.EndsWith(')') && right.StartsWith('[') && right.EndsWith(']'))
         {
             var inner = right[1..^1].Trim();
@@ -1065,27 +1060,10 @@ internal sealed partial class NativeAssembler
             return;
         }
 
-        if (left.StartsWith("[(") && left.EndsWith(']') && right.StartsWith('(') && right.EndsWith(')'))
+        if (IsInternalRamOperand(right) && TrySplitMemoryPointer(left, out var storeBase, out var storeOffset))
         {
-            var close = left.IndexOf(")", StringComparison.Ordinal);
-            if (close > 2)
-            {
-                var baseExpression = left[2..close];
-                var offsetExpression = left[(close + 1)..^1];
-                var baseAddress = ParseInternalRamOperand($"({baseExpression})");
-                var sourceAddress = ParseInternalRamOperand(right);
-                EmitPrebyte(baseAddress.PreId, sourceAddress.PreId, emit, result);
-                Emit(0xF8, emit, result);
-                Emit(PointerSubByte(offsetExpression), emit, result);
-                Emit(baseAddress.Value, emit, result);
-                Emit(sourceAddress.Value, emit, result);
-                if (HasPointerOffset(offsetExpression))
-                {
-                    Emit(EvalDisplacement(offsetExpression), emit, result);
-                }
-
-                return;
-            }
+            EmitMemoryPointerTransfer(0xF8, storeBase, right, storeOffset, emit, result);
+            return;
         }
 
         if (left.StartsWith('[') && left.EndsWith(']') && right.StartsWith('(') && right.EndsWith(')'))
@@ -1212,24 +1190,17 @@ internal sealed partial class NativeAssembler
             return;
         }
 
-        if (left.StartsWith('(') && left.EndsWith(')') && right.StartsWith("[(") && right.EndsWith(']'))
+        if (IsInternalRamOperand(left) && TrySplitMemoryPointer(right, out var loadBase, out var loadOffset))
         {
-            var close = right.IndexOf(")", StringComparison.Ordinal);
-            if (close > 2)
-            {
-                var baseExpression = right[2..close];
-                var offsetExpression = right[(close + 1)..^1];
-                Emit(0xF2, emit, result);
-                Emit(PointerSubByte(offsetExpression), emit, result);
-                Emit(Eval(left[1..^1]), emit, result);
-                Emit(Eval(baseExpression), emit, result);
-                if (HasPointerOffset(offsetExpression))
-                {
-                    Emit(EvalDisplacement(offsetExpression), emit, result);
-                }
+            // Le PRE etait absent : les deux emplacements etaient lus par un simple Eval.
+            EmitMemoryPointerTransfer(0xF2, left, loadBase, loadOffset, emit, result);
+            return;
+        }
 
-                return;
-            }
+        if (IsInternalRamOperand(right) && TrySplitMemoryPointer(left, out var storeBase, out var storeOffset))
+        {
+            EmitMemoryPointerTransfer(0xFA, storeBase, right, storeOffset, emit, result);
+            return;
         }
 
         if (left.StartsWith('(') && left.EndsWith(')') && right.StartsWith('[') && right.EndsWith(']'))
@@ -1269,22 +1240,15 @@ internal sealed partial class NativeAssembler
             return;
         }
 
-        if (left.StartsWith("[(") && left.EndsWith(")]") && right.StartsWith('(') && right.EndsWith(')'))
-        {
-            Emit(0xFA, emit, result);
-            Emit(0x00, emit, result);
-            Emit(Eval(left[2..^2]), emit, result);
-            Emit(Eval(right[1..^1]), emit, result);
-            return;
-        }
-
         if (left.StartsWith('[') && left.EndsWith(']') &&
             !left[1..^1].TrimStart().StartsWith('(') &&
             right.StartsWith('(') && right.EndsWith(')'))
         {
             if (TryEmitIndexedSuffix(left[1..^1], emit, result, out var suffix))
             {
-                var source = Eval(right[1..^1]);
+                // InternalRamOffset emet le PRE : il doit etre appele avant l'opcode. Un
+                // simple Eval le perdait, et l'instruction lisait alors en (BP+n).
+                var source = InternalRamOffset(right, emit, result);
                 Emit(0xEA, emit, result);
                 if (suffix.Length > 1 && (suffix[0] is >= 0x80 and <= 0x87 or >= 0xC0 and <= 0xC7))
                 {
@@ -1313,22 +1277,6 @@ internal sealed partial class NativeAssembler
             return;
         }
 
-        if (left.StartsWith("[(") && left.EndsWith(']') && right.StartsWith('(') && right.EndsWith(')'))
-        {
-            var close = left.IndexOf(")", StringComparison.Ordinal);
-            if (close > 2)
-            {
-                var baseExpression = left[2..close];
-                var offsetExpression = left[(close + 1)..^1];
-                Emit(0xFA, emit, result);
-                Emit(offsetExpression.TrimStart().StartsWith('-') ? 0xC0 : 0x80, emit, result);
-                Emit(Eval(baseExpression), emit, result);
-                Emit(Eval(right[1..^1]), emit, result);
-                Emit(EvalDisplacement(offsetExpression), emit, result);
-                return;
-            }
-        }
-
         throw new NotSupportedException($"MVP form not ported yet: {operandText}");
     }
 
@@ -1353,27 +1301,10 @@ internal sealed partial class NativeAssembler
         // base (m) etait prise pour un registre indexe. Elle doit etre testee AVANT E1, comme
         // le font les autres methodes (D5). Le champ interne precede la base ; sous-octet et
         // octet de deplacement suivent la regle de PointerSubByte.
-        if (left.StartsWith('(') && left.EndsWith(')') && right.StartsWith("[(") && right.EndsWith(']'))
+        if (IsInternalRamOperand(left) && TrySplitMemoryPointer(right, out var loadBase, out var loadOffset))
         {
-            var close = right.IndexOf(")", StringComparison.Ordinal);
-            if (close > 2)
-            {
-                var baseExpression = right[2..close];
-                var offsetExpression = right[(close + 1)..^1];
-                var target = ParseInternalRamOperand(left);
-                var baseAddress = ParseInternalRamOperand($"({baseExpression})");
-                EmitPrebyte(target.PreId, baseAddress.PreId, emit, result);
-                Emit(0xF1, emit, result);
-                Emit(PointerSubByte(offsetExpression), emit, result);
-                Emit(target.Value, emit, result);
-                Emit(baseAddress.Value, emit, result);
-                if (HasPointerOffset(offsetExpression))
-                {
-                    Emit(EvalDisplacement(offsetExpression), emit, result);
-                }
-
-                return;
-            }
+            EmitMemoryPointerTransfer(0xF1, left, loadBase, loadOffset, emit, result);
+            return;
         }
 
         // (n) <- [r3] / [r3±n] : indirection par pointeur *registre*, famille E1. Le garde
@@ -1411,24 +1342,12 @@ internal sealed partial class NativeAssembler
             }
         }
 
-        if (left.StartsWith("[(") && left.EndsWith(']') && right.StartsWith('(') && right.EndsWith(')'))
+        if (IsInternalRamOperand(right) && TrySplitMemoryPointer(left, out var storeBase, out var storeOffset))
         {
-            var close = left.IndexOf(")", StringComparison.Ordinal);
-            if (close > 2)
-            {
-                var baseExpression = left[2..close];
-                var offsetExpression = left[(close + 1)..^1];
-                Emit(0xF9, emit, result);
-                Emit(PointerSubByte(offsetExpression), emit, result);
-                Emit(InternalRamOffset($"({baseExpression})", emit, result), emit, result);
-                Emit(InternalRamOffset(right, emit, result), emit, result);
-                if (HasPointerOffset(offsetExpression))
-                {
-                    Emit(EvalDisplacement(offsetExpression), emit, result);
-                }
-
-                return;
-            }
+            // Deux InternalRamOffset apres l'opcode emettaient deux PRE simples au milieu de
+            // l'instruction, au lieu d'un PRE combine en tete.
+            EmitMemoryPointerTransfer(0xF9, storeBase, right, storeOffset, emit, result);
+            return;
         }
 
         // [r3] / [r3±n] <- (n) : symetrique de E1, meme correction d'ordre des champs (D1).
@@ -1439,11 +1358,13 @@ internal sealed partial class NativeAssembler
             var inner = left[1..^1].Trim();
             if (TryEmitIndexedSuffix(inner, emit, result, out var suffix))
             {
+                // Le PRE, emis par InternalRamOffset, precede l'opcode (il le suivait).
+                var source = InternalRamOffset(right, emit, result);
                 Emit(0xE9, emit, result);
                 if (suffix.Length > 1 && (suffix[0] is >= 0x80 and <= 0x87 or >= 0xC0 and <= 0xC7))
                 {
                     Emit(suffix[0], emit, result);
-                    Emit(InternalRamOffset(right, emit, result), emit, result);
+                    Emit(source, emit, result);
                     for (var i = 1; i < suffix.Length; i++)
                     {
                         Emit(suffix[i], emit, result);
@@ -1452,7 +1373,7 @@ internal sealed partial class NativeAssembler
                 else
                 {
                     EmitSuffix(suffix, emit, result);
-                    Emit(InternalRamOffset(right, emit, result), emit, result);
+                    Emit(source, emit, result);
                 }
 
                 return;
@@ -1513,22 +1434,6 @@ internal sealed partial class NativeAssembler
             return;
         }
 
-        if (left.StartsWith("[(") && left.EndsWith(']') && right.StartsWith('(') && right.EndsWith(')'))
-        {
-            var close = left.IndexOf(")", StringComparison.Ordinal);
-            if (close > 2)
-            {
-                var baseExpression = left[2..close];
-                var offsetExpression = left[(close + 1)..^1];
-                Emit(0xF9, emit, result);
-                Emit(0xC0, emit, result);
-                Emit(Eval(baseExpression), emit, result);
-                Emit(Eval(right[1..^1]), emit, result);
-                Emit(EvalDisplacement(offsetExpression), emit, result);
-                return;
-            }
-        }
-
         throw new NotSupportedException($"MVW form not ported yet: {operandText}");
     }
 
@@ -1558,54 +1463,18 @@ internal sealed partial class NativeAssembler
             return;
         }
 
-        if (left.StartsWith("[(") && left.EndsWith(']') && right.StartsWith('(') && right.EndsWith(')'))
+        // FB : le 0x22 code en dur etait un prebyte parasite (D7), le 0x80 code en dur perdait
+        // le signe de [(m)-n] (D6), et le deplacement etait emis meme sans offset (D4).
+        if (IsInternalRamOperand(right) && TrySplitMemoryPointer(left, out var storeBase, out var storeOffset))
         {
-            var close = left.IndexOf(")", StringComparison.Ordinal);
-            if (close > 2)
-            {
-                var baseExpression = left[2..close];
-                var offsetExpression = left[(close + 1)..^1];
-                // Aligne sur le sibling F8 de EmitMove : prebyte calcule des deux operandes
-                // et emis AVANT l'opcode. Le 0x22 code en dur etait un prebyte parasite (D7),
-                // le 0x80 code en dur perdait le signe de [(m)-n] (D6), et le deplacement
-                // etait emis meme sans offset (D4).
-                var baseAddress = ParseInternalRamOperand($"({baseExpression})");
-                var sourceAddress = ParseInternalRamOperand(right);
-                EmitPrebyte(baseAddress.PreId, sourceAddress.PreId, emit, result);
-                Emit(0xFB, emit, result);
-                Emit(PointerSubByte(offsetExpression), emit, result);
-                Emit(baseAddress.Value, emit, result);
-                Emit(sourceAddress.Value, emit, result);
-                if (HasPointerOffset(offsetExpression))
-                {
-                    Emit(EvalDisplacement(offsetExpression), emit, result);
-                }
-
-                return;
-            }
+            EmitMemoryPointerTransfer(0xFB, storeBase, right, storeOffset, emit, result);
+            return;
         }
 
-        if (left.StartsWith('(') && left.EndsWith(')') && right.StartsWith("[(") && right.EndsWith(']'))
+        if (IsInternalRamOperand(left) && TrySplitMemoryPointer(right, out var loadBase, out var loadOffset))
         {
-            var close = right.IndexOf(")", StringComparison.Ordinal);
-            if (close > 2)
-            {
-                var baseExpression = right[2..close];
-                var offsetExpression = right[(close + 1)..^1];
-                var target = ParseInternalRamOperand(left);
-                var baseAddress = ParseInternalRamOperand($"({baseExpression})");
-                EmitPrebyte(target.PreId, baseAddress.PreId, emit, result);
-                Emit(0xF3, emit, result);
-                Emit(PointerSubByte(offsetExpression), emit, result);
-                Emit(target.Value, emit, result);
-                Emit(baseAddress.Value, emit, result);
-                if (HasPointerOffset(offsetExpression))
-                {
-                    Emit(EvalDisplacement(offsetExpression), emit, result);
-                }
-
-                return;
-            }
+            EmitMemoryPointerTransfer(0xF3, left, loadBase, loadOffset, emit, result);
+            return;
         }
 
         // Le garde exclut [(m)], deja capte par la branche F3 memoire ci-dessus.
@@ -1619,8 +1488,10 @@ internal sealed partial class NativeAssembler
                 return;
             }
 
+            // InternalRamOffset emet le PRE : a resoudre avant l'opcode, qu'il suivait.
+            var target = InternalRamOffset(left, emit, result);
             Emit(0xD3, emit, result);
-            Emit(InternalRamOffset(left, emit, result), emit, result);
+            Emit(target, emit, result);
             Emit24(Eval(inner), emit, result);
             return;
         }
@@ -1637,9 +1508,11 @@ internal sealed partial class NativeAssembler
                 return;
             }
 
+            // Meme regle : le PRE precede l'opcode, il se retrouvait apres l'adresse.
+            var source = InternalRamOffset(right, emit, result);
             Emit(0xDB, emit, result);
             Emit24(Eval(inner), emit, result);
-            Emit(InternalRamOffset(right, emit, result), emit, result);
+            Emit(source, emit, result);
             return;
         }
 
@@ -1799,7 +1672,10 @@ internal sealed partial class NativeAssembler
             "X" => internalBase ? 0xBC : 0xB4,
             "Y" => internalBase ? 0xBD : 0xB5,
             "U" => internalBase ? 0xBE : 0xB6,
-            "S" => internalBase ? 0xBF : 0xB7,
+            // BFh n'est pas MV [(n)],S : la famille B8-BE s'arrete a U, et le moteur C refuse.
+            "S" => internalBase
+                ? throw new NotSupportedException($"Undefined instruction: mv [{indexExpression}],s")
+                : 0xB7,
             _ => -1,
         };
         if (opcode < 0)
@@ -1844,7 +1720,10 @@ internal sealed partial class NativeAssembler
             "X" => internalBase ? 0x9C : 0x94,
             "Y" => internalBase ? 0x9D : 0x95,
             "U" => internalBase ? 0x9E : 0x96,
-            "S" => internalBase ? 0x9F : 0x97,
+            // 9Fh n'est pas MV S,[(n)] : la famille 98-9E s'arrete a U, et le moteur C refuse.
+            "S" => internalBase
+                ? throw new NotSupportedException($"Undefined instruction: mv s,[{indexExpression}]")
+                : 0x97,
             _ => -1,
         };
         if (opcode < 0)
@@ -2049,6 +1928,7 @@ internal sealed partial class NativeAssembler
     {
         var value = Eval(operandText.Trim());
         Emit(opcode, emit, result);
+        NoteAddressField(addressBytes, result);
         Emit(value, emit, result);
         Emit(value >> 8, emit, result);
         if (addressBytes == 3)
@@ -2906,6 +2786,12 @@ internal sealed partial class NativeAssembler
             }
 
             var value = Eval(trimmed);
+            if (width is 2 or 3)
+            {
+                // DW porte une adresse mn, DP une adresse lmn (relogeables sous 'rel').
+                NoteAddressField(width, result);
+            }
+
             for (var i = 0; i < width; i++)
             {
                 Emit(value >> (8 * i), emit, result);
@@ -3064,6 +2950,14 @@ internal sealed partial class NativeAssembler
         foreach (var (offset, width) in sites)
         {
             var delta = offset - previous;
+            if (delta < 0)
+            {
+                // Un ecart negatif s'encoderait (byte)(delta | 80h) = FFh, le terminateur :
+                // tout lecteur Kon croirait la table finie. Les sites doivent etre croissants.
+                throw new NotSupportedException(
+                    $"rel : site de relocation en arriere du precedent (offset {offset}, precedent {previous})");
+            }
+
             previous = offset;
             var widthBit = width == 3 ? 0x80 : 0x00;
             if (delta < 0x7E)
@@ -3102,12 +2996,28 @@ internal sealed partial class NativeAssembler
     }
 
     /// <summary>
+    /// Action : note qu'un champ d'adresse absolue commence a l'octet courant.
+    /// Donnees d'entree : la largeur du champ (2 pour mn, 3 pour lmn).
+    /// Donnees de sortie : aucune ; n'a d'effet que pendant une ligne 'rel'.
+    ///
+    /// Appele par les encodeurs juste avant d'emettre l'adresse : la position du champ est
+    /// ainsi relevee, et non deduite, ce qui la garde juste quel que soit l'ordre des champs
+    /// de l'instruction (octet PRE, sous-octet, octet apres l'adresse).
+    /// </summary>
+    private void NoteAddressField(int width, AssemblyResult result)
+    {
+        _relAddressFields?.Add((result.GeneratedBytes.Count, width));
+    }
+
+    /// <summary>
     /// Action : emet une valeur sur trois octets en ordre little-endian.
     /// Donnees d'entree : parametres de la signature (long value, bool emit, AssemblyResult result) et etat courant necessaire.
     /// Donnees de sortie : aucune valeur retournee ; effets attendus sur fichiers, resultat ou etat interne.
     /// </summary>
     private void Emit24(long value, bool emit, AssemblyResult result)
     {
+        // Toute valeur sur trois octets emise par un encodeur est une adresse lmn.
+        NoteAddressField(3, result);
         Emit(value, emit, result);
         Emit(value >> 8, emit, result);
         Emit(value >> 16, emit, result);
@@ -3139,6 +3049,63 @@ internal sealed partial class NativeAssembler
     /// </summary>
     private static bool HasPointerOffset(string offsetExpression) =>
         offsetExpression.Trim().Length != 0;
+
+    /// <summary>
+    /// Action : decompose un pointeur memoire [(base)±offset].
+    /// Donnees d'entree : l'operande complet, crochets compris.
+    /// Donnees de sortie : vrai si l'operande a cette forme ; la base est rendue avec ses
+    /// parentheses, prete pour ParseInternalRamOperand, et l'offset tel qu'ecrit (vide si absent).
+    /// </summary>
+    private static bool TrySplitMemoryPointer(string operand, out string baseOperand, out string offsetExpression)
+    {
+        baseOperand = string.Empty;
+        offsetExpression = string.Empty;
+        var text = operand.Trim();
+        if (!text.StartsWith("[(", StringComparison.Ordinal) || !text.EndsWith(']'))
+        {
+            return false;
+        }
+
+        var close = text.IndexOf(')', StringComparison.Ordinal);
+        if (close <= 2)
+        {
+            return false;
+        }
+
+        baseOperand = text[1..(close + 1)];
+        offsetExpression = text[(close + 1)..^1];
+        return true;
+    }
+
+    /// <summary>
+    /// Action : encode les transferts F0-F3 / F8-FB entre la RAM interne et la memoire
+    /// designee par un pointeur en RAM interne : (m) &lt;- [(n)±d] et [(m)±d] &lt;- (n).
+    /// Donnees d'entree : l'opcode, les deux operandes internes dans l'ordre du texte source
+    /// (la base du pointeur etant l'un d'eux), l'expression d'offset.
+    /// Donnees de sortie : aucune ; emet PRE, opcode, sous-octet, les deux emplacements, puis
+    /// le deplacement s'il existe.
+    ///
+    /// Les deux emplacements sont des operandes de RAM interne : l'octet PRE est donc UNIQUE,
+    /// combine des deux modes, et precede l'opcode. Chaque mnemonique avait sa variante de ce
+    /// code, et quatre se trompaient : PRE absent (MVP), deux PRE simples au milieu de
+    /// l'instruction (MVW), PRE en double (MV), ou sous-octet et 22h codes en dur (MV depuis
+    /// (BP+n)). Voir RAPPORT-BUG-octet-pre.md et tests/prebyte_families.
+    /// </summary>
+    private void EmitMemoryPointerTransfer(
+        int opcode, string first, string second, string offsetExpression, bool emit, AssemblyResult result)
+    {
+        var firstAddress = ParseInternalRamOperand(first);
+        var secondAddress = ParseInternalRamOperand(second);
+        EmitPrebyte(firstAddress.PreId, secondAddress.PreId, emit, result);
+        Emit(opcode, emit, result);
+        Emit(PointerSubByte(offsetExpression), emit, result);
+        Emit(firstAddress.Value, emit, result);
+        Emit(secondAddress.Value, emit, result);
+        if (HasPointerOffset(offsetExpression))
+        {
+            Emit(EvalDisplacement(offsetExpression), emit, result);
+        }
+    }
 
     /// <summary>
     /// Action : separe les operandes en respectant parentheses, crochets et chaines.

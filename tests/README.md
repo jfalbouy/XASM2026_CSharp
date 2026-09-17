@@ -13,6 +13,7 @@ de la référence `xasm2026-1`.
 | `coverage_all_include.asm` | Fichier inclus par le précédent. |
 | `postbyte_families.asm` | Couverture systématique des familles à post-octet (104 instructions) — voir `postbyte_families.README.md`. |
 | `postbyte_families.expected.txt` | Octets attendus pour le fichier ci-dessus, produits par le moteur de référence. |
+| `prebyte_families.expected.txt` | Octets attendus (ou refus) pour 2520 instructions à opérande de RAM interne, sous `pre_on`/`pre_off`, produits par le moteur C via `tools/gen_prebyte_families.py` — voir `prebyte_families.README.md`. |
 | `_compare_with_xasm2026_1_1/` | Sorties du script de comparaison. Régénérable, ignoré par git. |
 
 ## Exécution
@@ -32,6 +33,8 @@ dotnet test .\tests\Xasm2026.Tests\Xasm2026.Tests.csproj -c Release
 | `DirectiveTests` | Directives ajoutées en 2026-4 : `SET`, `IRP`/`IRPC`, `ALIGN`, `DZ`, `PHASE`, `EXITM`… |
 | `SampleAssemblyTests` | Octets produits par les exemples `SAMPLE6` à `SAMPLE9`. |
 | `PostbyteFamiliesTests` | Les 104 formes à post-octet de `postbyte_families.expected.txt`, plus les 2 formes que Sharp ne définit pas (refus attendu) — 106 cas pilotés par les données. |
+| `PrebyteFamiliesTests` | L'octet PRE : 2520 instructions à opérande de RAM interne, comparées au moteur C (octets ou refus). Un cas par mode (`pre_on`, `pre_off`), dont le message liste chaque divergence. |
+| `RelocationSitesTests` | Le préfixe `rel` : la table émise doit désigner exactement les octets qui changent quand l'origine change (27 formes `mn`/`lmn` + `DP`/`DW`), et `rel` sans adresse absolue unique doit être refusé. |
 
 > ✅ **`postbyte_families` est branché sur `dotnet test`** (`PostbyteFamiliesTests`). Il a révélé
 > sept défauts d'encodage des familles à post-octet, tous corrigés le 2026-08-07 : les **20

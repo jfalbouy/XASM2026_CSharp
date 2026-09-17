@@ -1,5 +1,9 @@
 # Rapport de bug — octet PRE absent, déplacé ou doublé sur sept familles d'instructions
 
+> ✅ **Corrigé le 2026-09-17.** L'oracle `PrebyteFamiliesTests` (2520 formes comparées au moteur C,
+> sous `pre_on` et `pre_off`) a trouvé 289 divergences sur neuf défauts, dont les sept familles
+> ci-dessous ; il n'en reste aucune. Détail : `tests/prebyte_families.README.md` et `PORTAGE.md`.
+
 **Composant** : xasm2026-4 (assembleur SC62015), émission automatique de l'octet PRE (`pre_on`)
 **Gravité** : **critique** — objet mal formé **en silence** (`No fatal error`). Selon le cas, le CPU
 lit une autre instruction et **se désynchronise**, ou exécute la bonne instruction **en mode

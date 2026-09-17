@@ -160,39 +160,38 @@
 0BE129 30 E0 04 12       	        mv      (18),[x]
 0BE12D 30 E0 25 12       	        mv      (18),[y++]
 0BE131 30 E0 C6 12 01    	        mv      (18),[u-1]
-0BE136 30 32 F0 00 12 20 	        mv      (18),[(ptr0)]
-0BE13C 30 32 F0 80 12 20 	        mv      (18),[(ptr0)+2]
-0BE142 02                	
-0BE143 30 D8 00 EA 0B 10 	        mv      [ext1],(16)
-0BE149 30 E8 04 10       	        mv      [x],(16)
-0BE14D 30 E8 25 11       	        mv      [y++],(17)
-0BE151 30 E8 C6 12 03    	        mv      [u-3],(18)
-0BE156 32 F8 00 24 10    	        mv      [(ptr1)],(16)
-0BE15B 32 F8 80 24 11 04 	        mv      [(ptr1)+4],(17)
-0BE161                   	
-0BE161 32 C9 10 11       	        mvw     (16),(17)
-0BE165 30 CD 10 34 12    	        mvw     (16),$1234
-0BE16A 30 D1 10 00 E9 0B 	        mvw     (16),[ext0]
-0BE170 30 E1 04 10       	        mvw     (16),[x]
-0BE174 32 F1 00 10 20    	        mvw     (16),[(ptr0)]
-0BE179 30 D9 00 EA 0B 10 	        mvw     [ext1],(16)
-0BE17F E9 04 30 10       	        mvw     [x],(16)
-0BE183 F9 00 30 24 30 10 	        mvw     [(ptr1)],(16)
-0BE189                   	
-0BE189 32 CA 10 11       	        mvp     (16),(17)
-0BE18D 30 DC 10 00 E9 0B 	        mvp     (16),ext0
-0BE193 30 D2 10 00 E9 0B 	        mvp     (16),[ext0]
-0BE199 30 E2 04 10       	        mvp     (16),[x]
-0BE19D F2 00 10 20       	        mvp     (16),[(ptr0)]
-0BE1A1 30 DA 00 EA 0B 10 	        mvp     [ext1],(16)
-0BE1A7 EA 04 10          	        mvp     [x],(16)
-0BE1AA FA 00 24 10       	        mvp     [(ptr1)],(16)
+0BE136 32 F0 00 12 20    	        mv      (18),[(ptr0)]
+0BE13B 32 F0 80 12 20 02 	        mv      (18),[(ptr0)+2]
+0BE141 30 D8 00 EA 0B 10 	        mv      [ext1],(16)
+0BE147 30 E8 04 10       	        mv      [x],(16)
+0BE14B 30 E8 25 11       	        mv      [y++],(17)
+0BE14F 30 E8 C6 12 03    	        mv      [u-3],(18)
+0BE154 32 F8 00 24 10    	        mv      [(ptr1)],(16)
+0BE159 32 F8 80 24 11 04 	        mv      [(ptr1)+4],(17)
+0BE15F                   	
+0BE15F 32 C9 10 11       	        mvw     (16),(17)
+0BE163 30 CD 10 34 12    	        mvw     (16),$1234
+0BE168 30 D1 10 00 E9 0B 	        mvw     (16),[ext0]
+0BE16E 30 E1 04 10       	        mvw     (16),[x]
+0BE172 32 F1 00 10 20    	        mvw     (16),[(ptr0)]
+0BE177 30 D9 00 EA 0B 10 	        mvw     [ext1],(16)
+0BE17D 30 E9 04 10       	        mvw     [x],(16)
+0BE181 32 F9 00 24 10    	        mvw     [(ptr1)],(16)
+0BE186                   	
+0BE186 32 CA 10 11       	        mvp     (16),(17)
+0BE18A 30 DC 10 00 E9 0B 	        mvp     (16),ext0
+0BE190 30 D2 10 00 E9 0B 	        mvp     (16),[ext0]
+0BE196 30 E2 04 10       	        mvp     (16),[x]
+0BE19A 32 F2 00 10 20    	        mvp     (16),[(ptr0)]
+0BE19F 30 DA 00 EA 0B 10 	        mvp     [ext1],(16)
+0BE1A5 30 EA 04 10       	        mvp     [x],(16)
+0BE1A9 32 FA 00 24 10    	        mvp     [(ptr1)],(16)
 0BE1AE                   	
 0BE1AE 32 CB 10 11       	        mvl     (16),(17)
-0BE1B2 D3 30 10 00 E9 0B 	        mvl     (16),[ext0]
+0BE1B2 30 D3 10 00 E9 0B 	        mvl     (16),[ext0]
 0BE1B8 30 56 84 10 01    	        mvl     (16),[x+1]
 0BE1BD 32 F3 80 10 20 01 	        mvl     (16),[(ptr0)+1]
-0BE1C3 DB 00 EA 0B 30 10 	        mvl     [ext1],(16)
+0BE1C3 30 DB 00 EA 0B 10 	        mvl     [ext1],(16)
 0BE1C9 30 5E 84 10 01    	        mvl     [x+1],(16)
 0BE1CE 32 FB 80 24 10 01 	        mvl     [(ptr1)+1],(16)
 0BE1D4 32 CF 10 11       	        mvld    (16),(17)
