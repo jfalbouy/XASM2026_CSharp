@@ -17,6 +17,16 @@ def hx(s):
         h = "0" + h
     return h + "H"
 
+def court(desc, n):
+    """Tronque une description a n caracteres SUR UN MOT, et le signale.
+    Une coupe en plein mot (« propre au PC-E5 ») laisse croire a une valeur, pas a
+    une troncature : le lecteur ne sait pas qu'il lui manque la suite. Le carnet
+    (Data/*.json) porte le texte entier ; l'include n'en donne que le debut."""
+    if len(desc) <= n:
+        return desc
+    coupe = desc[:n].rsplit(" ", 1)[0].rstrip(" ,;:-")
+    return coupe + " ..."
+
 def load(fn):
     return json.load(open(DATA / fn, encoding="utf-8"))
 
@@ -122,7 +132,7 @@ emit("; ========================================================================
 emit("; pce500.inc - constantes systeme du SHARP PC-E500S / SC62015")
 emit("; ============================================================================")
 emit(";")
-emit("; GENERE automatiquement par tools/generate_pce500_inc.py a partir des tables")
+emit("; GENERE automatiquement par xasm2026-4/tools/generate_pce500_inc.py a partir des tables")
 emit("; du desassembleur SC62015Disassembler (Data/*.json), source autoritative alignee")
 emit("; sur le listing de reference. NE PAS EDITER A LA MAIN : regenerer depuis les tables.")
 emit(f"; Genere le {datetime.date.today().isoformat()}.")
@@ -162,7 +172,7 @@ for dev in fcs["iocs_devices"]:
     for fn in dev.get("functions", []):
         if fn["name"] in ("unused", "non_documente"):
             continue
-        define(f"d{dev['device']}_{fn['name']}", hx(fn["il"]), fn["desc"][:80], 16, 5,
+        define(f"d{dev['device']}_{fn['name']}", hx(fn["il"]), court(fn["desc"], 80), 16, 5,
                complet=f"{dev['name']}_{fn['name']}")
     emit("")
 
