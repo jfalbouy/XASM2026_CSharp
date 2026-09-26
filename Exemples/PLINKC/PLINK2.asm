@@ -9,6 +9,16 @@
 ;    - Installateur AJOUT-EN-FIN : le pilote est place APRES les blocs existants,
 ;      sans les decaler -> aucun recalage des pointeurs BASIC (linkbas), donc plus
 ;      de reset volontaire (bomb) ni de risque de corruption de BASIC.
+;
+;      /!\ DEMENTI PAR LA MESURE, le 2026-09-16 (BASEXT-DRV/CONCEPTION.md §5bis).
+;      Sur PC-E500S, DATA.BAS est le PREMIER bloc de S1: et detient la memoire
+;      libre : un bloc ajoute derriere elle est DEPLACE SANS RELOCATION au premier
+;      besoin de place du BASIC -- bloc copie en 0804E5h, relu en 0BCF30h au RUN
+;      suivant, puis plantage a la ligne tapee ensuite. L'ajout en fin n'est donc
+;      pas plus sur, il est FAUX. Le modele qui tient est celui de PLINKC lui-meme :
+;      insertion AVANT le premier bloc non pilote, decalage des suivants, puis
+;      linkbas sur tous les chemins. PLINK2 est conserve comme PIECE D'ETUDE et
+;      NE DOIT PAS ETRE INSTALLE EN L'ETAT.
 ;    - Noms definis UNE SEULE FOIS (macros drvbase/drvext/drvdev).
 ;    - La TABLE DE RELOCATION d'origine de PLINKC (60 sites, format delta) est
 ;      REUTILISEE verbatim ; un seul octet est ajuste car le nom de device 'PL2:'
