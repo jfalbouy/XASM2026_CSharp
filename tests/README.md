@@ -66,6 +66,11 @@ Chaque source est assemblée dans son propre dossier de travail, purgé au préa
 sortie, de sorte qu'un fichier absent signifie réellement « non produit par ce run ». La
 colonne `MissingOutputs` du rapport le signale explicitement.
 
+Depuis le 2026-09-27, une **divergence volontaire** est attendue : `TMAP2020.obj` diffère du
+moteur C d'un seul octet, à l'offset `37Bh` (`MV I,'+B'` → `2B` ici, `00` pour le moteur C). Le
+port restitue les octets de l'objet de 1994 ; voir `RAPPORT-BUG-constante-plusieurs-caracteres.md`
+et l'entrée du 2026-09-27 de `PORTAGE.md`. Tout autre écart est un défaut.
+
 Dernier résultat (2026-07-19) : **code machine identique sur les huit sources**. Le `.uu`
 diffère par une ligne finale `size` et le bourrage du dernier bloc, choix délibéré de
 reproduire `uuselfx.c` documenté dans `PORTAGE.md` ; les deux fichiers décodent vers le même

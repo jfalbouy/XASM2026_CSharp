@@ -769,6 +769,60 @@ public sealed class BehaviorTests
         });
     }
 
+    /// <summary>
+    /// Une constante de plusieurs caracteres **accumule** : chaque caractere decale la valeur
+    /// d'un octet vers la gauche, le dernier est l'octet de poids faible. C'est le comportement
+    /// de l'assembleur de TORO (1994), que XASM 1.40 a perdu et que le moteur C a herite : le
+    /// port s'en ecarte volontairement. `MV I,'+B'` doit redonner les octets de l'objet de 1994.
+    /// Voir RAPPORT-BUG-constante-plusieurs-caracteres.md.
+    /// </summary>
+    [Theory]
+    [InlineData("mv i,'+B'", "0b 42 2b")]
+    [InlineData("mv ba,'AB'", "0a 42 41")]
+    [InlineData("mv x,'ABC'", "0c 43 42 41")]
+    [InlineData("mv i,'+B'+0", "0b 42 2b")]
+    [InlineData("mv a,'A'", "08 41")]            // un seul caractere : inchange
+    [InlineData("mv a,''''", "08 27")]           // apostrophe doublee seule
+    [InlineData("mv i,'A'''", "0b 27 41")]       // apostrophe doublee DANS une constante longue
+    [InlineData("dw 'AB'", "41 42")]             // chaine de donnees : octet par octet, inchangee
+    [InlineData("db 'AB'", "41 42")]
+    public void Multi_character_constants_accumulate(string instruction, string expected)
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "k.asm"),
+                "        ORG 0BE000H\n        " + instruction + "\n        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "k.asm" });
+            var result = new NativeAssembler(options).Assemble();
+            var got = string.Join(' ', result.GeneratedBytes.Select(b => ((int)b.Value & 0xFF).ToString("x2")));
+
+            Assert.Equal(expected, got);
+        });
+    }
+
+    /// <summary>
+    /// Au-dela de trois caracteres, la valeur depasse les 20 bits d'un operande : refus plutot
+    /// qu'une troncature muette.
+    /// </summary>
+    [Theory]
+    [InlineData("mv x,'ABCD'")]
+    [InlineData("mv i,1+'ABCD'")]
+    [InlineData("db 'ABCDE'+0")]
+    public void Character_constant_longer_than_three_is_an_error(string instruction)
+    {
+        RunInTempDir(dir =>
+        {
+            File.WriteAllText(Path.Combine(dir, "k.asm"),
+                "        ORG 0BE000H\n        " + instruction + "\n        END\n");
+
+            var options = CommandLineOptions.Parse(new[] { "k.asm" });
+            var ex = Assert.Throws<InvalidOperationException>(() => new NativeAssembler(options).Assemble());
+
+            Assert.Contains("Character constant too long", ex.Message, StringComparison.Ordinal);
+        });
+    }
+
     private static void RunInTempDir(Action<string> body)
     {
         var dir = Path.Combine(Path.GetTempPath(), "xasm_behavior", Guid.NewGuid().ToString("N"));

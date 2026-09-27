@@ -44,6 +44,7 @@ internal sealed class ExpressionEvaluator
         Undefined = parser.Undefined;
         Referenced = parser.Referenced;
         DividedByZero = parser.DividedByZero;
+        CharacterTooLong = parser.CharacterTooLong;
         return value;
     }
 
@@ -65,6 +66,13 @@ internal sealed class ExpressionEvaluator
     /// fatale, car un diviseur symbolique vaut encore 0 en passe de resolution.
     /// </summary>
     public bool DividedByZero { get; private set; }
+
+    /// <summary>
+    /// Vrai si la derniere evaluation contenait une constante caractere de plus de trois
+    /// caracteres : sa valeur depasse les 20 bits adressables, et la tronquer en silence
+    /// donnerait une donnee fausse sans le moindre message.
+    /// </summary>
+    public bool CharacterTooLong { get; private set; }
 
     /// <summary>
     /// Action : borne une valeur au format entier 24 bits utilise par l'assembleur.
@@ -100,6 +108,11 @@ internal sealed class ExpressionEvaluator
         /// Vrai si une division ou un modulo par zero a ete rencontre pendant l'analyse.
         /// </summary>
         public bool DividedByZero { get; private set; }
+
+        /// <summary>
+        /// Vrai si une constante caractere de plus de trois caracteres a ete rencontree.
+        /// </summary>
+        public bool CharacterTooLong { get; private set; }
 
         /// <summary>
         /// Action : initialise le parseur recursif d'expression.
@@ -481,26 +494,49 @@ internal sealed class ExpressionEvaluator
         /// Action : lit une constante caractere assembleur.
         /// Donnees d'entree : aucune donnee directe ; utilise l'etat courant de l'objet ou de l'application.
         /// Donnees de sortie : valeur long calculee par la procedure.
+        ///
+        /// Chaque caractere **decale la valeur d'un octet vers la gauche** : 'AB' vaut 4142h, et
+        /// le dernier caractere est l'octet de poids faible (emis en tete). C'est le comportement
+        /// de l'assembleur de TORO (1994), lisible dans l'objet d'epoque de TMAP 1.05 :
+        /// `MV I,'+B'` y vaut `0B 42 2B`. XASM 1.40 l'a perdu (`x = txt[txt_p-1]` ecrase a chaque
+        /// caractere, EVAL.C l. 118), et le moteur C 2026-1-2 en a herite : le port s'en ecarte
+        /// **volontairement** ici. Voir RAPPORT-BUG-constante-plusieurs-caracteres.md.
+        ///
+        /// L'apostrophe doublee est un caractere comme un autre ('A''' = 4127h), et une constante
+        /// de plus de trois caracteres depasse les 20 bits d'un operande : elle leve l'erreur
+        /// plutot que d'etre tronquee en silence.
         /// </summary>
         private long ParseCharacter()
         {
-            _position++;
-            if (_position < _text.Length - 1 && _text[_position] == '\'' && _text[_position + 1] == '\'')
-            {
-                _position += 2;
-                return '\'';
-            }
-
+            _position++;   // apostrophe ouvrante
             long value = 0;
-            while (_position < _text.Length && _text[_position] != '\'')
+            var count = 0;
+            while (_position < _text.Length)
             {
-                value = _text[_position];
+                var c = _text[_position];
+                if (c == '\'')
+                {
+                    // Apostrophe doublee a l'interieur de la constante : un caractere 27h.
+                    if (_position + 1 < _text.Length && _text[_position + 1] == '\'')
+                    {
+                        value = (value << 8) | '\'';
+                        count++;
+                        _position += 2;
+                        continue;
+                    }
+
+                    _position++;   // apostrophe fermante
+                    break;
+                }
+
+                value = (value << 8) | c;
+                count++;
                 _position++;
             }
 
-            if (_position < _text.Length && _text[_position] == '\'')
+            if (count > 3)
             {
-                _position++;
+                CharacterTooLong = true;
             }
 
             return value;

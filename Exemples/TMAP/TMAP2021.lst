@@ -456,7 +456,7 @@
 0BE361 1C 12             		JRC     DV7
 0BE363 30 D7 05 00       		CMPP    (0),Y
 0BE367 1E 0C             		JRNC    DV7
-0BE369 0B 42 00          		MV      I,'+B'
+0BE369 0B 42 2B          		MV      I,'+B'
 0BE36C B3 24             		MV      [X++],I
 0BE36E 04 AA E4          		CALL    BYTPUT
 0BE371 08 20             		MV      A,' '

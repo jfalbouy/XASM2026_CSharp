@@ -345,6 +345,7 @@ C'est le **dernier caractère** du jeton qui fixe la base, comme dans `eval.c` :
 | Binaire | `10110101B` | Suffixe `B` |
 | Octal | `377O` | Suffixe `O` |
 | Caractère | `'A'` | Valeur ASCII, dans `DB` / `DM` |
+| Caractères multiples | `'AB'` → `4142h` | Dans un **immédiat** : chaque caractère décale la valeur d'un octet vers la gauche, le dernier est l'octet de poids faible (`mv i,'+B'` → `0B 42 2B`). Apostrophe doublée comptée comme un caractère (`'A'''` = `4127h`) ; au-delà de 3 caractères, erreur. Dans `DB`/`DM`/`DW`, une chaîne reste émise **caractère par caractère** |
 
 Les suffixes sont acceptés en majuscule comme en minuscule. Le souligné `_` est un
 séparateur visuel ignoré : `1010_1010B`, `0F_FH`, `1_000`.

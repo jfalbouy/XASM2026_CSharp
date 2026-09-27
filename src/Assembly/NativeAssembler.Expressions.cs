@@ -47,6 +47,15 @@ internal sealed partial class NativeAssembler
             throw new InvalidOperationException($"Division by zero: {expression.Trim()}");
         }
 
+        // Une constante caractere vaut (c1<<16)|(c2<<8)|c3 au plus : au-dela, la valeur ne tient
+        // pas dans un operande du SC62015. Le controle ne depend d'aucun symbole, donc il vaut
+        // sur les deux passes — inutile d'attendre l'emission pour le signaler.
+        if (strict && evaluator.CharacterTooLong)
+        {
+            throw new InvalidOperationException(
+                $"Character constant too long (3 caracteres au plus): {expression.Trim()}");
+        }
+
         // Table des references croisees : on n'enregistre qu'en passe d'emission, sans quoi
         // chaque utilisation serait comptee deux fois.
         if (_emitPass && _currentOrigin is not null)
