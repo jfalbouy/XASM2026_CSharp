@@ -95,9 +95,20 @@ Comme le suggérait le §5 :
 
 ## 6. Sur le §7 (contournement)
 
-La réécriture 2026 de TMAP écrit `mv i,0422bh` avec le commentaire `"+B"`. Cela reste
-juste : l'écriture hexadécimale ne change pas de sens. Elle peut maintenant redevenir
-`mv i,'+B'`, plus lisible, si vous le souhaitez.
+La réécriture 2026 de TMAP écrit `mv i,0422bh` avec le commentaire `"+B"`. Cela reste juste.
+Son équivalent littéral est **`mv i,'B+'`**, et non `'+B'` : le dernier caractère devient l'octet
+de poids faible, donc celui que `mv [x++],i` écrit **en premier**. `mv i,'+B'` donne `I = 2B42h`,
+écrit `42 2B`, et afficherait `B+` — l'affichage de 1994.
+
+| Source | `I` | Octets écrits | Affichage |
+|---|---|---|---|
+| `mv i,'+B'` | `2B42h` | `42 2B` | `B+` (1994) |
+| `mv i,'B+'` | `422Bh` | `2B 42` | `+B` |
+| `mv i,0422bh` | `422Bh` | `2B 42` | `+B` |
+
+> **Correction du 2026-09-28.** Une première version de ce paragraphe affirmait que la source
+> pouvait « redevenir `mv i,'+B'`, plus lisible ». C'était faux : cela aurait inversé l'affichage.
+> Signalé par `NOTE-REPONSE-constante-plusieurs-caracteres-par6.md`, vérifié et corrigé.
 
 Attention en revanche si cette source doit aussi s'assembler avec le moteur C `xasm2026-1-2` :
 lui garde le comportement de XASM 1.40, et rendrait `0B 42 00`. La forme hexadécimale est la seule
